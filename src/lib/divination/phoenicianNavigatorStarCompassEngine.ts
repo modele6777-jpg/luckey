@@ -18,12 +18,15 @@ export interface PhoenicianNavigatorResult {
   engineName: string;
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '기준·결정' | '개척·실행' | '보급·정비' | '관찰·장기' | '항해 전반';
   primaryBeacon: PhoenicianStarBeacon;
   backupBeacon: PhoenicianStarBeacon;
+  starCompassAxis: string;
   seaStateMetaphor: string;
   qualitativeSynthesis: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   isSymbolicFramework: true;
@@ -85,6 +88,21 @@ function stableHash(input: string): number {
   return h >>> 0;
 }
 
+const PHOENICIAN_SHADOWS: readonly string[] = [
+  '북극성 기준점을 붙드는 완고함이 바뀐 해류와 암초 앞에서도 항로를 미세 조정하지 않는 고집이 되지 않게 유연성을 열어 두세요.',
+  '원양으로 나아가는 담대한 실행력이 보급선과 선원들의 체력 상태를 살피지 않고 무작정 닻부터 올리는 무모함이 되어서는 안 됩니다.',
+  '항구에서 돛을 손보고 때를 살피는 신중함이 순풍이 이미 불어온 뒤에도 완벽한 준비를 핑계로 출항을 미루는 망설임이 되지 않게 하세요.',
+  '먼 수평선의 징조를 읽는 장기적 관찰에 몰두하다가 정작 오늘 뱃머리에 들이치는 작은 파도와 당장의 실행을 놓치지 않도록 살피세요.',
+];
+
+function classifyPhoenicianTopic(q: string): PhoenicianNavigatorResult['questionTopic'] {
+  if (/기준|결정|방향|원칙/.test(q)) return '기준·결정';
+  if (/개척|실행|시작|도전/.test(q)) return '개척·실행';
+  if (/보급|정비|체력|휴식/.test(q)) return '보급·정비';
+  if (/장기|미래|관찰|큰/.test(q)) return '관찰·장기';
+  return '항해 전반';
+}
+
 export function calculatePhoenicianNavigatorStarCompass(params: {
   profile: UserProfile;
   now?: Date;
@@ -92,6 +110,7 @@ export function calculatePhoenicianNavigatorStarCompass(params: {
 }): PhoenicianNavigatorResult {
   const now = params.now ?? new Date();
   const query = (params.question ?? '').trim();
+  const questionTopic = classifyPhoenicianTopic(query);
 
   const seedInput = [
     params.profile.basic?.name ?? '',
@@ -108,6 +127,7 @@ export function calculatePhoenicianNavigatorStarCompass(params: {
 
   const primaryBeacon = PHOENICIAN_BEACONS[primaryIdx];
   const backupBeacon = PHOENICIAN_BEACONS[backupIdx];
+  const starCompassAxis = `${primaryBeacon.beaconTitle.split('(')[0].trim()} ↔ ${backupBeacon.beaconTitle.split('(')[0].trim()} (${questionTopic})`;
 
   const qualitativeSynthesis =
     `고대 지중해 페니키아 항해사들의 별자리 나침반으로 비추어 보면, 지금 항해의 중심에는 ` +
@@ -126,14 +146,17 @@ export function calculatePhoenicianNavigatorStarCompass(params: {
 
   return {
     engineName: '고대 페니키아 항해 별자리 나침반 (Phoenician Star Compass)',
-    engineVersion: 'LUCKEY-PHOENICIAN-NAVIGATOR-v2.2.0',
+    engineVersion: 'LUCKEY-PHOENICIAN-NAVIGATOR-v2.3.0',
     calculatedAtKst: formatPhoenicianKstTimestamp(now),
+    questionTopic,
     primaryBeacon,
     backupBeacon,
+    starCompassAxis,
     seaStateMetaphor,
     qualitativeSynthesis,
     reflectionFocus,
     ritualAction,
+    shadowWarning: PHOENICIAN_SHADOWS[primaryIdx],
     reflectiveQuestion,
     interpretiveBoundary:
       '본 결과는 고대 페니키아 항해술의 북극성 항법 상징을 빌려 온 의사결정·성찰 프레임워크이며, 확률적 예측이나 수치적 운세 점수가 아닙니다.',
@@ -145,12 +168,14 @@ export function formatPhoenicianNavigatorPrompt(res: PhoenicianNavigatorResult):
   return [
     `[보조 상징 관점 — ${res.engineName}]`,
     `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 별 나침반 축: ${res.starCompassAxis}`,
     `- 주된 별자리 표지: ${res.primaryBeacon.beaconTitle} (${res.primaryBeacon.navigationRole})`,
     `- 보조 항로 표지: ${res.backupBeacon.beaconTitle} (${res.backupBeacon.navigationRole})`,
     `- 바다의 흐름: ${res.seaStateMetaphor}`,
     `- 성찰 해석: ${res.qualitativeSynthesis}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 실천 의례: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

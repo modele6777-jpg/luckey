@@ -13490,14 +13490,15 @@ test('Javanese Kejawen Rasa Harmony engine: principles, +09:00 KST, and interpre
 
 test('Phoenician Navigator Star Compass engine: beacons, +09:00 KST, and interpretive boundary', () => {
   const rep = calculatePhoenicianNavigatorStarCompass({ profile, now: new Date('2026-11-20T05:05:00Z'), question: '방향을 잃지 않고 결정하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-PHOENICIAN-NAVIGATOR-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-PHOENICIAN-NAVIGATOR-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.backupBeacon.id !== rep.primaryBeacon.id);
+  assert.ok(rep.starCompassAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('수치적 운세 점수가 아닙니다'));
   const prompt = formatPhoenicianNavigatorPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('페니키아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.backupBeacon.beaconTitle));
+  assert.ok(prompt.includes('페니키아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.backupBeacon.beaconTitle) && prompt.includes('과잉 경계'));
 });
 
 test('Kazakh Abai Book of Words engine: pillars, +09:00 KST, and interpretive boundary', () => {
@@ -14057,14 +14058,15 @@ test('Cornish Kernow Sea Granite engine: landmark, +09:00 KST, and interpretive 
 
 test('Ossetian Nart Sagas Forge engine: emblem, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateOssetianNartSagasForge({ profile, now: new Date('2026-11-20T07:38:00Z'), question: '지금의 수고를 단련으로 바꾸고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-OSSETIAN-NART-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-OSSETIAN-NART-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionEmblem !== rep.nartEmblem);
+  assert.ok(rep.nartForgeAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatOssetianNartPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('오세트') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionEmblem));
+  assert.ok(prompt.includes('오세트') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionEmblem) && prompt.includes('과잉 경계'));
 });
 
 test('Sardinian Nuraghe Stone Calm engine: stone, +09:00 KST, and interpretive boundary', () => {
@@ -15455,14 +15457,15 @@ test('Tarahumara Raramuri Stride engine: motif, +09:00 KST, and interpretive bou
 
 test('Orkney Skara Brae Hearth engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateOrkneySkaraHearth({ profile, now: new Date('2026-11-20T22:05:00Z'), question: '마음의 중앙 화덕을 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ORKNEY-SKARA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ORKNEY-SKARA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.hearthMotif);
+  assert.ok(rep.skaraHearthAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatOrkneySkaraPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('오크니') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('오크니') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
 });
 
 test('Muisca Guatavita Lake engine: phase, +09:00 KST, and interpretive boundary', () => {
