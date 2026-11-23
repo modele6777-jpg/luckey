@@ -1,12 +1,22 @@
 [
   {
-    "version": "1.8.409",
-    "builtAt": "2026-11-23T19:59:50.896Z",
+    "version": "1.8.410",
+    "builtAt": "2026-11-23T20:11:20.162Z",
     "summary": "WebKit 화면·음성 회귀 수정",
     "items": [
       "오브와 Lucky를 반영해 빅뱅 방향 검사를 바로잡았어요.",
       "오브 이동 표시와 루시 복귀 후 최신 대화 위치를 복원해요.",
       "외부 음악이 계속 재생되는지 빌드 서버에서도 검사해요."
+    ]
+  },
+  {
+    "version": "1.8.409",
+    "builtAt": "2026-11-24T05:05:00+09:00",
+    "summary": "다약 롱하우스·도곤 암마·엘람 수사 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.409)",
+    "items": [
+      "보르네오 다약 롱하우스 코뿔새 엔진(v2.3.0): 질문 맥락(questionTopic), 수관·강변 축(canopyRiverAxis), 과잉 경계(shadowWarning) 추가",
+      "도곤 암마·노모 우주 질서 엔진(v2.3.0): 질문 맥락(questionTopic), 우주 질서 축(cosmicOrderAxis), 과잉 경계(shadowWarning) 추가",
+      "엘람 수사·수로 정원 엔진(v2.3.0): 질문 맥락(questionTopic), 수로·벽돌 축(chogaCanalAxis), 과잉 경계(shadowWarning) 추가"
     ]
   },
   {
