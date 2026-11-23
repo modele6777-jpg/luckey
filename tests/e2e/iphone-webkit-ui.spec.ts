@@ -1514,11 +1514,16 @@ test('pull-to-refresh indicator centers on the full-width unfolded portrait canv
   await openLucy(page);
   await expect(page.locator('html')).toHaveClass(/duo-unfolded-portrait/);
   await expect(page.locator('#duo-content-viewport')).toBeVisible();
-  await setContentScrollBoundary(page, 'top');
 
   const messages = page.locator('#duo-lucy-viewport .lucy-chat-main');
   await expect(messages).toBeVisible();
   await messages.evaluate(element => {
+    // Set the gesture's starting boundary in the same task as touchstart.
+    // Lucy can restore its last scroll position between browser calls.
+    for (let scroller: Element | null = element; scroller; scroller = scroller.parentElement) {
+      if (scroller.scrollTop > 0) scroller.scrollTo({ top: 0, behavior: 'instant' });
+    }
+    window.scrollTo({ top: 0, behavior: 'instant' });
     const x = element.getBoundingClientRect().left + element.getBoundingClientRect().width / 2;
     const createTouchEvent = (type: string, y: number) => {
       const event = new Event(type, { bubbles: true, cancelable: true });
