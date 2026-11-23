@@ -3,6 +3,8 @@ import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSes
 import { LucyModeName } from '@/components/chat/LucyModeName';
 import { useHoldToTalk } from '@/hooks/useHoldToTalk';
 import { takePendingLucyContext } from '@/lib/lucyPendingContext';
+import { buildLucyConsultMemoryBrief } from '@/lib/lucyConsultMemory';
+import { LucyConsultMemorySettings } from '@/components/lucy/LucyConsultMemorySettings';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { LucyEntryScreen, type LucyEntryVariant } from '@/components/chat/LucyEntryScreen';
@@ -46,7 +48,7 @@ import { hasMeaningfulMasterSession, type MasterSessionCardSource } from '@/lib/
 import { LucyMasterSessionCard } from '@/components/chat/LucyMasterSessionCard';
 import { PageGuideButton } from '@/components/guide/PageGuide';
 import { getPageGuide } from '@/lib/pageGuides';
-import { archiveMasterSession, buildDepthContinuityContext, buildDepthLinkedLucyContext, buildPastMasterSessionsContext } from '@/lib/lucyMasterContinuity';
+import { archiveMasterSession, buildDepthContinuityContext, buildPastMasterSessionsContext } from '@/lib/lucyMasterContinuity';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm, setLucyMasterBgmDepth } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
@@ -1094,6 +1096,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     return () => window.removeEventListener(LUCY_MASTER_DEPTH_EVENT, onDepth);
   }, [setLucyProMessages]);
   const chatAccount = firebaseUser?.uid || safeSessionStorage.getItem('prism_auth_uid') || 'device';
+  const skipConsultMemoryRef = useRef(false);
   // 점술모드 대화는 다시 들어오면 비워지므로, 비우기 전/나갈 때 계정별 상담 기록으로 남긴다 (3단계 연결용).
   const masterMessagesRef = useRef(lucyProMessages);
   masterMessagesRef.current = lucyProMessages;
@@ -1921,6 +1924,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // 루시 마스터는 나갔다 다시 들어오면 항상 처음부터: 이전 마스터 대화를 비우고 새 인사로 시작한다.
   useEffect(() => {
     if (!isMasterMode || !consumeTarotHouseGreetingPending()) return;
+    skipConsultMemoryRef.current = false;
     archiveMasterSession(chatAccount, masterMessagesRef.current || []);
     clearLucyProMessages();
     // Always offer "이어서 / 새로" on entry: regular Lucy history may still be loading,
@@ -2229,6 +2233,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         nickname: userDisplayName,
         chart: sajuInfo?.systemPromptSummary || '',
         cards: spread,
+        notes: buildLucyConsultMemoryBrief(chatAccount, 'voice'),
         onState: (state) => {
           if (!isVoiceModeRef.current || liveVoiceRef.current !== session) return;
           setVoiceState(state);
@@ -2261,7 +2266,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       });
       liveVoiceRef.current = session;
     }
-  }, [stopRecognition, userDisplayName, sajuInfo]);
+  }, [stopRecognition, userDisplayName, sajuInfo, chatAccount]);
 
   // 빅뱅버튼 홀드 시 별도 말풍선 없이 루시채팅 자체 음성 모드 즉시 토글
   useEffect(() => {
@@ -3769,6 +3774,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     if (isMasterMode && !attachedImage && getLucyMasterLink() === 'undecided') {
       const link = resolveLucyMasterLinkChoice(userCleanText);
       if (link !== 'undecided') {
+        skipConsultMemoryRef.current = link === 'fresh';
         setInput('');
         const now = Date.now();
         setLucyProMessages(prev => [
@@ -3979,10 +3985,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       const depthNow = getLucyMasterDepth();
       const houseGuide = buildTarotHouseGuide(divinationLayout, isTarotIntent, wantsDeepEngines, concernAnchor, depthNow);
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${houseGuide}` : houseGuide;
-      // 🔮 상담 깊이 이어짐: 2·3단계는 앞 단계 상담을 이어받고, 3단계는 일반 루시 대화와 지난 점술모드 상담까지 연결한다.
+      // 같은 점술모드의 현재 대화와 지난 상담. 자동 모드 간 공유는 공통 기억 동의로 관리한다.
       const continuity = [
         buildDepthContinuityContext(lucyMessages, depthNow),
-        depthNow >= 3 && link !== 'linked' ? buildDepthLinkedLucyContext(personaMessages?.lucy || []) : '',
         depthNow >= 3 ? buildPastMasterSessionsContext(chatAccount, String(lucyMessages.find(m => m.role === 'user')?.id || '')) : '',
       ].filter(Boolean).join('\n\n');
       if (continuity) extraSystemContext = `${extraSystemContext}\n\n${continuity}`;
@@ -4053,6 +4058,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       isPro: isMasterMode,
       requireBasicAndDeep,
       extraSystemContext,
+      omitConsultMemoryContext: isMasterMode && skipConsultMemoryRef.current,
+      omitConsultMemoryRecord: Boolean(handoffContext),
       customUserProfile: counselingUserProfile,
       channels: isMaster ? ALL_CHANNELS : channels,
       mode: isMaster ? 'master' : (isCasual ? 'casual' : (isSingle ? channels[0] : isSyn ? 'synergy' : 'auto')),
@@ -4444,6 +4451,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             {isMasterMode && <MasterTableSheetButton tone={isLight ? 'light' : 'dark'} />}
             {/* 📘 가이드 */}
             <PageGuideButton guide={getPageGuide(isMasterMode ? 'master' : 'lucy')} tone={isLight ? 'light' : 'dark'} />
+            <LucyConsultMemorySettings key={chatAccount} account={chatAccount} mode={isMasterMode ? 'divination' : 'chat'} light={isLight} />
             {/* 1. 검색 (Search Toggle) */}
             <button
               type="button"

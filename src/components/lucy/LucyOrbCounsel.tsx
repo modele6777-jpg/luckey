@@ -1,6 +1,7 @@
 import { OrbSessionMetricsView } from './OrbSessionMetricsView';
 import { createOrbSessionMetrics, type OrbSessionMetrics } from '@/lib/orb/orbSessionMetrics';
-import { OrbMemorySettings } from './OrbMemorySettings';
+import { LucyConsultMemorySettings } from './LucyConsultMemorySettings';
+import { buildLucyConsultMemoryBrief } from '@/lib/lucyConsultMemory';
 import { PageGuideButton } from '@/components/guide/PageGuide';
 import { getPageGuide } from '@/lib/pageGuides';
 import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
@@ -620,7 +621,8 @@ export function LucyOrbCounsel({
     stopBufRef.current = '';
     }
     const memoryBrief = buildOrbMemoryBrief(loadOrbMemory(account), next.id);
-    const notes = [memoryBrief, recap].filter(Boolean).join('\n');
+    const sharedMemory = resume ? '' : buildLucyConsultMemoryBrief(account, 'voice', false);
+    const notes = (resume ? [recap, memoryBrief] : [memoryBrief, sharedMemory]).filter(Boolean).join('\n');
     const executor = resume && executorRef.current ? executorRef.current : createOrbToolExecutor({
       profile,
       events: {
@@ -1415,7 +1417,7 @@ export function LucyOrbCounsel({
             >
               {bedOn ? '배경음 켜짐' : '배경음 꺼짐'}
             </button>
-            <OrbMemorySettings account={account} onChange={refreshMemory} />
+            <LucyConsultMemorySettings key={account} account={account} mode="voice" onChange={refreshMemory} />
             <PageGuideButton guide={getPageGuide('orb')} />
           </div>
         </header>

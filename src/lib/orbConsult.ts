@@ -171,9 +171,11 @@ export function summarizeOrbSession(lines: { who: string; text: string }[]): { c
 
 export function orbMemorySettings(account: string, now = Date.now()) {
   const state = readLucyConsultMemory(account, 'voice', now);
-  const entries = state.entries.flatMap(entry => typeof entry.masterId === 'string' && typeof entry.masterName === 'string'
-    ? [{ ...entry, masterId: entry.masterId, masterName: entry.masterName }]
-    : []);
+  const entries = state.entries.map(entry => ({
+    ...entry,
+    masterId: entry.masterId || 'lucy-voice',
+    masterName: entry.masterName || '루시',
+  }));
   return { enabled: state.enabled, entries, legacyCount: loadLegacyOrbMemory(account, now).length };
 }
 
