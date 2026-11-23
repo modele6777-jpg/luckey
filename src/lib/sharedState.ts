@@ -24,6 +24,8 @@ export interface ProfileBasic {
   birthTimeAccuracy?: 'exact' | 'approximate' | 'unknown';
   gender?: 'male' | 'female' | 'other';
   birthCity?: string;
+  /** 시주를 진태양시(출생지 경도 + 균시차)로 볼지. 기본은 꺼짐: 한국 표준시 −30분 관례. */
+  trueSolarTime?: boolean;
   lunarSolar?: 'solar' | 'lunar';
   isLeapMonth?: boolean;
   avatarUrl?: string;       // 프로필 사진 (DataURL 또는 이미지 URL)

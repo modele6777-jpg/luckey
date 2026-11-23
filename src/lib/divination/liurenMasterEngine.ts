@@ -557,3 +557,53 @@ export function formatLiurenMasterPrompt(res: LiurenMasterResult): string {
 - 해석 경계: ${res.boundaryNotice}
 ※ 루시 지침: 대육임은 인사처신의 거울입니다. 사용자가 질문한 일의 시작(초전), 진행(중전), 결말(말전)과 상대방과의 심리적 역학(사과)을 명쾌하고 든든하게 해설해 주세요.`;
 }
+
+// ---------------------------------------------------------------------------
+// 본명(本命)·행년(行年): 점시 판 위에 손님의 띠와 올해 나이 자리를 올려, 판을 손님 개인에게 연결한다.
+// 행년: 남자는 1세 丙寅에서 해마다 앞으로, 여자는 1세 壬申에서 해마다 뒤로 (세는 나이).
+// ---------------------------------------------------------------------------
+const STEMS_60 = '甲乙丙丁戊己庚辛壬癸';
+const BRANCHES_60 = '子丑寅卯辰巳午未申酉戌亥';
+
+export interface LiurenPersonalPositions {
+  benming: string;
+  benmingHeaven: string;
+  benmingGeneral: string;
+  xingnian: string;
+  xingnianHeaven: string;
+  xingnianGeneral: string;
+  ageKorean: number;
+  note: string;
+}
+
+export function liurenPersonalPositions(
+  instant: Date,
+  birthYearBranch: string,
+  birthSajuYear: number,
+  gender: 'male' | 'female' | undefined,
+): LiurenPersonalPositions | null {
+  if (!birthYearBranch || !BRANCHES_60.includes(birthYearBranch) || (gender !== 'male' && gender !== 'female')) return null;
+  const board = calculateLiuren(instant).board as unknown as { diPan: Record<string, string>; tianPan: Record<string, string>; tianJiang: Record<string, string> };
+  const keyOf = (branch: string) => Object.entries(board.diPan).find(([, value]) => value === branch)?.[0];
+  const heavenOver = (branch: string) => {
+    const key = keyOf(branch);
+    return key ? { heaven: board.tianPan[key], general: toKoreanGeneral(board.tianJiang[key] || '') } : { heaven: '', general: '' };
+  };
+  const kstYear = new Date(instant.getTime() + 9 * 3600000).getUTCFullYear();
+  const ageKorean = Math.max(1, kstYear - birthSajuYear + 1);
+  const start = gender === 'male' ? 2 : 8; // 丙寅 = 2, 壬申 = 8 (甲子 = 0)
+  const index = (((gender === 'male' ? start + (ageKorean - 1) : start - (ageKorean - 1)) % 60) + 60) % 60;
+  const xingnian = `${STEMS_60[index % 10]}${BRANCHES_60[index % 12]}`;
+  const ben = heavenOver(birthYearBranch);
+  const xing = heavenOver(xingnian[1]);
+  return {
+    benming: birthYearBranch,
+    benmingHeaven: ben.heaven,
+    benmingGeneral: ben.general,
+    xingnian,
+    xingnianHeaven: xing.heaven,
+    xingnianGeneral: xing.general,
+    ageKorean,
+    note: `본명 ${birthYearBranch} 위 천반 ${ben.heaven}(${ben.general}) · ${ageKorean}세 행년 ${xingnian} 위 천반 ${xing.heaven}(${xing.general}) — 이번 판이 손님 개인에게 닿는 자리`,
+  };
+}

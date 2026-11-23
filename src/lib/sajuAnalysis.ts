@@ -644,13 +644,54 @@ export const SAJU_TIME_POLICY_TEXT = [
   '출생 시각은 분 단위입니다. 절입 시각의 초가 그 분보다 뒤면, 같은 시:분으로 입력해도 아직 이전 절기입니다.',
 ].join(' ');
 
-export function describeSajuTimePolicy(clock: { hour: number; minute: number } | null): SajuTimePolicy {
+/** 진태양시용 한국 도시 경도 (별자리 좌표표와 같은 값). 외국 도시는 한국 표준시 보정에 쓰지 않는다. */
+const KOREAN_CITY_LONGITUDES: Record<string, number> = {
+  '서울': 126.978, '부산': 129.0756, '대구': 128.6014, '인천': 126.7052, '광주': 126.8526, '대전': 127.3845,
+  '울산': 129.3114, '수원': 127.0286, '성남': 127.1265, '고양': 126.832, '용인': 127.1776, '청주': 127.489,
+  '전주': 127.148, '천안': 127.1139, '제주': 126.5312,
+};
+
+/** 균시차(분): 진태양시 − 평균태양시. */
+export function equationOfTimeMinutes(year: number, month: number, day: number): number {
+  const start = Date.UTC(year, 0, 1);
+  const n = Math.floor((Date.UTC(year, month - 1, day) - start) / 86400000) + 1;
+  const b = (2 * Math.PI * (n - 81)) / 364;
+  return 9.87 * Math.sin(2 * b) - 7.53 * Math.cos(b) - 1.5 * Math.sin(b);
+}
+
+/**
+ * 시주에 쓸 보정(분). 기본(진태양시 꺼짐)은 −30분 관례.
+ * 진태양시를 켜면 (출생지 경도 − 135°) × 4분 + 균시차. 출생 도시를 모르면 서울 경도(126.98°)를 쓴다.
+ */
+export function sajuHourOffsetMinutes(basic: { trueSolarTime?: boolean; birthCity?: string } | undefined, year: number, month: number, day: number): number {
+  if (!basic?.trueSolarTime) return -30;
+  const city = basic.birthCity?.trim() || '';
+  const match = Object.entries(KOREAN_CITY_LONGITUDES).find(([name]) => city.includes(name));
+  const lng = match ? match[1] : 126.978;
+  return Math.round((lng - 135) * 4 + equationOfTimeMinutes(year, month, day));
+}
+
+export function describeSajuTimePolicy(clock: { hour: number; minute: number } | null, trueSolarOffsetMinutes?: number): SajuTimePolicy {
   let hourBranchClock: string | null = null;
   let dayRolled = false;
+  const offset = typeof trueSolarOffsetMinutes === 'number' ? trueSolarOffsetMinutes : -30;
   if (clock) {
-    const adjusted = (clock.hour * 60 + clock.minute - 30 + 1440) % 1440;
+    const raw = clock.hour * 60 + clock.minute + offset;
+    const adjusted = (raw + 1440) % 1440;
     hourBranchClock = `${String(Math.floor(adjusted / 60)).padStart(2, '0')}:${String(adjusted % 60).padStart(2, '0')}`;
-    dayRolled = clock.hour === 23 && clock.minute >= 30;
+    dayRolled = raw >= 23 * 60;
+  }
+  if (typeof trueSolarOffsetMinutes === 'number') {
+    const note = clock
+      ? ` 진태양시(출생지 경도·균시차, ${trueSolarOffsetMinutes}분) 기준 시주 시각은 ${hourBranchClock}입니다.${dayRolled ? ' 이 시각은 일주가 다음 날로 넘어갑니다.' : ''}`
+      : ' 생시가 없으면 시주를 만들지 않습니다.';
+    return {
+      inputTimeZone: 'Asia/Seoul',
+      hourKnown: Boolean(clock),
+      hourBranchClock,
+      dayRolled,
+      summary: `입력 시각은 한국 표준시 벽시계입니다. 사용자가 진태양시를 선택해, 시주와 일주 경계(진태양시 23시)는 출생지 경도 보정((경도−135°)×4분)과 균시차를 더한 시각으로 정했습니다. 년·월 절기 비교는 표준시 그대로입니다.${note}`,
+    };
   }
   const adjustedNote = hourBranchClock
     ? ` 시주 보정 시각은 ${hourBranchClock}입니다.${dayRolled ? ' 이 시각은 일주가 다음 날로 넘어갑니다.' : ''}`
@@ -716,10 +757,13 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
 
     // 3. 일주 (Day Pillar - 율리우스 적일 및 한국 진태양시 조자시/야자시 보정)
     // 23:30 이후 출생은 자시(子時)의 영역이자 익일 일진으로 전환
+    // 시주 보정: 기본은 한국 표준시 −30분 관례. 진태양시를 켜면 출생지 경도와 균시차로 계산한다.
+    const hourOffsetMinutes = h >= 0 ? sajuHourOffsetMinutes(basic, y, m, d) : -30;
+    const adjustedRaw = h >= 0 ? h * 60 + minute + hourOffsetMinutes : 0;
     let dayYear = y;
     let dayMonth = m;
     let dayDate = d;
-    if (h === 23 && minute >= 30) {
+    if (h >= 0 && adjustedRaw >= 23 * 60) {
       // UTC 날짜 연산으로 실행 서버/브라우저의 로컬 시간대에 영향을 받지 않도록 한다.
       const nextDay = new Date(Date.UTC(y, m - 1, d + 1));
       dayYear = nextDay.getUTCFullYear();
@@ -739,8 +783,7 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
     let hGan: string | null = null;
     let hZhi: string | null = null;
     if (h >= 0) {
-      const totalMins = h * 60 + minute;
-      const adjustedMins = (totalMins - 30 + 1440) % 1440;
+      const adjustedMins = (adjustedRaw + 1440) % 1440;
       const hIdx = Math.floor((adjustedMins + 60) / 120) % 12;
       hZhi = EARTHLY_BRANCHES[hIdx];
       const dGanIdx = HEAVENLY_STEMS.indexOf(dGan);
@@ -1245,7 +1288,7 @@ export function calculateDetailedSaju(profile?: UserProfile | null): SajuAnalysi
 
     const systemPromptSummary = `
 [사주명리학 계산 결과]
-- 시각 기준: ${describeSajuTimePolicy(birthTime).summary}
+- 시각 기준: ${describeSajuTimePolicy(birthTime, basic.trueSolarTime ? hourOffsetMinutes : undefined).summary}
 - 계산 한계: 용신·신강약은 간이 해석이며 확정 판정이 아님.
 - 생년월일 기준: ${basic.birthdate} (${isLunar ? `음력 ➔ 정밀 환산 양력 ${solarDateString}` : '양력'})${basic.birthtime ? ` ${basic.birthtime}` : ' (생시 미입력)'}
 - 사주 4주 8자: 년주(${pillars.year.full} - ${pillars.year.tenGodGan.name}/${pillars.year.tenGodZhi.name}) | 월주(${pillars.month.full} - ${pillars.month.tenGodGan.name}/${pillars.month.tenGodZhi.name}) | 일주(${pillars.day.full} - ${pillars.day.tenGodGan.name}/${pillars.day.tenGodZhi.name})${pillars.hour ? ` | 시주(${pillars.hour.full} - ${pillars.hour.tenGodGan.name}/${pillars.hour.tenGodZhi.name})` : ' | 시주(생시 미입력)'}
@@ -1316,7 +1359,7 @@ ${specialStrText || '• 안정적인 오행 순환 구조'}
       daewunDetail,
       systemPromptSummary,
       shortDigest,
-      timePolicy: describeSajuTimePolicy(birthTime),
+      timePolicy: describeSajuTimePolicy(birthTime, basic.trueSolarTime ? hourOffsetMinutes : undefined),
     };
   } catch (err) {
     console.warn("calculateDetailedSaju error:", err);
