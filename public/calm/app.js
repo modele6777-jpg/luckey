@@ -1517,6 +1517,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   function closePracticeStudio() {
+    document.dispatchEvent(new CustomEvent('key:practice-close'));
     if (studioTimerInterval) {
       clearInterval(studioTimerInterval);
       studioTimerInterval = null;
@@ -1545,6 +1546,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const step = activePractice.steps[activeStepIdx];
     renderStepDots();
+    // 🔊 방법 듣기(key-practice-voice.js)에 지금 연습과 단계를 알린다.
+    document.dispatchEvent(new CustomEvent('key:practice-step', { detail: { practice: activePractice, stepIndex: activeStepIdx } }));
 
     studioPrevStep.style.display = activeStepIdx > 0 ? 'inline-block' : 'none';
     if (activeStepIdx === activePractice.steps.length - 1) {
