@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface MalagasyFihavananaResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '연대·경청' | '속도·여유' | '선의·메아리' | '피하바나나 전반';
   kinshipPrinciple: string;
   companionPrinciple: string;
+  fihavananaAxis: string;
   bondInsight: string;
   islandTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,48 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const FIHAVANANA_SHADOWS = [
+  '따뜻한 연대를 지키려다 정작 나 자신을 지치게 하는 무리한 부탁까지 다 받아들이지 않도록 선을 살피세요.',
+  '모라모라의 여유를 지키다 중요한 마감이 임박한 일이나 즉각적인 확인이 필요한 요청까지 늦어지지 않게 하세요.',
+  '계산 없이 건네는 호의가 좋지만, 반복되는 일방적 소모 앞에서는 내 마음의 여력도 함께 점검할 필요가 있습니다.',
+  '상대의 선의를 부르는 부드러운 말투 속에서도, 꼭 짚어야 할 사실이나 요청은 흐리지 않고 분명히 전해야 합니다.',
+  '내 태도의 메아리를 살피는 성찰이 타인의 서운한 반응까지 모두 내 탓으로 돌리는 과한 자책으로 흐르지 않게 하세요.',
+];
+
+function classifyFihavananaTopic(q: string): MalagasyFihavananaResult['questionTopic'] {
+  if (/관계|대화|연대|이웃|경청/.test(q)) return '연대·경청';
+  if (/속도|여유|천천히|늦춰|박자/.test(q)) return '속도·여유';
+  if (/호의|선의|말|메아리|진심/.test(q)) return '선의·메아리';
+  return '피하바나나 전반';
+}
+
 export function calculateMalagasyFihavananaKinship(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): MalagasyFihavananaResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyFihavananaTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % BONDS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (BONDS.length - 1));
   const picked = BONDS[idx];
   const companion = BONDS[(idx + companionOffset) % BONDS.length];
+  const fihavananaAxis = `${picked.principle.split('(')[0].trim()} ↔ ${companion.principle.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-MALAGASY-FIHAVANANA-v2.2.0',
+    engineVersion: 'LUCKEY-MALAGASY-FIHAVANANA-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     kinshipPrinciple: picked.principle,
     companionPrinciple: companion.principle,
+    fihavananaAxis,
     bondInsight: picked.insight,
     islandTone: picked.tone,
     reflectionFocus: `'${picked.principle}'의 정신과 동반 원칙 '${companion.principle}'을 함께 새기며, 맞고 틀림을 따지기 전에 마음을 한 번 더 데워 보세요.`,
     ritualAction: picked.ritual,
+    shadowWarning: FIHAVANANA_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '마다가스카르 말라가시 피하바나나(Fihavanana) 공동체 철학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +124,13 @@ export function formatMalagasyFihavananaPrompt(res: MalagasyFihavananaResult): s
   return [
     `[말라가시 피하바나나 연대 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 피하바나나 연대 축: ${res.fihavananaAxis}`,
     `- 유대 원칙: ${res.kinshipPrinciple} (${res.islandTone})`,
     `- 동반 원칙: ${res.companionPrinciple}`,
     `- 중심 통찰: ${res.bondInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
