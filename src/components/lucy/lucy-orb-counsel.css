@@ -1413,6 +1413,23 @@ html.duo-unfolded-mode .lucy-charm { width: min(380px, 70%); }
 }
 @media (prefers-reduced-motion: reduce) { .lucy-orb-stage .lucy-orb-caption { animation: none; } }
 
+/* 🔮 마스터가 도구를 계산하는 동안 보이는 작은 표시 */
+.lucy-orb-stage .lucy-orb-toolbusy {
+  margin: 10px auto 0;
+  width: max-content;
+  max-width: 100%;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(255, 214, 140, .16);
+  border: 1px solid rgba(255, 214, 140, .45);
+  color: #ffe7b8;
+  font-size: 12.5px;
+  font-weight: 700;
+  animation: lucy-orb-toolbusy 1.4s ease-in-out infinite;
+}
+@keyframes lucy-orb-toolbusy { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .lucy-orb-stage .lucy-orb-toolbusy { animation: none; } }
+
 /* 🧧 Talisman (shown only after the 복채): a traditional yellow paper talisman, savable as a photo. */
 .lucy-talisman-layer {
   position: absolute;
