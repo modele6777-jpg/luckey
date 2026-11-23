@@ -59,6 +59,7 @@ export function orbFunctionDeclarations() {
         type: 'OBJECT',
         properties: {
           tool: { type: 'STRING', enum: [...ORB_CALC_TOOL_IDS], description: '실행할 도구 id' },
+          ichingMethod: { type: 'STRING', enum: ['time', 'dice'], description: '주역만 사용. 기본 time(매화역수), 손님이 원하면 dice(두 주사위 변형).' },
           reason: { type: 'STRING', description: '이 도구를 고른 이유 한 줄 (손님 고민과의 연결)' },
         },
         required: ['tool'],
@@ -66,7 +67,7 @@ export function orbFunctionDeclarations() {
     },
     {
       name: ORB_FN_TAROT,
-      description: '타로가 어울릴 때(마음, 관계, 선택) 78장 카드 섞기 화면을 연다. 카드는 손님이 "멈춰"라고 말하거나 화면을 눌러 직접 세 장 뽑는다. 결과는 나중에 [카드 선택] 메시지로 온다.',
+      description: '타로가 어울릴 때(마음, 관계, 선택) 78장 카드 섞기 화면을 연다. 카드는 손님이 "멈춰"라고 말하거나 화면을 눌러 직접 세 장 뽑는다. 주사위로 뽑기도 손님이 선택할 수 있다. 결과는 [카드 선택]으로 온다.',
       parameters: {
         type: 'OBJECT',
         properties: { reason: { type: 'STRING', description: '타로를 고른 이유 한 줄' } },
@@ -87,7 +88,7 @@ export function buildOrbMasterRules(profile: OrbProfileStatus): string {
     '먼저 손님 고민을 한두 마디 듣고, 고민에 꼭 맞는 도구만 고르세요. 한 번에 한두 개, 한 상담에서 많아야 서너 개입니다. 모든 도구를 다 부르지 마세요.',
     `계산이 필요하면 ${ORB_FN_RUN_TOOL} 함수를 부르세요. 부르기 직전에 "잠시만요, 괘를 세워 볼게요"처럼 한마디만 하세요. 타로가 어울리면 ${ORB_FN_TAROT} 함수를 부르고 섞기 안내를 하세요.`,
     '함수 결과의 계산값과 해석 카드만 근거로 풀이하세요. 결과에 없는 별, 괘, 카드, 숫자를 지어내지 마세요. status가 calculated가 아니면 계산되지 않았다고 솔직히 말하세요.',
-    'scope가 있는 결과(주역·육임·기문·태을)는 지금 시각이나 올해의 공통 판입니다. 손님의 타고난 운명처럼 말하지 마세요.',
+    'scope를 확인하세요. 시간식 주역·육임·기문·태을은 공통 판이고, 주사위 주역은 이번 질문의 무작위 괘입니다. 손님의 타고난 운명처럼 말하지 마세요.',
     '여러 도구를 썼다면 공통으로 가리키는 점을 먼저 말하고, 서로 다르면 억지로 맞추지 마세요. 도구 이름과 계산값은 쉬운 말로 한 번만 짚고, 대부분은 손님 고민에 대한 이야기로 하세요.',
     birth,
     '[카드 선택] 메시지는 손님이 직접 뽑은 타로 결과입니다. 그 전에는 카드 이름을 말하지 마세요.',

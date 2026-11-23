@@ -20,6 +20,7 @@ import { rememberBgmBeforeMic, resumeBgmAfterMicSoon } from '@/lib/micBgmResume'
 import { drawTalisman, pickTalisman, saveTalismanImage, type TalismanSpec } from '@/lib/orbTalisman';
 import { buildOrbMasterRules } from '@/lib/orb/orbTools';
 import { CAPTION_CHAR_MS, captionSteps } from '@/lib/orb/orbCaption';
+import { drawOrbTarotPositions, randomIndex, rollOrbDice } from '@/lib/orb/orbDice';
 import { createOrbToolExecutor, type OrbToolExecutor } from '@/lib/orb/orbToolExecutor';
 import type { UserProfile } from '@/lib/sharedState';
 import './lucy-orb-counsel.css';
@@ -617,6 +618,7 @@ export function LucyOrbCounsel({
           if (pickedRef.current) {
             return { opened: false, alreadyPicked: (pickedCardsRef.current || []).map(card => `${card.position} ${card.nameKo} ${card.orientationKo}`).join(', ') || '이미 뽑음' };
           }
+          if (dieTimer.current != null) return { opened: false };
           tarotArmedRef.current = true;
           setPickMode('shuffle');
           setPickOpen(true);
@@ -693,7 +695,7 @@ export function LucyOrbCounsel({
         if (userBuf.current) take('나', userBuf);
         lucyBuf.current = mergeTranscript(lucyBuf.current, text);
         // 마스터가 "멈춰라고 말씀해 주세요"라고 안내하면 섞는 화면을 연다 (한 번만).
-        if (tarotArmedRef.current && !pickedRef.current && !autoOpenedRef.current && /멈춰|멈추/.test(lucyBuf.current)) {
+        if (tarotArmedRef.current && !pickedRef.current && !autoOpenedRef.current && dieTimer.current == null && /멈춰|멈추/.test(lucyBuf.current)) {
           autoOpenedRef.current = true;
           setPickOpen(true);
         }
@@ -846,11 +848,12 @@ export function LucyOrbCounsel({
   pressHandlers.current = { begin: beginInputPress, end: endInputPress };
 
   // 🃏 카드 펼치기: 고른 숫자 자리의 카드를 보여 주고, 마스터에게 알린다 (마스터는 이 알림을 읽지 않는다).
-  const commitPick = (numbers: number[], how: 'shuffle' | 'number' = 'number') => {
-    if (pickedRef.current || numbers.length < 3 || !deckRef.current.length) return;
+  const commitPick = (numbers: number[], how: 'shuffle' | 'number' | 'dice' = 'number') => {
+    if (pickedRef.current || numbers.length < 3 || !deckRef.current.length || dieTimer.current != null) return;
+    const cards = pickOrbCards(deckRef.current, numbers, how);
+    if (cards.length !== 3) return;
     pickedRef.current = true;
     if (drawTimer.current) { window.clearTimeout(drawTimer.current); drawTimer.current = null; }
-    const cards = pickOrbCards(deckRef.current, numbers, how);
     setPickedCards(cards);
     if (how === 'number') setPickSel(numbers.slice(0, 3));
     setPickOpen(true);
@@ -896,7 +899,7 @@ export function LucyOrbCounsel({
       let index = cursor % size;
       while (next.includes(index)) index = (index + 1) % size;
       next.push(index);
-      cursor += 7 + Math.floor(Math.random() * 23);
+      cursor += 7 + randomIndex(23);
     }
     flashOrb();
     const start = drawnRef.current.length;
@@ -913,6 +916,24 @@ export function LucyOrbCounsel({
     }, (3 - start) * 260 + 700));
   };
   stopAllRef.current = stopAll;
+  const drawTarotWithDice = () => {
+    if (pickedRef.current || drawnRef.current.length >= 3 || stopAllTimers.current.length || dieTimer.current != null) return;
+    const seed = drawnRef.current.map(index => index + 1);
+    let lastPair: [number, number] | undefined;
+    const positions = drawOrbTarotPositions(deckRef.current.length, seed, () => (lastPair = rollOrbDice()));
+    if (!lastPair || positions.length !== 3) return;
+    drawnRef.current = positions.map(position => position - 1);
+    setDrawn(drawnRef.current);
+    setDice(lastPair);
+    setThrown(value => value + 1);
+    setPickOpen(false);
+    dieTimer.current = window.setTimeout(() => {
+      dieTimer.current = null;
+      setThrown(0);
+      commitPick(positions, 'dice');
+    }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 700 : 2300);
+  };
+
   // 섞는 동안 '지금 멈추면 나올 카드' 자리를 계속 돌린다 (멈추는 순간이 카드를 정한다).
   useEffect(() => {
     if (!pickOpen || pickedCards || pickMode !== 'shuffle') return;
@@ -930,6 +951,11 @@ export function LucyOrbCounsel({
 
   const openReport = () => {
     if (!master || closedRef.current) return;
+    if (dieTimer.current != null) {
+      window.clearTimeout(dieTimer.current);
+      dieTimer.current = null;
+      setThrown(0);
+    }
     if (userBuf.current) take('나', userBuf);
     if (lucyBuf.current) take('루시', lucyBuf);
     // 📒 단골 기억: 손님이 한 말과 마지막 조언을 짧게 남겨, 다음 상담에서 안부를 묻게 한다.
@@ -1095,7 +1121,7 @@ export function LucyOrbCounsel({
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     // 두 주사위의 눈을 먼저 정하고, 3D 주사위가 그 눈이 위로 오도록 굴러가 멈춘다. 합으로 마스터를 고른다.
     if (!micPrime.current) micPrime.current = requestMic();
-    const next: [number, number] = [1 + Math.floor(Math.random() * 6), 1 + Math.floor(Math.random() * 6)];
+    const next = rollOrbDice();
     setDice(next);
     setRolling(true);
     setThrown(value => value + 1);
@@ -1279,6 +1305,7 @@ export function LucyOrbCounsel({
                   </div>
                   <div className="lucy-cardpick-actions">
                     <button type="button" className="lucy-stop-all" disabled={drawn.length >= 3} onClick={stopAll}>⚡ 전부 멈춰</button>
+                    <button type="button" disabled={drawn.length >= 3} onClick={drawTarotWithDice}>🎲 주사위로 뽑기</button>
                     <button type="button" disabled={drawn.length > 0} onClick={() => setPickMode('numbers')}>숫자로 고르기</button>
                     <button type="button" onClick={() => setPickOpen(false)}>나중에</button>
                   </div>
@@ -1562,7 +1589,7 @@ export function LucyOrbCounsel({
           )}
           {phase === 'live' && master && (
             <div className="lucy-orb-keywords">
-              <button type="button" className={`lucy-orb-cardchip ${pickedCards ? '' : 'is-waiting'}`} onClick={() => { tarotArmedRef.current = true; setPickOpen(true); }}>
+              <button type="button" className={`lucy-orb-cardchip ${pickedCards ? '' : 'is-waiting'}`} onClick={() => { if (dieTimer.current == null) { tarotArmedRef.current = true; setPickOpen(true); } }}>
                 {pickedCards ? '🃏 내 카드 보기' : '🃏 카드 섞기'}
               </button>
               {master.prompts.map(prompt => (

@@ -6,6 +6,7 @@
  * - 같은 도구는 한 상담에서 한 번만 계산하고(저장된 결과 재사용), 호출 수를 제한한다.
  * - 엔진은 크므로 처음 부를 때만 불러온다(dynamic import).
  */
+import { drawOrbIchingLines } from './orbDice';
 import type { UserProfile } from '../sharedState';
 import {
   ORB_FN_RUN_TOOL, ORB_FN_TAROT, ORB_MAX_CALLS_PER_TURN, ORB_MAX_TOOLS_PER_SESSION, ORB_TOOL_BY_ID,
@@ -62,10 +63,11 @@ export function createOrbToolExecutor(options: {
 
   const hasBirthdate = Boolean(options.profile?.basic?.birthdate?.trim());
 
-  async function runTool(toolId: string, reason: string): Promise<Record<string, unknown>> {
+  async function runTool(toolId: string, reason: string, dice = false): Promise<Record<string, unknown>> {
     const meta = ORB_TOOL_BY_ID.get(toolId);
     if (!meta) return { ok: false, error: 'unknown_tool', message: '없는 도구입니다. 목록에 있는 도구만 쓰세요.' };
-    const cached = cache.get(toolId);
+    const cacheKey = dice ? 'iching:dice' : toolId;
+    const cached = cache.get(cacheKey);
     if (cached) return { ...cached, cached: true };
     if (callsThisTurn >= ORB_MAX_CALLS_PER_TURN) {
       return { ok: false, error: 'turn_limit', message: '이번 질문에는 도구를 충분히 썼습니다. 지금 있는 결과로 상담을 이어 가세요.' };
@@ -90,6 +92,7 @@ export function createOrbToolExecutor(options: {
         forceAllTools: true,
         focusTools: [toolId],
         coreOnly: true,
+        ...(dice ? { ichingLines: drawOrbIchingLines() } : {}),
       });
       const envelope = Object.values(report.tools || {}).find(tool => tool?.toolId === toolId);
       const calculated = envelope?.status === 'calculated' && envelope.data != null;
@@ -97,7 +100,7 @@ export function createOrbToolExecutor(options: {
         ok: calculated,
         tool: meta.name,
         status: envelope?.status || 'skipped',
-        ...(SHARED_SCOPE[toolId] ? { scope: SHARED_SCOPE[toolId] } : {}),
+        ...(dice ? { scope: '이번 질문의 무작위 괘', casting: '두 주사위 육효 변형 (동전 3개 방식과 같은 확률)' } : SHARED_SCOPE[toolId] ? { scope: SHARED_SCOPE[toolId] } : {}),
         ...(envelope?.method ? { method: envelope.method } : {}),
         ...(envelope?.note ? { note: envelope.note } : {}),
         ...(Array.isArray(envelope?.limitations) && envelope.limitations.length ? { limitations: envelope.limitations.slice(0, 2) } : {}),
@@ -106,7 +109,7 @@ export function createOrbToolExecutor(options: {
         calculatedAtKst: report.calculatedAtKst,
       };
       if (!calculated) result.message = '이 도구는 지금 계산되지 않았습니다. 계산된 것처럼 말하지 말고 다른 방법으로 이어 가세요.';
-      cache.set(toolId, result);
+      cache.set(cacheKey, result);
       log.push({ tool: toolId, status: String(result.status), ms: Date.now() - started });
       options.events?.onToolEnd?.(toolId, calculated);
       return result;
@@ -125,7 +128,7 @@ export function createOrbToolExecutor(options: {
     async execute(call: OrbFunctionCall): Promise<Record<string, unknown>> {
       const args = call.args || {};
       const reason = typeof args.reason === 'string' ? args.reason.slice(0, 200) : '';
-      if (call.name === ORB_FN_RUN_TOOL) return runTool(String(args.tool || ''), reason);
+      if (call.name === ORB_FN_RUN_TOOL) return runTool(String(args.tool || ''), reason, args.tool === 'iching' && args.ichingMethod === 'dice');
       if (call.name === ORB_FN_TAROT) {
         const state = options.events?.openTarot?.() || { opened: false };
         if (state.alreadyPicked) return { ok: true, alreadyPicked: state.alreadyPicked, message: '이번 상담의 카드는 이미 뽑았습니다. 그 세 장으로 이어 가세요.' };
