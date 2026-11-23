@@ -5,6 +5,7 @@ import {
 } from 'firebase/firestore';
 import { AlertTriangle, BookOpen, Check, Clock3, History, Search, Settings2, ShieldCheck, Sparkles } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
+import { hasLucyKnowledgeAdminClaim } from '@/lib/lucyKnowledgeAdminAuth';
 import { FIFTEEN_DIVINATION_TOOLS } from '@/lib/fifteenDivinationTools';
 import { compareKnowledgeCards, hasVerifiedFullTextSource, type GovernedKnowledgeCard, type KnowledgeSource } from '@/lib/divination/knowledge/governance';
 import type { DivinationToolId } from '@/lib/lucyToolRegistry';
@@ -97,10 +98,9 @@ export default function LucyKnowledgeAdminPage() {
         setAuthMessage('로그인 후 지식 관리자 권한이 있는 계정에서 이용할 수 있습니다.');
         return;
       }
-      try {
-        const token = await nextUser.getIdTokenResult();
+        try {
+        const admin = await hasLucyKnowledgeAdminClaim(nextUser);
         if (!disposed) {
-          const admin = token.claims.knowledgeAdmin === true;
           setIsAdmin(admin);
           if (!admin) setAuthMessage('이 계정에 지식 관리자 권한이 없습니다. 승인된 관리자의 별도 권한 설정이 필요합니다.');
         }
