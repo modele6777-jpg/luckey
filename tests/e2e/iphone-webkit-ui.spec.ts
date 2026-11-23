@@ -572,8 +572,17 @@ test('Big Bang center double tap opens the Key channel without firing a single-t
       target.dispatchEvent(new PointerEvent('pointerdown', { ...common, buttons: 1 }));
       target.dispatchEvent(new PointerEvent('pointerup', { ...common, buttons: 0 }));
     };
-    tap();
-    tap();
+    // Keep the synthetic presses inside the gesture window on a busy runner.
+    const now = performance.now;
+    let gestureTime = now.call(performance);
+    try {
+      performance.now = () => gestureTime;
+      tap();
+      gestureTime += 50;
+      tap();
+    } finally {
+      performance.now = now;
+    }
   }, { x, y });
   await expect.poll(() => page.evaluate(() => Boolean((window as any).__bigBangTestCommit?.target?.destinationPath))).toBe(true);
   const commit = await page.evaluate(() => (window as any).__bigBangTestCommit);

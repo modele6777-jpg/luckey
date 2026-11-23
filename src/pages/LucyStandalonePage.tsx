@@ -85,7 +85,7 @@ import {
 import { processDailyChatArchival } from '@/lib/chatMemoryArchive';
 import { drawLucyTarotCards, formatTarotMarker, type DetectedTarotCard } from '@/utils/tarotDetector';
 import { TarotSpread } from '@/components/trinity/TarotSpread';
-import { isLucyScrollPinned, lucyScrollPinHeld, noteLucyScrollPin, overlayCoversElement, releaseLucyScrollPin } from '@/lib/lucyScrollPin';
+import { holdLucyScrollPin, isLucyScrollPinned, lucyScrollPinHeld, noteLucyScrollPin, overlayCoversElement, releaseLucyScrollPin } from '@/lib/lucyScrollPin';
 import { captureLucySearchAnchor, resolveLucySearchOpenGuardedTop, resolveLucySearchRestoreTop, type LucySearchScrollAnchor } from '@/lib/lucySearchScroll';
 import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
 import { subscribeFoldState } from '@/lib/foldState';
@@ -3467,13 +3467,26 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const wasAppHiddenRef = useRef(false);
   useEffect(() => {
     if (!isLucyReady) return;
+    let restoreFrame: number | null = null;
     const reopenLatest = () => {
       refreshEntryGreeting();
       restoreLatestSavedMessages();
       isUserScrolledUpRef.current = false;
       setShowReturnToRecentConversation(false);
+      if (!ttsBlocksAutoScrollRef.current && !manualTtsActiveRef.current) {
+        noteLucyScrollPin(true);
+        holdLucyScrollPin();
+      }
       scrollToBottom(true, false);
-      followLatestLayoutRef.current();
+      if (restoreFrame !== null) cancelAnimationFrame(restoreFrame);
+      // WebKit can restore an older scroll anchor when the saved messages
+      // are painted. Re-align after layout, unless a new reading gesture won.
+      restoreFrame = requestAnimationFrame(() => {
+        restoreFrame = requestAnimationFrame(() => {
+          restoreFrame = null;
+          if (!isUserScrolledUpRef.current) scrollToBottom(true, false);
+        });
+      });
     };
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
@@ -3507,6 +3520,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     window.addEventListener('prism-navigate', onLucyNavigation);
     window.addEventListener('nav-click-active', onLucyNavigation);
     return () => {
+      if (restoreFrame !== null) cancelAnimationFrame(restoreFrame);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('pageshow', onPageShow);
       window.removeEventListener('prism-navigate', onLucyNavigation);
