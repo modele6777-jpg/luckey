@@ -644,7 +644,7 @@ export function LucyOrbCounsel({
     setPhase('report');
     setCaution(true);
     if (cautionTimer.current) window.clearTimeout(cautionTimer.current);
-    cautionTimer.current = window.setTimeout(() => setCaution(false), 3200);
+    cautionTimer.current = window.setTimeout(() => setCaution(false), 7000);
   };
 
   const keepReport = () => {
@@ -752,6 +752,7 @@ export function LucyOrbCounsel({
     if (!picked) return;
     setBok(id);
     setHearted(true);
+    setCaution(false);
     const stage = stageRef.current?.querySelector('.lucy-bok');
     if (origin && stage) {
       const a = origin.getBoundingClientRect();
@@ -830,6 +831,9 @@ export function LucyOrbCounsel({
         const room = box.height - clear - panel.offsetHeight - top - 12;
         stage.style.setProperty('--orb-report-room', `${Math.max(120, Math.round(room))}px`);
       }
+      // 부적 창: 그림 + 이름 + 버튼(약 130px)이 빅뱅 버튼 위 공간에 들어가게 그림 높이를 정한다.
+      const header = 56 + 14;
+      stage.style.setProperty('--orb-talisman-img', `${Math.max(180, Math.round(box.height - header - clear - 130))}px`);
     };
     measure();
     const timer = window.setInterval(measure, 800);
@@ -897,7 +901,13 @@ export function LucyOrbCounsel({
             </figure>
           </div>
         )}
-        {caution && <p className="lucy-orb-caution" role="status">이 상담은 참고일 뿐입니다. 맹신하지 마세요.</p>}
+        {caution && (
+          <div className="lucy-orb-caution" role="status">
+            <strong>상담 결과 안내</strong>
+            <p>오브 상담은 사주·타로 등 전통 상징 체계를 바탕으로 한 성찰용 참고 자료이며, 미래를 예측하거나 결과를 보장하지 않습니다.</p>
+            <p>건강·법률·재정 등 중요한 결정은 반드시 해당 분야 전문가와 상의하시고, 최종 판단은 본인의 상황과 의지를 기준으로 내려 주세요.</p>
+          </div>
+        )}
         <header className="lucy-orb-header" data-top-bar="true">
           <h1>Orb</h1>
           <div className="lucy-orb-header-actions">

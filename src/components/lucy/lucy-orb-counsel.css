@@ -1165,24 +1165,25 @@ html.duo-unfolded-mode .lucy-orb-copy { width: min(720px, 92%); }
   left: 50%;
   top: 42%;
   z-index: 6;
-  width: min(280px, calc(100% - 48px));
+  width: min(320px, calc(100% - 40px));
   margin: 0;
-  padding: 16px 18px;
+  padding: 16px 18px 15px;
   transform: translate(-50%, -50%);
   border-radius: 18px;
-  background: rgba(247, 244, 238, .96);
+  background: rgba(247, 244, 238, .97);
   color: #172033;
-  text-align: center;
-  font-size: 15px;
-  line-height: 1.5;
-  box-shadow: 0 16px 40px rgba(0,0,0,.35);
-  animation: lucy-caution 3.2s ease forwards;
+  text-align: left;
+  box-shadow: 0 16px 40px rgba(0,0,0,.35), inset 0 0 0 1px rgba(160, 120, 50, .18);
+  animation: lucy-caution 7s ease forwards;
   pointer-events: none;
 }
+.lucy-orb-caution strong { display: block; margin-bottom: 8px; padding-bottom: 7px; border-bottom: 1px solid rgba(23, 32, 51, .12); font-size: 14px; font-weight: 800; color: #6b4a14; text-align: center; letter-spacing: .02em; }
+.lucy-orb-stage .lucy-orb-caution p { margin: 0; font-size: 13px; line-height: 1.6; color: #2a3247; word-break: keep-all; }
+.lucy-orb-stage .lucy-orb-caution p + p { margin-top: 6px; }
 @keyframes lucy-caution {
   0% { opacity: 0; transform: translate(-50%, -46%); }
-  12% { opacity: 1; transform: translate(-50%, -50%); }
-  78% { opacity: 1; }
+  6% { opacity: 1; transform: translate(-50%, -50%); }
+  90% { opacity: 1; transform: translate(-50%, -50%); }
   100% { opacity: 0; transform: translate(-50%, -56%); }
 }
 .lucy-orb-header {
@@ -1417,6 +1418,8 @@ html.duo-unfolded-mode .lucy-charm { width: min(380px, 70%); }
   align-items: flex-start;
   justify-content: center;
   padding: 14px 16px;
+  /* 저장·닫기 버튼이 빅뱅 버튼에 가리지 않게 아래쪽을 비운다. */
+  padding-bottom: var(--orb-bok-bottom, 14px);
   overflow-y: auto;
   background: rgba(6, 4, 18, .78);
   backdrop-filter: blur(4px);
@@ -1455,7 +1458,7 @@ html.duo-unfolded-mode .lucy-charm { width: min(380px, 70%); }
 .lucy-talisman img {
   display: block;
   width: auto;
-  height: min(52vh, 480px);
+  height: min(52vh, 480px, var(--orb-talisman-img, 480px));
   max-width: 78vw;
   aspect-ratio: 9 / 16;
   object-fit: contain;
@@ -1463,7 +1466,7 @@ html.duo-unfolded-mode .lucy-charm { width: min(380px, 70%); }
   box-shadow: 0 18px 40px rgba(0, 0, 0, .55), 0 0 0 1px rgba(255, 220, 150, .35), 0 0 30px rgba(255, 190, 90, .25);
   -webkit-touch-callout: default;
 }
-html.duo-unfolded-mode .lucy-talisman img { height: min(64vh, 560px); max-width: 40vw; }
+html.duo-unfolded-mode .lucy-talisman img { height: min(64vh, 560px, var(--orb-talisman-img, 560px)); max-width: 40vw; }
 .lucy-talisman figcaption { display: flex; flex-direction: column; gap: 2px; text-align: center; }
 .lucy-orb-stage .lucy-talisman figcaption strong { font-size: 15px; color: #fff1c4; }
 .lucy-orb-stage .lucy-talisman figcaption span { font-size: 12px; color: rgba(251, 247, 255, .75); }
