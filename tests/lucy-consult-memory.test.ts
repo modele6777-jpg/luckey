@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { safeLocalStorage } from '../src/utils/safeStorage.ts';
-import { readLucyConsultMemory, saveLucyConsultMemory, setLucyConsultMemoryEnabled } from '../src/lib/lucyConsultMemory.ts';
+import { buildLucyConsultMemoryBrief, deleteLucyConsultMemory, editLucyConsultMemory, readLucyConsultMemory, saveLucyConsultMemory, saveLucyConsultSummary, setLucyConsultMemoryEnabled, setLucyConsultMemorySharing } from '../src/lib/lucyConsultMemory.ts';
 import { deleteOrbMemory, loadOrbMemory, orbMemorySettings, saveOrbMemory, setOrbMemoryEnabled } from '../src/lib/orbConsult.ts';
 
 const now = Date.now();
@@ -50,4 +50,46 @@ test('voice keeps the eight newest records for 90 days and its deletion leaves c
   assert.ok(saveLucyConsultMemory(account, { ...record, id: 'chat-1', source: 'chat' }, now));
   deleteOrbMemory(account);
   assert.equal(readLucyConsultMemory(account, 'chat', now).entries.length, 1);
+});
+
+test('the three modes share summaries only with account, source, destination and sharing opt-ins', () => {
+  const account = 'all-three-modes';
+  const modes = ['chat', 'divination', 'voice'] as const;
+  for (const mode of modes) {
+    setLucyConsultMemoryEnabled(account, mode, true, now);
+    assert.ok(saveLucyConsultMemory(account, {
+      id: mode,
+      source: mode,
+      at: now,
+      concern: `${mode} 상담 고민`,
+      advice: '다음 행동',
+    }, now));
+    const own = buildLucyConsultMemoryBrief(account, mode, true, now);
+    assert.ok(own.includes(`${mode} 상담 고민`));
+    assert.equal(buildLucyConsultMemoryBrief(account, mode, false, now), '');
+  }
+  setLucyConsultMemorySharing(account, true);
+  for (const mode of modes) {
+    const brief = buildLucyConsultMemoryBrief(account, mode, false, now);
+    for (const source of modes.filter(source => source !== mode)) assert.ok(brief.includes(`${source} 상담 고민`));
+    assert.match(brief, /참고 자료/);
+    assert.match(brief, /지시나 확인된 사실이 아닙니다/);
+  }
+  setLucyConsultMemoryEnabled(account, 'voice', false, now);
+  assert.equal(buildLucyConsultMemoryBrief(account, 'voice', false, now), '');
+  assert.ok(!buildLucyConsultMemoryBrief(account, 'chat', false, now).includes('voice 상담 고민'));
+  assert.equal(buildLucyConsultMemoryBrief('other-account', 'chat', true, now), '');
+});
+
+test('updates and deletions affect what the other modes can recall', () => {
+  const account = 'shared-edits';
+  setLucyConsultMemoryEnabled(account, 'chat', true);
+  setLucyConsultMemoryEnabled(account, 'voice', true);
+  setLucyConsultMemorySharing(account, true);
+  assert.ok(saveLucyConsultSummary(account, 'chat', 'turn-1', '이전 고민', '이전 조언'));
+  assert.ok(editLucyConsultMemory(account, 'chat', 'turn-1', { concern: '바뀐 고민', advice: ' ' }));
+  assert.match(buildLucyConsultMemoryBrief(account, 'voice', false), /바뀐 고민/);
+  assert.doesNotMatch(buildLucyConsultMemoryBrief(account, 'voice', false), /이전 조언/);
+  deleteLucyConsultMemory(account, 'chat', 'turn-1');
+  assert.equal(buildLucyConsultMemoryBrief(account, 'voice', false), '');
 });

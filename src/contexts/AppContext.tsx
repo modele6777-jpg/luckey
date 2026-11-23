@@ -12,7 +12,7 @@ import { TAROT_NO_DRAW_RULE, verifyLucyTarotReply, isLucyTarotDrawRequest, revea
 import { drawLucyTarotCards, formatTarotMarker } from '../utils/tarotDetector';
 import { buildLucyTarotReadingPrompt, LUCY_TAROT_RESPONSE_PROFILE } from '../lib/lucyTarotReading';
 import { memoryFromMessages, mergeLucyMemory, readLucyMemory, writeLucyMemory, lucyMemorySignature, recallLucyLongTermMemory } from '../lib/lucyLongTermMemory';
-import { buildLucySharedBackground } from '../lib/lucySharedBackground';
+import { buildLucyConsultMemoryBrief, saveLucyConsultSummary } from '../lib/lucyConsultMemory';
 import { buildFullProfilePrompt } from '../lib/divination/profileContext';
 import { buildFatePreviewPrompt } from '../lib/divination/fatePreview';
 import {
@@ -99,6 +99,8 @@ export interface SendUnifiedMessageOptions {
   requireBasicAndDeep?: boolean;
   /** 마이크 음성모드. 긴 채팅 답 대신 말로 주고받는 짧은 턴. */
   voiceTurn?: boolean;
+  omitConsultMemoryContext?: boolean;
+  omitConsultMemoryRecord?: boolean;
 }
 
 interface AppContextValue {
@@ -1859,6 +1861,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const isProConversation = options?.conversationId === 'lucy-pro' || (!options?.conversationId && typeof window !== 'undefined' && window.location.pathname === '/chat/pro');
     const runtime = isProConversation ? proRuntimeRef.current : regularRuntimeRef.current;
     const memoryAccount = runtime.account;
+    const memoryMode = options?.voiceTurn ? 'voice' : isProConversation ? 'divination' : 'chat';
+    const rememberConsultation = (id: string, concern: string, advice: string) => {
+      const active = isProConversation ? proRuntimeRef.current : regularRuntimeRef.current;
+      if (!options?.omitConsultMemoryRecord && active.account === memoryAccount) {
+        saveLucyConsultSummary(memoryAccount, memoryMode, id, concern, advice);
+      }
+    };
     const rememberConversation = (messages: readonly UnifiedMessage[], scope: 'lucy' | 'lucy-pro') => {
       if (regularRuntimeRef.current.account !== memoryAccount || proRuntimeRef.current.account !== memoryAccount) return;
       const before = mergeLucyMemory(readLucyMemory(memoryAccount), (sharedStateRef.current?.lucyLongTermMemory || []).filter(entry => entry.account === memoryAccount));
@@ -2269,21 +2278,20 @@ ${responseProfile.rule}`;
 
     systemPrompt += `\n\n${TAROT_NO_DRAW_RULE}`;
 
-    // Read the opposite runtime without merging, saving or broadcasting its messages.
-    const oppositeRuntime = isProConversation ? regularRuntimeRef.current : proRuntimeRef.current;
-    const oppositeMessages = mergeUnifiedMessages(oppositeRuntime.messages, oppositeRuntime.load());
-    if (oppositeRuntime.account === memoryAccount) rememberConversation(oppositeMessages, isProConversation ? 'lucy' : 'lucy-pro');
-    const sharedLucyBackground = buildLucySharedBackground({
-      target: isProConversation ? 'lucy-pro' : 'lucy',
-      sourceAccount: oppositeRuntime.account,
-      currentAccount: runtime.account,
-      messages: oppositeMessages,
-      question: text,
-    });
-    if (sharedLucyBackground) systemPrompt += `\n\n${sharedLucyBackground}`;
-    const memoryRecall = recallLucyLongTermMemory(memoryAccount, [...readLucyMemory(memoryAccount), ...(sharedStateRef.current?.lucyLongTermMemory || [])], effectiveUserText, [`${isProConversation ? 'lucy-pro' : 'lucy'}:${userMsg.id}`]);
-    const longTermContext = [formatLucyConversationMemory(memoryRecall), buildPermanentMemoryPromptContext(memoryAccount, effectiveUserText)].filter(Boolean).join('\n\n');
+    // Keep the KST daily archives isolated to their original mode. Cross-mode recall
+    // comes only from the consented consultation summary store.
+    const memoryScope = isProConversation ? 'lucy-pro' : 'lucy';
+    const history = [...readLucyMemory(memoryAccount), ...(sharedStateRef.current?.lucyLongTermMemory || [])]
+      .filter(entry => entry.scope === memoryScope);
+    const memoryRecall = recallLucyLongTermMemory(memoryAccount, history, effectiveUserText, [`${memoryScope}:${userMsg.id}`]);
+    const longTermContext = options?.voiceTurn ? '' : [
+      formatLucyConversationMemory(memoryRecall),
+      isProConversation ? '' : buildPermanentMemoryPromptContext(memoryAccount, effectiveUserText),
+    ].filter(Boolean).join('\n\n');
     if (longTermContext) systemPrompt += `\n\n${longTermContext}`;
+    const readConsultMemory = () => options?.omitConsultMemoryContext ? '' : buildLucyConsultMemoryBrief(memoryAccount, memoryMode);
+    const consultMemory = readConsultMemory();
+    if (consultMemory) systemPrompt += `\n\n${consultMemory}`;
     const fullProfileContext = buildFullProfilePrompt(profile);
     systemPrompt += `\n\n${fullProfileContext}`;
     const fatePreviewContext = !isCasualMode ? buildFatePreviewPrompt(sajuObj) : '';
@@ -2566,6 +2574,7 @@ ${responseProfile.rule}`;
             });
           }
 
+          rememberConsultation(assistMsgId, effectiveUserText, cleanFullText);
           if (options?.onFinish) {
             try {
               await options.onFinish(cleanFullText, effectiveUserText, assistMsgId);
@@ -2602,7 +2611,7 @@ ${responseProfile.rule}`;
       // Fast automatic recovery retry with compact context before showing any error
       try {
         resetWatchdog();
-        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${TAROT_NO_DRAW_RULE}\n${CALCULATION_HONESTY_RULE}\n${responseProfile.rule}${'\n' + (options?.extraSystemContext || toolSelection.promptInjection || '')}\n${criticalFactsPrompt}\n${sharedLucyBackground}\n${longTermContext}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
+        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${TAROT_NO_DRAW_RULE}\n${CALCULATION_HONESTY_RULE}\n${responseProfile.rule}${'\n' + (options?.extraSystemContext || toolSelection.promptInjection || '')}\n${criticalFactsPrompt}\n${readConsultMemory()}\n${longTermContext}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
         const compactMessages: Message[] = [
           { role: 'system', content: compactSystemPrompt },
           ...conversationForAPI.slice(-4),
@@ -2666,6 +2675,7 @@ ${responseProfile.rule}`;
             pushChatThreadsToFirestore(updated, true);
             return updated;
           });
+          rememberConsultation(assistMsgId, effectiveUserText, recoveredClean);
           if (options?.onFinish) {
             try {
               await options.onFinish(recoveredClean, effectiveUserText, assistMsgId);
