@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface ChuvashTuraResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계·순리' | '일·질서' | '판단·지혜' | '조화 전반';
   chuvashSign: string;
   companionSign: string;
+  worldTreeAxis: string;
   turaInsight: string;
   volgaTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const CHUVASH_SHADOWS = [
+  '자연의 순리를 기다리다 내가 직접 손대고 정리해야 할 현실의 과제까지 방치하지 마세요.',
+  '사실만 차갑게 적으려다 함께하는 사람의 마음과 맥락까지 놓치지 않도록 균형을 살피세요.',
+  '질서와 정돈에 몰두해 정작 지금 먼저 시작해야 할 핵심 실행을 미루지 않도록 주의하세요.',
+  '씨앗을 심고 기다리는 인내에 익숙해져 물을 주고 솎아 내야 할 돌봄의 때를 놓치지 마세요.',
+  '선배의 지혜에 기대다 내 상황에 맞는 고유한 판단과 책임을 미루지 않도록 살피세요.',
+];
+
+function classifyChuvashTopic(q: string): ChuvashTuraResult['questionTopic'] {
+  if (/관계|순리|사람|사랑|대화|평화/.test(q)) return '관계·순리';
+  if (/일|직장|질서|순서|정돈|루틴/.test(q)) return '일·질서';
+  if (/판단|지혜|조언|선입견|고민/.test(q)) return '판단·지혜';
+  return '조화 전반';
+}
+
 export function calculateChuvashTuraWorldTreeBalance(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): ChuvashTuraResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyChuvashTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % SIGNS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (SIGNS.length - 1));
   const picked = SIGNS[idx];
   const companion = SIGNS[(idx + companionOffset) % SIGNS.length];
+  const worldTreeAxis = `${picked.sign.split('(')[0].trim()} ↔ ${companion.sign.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = CHUVASH_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-CHUVASH-TURA-v2.2.0',
+    engineVersion: 'LUCKEY-CHUVASH-TURA-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     chuvashSign: picked.sign,
     companionSign: companion.sign,
+    worldTreeAxis,
     turaInsight: picked.insight,
     volgaTone: picked.tone,
     reflectionFocus: `볼가 추바시 자연 철학의 '${picked.sign}'과 동반 상징 '${companion.sign}'을 함께 엮어, 한 땀씩 정갈하게 순서를 밟아 나가는 성실함 속에서 고요한 질서를 세워 보세요.`,
     ritualAction: picked.ritual,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '볼가 강 중류 추바시(Chuvash)의 투라(Tură) · 키레메트 자연 조화와 전통 자수 질서 문화를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatChuvashTuraPrompt(res: ChuvashTuraResult): string {
   return [
     `[추바시 투라·세계수 조화 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 세계수 축: ${res.worldTreeAxis}`,
     `- 추바시 상징: ${res.chuvashSign} (${res.volgaTone})`,
     `- 동반 상징: ${res.companionSign}`,
     `- 중심 통찰: ${res.turaInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

@@ -1,10 +1,10 @@
 {
-  "version": "1.8.406",
-  "builtAt": "2026-11-24T04:35:00+09:00",
-  "summary": "차빈 라손·체첸 바이나흐·치로에 팔라피토 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.406)",
+  "version": "1.8.407",
+  "builtAt": "2026-11-24T04:45:00+09:00",
+  "summary": "축치 베링해·추바시 투라·콘월 케르노우 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.407)",
   "items": [
-    "차빈 라손 돌기둥 균형 엔진(v2.3.0): 질문 맥락(questionTopic), 석주 축(stoneBalanceAxis), 과잉 경계(shadowWarning) 추가",
-    "체첸 바이나흐 카바흐 명예 엔진(v2.3.0): 질문 맥락(questionTopic), 명예 축(honorBalanceAxis), 과잉 경계(shadowWarning) 추가",
-    "치로에 팔라피토 물때 균형 엔진(v2.3.0): 질문 맥락(questionTopic), 물때 축(tidePoiseAxis), 과잉 경계(shadowWarning) 추가"
+    "축치 베링해 툰드라 화덕 엔진(v2.3.0): 질문 맥락(questionTopic), 극지 축(tundraHearthAxis), 과잉 경계(shadowWarning) 추가",
+    "추바시 투라 세계수 조화 엔진(v2.3.0): 질문 맥락(questionTopic), 세계수 축(worldTreeAxis), 과잉 경계(shadowWarning) 추가",
+    "콘월 케르노우 화강암 인내 엔진(v2.3.0): 질문 맥락(questionTopic), 해안 축(graniteCoastAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }
