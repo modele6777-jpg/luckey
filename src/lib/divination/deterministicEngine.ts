@@ -1,3 +1,4 @@
+import { slimToolDataToBudget } from './promptSlim';
 import { getSymbolicPerspective } from './symbolicPerspective';
 import { MASTER_REVIEW_BINDINGS } from './masterReviewBindings';
 import { LUCY_PRO_CATALOG_DUPLICATE_KEYS } from './catalogDuplicateKeys';
@@ -8435,6 +8436,14 @@ function shouldIncludeEngine(engineKey: string, options?: FormatDeterministicEng
  * 결정론적 계산 엔진 리포트를 LLM 프롬프트에 주입하기 위해
  * 명확하고 가독성 높은 구조화된 텍스트 및 JSON 블록으로 변환합니다.
  */
+/** 생년월일과 무관하게 질문 시각(또는 올해)으로만 정해지는 도구. */
+const SHARED_CHART_SCOPE: Partial<Record<string, string>> = {
+  iching: '지금 시각의 괘 · 같은 시각에 물으면 누구나 같은 괘 · 개인 운명이 아니라 이번 물음의 상(象)으로만 풀 것',
+  liuren: '지금 시각의 판 · 같은 시각이면 누구나 같음 · 이번 일의 흐름으로만 풀고 타고난 운명처럼 말하지 말 것',
+  qimen: '지금 시각의 기문 판(점시) · 누구나 같음 · 생년월일 기반 홍국기문이 아님',
+  taiyi: '올해의 연국 · 올해 모든 사람에게 같은 시대 흐름 · 개인 운명처럼 말하지 말 것',
+};
+
 export function formatDeterministicEnginePrompt(
   report: DeterministicEngineReport,
   options?: FormatDeterministicEngineOptions
@@ -8446,10 +8455,13 @@ export function formatDeterministicEnginePrompt(
     return {
       tool: tool.toolKoName,
       status: symbolic ? (perspectives.length ? 'symbolic' : 'skipped') : tool.status,
+      // 시각·연도로만 정해지는 판은 사람마다 같다: 개인 운명처럼 말하지 않게 표시한다.
+      ...(SHARED_CHART_SCOPE[tool.toolId] ? { scope: SHARED_CHART_SCOPE[tool.toolId] } : {}),
       method: tool.method,
       note: tool.note,
-      limitations: tool.limitations,
-      ...(symbolic ? { perspectives } : tool.status === 'calculated' && tool.data != null ? { data: tool.data } : {}),
+      limitations: Array.isArray(tool.limitations) ? tool.limitations.slice(0, 2) : tool.limitations,
+      // 해석 문장·점수·생일 타로 3카드는 빼고, 도구당 크기를 제한해 넣는다 (화면용 원본 데이터는 그대로).
+      ...(symbolic ? { perspectives } : tool.status === 'calculated' && tool.data != null ? { data: slimToolDataToBudget(tool.data) } : {}),
     };
   });
   const calculated = included.filter(tool => tool.status === 'calculated' && tool.data != null && !(report.masterReview && REVIEW_PENDING_CORE.has(tool.toolId)));
@@ -8471,8 +8483,11 @@ skipped/error/partial/symbolic/not_implemented는 계산 성공으로 표현하�
 타로 수비학·생일카드 계산은 무작위 카드 추첨이 아니다. 실제 추첨은 별도로 제공된 앱 추첨 기록만 인정한다.
 응답에는 이번 질문에 실제 사용한 계산 근거와 필요한 한계만 짧게 알려준다.
 
+scope가 있는 도구(주역·육임·기문 점시·태을)는 생년월일이 아니라 질문 시각이나 올해로 정해진 공통 판이다. '당신의 운명'처럼 말하지 말고 '지금 이 물음의 판', '올해의 흐름'으로 말한다.
+아래 JSON에는 계산값만 담았다. 앱이 붙이던 해석 문장·점수·생일 타로 3카드는 빠져 있으니, 풀이는 계산값을 근거로 직접 한다.
+
 [계산 상태 및 데이터 JSON]
-${JSON.stringify(evidence, null, 2)}
+${JSON.stringify(evidence)}
 [JSON 끝]
 ${report.masterReview ? `[마스터 전체 검토: ${getCalculationAudit(report, options).length}개 항목]
 아래 항목은 모두 검토 대상으로 평가했다. symbolic은 실제 계산 성공이나 실측값이 아니라 상징적 조언으로만 전달한 것이다.
@@ -8480,5 +8495,5 @@ skipped/error는 입력 부족·실패·제공할 안전한 관점 없음으로 
 사용 가능한 계산과 상징 관점을 빠짐없이 검토하고, 질문과 관련된 공통점·차이·충돌을 종합한다. 서로 모순되면 억지로 일치시켜 결론내리지 않는다.
 상징은 상징이라고 밝히며 확률·건강 진단·미래 보장·영적 수치로 바꾸지 않는다.
 환대·책임·사랑을 핑계로 자기희생이나 무조건적 순응을 권하지 않는다. 동의·안전·법적 경계를 존중하고, 위험이 있으면 경계를 세우거나 도움을 요청하도록 안내한다.
-${JSON.stringify(symbolicReview, null, 2)}` : ''}`;
+${JSON.stringify(symbolicReview)}` : ''}`;
 }

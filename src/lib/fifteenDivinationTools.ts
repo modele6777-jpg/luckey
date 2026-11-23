@@ -87,7 +87,7 @@ export const FIFTEEN_DIVINATION_TOOLS: Record<DivinationToolId, DivinationToolSp
     hanjaOrEng: 'Western Astrology',
     primaryTheme: 'trinity',
     secondaryThemes: ['bluebird', 'muse'],
-    coreEssence: '태양(자아)·달(내면 감정)·상승궁(페르소나)과 10행성, 12하우스, 4원소·3모달리티(활동·고정·변통) 균형 및 행성 간 각도(Aspect)·트랜짓을 통해 무의식적 욕망과 관계의 심리 역학을 해독하는 별의 지도',
+    coreEssence: '태양(자아)·달(내면 감정)·상승궁(페르소나)·MC와 수성~토성 행성의 별자리·도수, 4원소·3모달리티(활동·고정·변통) 균형을 통해 무의식적 욕망과 관계의 심리 역학을 해독하는 별의 지도 (현재 앱 계산: 태양~토성 7행성·상승궁·MC·원소 균형. 하우스·각도·트랜짓은 계산값이 제공될 때만 말할 것)',
     bestFor: '내면 심리와 감정 패턴, 자존감, 원소·모달리티 균형, 연인·지인과의 시나스트리(궁합), 현재 행성 트랜짓에 따른 심리적 변화',
     easyLanguageGuide: '트라인·스퀘어 같은 각도 용어 대신 "태양과 달의 기운이 서로 밀어주면서 ~한 매력이 나타나", "불과 물의 기운이 맞물려 감수성을 자극해서"처럼 감정과 심리 중심으로 쉽게 설명해줘.',
     explicitRegex: /점성술|점성학|별자리|네이탈|출생\s*차트|태양궁|달\s*별자리|상승궁|어센던트|트랜짓|하우스|금성|화성|수성\s*역행|모달리티|어스펙트/,
@@ -129,10 +129,10 @@ export const FIFTEEN_DIVINATION_TOOLS: Record<DivinationToolId, DivinationToolSp
     hanjaOrEng: '宿曜經 (27숙)',
     primaryTheme: 'bluebird',
     secondaryThemes: ['trinity', 'orange'],
-    coreEssence: '달이 지나는 황도 27숙(각숙·항숙·저숙·방숙·심숙·미숙·기숙 등)과 7대 숙격(안중숙·화해숙·강유숙·조급숙·맹악숙·경조숙·행요숙)·칠요 오행을 기반으로 내면 정서와 인연 역학(안괴·영친·우태·성유·업태·명)을 꿰뚫어 보는 밀교 달의 지혜',
+    coreEssence: '달이 지나는 황도 27숙(각숙·항숙·저숙·방숙·심숙·미숙·기숙 등)과 숙요경 7종 숙격(안주·화선·독해·급속·맹악·경조·강유)·칠요를 기반으로, 본명숙에서의 거리로 정해지는 인연 역학(명·업태·영친·우쇠·안괴·위성)을 꿰뚫어 보는 밀교 달의 지혜',
     bestFor: '두 사람의 숙명적 인연과 궁합(왜 끌리는지, 왜 부딪히는지), 본명숙 기질과 감정적 파동, 관계에서의 거리 조절과 치유',
     easyLanguageGuide: '"숙요(달의 27숙)로 두 사람의 인연 결을 살펴보면 서로 성장시키는 영친(榮親)/강렬하게 끌리는 안괴(安壞) 흐름이 있어서~"처럼 관계의 심리와 감정 파동을 다정하게 풀어줘.',
-    explicitRegex: /숙요|27숙|28숙|숙요경|안괴|영친|우태|성유|업태|본명숙|숙격/,
+    explicitRegex: /숙요|27숙|28숙|숙요경|안괴|영친|우쇠|위성|업태|본명숙|숙격/,
     intentKeywords: [/인연|궁합|관계|갈등|친해지|왜\s*힘들까|감정\s*소모|거리두기|동료|친구\s*사이/]
   },
 
@@ -181,13 +181,13 @@ export const FIFTEEN_DIVINATION_TOOLS: Record<DivinationToolId, DivinationToolSp
   // 9. 홍국기문 (오렌지 주력)
   qimen: {
     id: 'qimen',
-    koName: '홍국기문',
-    hanjaOrEng: '洪局奇門 (기문둔갑)',
+    koName: '기문둔갑',
+    hanjaOrEng: '奇門遁甲 (지금 시각 판·차보법)',
     primaryTheme: 'orange',
     secondaryThemes: ['prologue', 'trinity'],
-    coreEssence: '조선 정통 4주 9궁의 세효·응효·중궁·팔문(휴·생·상·두·경·사·경·개문)·삼형살·5행 통기(通氣) 순환을 배합해 막힌 상황을 뚫는 최적의 타이밍, 유리한 방위, 승부수 전략을 설계하는 제왕의 병법 방위학',
+    coreEssence: '질문한 지금 시각의 기문 판(점시·차보법)에 놓인 구성·팔문(휴·생·상·두·경(景)·사·경(驚)·개)·팔신·삼기육의 배치를 읽어, 막힌 상황을 뚫는 타이밍과 유리한 방위·전략을 찾는 병법 방위학. 생년월일 기반 홍국기문(세효·응효)과는 다른 판이다',
     bestFor: '이직·창업·사업 확장·투자·면접 등 중대한 결단의 최적 타이밍, 세효 8문 돌파구(생문/개문) 전략, 5행 통기 보완 방향 선택',
-    easyLanguageGuide: '"홍국기문(기문둔갑)으로 지금 판세를 읽어보면, 정면 돌파보다는 생문(生門·살아나는 문)이 열리는 ~한 방식과 타이밍을 택하는 게 최고의 한 수야"처럼 전략적 돌파구를 제시해줘.',
+    easyLanguageGuide: '"기문둔갑으로 지금 시각의 판세를 읽어보면, 정면 돌파보다는 생문(生門·살아나는 문)이 열리는 ~한 방식과 타이밍을 택하는 게 최고의 한 수야"처럼 전략적 돌파구를 제시해줘.',
     explicitRegex: /홍국기문|기문둔갑|기문|팔문|생문|개문|휴문|경문|삼기|육의|포국|세효|응효|통기/,
     intentKeywords: [/돌파구|전략|이직|창업|사업|승부|면접|타이밍|언제\s*움직|방향성|결정/]
   },
@@ -535,7 +535,7 @@ export function buildUserFifteenToolsDigest(profile?: UserProfile, asOfDate: Dat
               return found ? `${found.direction}(${found.trigram})` : '미상';
             })();
         const honPalaceNote = ` · 본명성 낙궁 [연반 ${annualHonPalace} / 월반 ${monthlyHonPalace}]`;
-        kyuseiLine = `- 구성학 9궁 명반: 본명성 ${ks.honmyosei.name}[${ks.honmyosei.element}] · 월명성 ${ks.getmyosei.name}[${ks.getmyosei.element}](${ks.getmyosei.monthBranch}월·${ks.getmyosei.currentTerm}) · 일명성 ${ks.ilmyosei.name}[${ks.ilmyosei.element}](${ks.ilmyosei.dayGanZhi}일) · 중궁 흐름[${centerFlow} · ${ks.targetYearGanZhi}년]${honPalaceNote} · 최길방위 [${topDir}${topTrigramNote}]${topDirActivities}${secondDirNote} · 주의 흉살방위 [${hazardSummary}]${hazardReasonNote}${synergyNote}${scenarioNote}${matrixAction}${topDirNote}${topGuidanceNote}${ritualNote}${focusNote}${questionNote}${boundaryNote}.`;
+        kyuseiLine = `- 구성학 9궁 명반: 본명성 ${ks.honmyosei.name}[${ks.honmyosei.element}] · 월명성 ${ks.getmyosei.name}[${ks.getmyosei.element}](${ks.getmyosei.monthBranch}월·${ks.getmyosei.currentTerm}) · 오늘의 일성 ${ks.ilmyosei.name}[${ks.ilmyosei.element}](${ks.ilmyosei.dayGanZhi}일 · 태어난 날 별 아님) · 중궁 흐름[${centerFlow} · ${ks.targetYearGanZhi}년]${honPalaceNote} · 최길방위 [${topDir}${topTrigramNote}]${topDirActivities}${secondDirNote} · 주의 흉살방위 [${hazardSummary}]${hazardReasonNote}${synergyNote}${scenarioNote}${matrixAction}${topDirNote}${topGuidanceNote}${ritualNote}${focusNote}${questionNote}${boundaryNote}.`;
       } else {
         kyuseiLine = `- 구성학: ${ks.note || '생년월일 미입력으로 미계산'}`;
       }
