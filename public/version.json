@@ -1,10 +1,10 @@
 {
-  "version": "1.8.422",
-  "builtAt": "2026-11-24T06:45:00+09:00",
-  "summary": "라트비아 다이나스·로지 쿠옴보카·리키아 암벽 지평선 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.422)",
+  "version": "1.8.423",
+  "builtAt": "2026-11-24T06:55:00+09:00",
+  "summary": "리디아 사르디스·말라가시 바오밥·말라가시 피하바나나 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.423)",
   "items": [
-    "라트비아 다이나스·마라 조화 엔진(v2.3.0): 질문 맥락(questionTopic), 발트 조화 축(balticHarmonyAxis), 과잉 경계(shadowWarning) 추가",
-    "로지 쿠옴보카 물길 이동 엔진(v2.3.0): 질문 맥락(questionTopic), 잠베지 이동 축(zambeziPathAxis), 과잉 경계(shadowWarning) 추가",
-    "리키아 암벽 지평선 성찰 엔진(v2.3.0): 질문 맥락(questionTopic), 지평선 균형 축(cliffHorizonAxis), 과잉 경계(shadowWarning) 추가"
+    "리디아 사르디스 호박금 균형 엔진(v2.3.0): 질문 맥락(questionTopic), 사르디스 균형 축(sardisBalanceAxis), 과잉 경계(shadowWarning) 추가",
+    "말라가시 바오밥 뿌리 성찰 엔진(v2.3.0): 질문 맥락(questionTopic), 바오밥 뿌리 축(baobabRootAxis), 과잉 경계(shadowWarning) 추가",
+    "말라가시 피하바나나 연대 엔진(v2.3.0): 질문 맥락(questionTopic), 피하바나나 연대 축(fihavananaAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }

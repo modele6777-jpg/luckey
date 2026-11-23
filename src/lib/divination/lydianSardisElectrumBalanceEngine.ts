@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface LydianSardisResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '균형·원칙' | '본질·시금석' | '점검·경계' | '사르디스 전반';
   electrumSign: string;
   companionSign: string;
+  sardisBalanceAxis: string;
   lydianInsight: string;
   sardisTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,48 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const LYDIAN_SHADOWS = [
+  '강직함과 부드러움의 배합을 맞추려다 오히려 어느 쪽도 분명히 정하지 못한 채 어정쩡한 타협에 머물지 않도록 하세요.',
+  '강물이 흙을 씻어 내리기를 기다리는 여유가 오늘 당장 내가 직접 나서서 정리해야 할 일까지 방치하게 만들지는 않아야 합니다.',
+  '스스로 떳떳한 시금석을 중시하는 태도가 타인의 합리적인 피드백이나 객관적인 기준까지 외면하는 아집이 되지 않게 하세요.',
+  '높은 성채에서 빈틈을 살피는 경계심이 지나쳐, 이미 잘 굴러가는 일에도 불필요한 의심과 피로를 더하지는 마세요.',
+  '서로의 몫을 공정하게 나누려는 기준이 지나치게 칼같아져, 관계 속 작은 배려와 온기까지 계산적으로 좁히지 않도록 하세요.',
+];
+
+function classifyLydianTopic(q: string): LydianSardisResult['questionTopic'] {
+  if (/균형|강함|부드러|원칙|유연/.test(q)) return '균형·원칙';
+  if (/본질|가치|시금석|순도|기준/.test(q)) return '본질·시금석';
+  if (/점검|경계|틈새|공정|몫/.test(q)) return '점검·경계';
+  return '사르디스 전반';
+}
+
 export function calculateLydianSardisElectrumBalance(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): LydianSardisResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyLydianTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % SIGNS.length;
   const picked = SIGNS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (SIGNS.length - 1));
   const companion = SIGNS[(idx + companionOffset) % SIGNS.length];
+  const sardisBalanceAxis = `${picked.sign.split('(')[0].trim()} ↔ ${companion.sign.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-LYDIAN-SARDIS-v2.2.0',
+    engineVersion: 'LUCKEY-LYDIAN-SARDIS-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     electrumSign: picked.sign,
     companionSign: companion.sign,
+    sardisBalanceAxis,
     lydianInsight: picked.insight,
     sardisTone: picked.tone,
     reflectionFocus: `고대 리디아·사르디스 지혜의 '${picked.sign}'을 중심에 두고 '${companion.sign}'의 균형을 함께 엮어, 한쪽 성질에 치우치지 않고 강함과 부드러움의 균형과 나만의 시금석을 점검해 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: LYDIAN_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '고대 아나톨리아 리디아(Lydia) 사르디스의 호박금 균형·팍톨로스 강 비유를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +119,13 @@ export function formatLydianSardisPrompt(res: LydianSardisResult): string {
   return [
     `[리디아 사르디스·호박금 균형 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 사르디스 균형 축: ${res.sardisBalanceAxis}`,
     `- 사르디스 징표: ${res.electrumSign} (${res.sardisTone})`,
     `- 동반 징표: ${res.companionSign}`,
     `- 중심 통찰: ${res.lydianInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

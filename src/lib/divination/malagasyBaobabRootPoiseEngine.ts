@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface MalagasyBaobabResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '내면·충전' | '관계·신호' | '일상·직조' | '바오밥 전반';
   malagasyMotif: string;
   companionMotif: string;
+  baobabRootAxis: string;
   malagasyInsight: string;
   savannaTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,48 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const BAOBAB_SHADOWS = [
+  '줄기 속에 물을 채우며 내실을 다지는 시간도 소중하지만, 밖으로 잎을 내고 표현해야 할 기회까지 계속 미루지는 마세요.',
+  '상대의 체면과 온도를 지키려다 정작 꼭 짚고 넘어가야 할 핵심 문제나 내 경계선까지 흐리게 두지는 않도록 하세요.',
+  '작은 성의를 엮어 가는 정성이 지나쳐, 정작 큰 그림의 우선순위를 놓치고 사소한 일에만 매달리지 않도록 살피세요.',
+  '먼저 신호를 보내 연결을 확인하는 것은 좋으나, 상대의 응답이 오기 전부터 혼자 결론을 앞질러 불안해하지는 마세요.',
+  '오늘의 노력을 스스로 다독이는 따뜻한 시선이 내일 개선해야 할 구체적인 과제를 돌아보는 냉철함까지 가리지 않게 하세요.',
+];
+
+function classifyBaobabTopic(q: string): MalagasyBaobabResult['questionTopic'] {
+  if (/물|줄기|내면|충전|휴식/.test(q)) return '내면·충전';
+  if (/관계|유대|신호|연결|온도/.test(q)) return '관계·신호';
+  if (/직조|습관|일상|온기|노력/.test(q)) return '일상·직조';
+  return '바오밥 전반';
+}
+
 export function calculateMalagasyBaobabRootPoise(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): MalagasyBaobabResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyBaobabTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const picked = MOTIFS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const baobabRootAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-MALAGASY-BAOBAB-v2.2.0',
+    engineVersion: 'LUCKEY-MALAGASY-BAOBAB-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     malagasyMotif: picked.motif,
     companionMotif: companion.motif,
+    baobabRootAxis,
     malagasyInsight: picked.insight,
     savannaTone: picked.tone,
     reflectionFocus: `말라가시 바오밥의 '${picked.motif}'을 중심에 두고 '${companion.motif}'의 호흡을 함께 엮어, 겉의 잎이 뜸해 보이는 날에도 내 안의 중심 줄기에 고요한 물을 채워 두세요.`,
     ritualAction: picked.action,
+    shadowWarning: BAOBAB_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '마다가스카르 말라가시 전통의 피하바나나 유대와 바오밥나무 생장 지혜를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +119,13 @@ export function formatMalagasyBaobabPrompt(res: MalagasyBaobabResult): string {
   return [
     `[말라가시·바오밥 뿌리 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 바오밥 뿌리 축: ${res.baobabRootAxis}`,
     `- 말라가시 모티프: ${res.malagasyMotif} (${res.savannaTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.malagasyInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
