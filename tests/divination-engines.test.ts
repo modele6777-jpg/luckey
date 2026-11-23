@@ -13842,14 +13842,15 @@ test('Aymara Pachamama Amauta Wisdom engine: nayra lens, +09:00 KST, and interpr
 
 test('Welsh Mabinogion Awen Inspiration engine: ray, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateWelshMabinogionAwenInspiration({ profile, now: new Date('2026-11-20T06:55:00Z'), question: '새로운 시도의 영감을 얻고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-WELSH-AWEN-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-WELSH-AWEN-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionRay !== rep.awenRay);
+  assert.ok(rep.awenInspirationAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatWelshMabinogionAwenPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('웨일스') && prompt.includes('동반 빛줄기') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('웨일스') && prompt.includes('동반 빛줄기') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Igbo Ofo Ogu Truth Justice engine: symbol, +09:00 KST, and interpretive boundary', () => {
@@ -13867,14 +13868,15 @@ test('Igbo Ofo Ogu Truth Justice engine: symbol, +09:00 KST, and interpretive bo
 
 test('Ryukyu Ichariba Chode Hospitality engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateRyukyuIcharibaChodeHospitality({ profile, now: new Date('2026-11-20T07:03:00Z'), question: '주변과 따뜻한 공기를 만들고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-RYUKYU-ICHARIBA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-RYUKYU-ICHARIBA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.islandMotif);
+  assert.ok(rep.icharibaBridgeAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatRyukyuIcharibaChodePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('류큐') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('류큐') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Sogdian Silk Road Caravan Trust engine: stage, +09:00 KST, and interpretive boundary', () => {
@@ -14071,14 +14073,15 @@ test('Ossetian Nart Sagas Forge engine: emblem, +09:00 KST, and interpretive bou
 
 test('Sardinian Nuraghe Stone Calm engine: stone, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSardinianNuragheStoneCalm({ profile, now: new Date('2026-11-20T07:38:00Z'), question: '꾸밈없는 고요한 균형을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SARDINIAN-NURAGHE-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SARDINIAN-NURAGHE-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionStone !== rep.nuragheStone);
+  assert.ok(rep.nuragheDryStoneAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSardinianNuraghePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('사르데냐') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('사르데냐') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Catalan Seny Rauxa Balance engine: principle, +09:00 KST, and interpretive boundary', () => {

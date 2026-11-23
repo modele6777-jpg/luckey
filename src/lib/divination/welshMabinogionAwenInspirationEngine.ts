@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface WelshMabinogionAwenResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관찰·본질' | '상상·시도' | '표현·진심' | '인내·숙성' | '평온·위로' | '아웬 전반';
   awenRay: string;
   companionRay: string;
+  awenInspirationAxis: string;
   bardicInsight: string;
   valleyTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const WELSH_SHADOWS = [
+  '사실 그대로 본질을 바라보는 냉철함이 아직 자라나는 설익은 아이디어의 싹까지 성급히 잘라 내는 냉소가 되지 않게 하세요.',
+  '새로운 길을 그려 보는 자유로운 상상이 발 디딜 현실의 제약과 마감 기한을 잊은 공상으로만 흩어지지 않도록 작은 실행을 붙이세요.',
+  '진심을 말과 글로 건네는 용기가 상대가 받아들일 준비가 되었는지 살피지 않는 일방적 토로로 흐르지 않게 호흡을 고르세요.',
+  '가마솥 앞에서 인내로 불을 지피는 끈기가 이미 방향이 틀린 작업에 미련을 붙드는 고집으로 이어지지 않는지 중간 점검을 하세요.',
+  '리안논의 노래처럼 마음의 평온을 지키는 여유가 해결해야 할 현실의 작은 불편을 외면하는 현실 도피가 되어서는 안 됩니다.',
+];
+
+function classifyWelshTopic(q: string): WelshMabinogionAwenResult['questionTopic'] {
+  if (/본질|관찰|사실|진실/.test(q)) return '관찰·본질';
+  if (/영감|시도|새로운|상상/.test(q)) return '상상·시도';
+  if (/표현|진심|말|글/.test(q)) return '표현·진심';
+  if (/인내|숙성|시행착오|다듬/.test(q)) return '인내·숙성';
+  if (/평온|고요|위로|소음/.test(q)) return '평온·위로';
+  return '아웬 전반';
+}
+
 export function calculateWelshMabinogionAwenInspiration(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): WelshMabinogionAwenResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyWelshTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % RAYS.length;
   const picked = RAYS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (RAYS.length - 1));
   const companion = RAYS[(idx + companionOffset) % RAYS.length];
+  const awenInspirationAxis = `${picked.ray.split('·')[0].trim()} ↔ ${companion.ray.split('·')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-WELSH-AWEN-v2.2.0',
+    engineVersion: 'LUCKEY-WELSH-AWEN-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     awenRay: picked.ray,
     companionRay: companion.ray,
+    awenInspirationAxis,
     bardicInsight: picked.insight,
     valleyTone: picked.tone,
     reflectionFocus: `웨일스 음유시인 전통의 '${picked.ray}'을 중심에 두고 '${companion.ray}'의 결을 함께 엮어, 정답을 억지로 짜내기보다 마음이 반응하는 작은 호기심 하나를 따라가 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: WELSH_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '웨일스 《마비노기온》 설화와 아웬(Awen) 시적 영감 상징을 바탕으로 한 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +121,13 @@ export function formatWelshMabinogionAwenPrompt(res: WelshMabinogionAwenResult):
   return [
     `[웨일스 마비노기온·아웬 영감 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 아웬 영감 축: ${res.awenInspirationAxis}`,
     `- 아웬 빛줄기: ${res.awenRay} (${res.valleyTone})`,
     `- 동반 빛줄기: ${res.companionRay}`,
     `- 중심 통찰: ${res.bardicInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
