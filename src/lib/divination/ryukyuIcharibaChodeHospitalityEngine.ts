@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface RyukyuIcharibaChodeResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '인연·환대' | '생명·돌봄' | '품앗이·연대' | '첫인사·밝음' | '숙성·기다림' | '류큐 전반';
   islandMotif: string;
   companionMotif: string;
+  icharibaBridgeAxis: string;
   chodeInsight: string;
   seaTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const RYUKYU_SHADOWS = [
+  '누구에게나 따뜻하게 건네는 환대가 내 시간과 에너지를 무한정 내어주는 무리한 친절로 소진되지 않게 경계를 두세요.',
+  '오늘의 숨 고르기와 돌봄을 아끼는 태도가 지금 꼭 마무리지어야 할 약속이나 일정을 무기한 미루는 핑계가 되지 않게 하세요.',
+  '품앗이로 도움을 나누는 연대가 내 몫의 주도적 판단까지 상대에게 떠넘기는 의존으로 흐르지 않도록 균형을 잡으세요.',
+  '먼저 건네는 밝은 인사가 내 속마음의 피로나 불편함을 무조건 가리고 웃어야 한다는 감정 노동이 되어서는 안 됩니다.',
+  '숙성의 시간을 기다리는 여유가 실제로 물을 주고 손질해야 할 타이밍까지 방치하는 게으름으로 바뀌지 않게 살피세요.',
+];
+
+function classifyRyukyuTopic(q: string): RyukyuIcharibaChodeResult['questionTopic'] {
+  if (/인연|주변|공기|환대/.test(q)) return '인연·환대';
+  if (/몸|마음|보물|휴식/.test(q)) return '생명·돌봄';
+  if (/도움|함께|품앗이|나누/.test(q)) return '품앗이·연대';
+  if (/인사|대화|메신저|밝/.test(q)) return '첫인사·밝음';
+  if (/기다|숙성|여유|시간/.test(q)) return '숙성·기다림';
+  return '류큐 전반';
+}
+
 export function calculateRyukyuIcharibaChodeHospitality(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): RyukyuIcharibaChodeResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyRyukyuTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const picked = MOTIFS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const icharibaBridgeAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-RYUKYU-ICHARIBA-v2.2.0',
+    engineVersion: 'LUCKEY-RYUKYU-ICHARIBA-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     islandMotif: picked.motif,
     companionMotif: companion.motif,
+    icharibaBridgeAxis,
     chodeInsight: picked.insight,
     seaTone: picked.tone,
     reflectionFocus: `오키나와 류큐의 '${picked.motif}'을 중심에 두고 '${companion.motif}'의 온기를 함께 엮어, 오늘 만나는 사람과 나 자신에게 조금 더 부드러운 온기를 먼저 건네 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: RYUKYU_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '오키나와 류큐 전통의 환대·상부상조(유이마루) 문화를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +121,13 @@ export function formatRyukyuIcharibaChodePrompt(res: RyukyuIcharibaChodeResult):
   return [
     `[류큐 이차리바 초데·유이마루 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 환대 유대 축: ${res.icharibaBridgeAxis}`,
     `- 섬의 모티프: ${res.islandMotif} (${res.seaTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.chodeInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

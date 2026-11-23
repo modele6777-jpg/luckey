@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface SardinianNuragheResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '균형·중심' | '화음·경청' | '우물·직관' | '여유·보폭' | '고요·여백' | '누라게 전반';
   nuragheStone: string;
   companionStone: string;
+  nuragheDryStoneAxis: string;
   sardinianInsight: string;
   mediterraneanTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const SARDINIAN_SHADOWS = [
+  '모르타르 없이 자기 무게로 버티는 견고함이 도움을 청하거나 조율해야 할 때마저 혼자 딱딱하게 버티는 고립이 되지 않게 하세요.',
+  '상대의 음역을 끝까지 듣는 배려가 정작 내가 내야 할 목소리와 분명한 의견까지 삼키는 수동성으로 흘러서는 안 됩니다.',
+  '내면의 우물에서 직관을 길어 올리는 성찰이 바깥의 객관적 정보나 현실적인 검증을 아예 생략하는 독단이 되지 않게 살피세요.',
+  '목동의 느린 걸음을 지키는 여유가 이미 마감이 다가온 일의 속도까지 늦추는 방심이 되지 않도록 우선순위를 확인하세요.',
+  '고요한 석실로 물러나는 쉼이 해결해야 할 대화를 피하기 위한 회피용 동굴이 되지 않게 돌아 나올 시각을 정해 두세요.',
+];
+
+function classifySardinianTopic(q: string): SardinianNuragheResult['questionTopic'] {
+  if (/균형|중심|꾸밈|자리/.test(q)) return '균형·중심';
+  if (/대화|화음|듣|목소리/.test(q)) return '화음·경청';
+  if (/직관|우물|내면|답/.test(q)) return '우물·직관';
+  if (/여유|속도|보폭|기다/.test(q)) return '여유·보폭';
+  if (/고요|소음|쉼|여백/.test(q)) return '고요·여백';
+  return '누라게 전반';
+}
+
 export function calculateSardinianNuragheStoneCalm(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): SardinianNuragheResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifySardinianTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % STONES.length;
   const picked = STONES[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (STONES.length - 1));
   const companion = STONES[(idx + companionOffset) % STONES.length];
+  const nuragheDryStoneAxis = `${picked.stone.split('(')[0].trim()} ↔ ${companion.stone.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-SARDINIAN-NURAGHE-v2.2.0',
+    engineVersion: 'LUCKEY-SARDINIAN-NURAGHE-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     nuragheStone: picked.stone,
     companionStone: companion.stone,
+    nuragheDryStoneAxis,
     sardinianInsight: picked.insight,
     mediterraneanTone: picked.tone,
     reflectionFocus: `사르데냐 누라게 거석 문화의 '${picked.stone}'을 중심에 두고 '${companion.stone}'의 균형을 함께 엮어, 억지로 붙잡아 두려 하지 않아도 제자리에 맞물리는 고요한 균형을 믿어 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: SARDINIAN_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '지중해 사르데냐(Sardinia) 누라게 거석 탑과 고요한 공동체 화음 문화를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +121,13 @@ export function formatSardinianNuraghePrompt(res: SardinianNuragheResult): strin
   return [
     `[사르데냐 누라게·고요한 돌탑 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 거석 균형 축: ${res.nuragheDryStoneAxis}`,
     `- 누라게 상징: ${res.nuragheStone} (${res.mediterraneanTone})`,
     `- 동반 상징: ${res.companionStone}`,
     `- 중심 통찰: ${res.sardinianInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
