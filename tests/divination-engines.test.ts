@@ -593,9 +593,14 @@ test('Liuren month general changes at the astronomical middle term, not at civil
 test('Qimen upstream winter/summer/hour fixtures retain their school and timezone metadata',()=>{
   const a=calculateQimen(eventInstant('2024-01-15','11:00','Asia/Seoul'));
   assert.equal(a.chart['節氣'],'小寒');assert.equal(a.chart['三元'],'中元');assert.equal(a.chart['局數'],8);assert.equal(a.chart['陰陽'],'陽');
-  assert.equal(a.calculatedUTC8Hour,'2024-01-15T10:00');assert.match(a.method,/홍국기문 4주 수리 포국과는 별개의 점시 포국/);
+  assert.equal(a.calculatedLocalHour,'2024-01-15T10:00');assert.match(a.method,/홍국기문 4주 수리 포국과는 별개의 점시 포국/);
   const b=calculateQimen(eventInstant('2024-07-08','15:00','Asia/Seoul'));assert.equal(b.chart['陰陽'],'陰');
   assert.equal((a.chart['天盤'] as string[]).length,9);
+});
+test('event boards use Seoul mean solar time (KST −32 min), not China time (UTC+8)',()=>{
+  // 13:20 KST = 12:48 서울 태양시 → 오시(午). 예전 UTC+8(12:20)도 오시였지만, 13:40 KST는 13:08 태양시 → 미시(未)로 바뀐다.
+  assert.equal(calculateLiuren(eventInstant('2024-01-15','13:40','Asia/Seoul')).hour.slice(-1),'未');
+  assert.equal(calculateLiuren(eventInstant('2024-01-15','13:20','Asia/Seoul')).hour.slice(-1),'午');
 });
 test('event board results are independent of host timezone',()=>{
   const old=process.env.TZ;
@@ -883,8 +888,8 @@ import { formatDeterministicEnginePrompt } from '../src/lib/divination/determini
 
 const MANSION_HANJA_27 = ['角', '亢', '氐', '房', '心', '尾', '箕', '斗', '女', '虛', '危', '室', '壁', '奎', '婁', '胃', '昴', '畢', '觜', '參', '井', '鬼', '柳', '星', '張', '翼', '軫'];
 const RELATION_LABELS_27 = ['명', '영', '쇠', '안', '위', '성', '괴', '우', '친', '업', '영', '쇠', '안', '위', '성', '괴', '우', '친', '태', '영', '쇠', '안', '위', '성', '괴', '우', '친'];
-const SHUKGUK_BY_INDEX = ['경질', '독현', '악해', '화선', '악해', '급맹', '화선', '안중', '강유', '독현', '경질', '안중', '급맹', '안중', '급맹', '경질', '안중', '독현', '화선', '급맹', '급맹', '독현', '악해', '화선', '강유', '안중', '경질'];
-const SHUKGUK_META_KEYS = ['안중', '화선', '급맹', '악해', '독현', '경질', '강유'];
+const SHUKGUK_BY_INDEX = ['화선', '경조', '강유', '화선', '독해', '독해', '맹악', '안주', '경조', '경조', '경조', '맹악', '안주', '화선', '급속', '급속', '강유', '안주', '화선', '독해', '경조', '급속', '독해', '맹악', '맹악', '안주', '급속'];
+const SHUKGUK_META_KEYS = ['안주', '화선', '독해', '급속', '맹악', '경조', '강유'];
 
 const syProfile = { basic: { birthdate: '2000-08-16', birthtime: '04:00', gender: 'female' as const, birthCity: '서울' } }; // calculateSukuyo 실측: 규(奎)宿
 
@@ -903,7 +908,7 @@ test('Sukuyo engine: 본명숙 산출 및 7대 숙격 매핑 정확성', () => {
   assert.equal(r.engineVersion, SUKUYO_ENGINE_VERSION);
   assert.equal(r.mansion!.hanja, '奎'); // birthCharts.calculateSukuyo 실측 '奎宿'와 일치
   assert.equal(r.mansion!.index, 13);
-  assert.equal(r.mansion!.shukguk, '안중'); // 규(奎)는 안중숙
+  assert.equal(r.mansion!.shukguk, '화선'); // 규(奎)는 화선숙 (宿曜經 七種)
   assert(r.mansion!.fullName.includes('규목랑'));
   assert(r.lunarDate && r.lunarDate.isLeapMonth === false);
   assert(r.selfDynamics!.includes('규'));
@@ -917,7 +922,7 @@ test('Sukuyo engine: 본명숙 산출 및 7대 숙격 매핑 정확성', () => {
     assert(info.shukgukTrait.length > 1);
   }
   // 7대 숙격 대표 숙 스포트 체크: 두·익·실·규·묘=안중 / 여·장=강유
-  for (const [hanja, shukguk] of [['斗', '안중'], ['翼', '안중'], ['室', '안중'], ['奎', '안중'], ['昴', '안중'], ['女', '강유'], ['張', '강유'], ['亢', '독현'], ['鬼', '독현'], ['虛', '독현'], ['畢', '독현'], ['角', '경질'], ['軫', '경질'], ['危', '경질'], ['胃', '경질'], ['星', '화선'], ['房', '화선'], ['箕', '화선'], ['觜', '화선'], ['尾', '급맹'], ['井', '급맹'], ['婁', '급맹'], ['壁', '급맹'], ['參', '급맹'], ['氐', '악해'], ['心', '악해'], ['柳', '악해']] as const) {
+  for (const [hanja, shukguk] of [['斗', '안주'], ['壁', '안주'], ['畢', '안주'], ['翼', '안주'], ['角', '화선'], ['房', '화선'], ['奎', '화선'], ['觜', '화선'], ['心', '독해'], ['尾', '독해'], ['參', '독해'], ['柳', '독해'], ['婁', '급속'], ['胃', '급속'], ['鬼', '급속'], ['軫', '급속'], ['箕', '맹악'], ['室', '맹악'], ['星', '맹악'], ['張', '맹악'], ['亢', '경조'], ['女', '경조'], ['虛', '경조'], ['危', '경조'], ['井', '경조'], ['氐', '강유'], ['昴', '강유']] as const) {
     const info = sukuyoMansionInfoByIndex(MANSION_HANJA_27.indexOf(hanja));
     assert.equal(info.shukguk, shukguk, `${hanja} → ${shukguk}`);
   }
@@ -1718,9 +1723,10 @@ test('Thai Horasat engine binds into the deterministic engine report and prompt'
   assert.ok(report.thaiHorasatResult!.mahaThaksaAntardasha!.antardashaPlanetName.length > 0);
   assert(report.thaiHorasatResult!.seasonalThaatTactics !== null && report.thaiHorasatResult!.seasonalThaatTactics !== undefined);
   assert.ok(report.thaiHorasatResult!.seasonalThaatTactics!.peakActionSeason.length > 0);
-  assert(prompt.includes('planetaryFriendEnemyDynamic'));
+  // 프롬프트에는 계산값(마하탁사 소운)만 넣고, 앱이 만든 해석(친우 역학·계절 전술)은 뺀다 (2026-11-23 프롬프트 다이어트).
   assert(prompt.includes('mahaThaksaAntardasha'));
-  assert(prompt.includes('seasonalThaatTactics'));
+  assert(!prompt.includes('planetaryFriendEnemyDynamic'));
+  assert(!prompt.includes('seasonalThaatTactics'));
   const noProfile = runDeterministicEngine({ profile: null });
   assert(noProfile.thaiHorasatResult?.status === 'skipped');
   assert.equal(noProfile.tools.thai_astrology.status, 'skipped');
@@ -15707,8 +15713,8 @@ test('buildUserFifteenToolsDigest integrates Tojeong 3-numbers & monthly fortune
   const digest = buildUserFifteenToolsDigest(profile, new Date('2026-11-21T01:55:00Z'));
   // 13. 토정비결: 3수·11월 운세 포함
   assert.ok(digest.includes('토정비결:') && digest.includes('3수(') && digest.includes('11월 운세:'));
-  // 14. 구성학: 일명성·최길방위·주의 흉살방위 포함
-  assert.ok(digest.includes('구성학 9궁 명반:') && digest.includes('일명성 ') && digest.includes('최길방위 [') && digest.includes('주의 흉살방위 ['));
+  // 14. 구성학: 오늘의 일성(일명성 아님)·최길방위·주의 흉살방위 포함
+  assert.ok(digest.includes('구성학 9궁 명반:') && digest.includes('오늘의 일성 ') && digest.includes('최길방위 [') && digest.includes('주의 흉살방위 ['));
   // 15. 태을신수: 72국·주객 판정·오복길성 포함
   assert.ok(digest.includes('태을신수:') && digest.includes('제') && digest.includes('국)') && digest.includes('주객 판정 ['));
 });

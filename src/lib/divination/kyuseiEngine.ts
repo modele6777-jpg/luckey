@@ -112,7 +112,8 @@ export interface KyuseiResult {
   targetYearGanZhi: string;
   honmyosei: KyuseiStarIdentity;
   getmyosei: KyuseiStarIdentity & { monthBranch: string; currentTerm: string };
-  ilmyosei: KyuseiStarIdentity & { dayGanZhi: string };
+  /** 오늘(기준일) 일반(日盤)의 중궁성. 태어난 날의 별이 아니다. */
+  ilmyosei: KyuseiStarIdentity & { dayGanZhi: string; label?: string };
   annualChart: KyuseiChart;
   monthlyChart: KyuseiChart;
   dailyChart: KyuseiChart;
@@ -649,6 +650,7 @@ export function calculateKyusei(params: {
       name: STARS[daily.star].name,
       element: STARS[daily.star].element,
       dayGanZhi: daily.dayGanZhi,
+      label: '오늘(기준일) 일반의 중궁성 · 태어난 날의 별이 아님',
     },
     annualChart,
     monthlyChart,
@@ -815,7 +817,7 @@ export function formatKyuseiPrompt(result: KyuseiResult): string {
 산법: ${result.method}
 본명성: ${result.honmyosei.name} [${result.honmyosei.element}]
 월명성: ${result.getmyosei.name} (생월 절기: ${result.getmyosei.currentTerm}·${result.getmyosei.monthBranch}월)
-일명성: ${result.ilmyosei.name} (${result.ilmyosei.dayGanZhi}일)
+오늘의 일성(일반 중궁 · 태어난 날 별 아님): ${result.ilmyosei.name} (${result.ilmyosei.dayGanZhi}일)
 ======================================================================
 1. [연반(年盤) — ${result.annualChart.centerStarName} 입중궁]:
 ${chartLines(result.annualChart)}
