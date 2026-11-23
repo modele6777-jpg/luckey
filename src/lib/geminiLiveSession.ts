@@ -47,6 +47,10 @@ type LiveVoiceHandlers = {
   orb?: { persona: string; rules: string };
   /** 마스터가 부른 함수를 실행하고 결과(JSON)를 돌려준다. */
   onToolCall?: (call: { id?: string; name: string; args?: Record<string, unknown> }) => Promise<Record<string, unknown>>;
+  /** 실시간 자막: 마스터 말 조각을 그 목소리가 실제로 들리는 순간에 준다 (글자는 목소리보다 훨씬 먼저 도착한다). */
+  onCaption?: (text: string) => void;
+  /** 재생이 끊겨(끼어들기 등) 아직 안 나온 자막을 버렸다. */
+  onCaptionReset?: () => void;
   /** 마스터의 한 차례 답이 끝났다 (생각 중 표시를 끈다). */
   onTurnComplete?: () => void;
   /** 도구 실행 중 여부 (오브 표시용). */
@@ -130,7 +134,35 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     handlers.onError?.({ code, message });
   };
 
+  // 실시간 자막: 글자 조각마다 재생 시각을 정해 두고 그때 보여 준다.
+  let lastChunkAt = 0;
+  let lastCaptionAt = 0;
+  const captionTimers = new Set<ReturnType<typeof setTimeout>>();
+  const clearCaptions = () => {
+    for (const timer of captionTimers) clearTimeout(timer);
+    captionTimers.clear();
+    lastCaptionAt = 0;
+  };
+  const scheduleCaption = (text: string) => {
+    if (!handlers.onCaption) return;
+    const now = playback.currentTime;
+    // 글자 조각은 자기 목소리 조각 바로 뒤에 도착한다: 가장 최근 목소리 조각이 시작되는 때에 보여 준다.
+    const audioPending = nextAt > now + 0.02;
+    const at = Math.max(now, lastCaptionAt, audioPending ? lastChunkAt : now);
+    lastCaptionAt = at;
+    const delay = Math.max(0, (at - now) * 1000);
+    if (delay < 60) { handlers.onCaption(text); return; }
+    const timer = setTimeout(() => {
+      captionTimers.delete(timer);
+      if (!stopped) handlers.onCaption?.(text);
+    }, delay);
+    captionTimers.add(timer);
+  };
+
   const stopPlayback = () => {
+    const hadCaptions = captionTimers.size > 0;
+    clearCaptions();
+    if (hadCaptions) handlers.onCaptionReset?.();
     for (const source of sources) {
       try { source.stop(); } catch { /* already ended */ }
     }
@@ -166,6 +198,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     source.connect(analyser || playback.destination);
     const startAt = Math.max(playback.currentTime + 0.02, nextAt);
     source.start(startAt);
+    lastChunkAt = startAt;
     nextAt = startAt + buffer.duration;
     sources.add(source);
     source.onended = () => sources.delete(source);
@@ -243,11 +276,14 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     const userText = content.inputTranscription?.text || content.input_transcription?.text;
     const lucyText = content.outputTranscription?.text || content.output_transcription?.text;
     if (userText) handlers.onUserText?.(String(userText));
-    if (lucyText) handlers.onLucyText?.(String(lucyText));
     const parts = content.modelTurn?.parts || content.model_turn?.parts || [];
     for (const part of parts) {
       const inline = part.inlineData || part.inline_data;
       if (inline?.data) playPcm(String(inline.data), inline.mimeType || inline.mime_type);
+    }
+    if (lucyText) {
+      handlers.onLucyText?.(String(lucyText));
+      scheduleCaption(String(lucyText));
     }
     if (content.turnComplete || content.turn_complete) {
       handlers.onTurnComplete?.();
