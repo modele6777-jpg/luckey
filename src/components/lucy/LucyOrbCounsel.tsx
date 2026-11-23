@@ -8,7 +8,7 @@ import { generateHeavenlyAdvice } from '@/lib/orbHeavenlyAdvice';
 import { playTTSInChunks, stopTTS, useTTSActive, useTTSState } from '@/utils/tts';
 import { CHANNEL_MENU_ICONS, MessageCircleMinus } from '@/lib/channelMenuIcons';
 import {
-  ORB_CARD_PICK_CARDS, ORB_CARD_PICK_GUIDE, ORB_CARD_POSITIONS, ORB_DECK_SIZE, buildOrbMemoryBrief, countStopWords, latestOrbMemoryLine, loadOrbMemory,
+  ORB_CARD_PICK_CARDS, ORB_CARD_PICK_GUIDE, ORB_CARD_POSITIONS, ORB_DECK_SIZE, buildOrbMemoryBrief, countStopWords, isStopAll, latestOrbMemoryLine, loadOrbMemory,
   orbCardPickMessage, parseCardNumbers, pickOrbCards, saveOrbMemory, shuffleOrbDeck, summarizeOrbSession,
   type OrbDeckCard, type OrbMemoryEntry, type OrbPickedCard,
 } from '@/lib/orbConsult';
@@ -229,6 +229,8 @@ export function LucyOrbCounsel({
   const lastStopRef = useRef(0);
   const drawTimer = useRef<number | null>(null);
   const stopDrawRef = useRef<() => void>(() => undefined);
+  const stopAllRef = useRef<() => void>(() => undefined);
+  const stopAllTimers = useRef<number[]>([]);
   const stopSeenRef = useRef(0);
   const stopBufRef = useRef('');
   const pickOpenRef = useRef(false);
@@ -347,6 +349,7 @@ export function LucyOrbCounsel({
       if (bokTimer.current) window.clearTimeout(bokTimer.current);
       if (pickCloseTimer.current) window.clearTimeout(pickCloseTimer.current);
       if (drawTimer.current) window.clearTimeout(drawTimer.current);
+      stopAllTimers.current.forEach(timer => window.clearTimeout(timer));
       heavenToken.current += 1;
       releasePrimedMicRef.current();
       if (heavenSpokeRef.current) { stopTTS(); heavenSpokeRef.current = false; }
@@ -565,7 +568,11 @@ export function LucyOrbCounsel({
           stopBufRef.current = buf;
           // 새로 들어온 말 조각에 멈춤 말이 있거나, 모인 말에서 멈춤 말이 늘었으면 한 장 (0.45초 안의 중복은 무시).
           const stops = countStopWords(buf);
-          if (countStopWords(text) > 0 || stops > stopSeenRef.current) {
+          // "전부 멈춰": 남은 카드를 한 번에 뽑는다.
+          if (isStopAll(text) || isStopAll(buf.slice(-24))) {
+            stopSeenRef.current = Math.max(stops, stopSeenRef.current);
+            stopAllRef.current();
+          } else if (countStopWords(text) > 0 || stops > stopSeenRef.current) {
             stopSeenRef.current = Math.max(stops, stopSeenRef.current);
             stopDrawRef.current();
           }
@@ -731,7 +738,7 @@ export function LucyOrbCounsel({
   commitPickRef.current = commitPick;
   // 멈춤: 지금 섞이는 자리의 카드를 한 장 뽑는다. 세 장이 모이면 잠시 뒤 펼친다.
   const stopDraw = () => {
-    if (pickedRef.current || drawnRef.current.length >= 3 || !deckRef.current.length) return;
+    if (pickedRef.current || drawnRef.current.length >= 3 || !deckRef.current.length || stopAllTimers.current.length) return;
     const now = Date.now();
     if (now - lastStopRef.current < 450) return;
     lastStopRef.current = now;
@@ -749,6 +756,36 @@ export function LucyOrbCounsel({
     }
   };
   stopDrawRef.current = stopDraw;
+  // 전부 멈춤: 남은 자리를 한 번에 채운다. 카드는 섞이던 자리에서 조금씩 떨어진 곳을 차례로 뽑고, 하나씩 내려앉는다.
+  const stopAll = () => {
+    if (pickedRef.current || drawnRef.current.length >= 3 || !deckRef.current.length || stopAllTimers.current.length) return;
+    lastStopRef.current = Date.now();
+    if (!pickOpenRef.current) setPickOpen(true);
+    setPickMode('shuffle');
+    const size = deckRef.current.length;
+    const next = [...drawnRef.current];
+    let cursor = cursorRef.current;
+    while (next.length < 3) {
+      let index = cursor % size;
+      while (next.includes(index)) index = (index + 1) % size;
+      next.push(index);
+      cursor += 7 + Math.floor(Math.random() * 23);
+    }
+    flashOrb();
+    const start = drawnRef.current.length;
+    for (let k = start; k < 3; k += 1) {
+      stopAllTimers.current.push(window.setTimeout(() => {
+        const partial = next.slice(0, k + 1);
+        drawnRef.current = partial;
+        setDrawn(partial);
+      }, (k - start) * 260));
+    }
+    stopAllTimers.current.push(window.setTimeout(() => {
+      stopAllTimers.current = [];
+      commitPick(next.map(value => value + 1), 'shuffle');
+    }, (3 - start) * 260 + 700));
+  };
+  stopAllRef.current = stopAll;
   // 섞는 동안 '지금 멈추면 나올 카드' 자리를 계속 돌린다 (멈추는 순간이 카드를 정한다).
   useEffect(() => {
     if (!pickOpen || pickedCards || pickMode !== 'shuffle') return;
@@ -1040,7 +1077,7 @@ export function LucyOrbCounsel({
               {!pickedCards && pickMode === 'shuffle' ? (
                 <>
                   <strong>질문을 떠올리다 끌리는 순간 멈춰 주세요</strong>
-                  <p>"멈춰"라고 말하거나 카드를 누르세요 · {drawn.length}/3</p>
+                  <p>"멈춰"라고 말하거나 카드를 누르세요 · 한 번에는 "전부 멈춰" · {drawn.length}/3</p>
                   <button type="button" className={`lucy-shuffle-deck ${drawn.length >= 3 ? 'is-done' : ''}`} onClick={stopDraw} aria-label="섞이는 카드 멈추기" disabled={drawn.length >= 3}>
                     {Array.from({ length: 7 }, (_, index) => <span key={index} style={{ ['--k' as string]: index }} />)}
                     <b>{drawn.length >= 3 ? '카드를 펼칩니다' : '멈춰!'}</b>
@@ -1054,6 +1091,7 @@ export function LucyOrbCounsel({
                     ))}
                   </div>
                   <div className="lucy-cardpick-actions">
+                    <button type="button" className="lucy-stop-all" disabled={drawn.length >= 3} onClick={stopAll}>⚡ 전부 멈춰</button>
                     <button type="button" disabled={drawn.length > 0} onClick={() => setPickMode('numbers')}>숫자로 고르기</button>
                     <button type="button" onClick={() => setPickOpen(false)}>나중에</button>
                   </div>

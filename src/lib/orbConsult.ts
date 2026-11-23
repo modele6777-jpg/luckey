@@ -64,11 +64,18 @@ export function orbCardPickMessage(cards: OrbPickedCard[]): string {
 }
 
 /** 타로 마스터: 카드는 손님이 고를 때까지 펼치지 않는다. */
-export const ORB_CARD_PICK_GUIDE = '이번 상담의 카드는 아직 펼치지 않았습니다. 인사하고 고민을 한두 마디 들은 뒤 "이제 카드를 섞겠습니다. 마음속으로 질문을 떠올리시다가 끌리는 순간 멈춰라고 말씀하시거나 화면을 눌러 주세요. 세 번 멈추시면 세 장이 나옵니다." 하고 안내하세요. 손님이 멈춰라고 할 때마다 "네, 한 장" 정도로만 아주 짧게 답하고, [카드 선택] 메시지가 올 때까지 카드 이름을 지어내지 마세요. 손님이 숫자 세 개를 말해도 같은 방식으로 카드가 펼쳐집니다.';
+export const ORB_CARD_PICK_GUIDE = '이번 상담의 카드는 아직 펼치지 않았습니다. 인사하고 고민을 한두 마디 들은 뒤 "이제 카드를 섞겠습니다. 마음속으로 질문을 떠올리시다가 끌리는 순간 멈춰라고 말씀하시거나 화면을 눌러 주세요. 세 번 멈추시면 세 장이 나옵니다." 하고 안내하세요. 한 번에 뽑고 싶으시면 전부 멈춰라고 하셔도 된다고 덧붙이세요. 손님이 멈춰라고 할 때마다 "네, 한 장" 정도로만 아주 짧게 답하고, [카드 선택] 메시지가 올 때까지 카드 이름을 지어내지 마세요. 손님이 숫자 세 개를 말해도 같은 방식으로 카드가 펼쳐집니다.';
 export const ORB_CARD_PICK_CARDS = '아직 카드를 펼치지 않았습니다. 손님이 고른 카드는 대화 중 [카드 선택] 메시지로 전달됩니다. 그 전에는 어떤 카드도 말하지 마세요.';
 
 /** 셔플을 멈추는 말: "멈춰", "스톱", "그만", "여기요" 등. */
 export const ORB_STOP_WORDS = /멈춰|멈춤|멈추|스톱|스탑|\bstop\b|정지|그만|여기요|여기서|이거요/i;
+
+/** 남은 카드를 한 번에 뽑는 말: "전부 멈춰", "다 멈춰", "한꺼번에", "세 장 다" 등. */
+export const ORB_STOP_ALL_WORDS = /(전부|다|모두|싹|한꺼번에|한\s?번에|한방에|세\s?장\s?다)\s*(멈춰|멈춤|멈추|스톱|스탑|뽑아|뽑을게|정지|그만)|한꺼번에|한\s?번에\s?다|\ball\s*stop|stop\s*all/i;
+
+export function isStopAll(text: string): boolean {
+  return ORB_STOP_ALL_WORDS.test(String(text || ''));
+}
 
 export function countStopWords(text: string): number {
   return (String(text || '').match(new RegExp(ORB_STOP_WORDS.source, 'gi')) || []).length;
