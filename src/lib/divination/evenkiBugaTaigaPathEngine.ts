@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface EvenkiBugaResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '신호·관찰' | '유연·비움' | '나눔·순응' | '길잡이 전반';
   taigaSign: string;
   companionSign: string;
+  taigaTrailAxis: string;
   bugaInsight: string;
   siberianTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const EVENKI_SHADOWS = [
+  '주변 환경과 조화를 맞추려다 정작 내가 지켜야 할 핵심 목표의 방향까지 흐려지지 않게 살피세요.',
+  '눈앞의 작은 흔적만 쫓다가 전체 여정의 큰 방향과 체력 안배를 놓치지 않도록 점검하세요.',
+  '가볍게 자리를 옮기는 유연함이 막상 끝까지 버텨야 할 자리에서 쉽게 떠나는 습관이 되지 않게 하세요.',
+  '곁과 나누는 마음에 앞서 정작 오늘 내가 먼저 채워야 할 기본 휴식과 여력을 비우지 마세요.',
+  '바뀐 바람을 따르느라 아직 충분히 익지 않은 시도까지 성급히 접어 버리지 않도록 주의하세요.',
+];
+
+function classifyEvenkiTopic(q: string): EvenkiBugaResult['questionTopic'] {
+  if (/신호|관찰|발자국|단서|길/.test(q)) return '신호·관찰';
+  if (/유연|비움|가볍|짐|이동/.test(q)) return '유연·비움';
+  if (/나눔|순응|계절|관계|사람/.test(q)) return '나눔·순응';
+  return '길잡이 전반';
+}
+
 export function calculateEvenkiBugaTaigaPath(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): EvenkiBugaResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyEvenkiTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % SIGNS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (SIGNS.length - 1));
   const picked = SIGNS[idx];
   const companion = SIGNS[(idx + companionOffset) % SIGNS.length];
+  const taigaTrailAxis = `${picked.sign.split('(')[0].trim()} ↔ ${companion.sign.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = EVENKI_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-EVENKI-BUGA-v2.2.0',
+    engineVersion: 'LUCKEY-EVENKI-BUGA-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     taigaSign: picked.sign,
     companionSign: companion.sign,
+    taigaTrailAxis,
     bugaInsight: picked.insight,
     siberianTone: picked.tone,
     reflectionFocus: `시베리아 에벤키 지혜의 '${picked.sign}'과 동반 결 '${companion.sign}'을 함께 헤아리며, 무거운 집착을 덜어내고 눈앞의 작은 신호를 세심히 읽어 보세요.`,
     ritualAction: picked.ritual,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '시베리아 에벤키(Evenki)의 부가(Buga) 자연 공존·니마트(Nimāt) 나눔 철학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatEvenkiBugaPrompt(res: EvenkiBugaResult): string {
   return [
     `[에벤키 부가·타이가 길잡이 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 타이가 길 축: ${res.taigaTrailAxis}`,
     `- 타이가 상징: ${res.taigaSign} (${res.siberianTone})`,
     `- 동반 상징: ${res.companionSign}`,
     `- 중심 통찰: ${res.bugaInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

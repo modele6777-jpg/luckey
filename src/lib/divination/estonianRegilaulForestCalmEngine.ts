@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface EstonianRegilaulResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '정적·호흡' | '루틴·지속' | '신중·여백' | '리듬 전반';
   forestMotif: string;
   companionMotif: string;
+  forestSongAxis: string;
   regilaulInsight: string;
   nordicForestTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const ESTONIAN_SHADOWS = [
+  '정적 속에 머무른다는 이유로 꼭 먼저 건네야 할 안부나 현실의 마감까지 미루지 않도록 살피세요.',
+  '익숙한 선율을 되풀이하는 편안함에 안주해 필요한 작은 방향 전환까지 외면하지 마세요.',
+  '디딤돌을 하나씩 확인하느라 충분히 건널 수 있는 길 앞에서도 발걸음을 너무 오래 멈추지 마세요.',
+  '흑백을 가리지 않는 여유가 정작 스스로 세워야 할 분명한 경계선까지 흐리지 않도록 주의하세요.',
+  '피로를 씻어 내는 쉼이 내일 다시 움직여야 할 핵심 과제에서 물러나는 핑계가 되지 않게 하세요.',
+];
+
+function classifyEstonianTopic(q: string): EstonianRegilaulResult['questionTopic'] {
+  if (/정적|호흡|숨|숲|쉼|피로/.test(q)) return '정적·호흡';
+  if (/루틴|리듬|지속|매일|반복|일/.test(q)) return '루틴·지속';
+  if (/신중|여백|결정|안전|고민/.test(q)) return '신중·여백';
+  return '리듬 전반';
+}
+
 export function calculateEstonianRegilaulForestCalm(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): EstonianRegilaulResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyEstonianTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const forestSongAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = ESTONIAN_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-ESTONIAN-REGILAUL-v2.2.0',
+    engineVersion: 'LUCKEY-ESTONIAN-REGILAUL-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     forestMotif: picked.motif,
     companionMotif: companion.motif,
+    forestSongAxis,
     regilaulInsight: picked.insight,
     nordicForestTone: picked.tone,
     reflectionFocus: `에스토니아 레기라울·숲 지혜의 '${picked.motif}'과 동반 결 '${companion.motif}'을 함께 음미하며, 복잡한 변주보다 오늘 내가 지킬 소박한 리듬과 쉼의 여백을 먼저 챙겨 보세요.`,
     ritualAction: picked.ritual,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '에스토니아의 레기라울(Regilaul) 구전 가요·히이스(Hiis) 숲 성찰 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatEstonianRegilaulPrompt(res: EstonianRegilaulResult): strin
   return [
     `[에스토니아 레기라울·숲의 정적 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 숲·선율 축: ${res.forestSongAxis}`,
     `- 북방 상징: ${res.forestMotif} (${res.nordicForestTone})`,
     `- 동반 상징: ${res.companionMotif}`,
     `- 중심 통찰: ${res.regilaulInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
