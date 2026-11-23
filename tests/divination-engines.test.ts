@@ -14029,14 +14029,15 @@ test('Buryat Baikal Tengri Harmony engine: spirit, +09:00 KST, and interpretive 
 
 test('Cornish Kernow Sea Granite engine: landmark, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateCornishKernowSeaGranite({ profile, now: new Date('2026-11-20T07:38:00Z'), question: '묵묵히 내공을 쌓아 가고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CORNISH-KERNOW-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CORNISH-KERNOW-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionLandmark !== rep.kernowLandmark);
+  assert.ok(rep.graniteCoastAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatCornishKernowPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('콘월') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLandmark));
+  assert.ok(prompt.includes('콘월') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLandmark) && prompt.includes('과잉 경계'));
 });
 
 test('Ossetian Nart Sagas Forge engine: emblem, +09:00 KST, and interpretive boundary', () => {
@@ -14155,14 +14156,15 @@ test('Punjabi Nanak Langar Service engine: pillar, +09:00 KST, and interpretive 
 
 test('Chuvash Tura World Tree Balance engine: sign, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateChuvashTuraWorldTreeBalance({ profile, now: new Date('2026-11-20T07:56:00Z'), question: '한 땀씩 정갈하게 질서를 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CHUVASH-TURA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CHUVASH-TURA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSign !== rep.chuvashSign);
+  assert.ok(rep.worldTreeAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatChuvashTuraPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('추바시') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSign));
+  assert.ok(prompt.includes('추바시') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSign) && prompt.includes('과잉 경계'));
 });
 
 test('Kalmyk Jangar Bumba Steppe engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14539,14 +14541,15 @@ test('Yapese Rai Stone Trust engine: stone, +09:00 KST, and interpretive boundar
 
 test('Chukchi Bering Tundra Hearth engine: symbol, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateChukchiBeringTundraHearth({ profile, now: new Date('2026-11-20T09:04:00Z'), question: '거친 바람 속에서 내 안의 온기를 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CHUKCHI-BERING-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CHUKCHI-BERING-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSymbol !== rep.tundraSymbol);
+  assert.ok(rep.tundraHearthAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatChukchiBeringPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('축치') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSymbol));
+  assert.ok(prompt.includes('축치') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSymbol) && prompt.includes('과잉 경계'));
 });
 
 test('Palmyrene Oasis Colonnade engine: pillar, +09:00 KST, and interpretive boundary', () => {

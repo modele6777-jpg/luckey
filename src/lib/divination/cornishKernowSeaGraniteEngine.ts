@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface CornishKernowResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계·포구' | '일·내공' | '때·신념' | '인내 전반';
   kernowLandmark: string;
   companionLandmark: string;
+  graniteCoastAxis: string;
   cornishInsight: string;
   atlanticTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const CORNISH_SHADOWS = [
+  '내 안의 중심을 지킨다는 이유로 외부에서 들어오는 정당한 피드백까지 차단하지 않도록 살피세요.',
+  '묵묵히 내공을 쌓는 데만 익숙해져 이제는 결과물을 세상에 내보일 시점을 미루지 마세요.',
+  '편안한 포구에 머무르고 싶은 마음에 꼭 출항해야 할 다음 일정까지 늦추지 않도록 균형을 두세요.',
+  '오래 지킨 기준을 고수하려다 변화한 환경에 맞게 다듬어야 할 방식까지 놓치지 않도록 주의하세요.',
+  '물때를 기다리는 여유가 정작 지금 당장 건너야 할 작은 실행마저 미루는 핑계가 되지 않게 하세요.',
+];
+
+function classifyCornishTopic(q: string): CornishKernowResult['questionTopic'] {
+  if (/관계|포구|쉼터|사람|사랑|대화/.test(q)) return '관계·포구';
+  if (/일|직장|내공|습관|성실|축적/.test(q)) return '일·내공';
+  if (/때|신념|기준|물때|기다림/.test(q)) return '때·신념';
+  return '인내 전반';
+}
+
 export function calculateCornishKernowSeaGranite(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): CornishKernowResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyCornishTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % LANDMARKS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (LANDMARKS.length - 1));
   const picked = LANDMARKS[idx];
   const companion = LANDMARKS[(idx + companionOffset) % LANDMARKS.length];
+  const graniteCoastAxis = `${picked.landmark.split('(')[0].trim()} ↔ ${companion.landmark.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = CORNISH_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-CORNISH-KERNOW-v2.2.0',
+    engineVersion: 'LUCKEY-CORNISH-KERNOW-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     kernowLandmark: picked.landmark,
     companionLandmark: companion.landmark,
+    graniteCoastAxis,
     cornishInsight: picked.insight,
     atlanticTone: picked.tone,
     reflectionFocus: `콘월 케르노우의 '${picked.landmark}'과 동반 지형 '${companion.landmark}'을 겹쳐 보며, 지금 당장 결과를 재촉하기보다 바람을 견디며 단단해지는 시간을 믿어 보세요.`,
     ritualAction: picked.ritual,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '영국 콘월(Cornwall · Kernow) 켈트 해안과 화강암 광맥의 인내 철학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatCornishKernowPrompt(res: CornishKernowResult): string {
   return [
     `[콘월 케르노우·화강암 인내 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 해안 축: ${res.graniteCoastAxis}`,
     `- 케르노우 상징: ${res.kernowLandmark} (${res.atlanticTone})`,
     `- 동반 지형: ${res.companionLandmark}`,
     `- 중심 통찰: ${res.cornishInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
