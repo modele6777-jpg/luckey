@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface IfugaoTerraceResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '원천·숲' | '계단·나눔' | '리듬·거울' | '계단논 전반';
   ifugaoMotif: string;
   companionMotif: string;
+  terraceWaterAxis: string;
   ifugaoInsight: string;
   terraceTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const IFUGAO_SHADOWS = [
+  '원천인 숲을 아낀다고 휴식에만 머무르다 지금 물길을 열어 주어야 할 아래 논을 마르게 두지는 마세요.',
+  '가파른 비탈에 계단을 한 단씩 쌓되 지금 쌓은 돌담이 내 체력과 시간으로 감당 가능한 기울기인지 살피세요.',
+  '아래로 물을 흘려보내는 나눔이 내 논에 최소한으로 남길 물까지 모두 비워 버리는 무리가 되지 않도록 하세요.',
+  '즐거운 리듬과 노래를 챙기되 정작 손발을 움직여야 할 모내기와 수확의 마감 시간을 놓치지 마세요.',
+  '물논 거울에 하늘을 비추어 보는 고요한 시간 뒤에는 다시 내일 아침 물꼬를 트는 실제 행동이 이어져야 합니다.',
+];
+
+function classifyIfugaoTopic(q: string): IfugaoTerraceResult['questionTopic'] {
+  if (/숲|원천|에너지|휴식|물줄기/.test(q)) return '원천·숲';
+  if (/계단|비탈|나눔|수로|쪼개/.test(q)) return '계단·나눔';
+  if (/리듬|노래|거울|마감|고요/.test(q)) return '리듬·거울';
+  return '계단논 전반';
+}
+
 export function calculateIfugaoBanaueRiceTerrace(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): IfugaoTerraceResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyIfugaoTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const terraceWaterAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = IFUGAO_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-IFUGAO-TERRACE-v2.2.0',
+    engineVersion: 'LUCKEY-IFUGAO-TERRACE-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     ifugaoMotif: picked.motif,
     companionMotif: companion.motif,
+    terraceWaterAxis,
     ifugaoInsight: picked.insight,
     terraceTone: picked.tone,
     reflectionFocus: `이푸가오 계단논의 '${picked.motif}'처럼, 당장의 결과물뿐 아니라 그 물을 대어 주는 내 안의 무용 숲을 먼저 돌보세요. (동반 결: ${companion.motif.split('(')[0].trim()})`,
     ritualAction: picked.action,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '필리핀 코르디예라 이푸가오·바나우에 계단논과 무용 숲 수자원 순환 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatIfugaoTerracePrompt(res: IfugaoTerraceResult): string {
   return [
     `[이푸가오·바나우에 계단논 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 계단논·물길 축: ${res.terraceWaterAxis}`,
     `- 이푸가오 모티프: ${res.ifugaoMotif} (${res.terraceTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.ifugaoInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

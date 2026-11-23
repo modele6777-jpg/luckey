@@ -13844,14 +13844,15 @@ test('Welsh Mabinogion Awen Inspiration engine: ray, +09:00 KST, and interpretiv
 
 test('Igbo Ofo Ogu Truth Justice engine: symbol, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateIgboOfoOguTruthJustice({ profile, now: new Date('2026-11-20T07:03:00Z'), question: '떳떳한 기준을 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-IGBO-OFO-OGU-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-IGBO-OFO-OGU-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSymbol !== rep.pillarSymbol);
+  assert.ok(rep.ofoIkengaAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatIgboOfoOguPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('이그보') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSymbol));
+  assert.ok(prompt.includes('이그보') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSymbol) && prompt.includes('과잉 경계'));
 });
 
 test('Ryukyu Ichariba Chode Hospitality engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15077,14 +15078,15 @@ test('Cappadocian Tuff Cave Calm engine: motif, +09:00 KST, and interpretive bou
 
 test('Ifugao Banaue Rice Terrace engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateIfugaoBanaueRiceTerrace({ profile, now: new Date('2026-11-20T20:39:00Z'), question: '내 에너지의 근원인 숲을 돌보고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-IFUGAO-TERRACE-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-IFUGAO-TERRACE-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.ifugaoMotif);
+  assert.ok(rep.terraceWaterAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatIfugaoTerracePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('이푸가오') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('이푸가오') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
 });
 
 test('Otavalo Andes Loom Balance engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15263,14 +15265,15 @@ test('Yemeni Shibam Mud Tower engine: motif, +09:00 KST, and interpretive bounda
 
 test('Icelandic Saga Hearth engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateIcelandicSagaHearth({ profile, now: new Date('2026-11-20T21:28:00Z'), question: '과장을 덜어내고 온기를 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ICELANDIC-SAGA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ICELANDIC-SAGA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.symbolicMotif);
+  assert.ok(rep.sagaHearthAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatIcelandicSagaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('아이슬란드') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('아이슬란드') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
 });
 
 test('Sepik River Carving engine: motif, +09:00 KST, and interpretive boundary', () => {

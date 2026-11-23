@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.418",
+    "builtAt": "2026-11-24T06:05:00+09:00",
+    "summary": "아이슬란드 사가 화덕·이푸가오 계단논·이그보 오포·오구 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.418)",
+    "items": [
+      "아이슬란드·사가 화덕 엔진(v2.3.0): 질문 맥락(questionTopic), 사가·화덕 축(sagaHearthAxis), 과잉 경계(shadowWarning) 추가",
+      "이푸가오·바나우에 계단논 엔진(v2.3.0): 질문 맥락(questionTopic), 계단논·물길 축(terraceWaterAxis), 과잉 경계(shadowWarning) 추가",
+      "이그보 오포·오구 진실 성찰 엔진(v2.3.0): 질문 맥락(questionTopic), 오포·이켄가 축(ofoIkengaAxis), 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.417",
     "builtAt": "2026-11-24T05:57:00+09:00",
     "summary": "힘바 오트지제·몽족 자수 천·헝가리 탈토시 세계수 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.417)",

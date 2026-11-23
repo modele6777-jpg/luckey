@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface IgboOfoOguResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '진실·양심' | '실행·개척' | '환대·연대' | '오포·오구 전반';
   pillarSymbol: string;
   companionSymbol: string;
+  ofoIkengaAxis: string;
   ofoInsight: string;
   villageTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const IGBO_SHADOWS = [
+  '정직한 기준을 세우는 일이 타인의 실수를 날카롭게 재단하거나 융통성 없는 고집으로 굳어지지 않도록 살피세요.',
+  '맑은 양심으로 평정을 지키는 동안에도, 상대가 실제로 오해하고 있는 부분은 차분한 설명으로 풀어 줄 필요가 있습니다.',
+  '작은 환대와 성의를 먼저 건네되 상대의 경계를 넘거나 무리한 기대를 떠안지 않도록 선을 유지하세요.',
+  '내 손의 실행력을 힘차게 밀어붙이되 함께 보조를 맞추어야 할 동료의 속도와 안전망도 잊지 마세요.',
+  '공동체와 책임을 나누는 과정에서도 내가 직접 끝맺어야 할 핵심 결정까지 남에게 미루지는 마세요.',
+];
+
+function classifyIgboTopic(q: string): IgboOfoOguResult['questionTopic'] {
+  if (/기준|진실|양심|정직|떳떳/.test(q)) return '진실·양심';
+  if (/실행|개척|결정|행동|손/.test(q)) return '실행·개척';
+  if (/환대|대화|공동체|나눔|함께/.test(q)) return '환대·연대';
+  return '오포·오구 전반';
+}
+
 export function calculateIgboOfoOguTruthJustice(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): IgboOfoOguResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyIgboTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % SYMBOLS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (SYMBOLS.length - 1));
   const picked = SYMBOLS[idx];
   const companion = SYMBOLS[(idx + companionOffset) % SYMBOLS.length];
+  const ofoIkengaAxis = `${picked.symbol.split('(')[0].trim()} ↔ ${companion.symbol.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = IGBO_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-IGBO-OFO-OGU-v2.2.0',
+    engineVersion: 'LUCKEY-IGBO-OFO-OGU-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     pillarSymbol: picked.symbol,
     companionSymbol: companion.symbol,
+    ofoIkengaAxis,
     ofoInsight: picked.insight,
     villageTone: picked.tone,
     reflectionFocus: `이그보 지혜의 '${picked.symbol}'처럼, 눈앞의 계산보다 내가 떳떳하게 고개 들 수 있는 기준 하나를 먼저 붙잡아 보세요. (동반 결: ${companion.symbol.split('(')[0].trim()})`,
     ritualAction: picked.action,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '서아프리카 나이지리아 이그보 전통의 오포·오구(Ofo na Ogu) 진실과 실행 철학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatIgboOfoOguPrompt(res: IgboOfoOguResult): string {
   return [
     `[이그보 오포·오구 진실 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 오포·이켄가 축: ${res.ofoIkengaAxis}`,
     `- 상징 기둥: ${res.pillarSymbol} (${res.villageTone})`,
     `- 동반 기둥: ${res.companionSymbol}`,
     `- 중심 통찰: ${res.ofoInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
