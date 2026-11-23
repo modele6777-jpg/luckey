@@ -1,3 +1,4 @@
+import { convertSolarToLunar } from '../lunarCalendar';
 /**
  * =========================================================================
  * LUCKEY 주역(周易) 64괘 384효 본·지·호·착·종 4대 대칭 괘상, 체용 및 경방 8궁 세응 결단 마스터 엔진
@@ -95,6 +96,8 @@ export interface IchingMasterResult {
   engineVersion: string;
   calculatedAtKst: string;
   method: string;
+  /** 괘를 세운 방법 (매화역수 연월일시 작괘의 수 계산 또는 직접 던진 효) */
+  casting?: string;
   status: 'calculated';
   lines: Yao[];
   movingLines: number[]; // 1~6효 (아래에서 위로)
@@ -343,6 +346,41 @@ const YAO_POSITION_PROFILES = [
 /**
  * 주역 64괘 384효 4대 대칭 괘상 및 체용 결단 마스터 엔진 실행
  */
+const BRANCH_NAMES = ['자', '축', '인', '묘', '진', '사', '오', '미', '신', '유', '술', '해'];
+const SEOUL_SOLAR_OFFSET_MS = (8 * 60 + 28) * 60000;
+
+/**
+ * 매화역수 연월일시 작괘. 연지수(자1…해12) + 음력 월 + 음력 일 = 상괘(8로 나눈 나머지, 0은 8),
+ * 여기에 시지수(자1…해12)를 더한 수 = 하괘(8로 나눈 나머지)·동효(6으로 나눈 나머지, 0은 6).
+ */
+export function meihuaTimeCast(instant: Date): { upper: number; lower: number; moving: number; note: string } {
+  const solar = new Date(instant.getTime() + SEOUL_SOLAR_OFFSET_MS);
+  const hour = solar.getUTCHours();
+  const hourBranch = Math.floor(((hour + 1) % 24) / 2); // 23~01시 = 자(0)
+  if (hour >= 23) solar.setUTCDate(solar.getUTCDate() + 1);
+  let lunarYear = solar.getUTCFullYear();
+  let lunarMonth = solar.getUTCMonth() + 1;
+  let lunarDay = solar.getUTCDate();
+  let lunarOk = false;
+  try {
+    const lunar = convertSolarToLunar(solar.getUTCFullYear(), solar.getUTCMonth() + 1, solar.getUTCDate());
+    lunarYear = lunar.year;
+    lunarMonth = lunar.month;
+    lunarDay = lunar.day;
+    lunarOk = true;
+  } catch { /* 지원 범위 밖이면 양력 날짜로 대신한다 */ }
+  const yearBranch = (((lunarYear - 4) % 12) + 12) % 12;
+  const yearNum = yearBranch + 1;
+  const hourNum = hourBranch + 1;
+  const upperSum = yearNum + lunarMonth + lunarDay;
+  const lowerSum = upperSum + hourNum;
+  const upper = upperSum % 8 || 8;
+  const lower = lowerSum % 8 || 8;
+  const moving = lowerSum % 6 || 6;
+  const note = `매화역수 연월일시 작괘 · ${BRANCH_NAMES[yearBranch]}년(${yearNum}) + ${lunarOk ? '음력' : '양력'} ${lunarMonth}월 ${lunarDay}일 = ${upperSum} → 상괘 ${upper} · ${BRANCH_NAMES[hourBranch]}시(${hourNum}) 더해 ${lowerSum} → 하괘 ${lower} · 동효 ${moving} (서울 태양시)`;
+  return { upper, lower, moving, note };
+}
+
 export function calculateIchingMaster(
   linesOrDate?: readonly number[] | Date,
   question?: string,
@@ -350,21 +388,18 @@ export function calculateIchingMaster(
 ): IchingMasterResult {
   const refNow = nowArg ?? (linesOrDate instanceof Date ? linesOrDate : new Date());
   let lines: Yao[];
+  let castingNote = '직접 던진 효(六爻)';
   if (Array.isArray(linesOrDate) && linesOrDate.length === 6) {
     lines = [...linesOrDate] as Yao[];
   } else {
-    // 날짜/타임스탬프 기반 소강절 선천팔괘수 시간작괘 (+09:00 KST 결정론적 일관성)
+    // 매화역수(梅花易數) 연월일시 작괘 (소강절): 연지수 + 음력 월 + 음력 일 → 상괘, 여기에 시지수를 더해 하괘·동효.
+    // 시(時)는 서울 평균태양시(한국 표준시 −32분)로 정하고, 23시부터는 다음 날 자시로 본다.
     const target = linesOrDate instanceof Date ? linesOrDate : refNow;
-    const kstTarget = new Date(target.getTime() + 9 * 60 * 60 * 1000);
-    const y = kstTarget.getUTCFullYear();
-    const m = kstTarget.getUTCMonth() + 1;
-    const d = kstTarget.getUTCDate();
-    const h = kstTarget.getUTCHours();
-    const min = kstTarget.getUTCMinutes();
-
-    const upperNum = (y + m + d) % 8 || 8;
-    const lowerNum = (y + m + d + h + min) % 8 || 8;
-    const movingIdx = (y + m + d + h + min) % 6 || 6; // 1 ~ 6
+    const cast = meihuaTimeCast(target);
+    castingNote = cast.note;
+    const upperNum = cast.upper;
+    const lowerNum = cast.lower;
+    const movingIdx = cast.moving;
 
     // 선천괘 비트 매핑 (건1=111, 태2=110, 이3=101, 진4=100, 손5=011, 감6=010, 간7=001, 곤8=000)
     const trigramBits: Record<number, [number, number, number]> = {
@@ -547,6 +582,7 @@ export function calculateIchingMaster(
     engineVersion: ICHING_MASTER_ENGINE_VERSION,
     calculatedAtKst: temporalIchingRhythm.kstTimeLabel,
     method: ICHING_MASTER_METHOD,
+    casting: castingNote,
     status: 'calculated',
     lines,
     movingLines: base.movingLines,

@@ -176,7 +176,7 @@ export const ZODIAC_SIGNS: ZodiacSignInfo[] = [
 ];
 
 // 주요 도시 좌표 (위도, 경도)
-const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
+export const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
   '서울': { lat: 37.5665, lng: 126.9780 },
   '부산': { lat: 35.1796, lng: 129.0756 },
   '대구': { lat: 35.8714, lng: 128.6014 },
@@ -223,6 +223,12 @@ export interface NatalChartResult {
   mars: NatalPlacement;
   jupiter: NatalPlacement;
   saturn: NatalPlacement;
+  /** 외행성 (세대 행성: 같은 해 출생자는 대체로 같다) */
+  uranus?: NatalPlacement;
+  neptune?: NatalPlacement;
+  pluto?: NatalPlacement;
+  /** 홀사인 하우스: 상승궁 별자리를 1하우스로 두고 별자리 하나씩. 생시·출생지가 있을 때만. */
+  houses?: { system: '홀사인(Whole Sign)'; byBody: Record<string, number> } | null;
   elements: {
     fire: number;
     earth: number;
@@ -324,7 +330,7 @@ export function calculateNatalChart(profile?: UserProfile | null): NatalChartRes
   const limitations: string[] = [];
   if (!birthTime) limitations.push('생시 미입력: 행성은 현지 정오 참고값이며 달·경계 별자리는 달라질 수 있습니다. 상승궁·MC는 계산하지 않습니다.');
   if (!locationKnown) limitations.push('출생지 좌표·시간대 미확인: 한국 시간대를 가정한 참고값이며 상승궁·MC는 계산하지 않습니다.');
-  limitations.push('서양 열대황도·지구중심 차트입니다. 베딕 항성황도·다샤 또는 하우스 계산 결과가 아닙니다.');
+  limitations.push('서양 열대황도·지구중심 차트입니다. 하우스는 홀사인(상승궁 별자리=1하우스) 방식이며, 플라시두스 등 다른 하우스 체계와 다를 수 있습니다.');
   const placement = (body: Body) => longitudeToPlacement(Ecliptic(GeoVector(body, instant, true)).elon);
   const sunPlacement = placement(Body.Sun);
   const moonPlacement = placement(Body.Moon);
@@ -333,6 +339,9 @@ export function calculateNatalChart(profile?: UserProfile | null): NatalChartRes
   const marsPlacement = placement(Body.Mars);
   const jupiterPlacement = placement(Body.Jupiter);
   const saturnPlacement = placement(Body.Saturn);
+  const uranusPlacement = placement(Body.Uranus);
+  const neptunePlacement = placement(Body.Neptune);
+  const plutoPlacement = placement(Body.Pluto);
   let ascPlacement: NatalPlacement | null = null;
   let mcPlacement: NatalPlacement | null = null;
   if (birthTime && matchedCoords) {
@@ -391,7 +400,24 @@ export function calculateNatalChart(profile?: UserProfile | null): NatalChartRes
     { name: '화성', isLuminary: false, placement: marsPlacement },
     { name: '목성', isLuminary: false, placement: jupiterPlacement },
     { name: '토성', isLuminary: false, placement: saturnPlacement },
-  ]);
+    { name: '천왕성', isLuminary: false, placement: uranusPlacement },
+    { name: '해왕성', isLuminary: false, placement: neptunePlacement },
+    { name: '명왕성', isLuminary: false, placement: plutoPlacement },
+  ]).filter(aspect => !(['천왕성', '해왕성', '명왕성'].includes(aspect.bodyA) && ['천왕성', '해왕성', '명왕성'].includes(aspect.bodyB)));
+  // 외행성끼리의 각도는 같은 세대 모두에게 같으므로 개인 해석에서 뺀다.
+
+  // 홀사인 하우스: 상승궁 별자리 = 1하우스.
+  const signIndexOf = (p: NatalPlacement) => Math.floor(p.longitude / 30);
+  const houses = ascPlacement
+    ? {
+        system: '홀사인(Whole Sign)' as const,
+        byBody: Object.fromEntries(([
+          ['태양', sunPlacement], ['달', moonPlacement], ['수성', mercuryPlacement], ['금성', venusPlacement], ['화성', marsPlacement],
+          ['목성', jupiterPlacement], ['토성', saturnPlacement], ['천왕성', uranusPlacement], ['해왕성', neptunePlacement], ['명왕성', plutoPlacement],
+          ...(mcPlacement ? [['MC', mcPlacement] as const] : []),
+        ] as Array<readonly [string, NatalPlacement]>).map(([name, p]) => [name, ((signIndexOf(p) - signIndexOf(ascPlacement!) + 12) % 12) + 1])),
+      }
+    : null;
 
   const aspectSummary = majorAspects.length > 0
     ? ` · 주요 어스펙트: ${majorAspects.slice(0, 3).map(a => `${a.bodyA}${a.symbol}${a.bodyB}(${a.aspectName}, 오차 ${a.orb}°)`).join(', ')}`
@@ -411,6 +437,10 @@ export function calculateNatalChart(profile?: UserProfile | null): NatalChartRes
     mars: marsPlacement,
     jupiter: jupiterPlacement,
     saturn: saturnPlacement,
+    uranus: uranusPlacement,
+    neptune: neptunePlacement,
+    pluto: plutoPlacement,
+    houses,
     elements,
     modalities,
     majorAspects,

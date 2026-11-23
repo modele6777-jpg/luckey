@@ -127,6 +127,7 @@ export default function ProfilePage() {
     birthtime: initialProfile?.basic?.birthtime || '',
     gender: (initialProfile?.basic?.gender || '') as '' | 'male' | 'female' | 'other',
     birthCity: initialProfile?.basic?.birthCity || '',
+    trueSolarTime: Boolean(initialProfile?.basic?.trueSolarTime),
     lunarSolar: (initialProfile?.basic?.lunarSolar || 'solar') as 'solar' | 'lunar',
     avatarUrl: initAvatar,
   });
@@ -176,6 +177,7 @@ export default function ProfilePage() {
           birthtime: cleanBasic.birthtime !== undefined ? cleanBasic.birthtime : b.birthtime,
           gender: cleanBasic.gender || b.gender,
           birthCity: cleanBasic.birthCity || b.birthCity,
+          trueSolarTime: cleanBasic.trueSolarTime !== undefined ? Boolean(cleanBasic.trueSolarTime) : b.trueSolarTime,
           lunarSolar: cleanBasic.lunarSolar || b.lunarSolar,
           avatarUrl: getPermanentAvatar() || cleanBasic.avatarUrl || b.avatarUrl || '',
         }));
@@ -442,6 +444,22 @@ export default function ProfilePage() {
             </div>
             <InputField label="태어난 도시 (별자리 계산용)" value={basic.birthCity}
               onChange={v => setBasic(b => ({ ...b, birthCity: v }))} placeholder="예: 서울" />
+            <div>
+              <label className="block text-xs text-white/40 mb-1.5 tracking-wider">사주 시주 시간 기준</label>
+              <div className="flex gap-2">
+                {[{ v: false, l: '한국 관례 (−30분)' }, { v: true, l: '진태양시 (출생지 경도)' }].map(({ v, l }) => (
+                  <button key={String(v)} type="button" onClick={() => setBasic(b => ({ ...b, trueSolarTime: v }))}
+                    className="flex-1 py-2.5 rounded-xl text-sm transition-all"
+                    aria-pressed={basic.trueSolarTime === v}
+                    style={{
+                      background: basic.trueSolarTime === v ? 'oklch(0.75 0.12 50 / 0.2)' : 'oklch(0.14 0.015 270)',
+                      border: `1px solid ${basic.trueSolarTime === v ? 'oklch(0.75 0.12 50 / 0.5)' : 'oklch(0.22 0.01 270)'}`,
+                      color: basic.trueSolarTime === v ? 'oklch(0.75 0.12 50)' : 'oklch(0.55 0.01 270)',
+                    }}>{l}</button>
+                ))}
+              </div>
+              <p className="mt-1.5 text-[11px] leading-relaxed text-white/35">진태양시는 태어난 도시의 경도와 그날의 균시차로 시주를 정해요. 시간 경계 근처에 태어났다면 시주가 달라질 수 있어요.</p>
+            </div>
             <div>
               <label className="block text-xs text-white/40 mb-1.5 tracking-wider">생년월일 기준</label>
               <div className="flex gap-2">

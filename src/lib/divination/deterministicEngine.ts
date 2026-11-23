@@ -50,7 +50,7 @@ import { calculateKabbalah, formatKabbalahPrompt, type KabbalahResult, KABBALAH_
 import { calculateThaiHorasat, formatThaiHorasatPrompt, type ThaiHorasatResult, THAI_HORASAT_METHOD } from './thaiHorasatEngine';
 import { calculateHonggukQimen, formatHonggukQimenPrompt, type HonggukQimenResult, HONGGUK_QIMEN_ENGINE_VERSION, HONGGUK_QIMEN_METHOD } from './honggukQimenEngine';
 import { calculateDeterministicCompatibility, formatCompatibilityPrompt, type CompatibilityAnalysisResult } from './deterministicCompatibility';
-import { calculateLiurenMaster, formatLiurenMasterPrompt, type LiurenMasterResult, LIUREN_MASTER_ENGINE_VERSION, LIUREN_MASTER_METHOD } from './liurenMasterEngine';
+import { calculateLiurenMaster, liurenPersonalPositions, formatLiurenMasterPrompt, type LiurenMasterResult, LIUREN_MASTER_ENGINE_VERSION, LIUREN_MASTER_METHOD } from './liurenMasterEngine';
 import { calculateIchingMaster, formatIchingMasterPrompt, type IchingMasterResult, ICHING_MASTER_ENGINE_VERSION, ICHING_MASTER_METHOD } from './ichingMasterEngine';
 import { calculateTarotMaster, formatTarotMasterPrompt, type TarotMasterResult, TAROT_MASTER_ENGINE_VERSION, TAROT_MASTER_METHOD } from './tarotMasterEngine';
 import { calculateHeLuoLiShu, formatHeLuoLiShuPrompt, type HeLuoLiShuResult, HELUOLISHU_ENGINE_VERSION, HELUOLISHU_METHOD } from './heLuoLiShuEngine';
@@ -1261,7 +1261,14 @@ try {
             mars: astroRes.mars,
             jupiter: astroRes.jupiter,
             saturn: astroRes.saturn,
+            // 외행성(세대 행성)·홀사인 하우스·주요 각도 (2026-11-23 추가)
+            uranus: astroRes.uranus,
+            neptune: astroRes.neptune,
+            pluto: astroRes.pluto,
+            houses: astroRes.houses,
+            majorAspects: astroRes.majorAspects?.slice(0, 8),
             elements: astroRes.elements,
+            modalities: astroRes.modalities,
             timeKnown: astroRes.timeKnown,
             locationKnown: astroRes.locationKnown,
             utcInstant: astroRes.utcInstant,
@@ -1503,12 +1510,25 @@ liurenEnvelope = {toolId:'liuren', toolKoName:'육임', status:'skipped', note:'
 } else {
 try {
     liurenMasterResult = calculateLiurenMaster(now, question);
+    // 본명·행년: 생년과 성별이 있으면 이번 점시 판에 손님의 자리를 올린다.
+    let liurenPersonal: ReturnType<typeof liurenPersonalPositions> = null;
+    try {
+      const sajuForLiuren = profile?.basic?.birthdate ? calculateDetailedSaju(profile) : null;
+      if (sajuForLiuren) {
+        const yearZhi = sajuForLiuren.pillars.year.zhi;
+        // 사주 해(입춘 기준): 생년의 띠가 연주 지지와 다르면 입춘 전 출생이라 한 해 앞이다.
+        const birthYear = Number(String(profile?.basic?.birthdate || '').slice(0, 4));
+        const branchOf = (year: number) => '子丑寅卯辰巳午未申酉戌亥'[(((year - 4) % 12) + 12) % 12];
+        const sajuYear = branchOf(birthYear) === yearZhi ? birthYear : branchOf(birthYear - 1) === yearZhi ? birthYear - 1 : birthYear + 1;
+        liurenPersonal = liurenPersonalPositions(now, yearZhi, sajuYear, profile?.basic?.gender === 'male' || profile?.basic?.gender === 'female' ? profile.basic.gender : undefined);
+      }
+    } catch { /* 본명·행년 없이 판만 쓴다 */ }
     liurenEnvelope = {
       toolId: 'liuren',
       toolKoName: '육임',
       status: 'calculated',
       method: liurenMasterResult.method,
-      data: liurenMasterResult,
+      data: liurenPersonal ? { ...liurenMasterResult, personal: liurenPersonal } : liurenMasterResult,
     };
   } catch (err: any) {
     liurenEnvelope = { toolId: 'liuren', toolKoName: '육임', status: 'error', note: err?.message || '육임 포국 실패' };
