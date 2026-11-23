@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface KalmykJangarResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '공존·여백' | '신의·서사' | '기백·등불' | '붐바 전반';
   bumbaMotif: string;
   companionMotif: string;
+  steppeEpicAxis: string;
   jangarInsight: string;
   caspianTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const KALMYK_SHADOWS = [
+  '모두가 함께 숨 쉴 여백을 남기려다 내가 정작 지켜야 할 정당한 몫과 책임의 선까지 흐려 버리지 마세요.',
+  '한 번 맺은 신의와 약속을 지키는 것은 귀하지만 이미 전제가 깨진 약속에 나만 홀로 묶여 있지 않도록 살피세요.',
+  '고단한 오늘을 서사의 한 장으로 바라보는 여유가 지금 당장 해결해야 할 실질적 문제를 미화하는 핑계가 되지 않게 하세요.',
+  '준마 아란잘처럼 시원하게 내달릴 때에도 지형과 말의 숨 고르기, 즉 내 체력과 자원의 한계를 함께 살피세요.',
+  '어두운 시기에 작은 등불을 지키는 따뜻함 뒤에는 내일 다시 길을 밝힐 땔감과 휴식을 채우는 현실적 돌봄이 필요합니다.',
+];
+
+function classifyKalmykTopic(q: string): KalmykJangarResult['questionTopic'] {
+  if (/공존|여백|시야|초원|넓/.test(q)) return '공존·여백';
+  if (/신의|약속|우정|서사|이야기/.test(q)) return '신의·서사';
+  if (/기백|추진|방향|등불|희망/.test(q)) return '기백·등불';
+  return '붐바 전반';
+}
+
 export function calculateKalmykJangarBumbaSteppe(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): KalmykJangarResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyKalmykTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const steppeEpicAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = KALMYK_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-KALMYK-JANGAR-v2.2.0',
+    engineVersion: 'LUCKEY-KALMYK-JANGAR-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     bumbaMotif: picked.motif,
     companionMotif: companion.motif,
+    steppeEpicAxis,
     jangarInsight: picked.insight,
     caspianTone: picked.tone,
     reflectionFocus: `칼미크 《쟌가르》 서사시의 '${picked.motif}'처럼, 조급한 경쟁심을 내려놓고 넓은 초원의 넉넉한 시야와 신의를 지켜 보세요. (동반 결: ${companion.motif.split('(')[0].trim()})`,
     ritualAction: picked.action,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '칼미크(Kalmyk) 민족 서사시 《쟌가르》의 붐바 이상향과 초원 신의 문화를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatKalmykJangarPrompt(res: KalmykJangarResult): string {
   return [
     `[칼미크 쟌가르·붐바 초원 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 붐바·서사 축: ${res.steppeEpicAxis}`,
     `- 초원 상징: ${res.bumbaMotif} (${res.caspianTone})`,
     `- 동반 상징: ${res.companionMotif}`,
     `- 중심 통찰: ${res.jangarInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

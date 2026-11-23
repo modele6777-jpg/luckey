@@ -1,10 +1,10 @@
 {
-  "version": "1.8.418",
-  "builtAt": "2026-11-24T06:05:00+09:00",
-  "summary": "아이슬란드 사가 화덕·이푸가오 계단논·이그보 오포·오구 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.418)",
+  "version": "1.8.419",
+  "builtAt": "2026-11-24T06:15:00+09:00",
+  "summary": "제임스 조이스 에피파니·자바 케자웬 라사·칼미크 쟌가르 초원 3대 엔진 과잉 경계 및 균형 축 심층 강화(v1.8.419)",
   "items": [
-    "아이슬란드·사가 화덕 엔진(v2.3.0): 질문 맥락(questionTopic), 사가·화덕 축(sagaHearthAxis), 과잉 경계(shadowWarning) 추가",
-    "이푸가오·바나우에 계단논 엔진(v2.3.0): 질문 맥락(questionTopic), 계단논·물길 축(terraceWaterAxis), 과잉 경계(shadowWarning) 추가",
-    "이그보 오포·오구 진실 성찰 엔진(v2.3.0): 질문 맥락(questionTopic), 오포·이켄가 축(ofoIkengaAxis), 과잉 경계(shadowWarning) 추가"
+    "제임스 조이스 에피파니 엔진(v2.4.0): 테마별 과잉 경계(shadowWarning) 추가 및 버전 표기 일원화",
+    "자바 케자웬 라사 평정 엔진(v2.3.0): 질문 맥락(questionTopic), 라사 균형 축(rasaBalanceAxis), 과잉 경계(shadowWarning) 추가",
+    "칼미크 쟌가르·붐바 초원 엔진(v2.3.0): 질문 맥락(questionTopic), 붐바·서사 축(steppeEpicAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }

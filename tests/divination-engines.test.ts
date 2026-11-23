@@ -9467,12 +9467,13 @@ test('James Joyce engine selects a qualitative literary perspective from the que
   assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.joyceSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.shadowWarning.length > 0);
   const prompt = formatIrishJamesJoyceUlyssesEpiphanyPrompt(rep);
   assert.match(prompt, /문학적 참고/);
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
   assert(prompt.includes(rep.reflectionFocus));
+  assert(prompt.includes('과잉 경계'));
   assert.doesNotMatch(prompt, /\/100|원전 명대사|길 잃은 고양이|A man of genius/);
 
   const epiphany = calculateIrishJamesJoyceUlyssesEpiphany('일상의 에피파니와 관찰');
@@ -13476,14 +13477,15 @@ test('Armenian Narekatsi Lamentation Healing engine: contemplations, +09:00 KST,
 
 test('Javanese Kejawen Rasa Harmony engine: principles, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateJavaneseKejawenRasaHarmony({ profile, now: new Date('2026-11-20T05:05:00Z'), question: '흔들리지 않는 평정이 필요해요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-JAVANESE-KEJAWEN-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-JAVANESE-KEJAWEN-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.supportingPrinciple.id !== rep.activePrinciple.id);
+  assert.ok(rep.rasaBalanceAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('수치적 운세 점수가 아닙니다'));
   const prompt = formatJavaneseKejawenPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('케자웬') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.supportingPrinciple.koreanTitle));
+  assert.ok(prompt.includes('케자웬') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.supportingPrinciple.koreanTitle) && prompt.includes('과잉 경계'));
 });
 
 test('Phoenician Navigator Star Compass engine: beacons, +09:00 KST, and interpretive boundary', () => {
@@ -14176,14 +14178,15 @@ test('Chuvash Tura World Tree Balance engine: sign, +09:00 KST, and interpretive
 
 test('Kalmyk Jangar Bumba Steppe engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKalmykJangarBumbaSteppe({ profile, now: new Date('2026-11-20T07:56:00Z'), question: '넓은 초원의 넉넉한 시야를 갖고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KALMYK-JANGAR-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-KALMYK-JANGAR-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.bumbaMotif);
+  assert.ok(rep.steppeEpicAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKalmykJangarPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('칼미크') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('칼미크') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
 });
 
 test('Bugis Lontara Pasik Wisdom engine: principle, +09:00 KST, and interpretive boundary', () => {
