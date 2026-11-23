@@ -18,11 +18,14 @@ export interface KazakhAbaiResult {
   engineName: string;
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '분별·기준' | '의지·실행' | '온기·성실' | '아바이 전반';
   primaryPillar: AbaiVirtuePillar;
   balancingPillar: AbaiVirtuePillar;
+  virtueBalanceAxis: string;
   qualitativeSynthesis: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   isSymbolicFramework: true;
@@ -78,6 +81,20 @@ function stableHash(input: string): number {
   return h >>> 0;
 }
 
+const ABAI_SHADOWS: Record<AbaiVirtuePillarId, string> = {
+  akyl_discernment: '스스로 따져 보는 이성과 분별이 지나치면 타인의 좋은 제안까지 의심하고 끝없는 분석에 갇히기 쉽습니다.',
+  kairat_steadfast_will: '흔들리지 않는 의지를 세우는 것은 좋으나 이미 방향이 틀어진 일까지 고집으로 밀어붙이지는 마세요.',
+  jurek_warm_compassion: '사람에 대한 따뜻한 온기를 챙기느라 내가 감당할 수 없는 부탁까지 모두 떠안아 지치지 않도록 하세요.',
+  enbek_honest_craft: '성실하게 땀을 쌓는 꾸준함이 내 안의 휴식과 방향 재점검 시간까지 모두 잠식하지 않게 균형을 잡으세요.',
+};
+
+function classifyAbaiTopic(q: string): KazakhAbaiResult['questionTopic'] {
+  if (/기준|분별|이성|판단|시선/.test(q)) return '분별·기준';
+  if (/의지|끝까지|미룬|실행|밀고/.test(q)) return '의지·실행';
+  if (/온기|사람|성실|배움|꾸준/.test(q)) return '온기·성실';
+  return '아바이 전반';
+}
+
 export function calculateKazakhAbaiBookOfWords(params: {
   profile: UserProfile;
   now?: Date;
@@ -85,6 +102,7 @@ export function calculateKazakhAbaiBookOfWords(params: {
 }): KazakhAbaiResult {
   const now = params.now ?? new Date();
   const query = (params.question ?? '').trim();
+  const questionTopic = classifyAbaiTopic(query);
 
   const seedInput = [
     params.profile.basic?.name ?? '',
@@ -100,6 +118,8 @@ export function calculateKazakhAbaiBookOfWords(params: {
 
   const primaryPillar = ABAI_PILLARS[primaryIdx];
   const balancingPillar = ABAI_PILLARS[balancingIdx];
+  const virtueBalanceAxis = `${primaryPillar.koreanLabel} ↔ ${balancingPillar.koreanLabel} (${questionTopic})`;
+  const shadowWarning = ABAI_SHADOWS[primaryPillar.id];
 
   const qualitativeSynthesis =
     `카자흐 대문호 아바이 쿠난바예프의 《교훈의 말씀》 관점으로 살피면, 지금은 ` +
@@ -118,13 +138,16 @@ export function calculateKazakhAbaiBookOfWords(params: {
 
   return {
     engineName: '카자흐 아바이 《교훈의 말씀》 지혜·의지 (Kazakh Abai Book of Words)',
-    engineVersion: 'LUCKEY-KAZAKH-ABAI-v2.2.0',
+    engineVersion: 'LUCKEY-KAZAKH-ABAI-v2.3.0',
     calculatedAtKst: formatKazakhKstTimestamp(now),
+    questionTopic,
     primaryPillar,
     balancingPillar,
+    virtueBalanceAxis,
     qualitativeSynthesis,
     reflectionFocus,
     ritualAction,
+    shadowWarning,
     reflectiveQuestion,
     interpretiveBoundary:
       '본 결과는 카자흐스탄 사상가 아바이 쿠난바예프의 《교훈의 말씀》 성찰 덕목을 활용한 상징 프레임워크이며, 수치적 운세 점수나 미래 예측이 아닙니다.',
@@ -136,11 +159,13 @@ export function formatKazakhAbaiPrompt(res: KazakhAbaiResult): string {
   return [
     `[보조 상징 관점 — ${res.engineName}]`,
     `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 덕목 균형 축: ${res.virtueBalanceAxis}`,
     `- 중심 덕목: ${res.primaryPillar.kazakhTerm} · ${res.primaryPillar.koreanLabel}`,
     `- 균형 덕목: ${res.balancingPillar.kazakhTerm} · ${res.balancingPillar.koreanLabel}`,
     `- 성찰 해석: ${res.qualitativeSynthesis}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 실천 의례: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

@@ -1,10 +1,10 @@
 {
-  "version": "1.8.419",
-  "builtAt": "2026-11-24T06:15:00+09:00",
-  "summary": "제임스 조이스 에피파니·자바 케자웬 라사·칼미크 쟌가르 초원 3대 엔진 과잉 경계 및 균형 축 심층 강화(v1.8.419)",
+  "version": "1.8.420",
+  "builtAt": "2026-11-24T06:25:00+09:00",
+  "summary": "카렌 대나무 물시계·카자흐 아바이 교훈·크메르 앙코르 바라이 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.420)",
   "items": [
-    "제임스 조이스 에피파니 엔진(v2.4.0): 테마별 과잉 경계(shadowWarning) 추가 및 버전 표기 일원화",
-    "자바 케자웬 라사 평정 엔진(v2.3.0): 질문 맥락(questionTopic), 라사 균형 축(rasaBalanceAxis), 과잉 경계(shadowWarning) 추가",
-    "칼미크 쟌가르·붐바 초원 엔진(v2.3.0): 질문 맥락(questionTopic), 붐바·서사 축(steppeEpicAxis), 과잉 경계(shadowWarning) 추가"
+    "카렌 대나무 물시계 엔진(v2.3.0): 질문 맥락(questionTopic), 물시계 축(waterClockAxis), 과잉 경계(shadowWarning) 추가",
+    "카자흐 아바이 《교훈의 말씀》 엔진(v2.3.0): 질문 맥락(questionTopic), 덕목 균형 축(virtueBalanceAxis), 과잉 경계(shadowWarning) 추가",
+    "크메르 앙코르 바라이 물 순환 엔진(v2.3.0): 질문 맥락(questionTopic), 바라이 순환 축(barayWaterAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }

@@ -9,11 +9,14 @@ export interface KarenBambooClockInput {
 export interface KarenBambooClockResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '박자·페이스' | '비움·순환' | '여백·집중' | '물시계 전반';
   bambooCadence: string;
   companionCadence: string;
+  waterClockAxis: string;
   waterMeasure: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,23 +68,43 @@ function hashSeed(text: string): number {
   return h >>> 0;
 }
 
+const SHADOWS = [
+  '박자를 고르게 맞추려다 지금 당장 속도를 내어 건너야 할 결정적인 구간까지 지나치게 늦추지 마세요.',
+  '가득 차서 비워지는 순환을 기다리는 동안에도 이미 넘치고 있는 부담은 스스로 먼저 덜어내야 합니다.',
+  '아침 안개처럼 고요히 머무는 시간이 길어질수록 오늘 손대야 할 현실의 첫 일거리가 흐려지지 않도록 살피세요.',
+  '서두름 없이 흐르는 리듬을 지키되 마감이 정해진 약속의 시간표까지 흘려보내지는 마세요.',
+] as const;
+
+function classifyKarenTopic(q: string): KarenBambooClockResult['questionTopic'] {
+  if (/박자|페이스|속도|조급/.test(q)) return '박자·페이스';
+  if (/비움|순환|기울|내려/.test(q)) return '비움·순환';
+  if (/여백|집중|틈|시간/.test(q)) return '여백·집중';
+  return '물시계 전반';
+}
+
 export function calculateKarenBambooClock(input: KarenBambooClockInput): KarenBambooClockResult {
   const fate = input.profile.fate ?? {};
-  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const q = (input.question ?? '').trim();
+  const questionTopic = classifyKarenTopic(q);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${q}`;
   const seed = hashSeed(seedText);
   const cadenceIdx = seed % CADENCES.length;
   const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (CADENCES.length - 1));
   const bambooCadence = CADENCES[cadenceIdx];
   const companionCadence = CADENCES[(cadenceIdx + companionOffset) % CADENCES.length];
+  const waterClockAxis = `${bambooCadence.slice(0, 16)}… ↔ ${companionCadence.slice(0, 16)}… (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-KAREN-BAMBOO-v2.2.0',
+    engineVersion: 'LUCKEY-KAREN-BAMBOO-v2.3.0',
     calculatedAtKst: toKstIso(input.now),
+    questionTopic,
     bambooCadence,
     companionCadence,
+    waterClockAxis,
     waterMeasure: MEASURES[(seed >>> 3) % MEASURES.length],
     reflectionFocus: `산간 계곡의 대나무 물시계처럼 주 박자('${bambooCadence}')와 동반 박자('${companionCadence}')가 어우러져 차고 기우는 자연스러운 박자로 조급함을 덜고 자기 페이스를 지키는 카렌 족의 상징적 관점입니다.`,
     ritualAction: ACTIONS[cadenceIdx],
+    shadowWarning: SHADOWS[cadenceIdx],
     reflectiveQuestion: QUESTIONS[cadenceIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
@@ -91,11 +114,13 @@ export function formatKarenBambooPrompt(res: KarenBambooClockResult): string {
   return [
     `[카렌·대나무 물시계 조화 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
+    `질문 맥락: ${res.questionTopic} | 물시계 축: ${res.waterClockAxis}`,
     `물시계 박자: ${res.bambooCadence}`,
     `동반 박자: ${res.companionCadence}`,
     `흐름: ${res.waterMeasure}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
+    `과잉 경계: ${res.shadowWarning}`,
     `성찰 질문: ${res.reflectiveQuestion}`,
     `경계: ${res.interpretiveBoundary}`,
   ].join('\n');
