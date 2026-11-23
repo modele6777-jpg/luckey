@@ -3750,3 +3750,27 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   })();
 });
+
+// ⌨️ 연습 창 안 입력칸을 누르면, 키보드가 올라온 뒤 그 칸을 창 본문 가운데로 옮긴다 (페이지 전체는 움직이지 않는다).
+(function keepFocusedFieldVisible() {
+  const isField = (el) => el && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && !/^(range|checkbox|radio|button|submit|reset|color|file|image|hidden)$/i.test(el.type || 'text')));
+  const reveal = () => {
+    const field = document.activeElement;
+    if (!isField(field)) return;
+    const body = field.closest('.modal-scrollable-body');
+    if (!body) return;
+    const b = body.getBoundingClientRect();
+    const f = field.getBoundingClientRect();
+    if (f.top >= b.top + 4 && f.bottom <= b.bottom - 4) return;
+    const target = body.scrollTop + (f.top - b.top) - Math.max(8, (b.height - Math.min(f.height, b.height)) / 2);
+    body.scrollTop = Math.max(0, target);
+  };
+  let timers = [];
+  const schedule = () => {
+    timers.forEach(clearTimeout);
+    timers = [60, 250, 500, 800].map((ms) => setTimeout(reveal, ms));
+  };
+  document.addEventListener('focusin', (event) => { if (isField(event.target)) schedule(); });
+  window.addEventListener('resize', () => { if (isField(document.activeElement)) schedule(); });
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', () => { if (isField(document.activeElement)) schedule(); });
+})();
