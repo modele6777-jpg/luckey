@@ -18,11 +18,14 @@ export interface HittiteTelepinuResult {
   engineName: string;
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계' | '진로·일' | '마음·회복' | '균형 전반';
   activePhase: TelepinuRenewalPhase;
   companionPhase: TelepinuRenewalPhase;
+  telepinuReturnAxis: string;
   qualitativeSynthesis: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   isSymbolicFramework: true;
@@ -78,6 +81,20 @@ function stableHash(input: string): number {
   return h >>> 0;
 }
 
+function classifyTelepinuTopic(q: string): HittiteTelepinuResult['questionTopic'] {
+  if (/관계|사랑|연애|사람|갈등|가족/.test(q)) return '관계';
+  if (/일|직장|진로|사업|돈|재물|선택/.test(q)) return '진로·일';
+  if (/마음|불안|지침|휴식|회복|감정|활력/.test(q)) return '마음·회복';
+  return '균형 전반';
+}
+
+const TELEPINU_SHADOW_WARNINGS: Record<TelepinuRenewalPhaseId, string> = {
+  bee_gentle_search: '작은 단서를 찾다가 사소한 결점까지 과도하게 파고들어 지치지 않도록 경계하세요.',
+  cedar_calming_smoke: '열기를 식히는 데만 머물러 정작 필요한 대화와 정리를 미루지 않도록 주의하세요.',
+  hearth_order_return: '생활 리듬을 바로잡으려다 스스로에게 지나친 규칙과 엄격함을 씌우지 마세요.',
+  eyra_shared_blessing: '온기를 나누려다 내 회복에 필요한 혼자만의 여백까지 다 내어주지 않도록 살피세요.',
+};
+
 export function calculateHittiteTelepinuHarmonyRenewal(params: {
   profile: UserProfile;
   now?: Date;
@@ -85,6 +102,7 @@ export function calculateHittiteTelepinuHarmonyRenewal(params: {
 }): HittiteTelepinuResult {
   const now = params.now ?? new Date();
   const query = (params.question ?? '').trim();
+  const questionTopic = classifyTelepinuTopic(query);
 
   const seedInput = [
     params.profile.basic?.name ?? '',
@@ -100,12 +118,14 @@ export function calculateHittiteTelepinuHarmonyRenewal(params: {
 
   const activePhase = TELEPINU_PHASES[activeIdx];
   const companionPhase = TELEPINU_PHASES[companionIdx];
+  const telepinuReturnAxis = `${activePhase.koreanLabel} → ${companionPhase.koreanLabel} (${questionTopic} 축)`;
+  const shadowWarning = TELEPINU_SHADOW_WARNINGS[activePhase.id];
 
   const qualitativeSynthesis =
     `고대 아나톨리아 히타이트의 테레피누 조화·회복 신화로 살피면, 지금은 ` +
     `‘${activePhase.hittiteMotif} — ${activePhase.koreanLabel}’의 국면입니다. ` +
     `${activePhase.coreInsight} 여기에 ‘${companionPhase.koreanLabel}’이 이어져, ` +
-    `무거워졌던 일상의 리듬을 부드럽게 되살리기 좋은 시점입니다.`;
+    `${questionTopic} 맥락에서 무거워졌던 일상의 리듬을 부드럽게 되살리기 좋은 시점입니다.`;
 
   const reflectionFocus =
     `${activePhase.koreanLabel}으로 긴장을 풀고 ${companionPhase.koreanLabel}으로 리듬을 회복하는 시점`;
@@ -118,13 +138,16 @@ export function calculateHittiteTelepinuHarmonyRenewal(params: {
 
   return {
     engineName: '고대 히타이트 테레피누 조화·회복 (Hittite Telepinu Renewal)',
-    engineVersion: 'LUCKEY-HITTITE-TELEPINU-v2.2.0',
+    engineVersion: 'LUCKEY-HITTITE-TELEPINU-v2.3.0',
     calculatedAtKst: formatHittiteKstTimestamp(now),
+    questionTopic,
     activePhase,
     companionPhase,
+    telepinuReturnAxis,
     qualitativeSynthesis,
     reflectionFocus,
     ritualAction,
+    shadowWarning,
     reflectiveQuestion,
     interpretiveBoundary:
       '본 결과는 고대 아나톨리아 히타이트 테레피누 신화의 회복 모티프를 활용한 상징 프레임워크이며, 의학적 진단이나 수치적 운세 점수가 아닙니다.',
@@ -136,11 +159,13 @@ export function formatHittiteTelepinuPrompt(res: HittiteTelepinuResult): string 
   return [
     `[보조 상징 관점 — ${res.engineName}]`,
     `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 회복 축: ${res.telepinuReturnAxis}`,
     `- 중심 국면: ${res.activePhase.hittiteMotif} · ${res.activePhase.koreanLabel}`,
     `- 연결 국면: ${res.companionPhase.hittiteMotif} · ${res.companionPhase.koreanLabel}`,
     `- 성찰 해석: ${res.qualitativeSynthesis}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 실천 의례: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
