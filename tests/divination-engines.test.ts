@@ -13608,14 +13608,15 @@ test('Guarani Teko Pora Forest Harmony engine: principles, +09:00 KST, and inter
 
 test('Navajo Hozho Beauty Balance engine: pillars, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateNavajoHozhoBeautyBalance({ profile, now: new Date('2026-11-20T05:50:00Z'), question: '흔들리지 않고 균형 있게 걷고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-NAVAJO-HOZHO-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-NAVAJO-HOZHO-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.balancePillar.name !== rep.primaryPillar.name);
+  assert.ok(rep.hozhoWalkAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatNavajoHozhoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('호조') && prompt.includes('균형 기둥') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('호조') && prompt.includes('균형 기둥') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Bhutan GNH Tashi Tagye engine: pillars, +09:00 KST, and interpretive boundary', () => {
@@ -13683,14 +13684,15 @@ test('Sinhala Bali Kohomba Harmony engine: layers, +09:00 KST, and interpretive 
 
 test('Nubian Meroe Apedemak Balance engine: principles, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateNubianMeroeApedemakBalance({ profile, now: new Date('2026-11-20T06:10:00Z'), question: '내 기준대로 당당히 서고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-NUBIAN-MEROE-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-NUBIAN-MEROE-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPrinciple.name !== rep.activePrinciple.name);
+  assert.ok(rep.meroeSovereigntyAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatNubianMeroePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('누비아') && prompt.includes('동반 원칙') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('누비아') && prompt.includes('동반 원칙') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Samarkand Ulugh Beg Observatory engine: meridian arc, +09:00 KST, and interpretive boundary', () => {
@@ -15478,14 +15480,15 @@ test('Muisca Guatavita Lake engine: phase, +09:00 KST, and interpretive boundary
 
 test('Naxi Dongba Chime engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateNaxiDongbaChime({ profile, now: new Date('2026-11-20T22:15:00Z'), question: '복잡한 생각을 단순하게 정리하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-NAXI-DONGBA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-NAXI-DONGBA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.scriptMotif);
+  assert.ok(rep.dongbaScriptAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatNaxiDongbaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('나시') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('나시') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
 });
 
 test('Hmong Story Cloth engine: pattern, +09:00 KST, and interpretive boundary', () => {

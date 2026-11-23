@@ -3,11 +3,14 @@ import type { UserProfile } from '../sharedState';
 export interface NaxiDongbaResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '단순·정리' | '자연·화해' | '멈춤·호흡' | '동파 전반';
   scriptMotif: string;
   companionMotif: string;
+  dongbaScriptAxis: string;
   chimeResonance: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,23 +68,43 @@ function hashSeed(text: string): number {
   return h >>> 0;
 }
 
+const NAXI_SHADOWS = [
+  '그림 문자처럼 복잡함을 세 단어로 줄이는 명쾌함이 지나쳐, 세심하게 설명해야 할 상대의 맥락까지 생략하지 않도록 살피세요.',
+  '자연과 사람의 화해를 바라는 순응이 분명히 고쳐야 할 부당함이나 내 경계의 침범까지 조용히 넘기게 해서는 안 됩니다.',
+  '풍경 소리처럼 한 박자 멈춰 서는 여유가 정작 응답해야 할 골든타임까지 계속 미루는 망설임으로 이어지지 않게 하세요.',
+  '상형 기록으로 마음을 옮기는 정리 작업에 머물다가 실제 행동과 대화로 옮기는 마지막 한 걸음을 빼먹지 않도록 하세요.',
+] as const;
+
+function classifyNaxiTopic(q: string): NaxiDongbaResult['questionTopic'] {
+  if (/단순|정리|복잡|요약/.test(q)) return '단순·정리';
+  if (/자연|화해|조화|흐름/.test(q)) return '자연·화해';
+  if (/멈춤|바람|소리|호흡/.test(q)) return '멈춤·호흡';
+  return '동파 전반';
+}
+
 export function calculateNaxiDongbaChime(input: NaxiDongbaInput): NaxiDongbaResult {
   const fate = input.profile.fate ?? {};
-  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const q = (input.question ?? '').trim();
+  const questionTopic = classifyNaxiTopic(q);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${q}`;
   const seed = hashSeed(seedText);
   const motifIdx = seed % MOTIFS.length;
   const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (MOTIFS.length - 1));
   const scriptMotif = MOTIFS[motifIdx];
   const companionMotif = MOTIFS[(motifIdx + companionOffset) % MOTIFS.length];
+  const dongbaScriptAxis = `${scriptMotif.slice(0, 14)}… ↔ ${companionMotif.slice(0, 14)}… (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-NAXI-DONGBA-v2.2.0',
+    engineVersion: 'LUCKEY-NAXI-DONGBA-v2.3.0',
     calculatedAtKst: toKstIso(input.now),
+    questionTopic,
     scriptMotif,
     companionMotif,
+    dongbaScriptAxis,
     chimeResonance: RESONANCES[(seed >>> 3) % RESONANCES.length],
     reflectionFocus: `윈난 리장의 나시족 동파 문자처럼 주 모티프('${scriptMotif}')와 동반 모티프('${companionMotif}')가 어우러져 살아 있는 상형 기호로 자연과 사람의 조화를 짚고 마음의 풍경을 단순화하는 상징적 관점입니다.`,
     ritualAction: ACTIONS[motifIdx],
+    shadowWarning: NAXI_SHADOWS[motifIdx],
     reflectiveQuestion: QUESTIONS[motifIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
@@ -91,11 +114,13 @@ export function formatNaxiDongbaPrompt(res: NaxiDongbaResult): string {
   return [
     `[나시·동파 상형문자 바람종 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
+    `질문 맥락: ${res.questionTopic} | 동파 상형 축: ${res.dongbaScriptAxis}`,
     `문자 모티프: ${res.scriptMotif}`,
     `동반 모티프: ${res.companionMotif}`,
     `울림: ${res.chimeResonance}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
+    `과잉 경계: ${res.shadowWarning}`,
     `성찰 질문: ${res.reflectiveQuestion}`,
     `경계: ${res.interpretiveBoundary}`,
   ].join('\n');

@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.428",
+    "builtAt": "2026-11-24T07:45:00+09:00",
+    "summary": "나바호 호조·나시 동파·누비아 메로에 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.428)",
+    "items": [
+      "나바호 호조 아름다움·균형 걷기 엔진(v2.3.0): 질문 맥락(questionTopic), 호조 균형 축(hozhoWalkAxis), 과잉 경계(shadowWarning) 추가",
+      "나시 동파 상형문자 바람종 엔진(v2.3.0): 질문 맥락(questionTopic), 동파 상형 축(dongbaScriptAxis), 과잉 경계(shadowWarning) 추가",
+      "누비아 메로에 아페데막 균형 엔진(v2.3.0): 질문 맥락(questionTopic), 메로에 주권 축(meroeSovereigntyAxis), 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.427",
     "builtAt": "2026-11-24T07:35:00+09:00",
     "summary": "몰도바 오르헤이·모시 황토 벽화·나바테아 페트라 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.427)",

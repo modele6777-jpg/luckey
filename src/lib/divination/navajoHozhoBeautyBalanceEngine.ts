@@ -10,13 +10,16 @@ export interface HozhoPillar {
 }
 
 export interface NavajoHozhoResult {
-  engineVersion: 'LUCKEY-NAVAJO-HOZHO-v2.2.0';
+  engineVersion: 'LUCKEY-NAVAJO-HOZHO-v2.3.0';
   calculatedAtKst: string;
+  questionTopic: '생각·명료' | '계획·순서' | '실천·활력' | '성찰·평정' | '호조 전반';
   questionFocus: string;
   primaryPillar: HozhoPillar;
   balancePillar: HozhoPillar;
+  hozhoWalkAxis: string;
   beautyWalkTheme: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
@@ -71,13 +74,30 @@ function stableHash(input: string): number {
   return hash >>> 0;
 }
 
+const HOZHO_SHADOWS = [
+  '사실과 추측을 가르는 명료함이 지나쳐, 아직 논리로 정리되지 않은 직관이나 감정의 신호까지 성급히 잘라 내지 않도록 살피세요.',
+  '단정한 순서와 계획에 매달리다 보면, 예상치 못한 좋은 변수가 들어왔을 때 순서를 유연하게 바꿀 여지를 놓칠 수 있습니다.',
+  '지금 당장 움직여 공기를 바꾸는 실천력이 조급함으로 번져 충분히 익지 않은 말이나 결정을 앞세우지 않게 호흡을 고르세요.',
+  '지나온 걸음을 다독이는 고요한 성찰이 이미 끝난 과거의 아쉬움을 계속 되새김질하며 오늘의 발걸음을 묶어 두어서는 안 됩니다.',
+];
+
+function classifyNavajoTopic(q: string): NavajoHozhoResult['questionTopic'] {
+  if (/생각|명료|복잡|사실/.test(q)) return '생각·명료';
+  if (/계획|순서|준비|정리/.test(q)) return '계획·순서';
+  if (/실천|행동|시작|움직/.test(q)) return '실천·활력';
+  if (/성찰|평정|균형|걷고/.test(q)) return '성찰·평정';
+  return '호조 전반';
+}
+
 export function calculateNavajoHozhoBeautyBalance(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): NavajoHozhoResult {
   const now = params.now ?? new Date();
-  const questionFocus = (params.question ?? '').trim() || '아름다움과 균형 속의 걸음';
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyNavajoTopic(q);
+  const questionFocus = q || '아름다움과 균형 속의 걸음';
   const seedBase = `${JSON.stringify(params.profile.fate ?? {})}|${now.toISOString().slice(0, 13)}|${questionFocus}|navajo-hozho`;
   const seed = stableHash(seedBase);
 
@@ -86,15 +106,19 @@ export function calculateNavajoHozhoBeautyBalance(params: {
   const balanceIdx = (primaryIdx + balanceOffset) % HOZHO_PILLARS.length;
   const primaryPillar = HOZHO_PILLARS[primaryIdx];
   const balancePillar = HOZHO_PILLARS[balanceIdx];
+  const hozhoWalkAxis = `${primaryPillar.name.split('(')[0].trim()} ↔ ${balancePillar.name.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-NAVAJO-HOZHO-v2.2.0',
+    engineVersion: 'LUCKEY-NAVAJO-HOZHO-v2.3.0',
     calculatedAtKst: formatKstTimestamp(now),
+    questionTopic,
     questionFocus,
     primaryPillar,
     balancePillar,
+    hozhoWalkAxis,
     beautyWalkTheme: `${primaryPillar.koreanLabel}으로 길을 열고 ${balancePillar.koreanLabel}으로 균형을 맞추는 호조(Hózhó) 걸음`,
     ritualAction: primaryPillar.practicalWalk,
+    shadowWarning: HOZHO_SHADOWS[primaryIdx],
     reflectionFocus: `${primaryPillar.name}(${primaryPillar.sacredOrder})의 자리에서 '${balancePillar.name}'의 균형을 함께 엮어 오늘 흐트러진 리듬을 다시 정돈합니다.`,
     reflectiveQuestion: primaryPillar.reflectiveQuestion,
     interpretiveBoundary:
@@ -106,11 +130,13 @@ export function formatNavajoHozhoPrompt(result: NavajoHozhoResult): string {
   return [
     `[나바호 호조(Hózhó) 아름다움·균형 걷기 엔진 ${result.engineVersion}]`,
     `- 연산 시각: ${result.calculatedAtKst}`,
+    `- 질문 맥락: ${result.questionTopic} | 호조 균형 축: ${result.hozhoWalkAxis}`,
     `- 질문 초점: ${result.questionFocus}`,
     `- 중심 기둥: ${result.primaryPillar.name} (${result.primaryPillar.koreanLabel}) — ${result.primaryPillar.coreInsight}`,
     `- 균형 기둥: ${result.balancePillar.name} (${result.balancePillar.koreanLabel})`,
     `- 조화의 길: ${result.beautyWalkTheme}`,
     `- 실천 제안: ${result.ritualAction}`,
+    `- 과잉 경계: ${result.shadowWarning}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 되묻는 질문: ${result.reflectiveQuestion}`,
     `- 해석 경계: ${result.interpretiveBoundary}`,
