@@ -13958,14 +13958,15 @@ test('Hausa Kirari Alada Wisdom engine: proverb, +09:00 KST, and interpretive bo
 
 test('Occitan Troubadour Paratge engine: virtue, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateOccitanTroubadourParatge({ profile, now: new Date('2026-11-20T07:18:00Z'), question: '서로의 품위를 지키는 균형을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-OCCITAN-PARATGE-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-OCCITAN-PARATGE-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionVirtue !== rep.paratgeVirtue);
+  assert.ok(rep.paratgeBalanceAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatOccitanParatgePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('옥시타니아') && prompt.includes('동반 미덕') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('옥시타니아') && prompt.includes('동반 미덕') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Zapotec Piye Cloud Wisdom engine: glyph, +09:00 KST, and interpretive boundary', () => {
@@ -14720,14 +14721,15 @@ test('Silla Emille Cheomseongdae engine: motif, +09:00 KST, and interpretive bou
 
 test('Omani Frankincense Falaj Water engine: symbol, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateOmaniFrankincenseFalajWater({ profile, now: new Date('2026-11-20T19:15:00Z'), question: '시간과 마음의 물길을 공정하게 나누고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-OMANI-FALAJ-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-OMANI-FALAJ-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSymbol !== rep.dhofarSymbol);
+  assert.ok(rep.falajFlowAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatOmaniFrankincensePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('오만') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('오만') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Baekje Gilt-Bronze Incense Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14809,14 +14811,15 @@ test('Sigiriya Lion Rock Water Garden engine: motif, +09:00 KST, and interpretiv
 
 test('Numidian Cirta Horizon Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateNumidianCirtaHorizonPoise({ profile, now: new Date('2026-11-20T19:35:00Z'), question: '부담 없이 가벼운 첫 걸음을 내딛고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-NUMIDIAN-CIRTA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-NUMIDIAN-CIRTA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.cirtaMotif);
+  assert.ok(rep.cirtaHorizonAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatNumidianCirtaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('누미디아') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('누미디아') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Paracas Weave Textile Harmony engine: motif, +09:00 KST, and interpretive boundary', () => {
