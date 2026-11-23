@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface MaramuresGateResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '연대·습관' | '유격·여유' | '정리·박자' | '마라무레슈 전반';
   maramuresMotif: string;
   companionMotif: string;
+  woodGateAxis: string;
   maramuresInsight: string;
   woodTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,48 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const MARAMURES_SHADOWS = [
+  '가닥을 엮어 서로 지탱하는 연대가 지나치면, 혼자 판단하고 결정해야 할 고유한 몫까지 남의 리듬에 묶어 둘 수 있습니다.',
+  '계절의 수축을 견디는 유격이 너무 넓어지면, 정작 제때 맞추어야 할 약속의 마감선까지 느슨해질 수 있습니다.',
+  '모아 둔 성과를 가지런히 정리하는 데만 마음을 쏟다 보면, 다음 계절을 열기 위한 새로운 시도가 뒤로 밀립니다.',
+  '내 물살의 느린 박자를 지키는 고집이 꼭 필요한 속도와 외부의 합류 요청까지 외면하는 핑계가 되지 않게 하세요.',
+  '문턱을 따뜻이 열어 두는 태도가 내 삶의 최소한의 휴식 경계선까지 지워 버리지 않도록 살피세요.',
+];
+
+function classifyMaramuresTopic(q: string): MaramuresGateResult['questionTopic'] {
+  if (/습관|연대|인연|기둥|버티/.test(q)) return '연대·습관';
+  if (/유격|여유|숨|관계|경계/.test(q)) return '유격·여유';
+  if (/정리|박자|속도|일정|성과/.test(q)) return '정리·박자';
+  return '마라무레슈 전반';
+}
+
 export function calculateMaramuresWoodGateCalm(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): MaramuresGateResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyMaramuresTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const picked = MOTIFS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const woodGateAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-MARAMURES-GATE-v2.2.0',
+    engineVersion: 'LUCKEY-MARAMURES-GATE-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     maramuresMotif: picked.motif,
     companionMotif: companion.motif,
+    woodGateAxis,
     maramuresInsight: picked.insight,
     woodTone: picked.tone,
     reflectionFocus: `마라무레슈 목조 문주의 '${picked.motif}'을 중심에 두고 '${companion.motif}'의 결을 함께 엮어, 관계와 일정 사이에 숨 쉴 수 있는 유격을 두고 내 박자를 지켜 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: MARAMURES_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '루마니아 카르파티아 마라무레슈의 목조 문주·수공예 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +119,13 @@ export function formatMaramuresGatePrompt(res: MaramuresGateResult): string {
   return [
     `[마라무레슈·목조 문주 지혜 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 목조 문주 축: ${res.woodGateAxis}`,
     `- 마라무레슈 모티프: ${res.maramuresMotif} (${res.woodTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.maramuresInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

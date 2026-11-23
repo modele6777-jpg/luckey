@@ -13541,14 +13541,15 @@ test('Hittite Telepinu Harmony Renewal engine: phases, +09:00 KST, and interpret
 
 test('Mapuche Kultrun Cosmic Balance engine: directions, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMapucheKultrunCosmicBalance({ profile, now: new Date('2026-11-20T05:40:00Z'), question: '일과 휴식의 균형을 잡고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MAPUCHE-KULTRUN-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-MAPUCHE-KULTRUN-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.counterDirection.name !== rep.dominantDirection.name);
+  assert.ok(rep.kultrunCompassAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMapucheKultrunPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('쿨트룬') && prompt.includes('보완 방위') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('쿨트룬') && prompt.includes('보완 방위') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Melanesian Sand Drawing Pattern engine: motifs, +09:00 KST, and interpretive boundary', () => {
@@ -14940,14 +14941,15 @@ test('Chavin Lanzon Stone Balance engine: motif, +09:00 KST, and interpretive bo
 
 test('Maramures Wood Gate Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMaramuresWoodGateCalm({ profile, now: new Date('2026-11-20T20:09:00Z'), question: '일정과 관계에 숨 쉴 유격을 두고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MARAMURES-GATE-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-MARAMURES-GATE-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.maramuresMotif);
+  assert.ok(rep.woodGateAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMaramuresGatePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('마라무레슈') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('마라무레슈') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Luang Prabang Mekong Dawn engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15232,14 +15234,15 @@ test('Faroese Turf Roof Shelter engine: motif, +09:00 KST, and interpretive boun
 
 test('Marshallese Stick Chart engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMarshalleseStickChart({ profile, now: new Date('2026-11-20T21:16:00Z'), question: '보이지 않는 흐름의 결을 읽고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MARSHALLESE-CHART-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-MARSHALLESE-CHART-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.symbolicMotif);
+  assert.ok(rep.swellChartAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMarshalleseChartPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('마셜') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('마셜') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
 });
 
 test('Maldivian Coral Atoll engine: motif, +09:00 KST, and interpretive boundary', () => {
