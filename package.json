@@ -16,6 +16,8 @@
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
     "deploy:firestore-rules": "firebase deploy --only firestore:rules",
+    "build:knowledge-research": "esbuild server/jobs/lucyScheduledResearch.ts --bundle --platform=node --format=cjs --outfile=dist/lucy-scheduled-research.cjs",
+    "start:knowledge-research": "node dist/lucy-scheduled-research.cjs",
     "build:sites": "vite build --mode sites && node scripts/build-sites.mjs",
     "build:cloudflare": "vite build --mode sites",
     "test:webkit": "playwright test --project=webkit-iphone --workers=1",
