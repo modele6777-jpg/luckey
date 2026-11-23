@@ -124,12 +124,14 @@ export function BigBangButton() {
   const downStop = adjacentSidebarStop(location, orbNavOpen, 'next');
   const orbDirectionTarget = { id: 'orb' as const, icon: OrbShapeIcon as ReturnType<typeof getDestinationChannel>['icon'] };
   const luckyDirectionTarget = { id: 'lucky' as const, icon: Clover as ReturnType<typeof getDestinationChannel>['icon'] };
-  const channelForStop = (stop: { id: string; path: string | null; orb?: boolean } | null) => {
-    if (!stop) return null;
-    if (stop.orb) return orbDirectionTarget;
-    if (stop.id === 'lucky') return luckyDirectionTarget;
-    return getDestinationChannel(stop.path || '/');
+  const channelForDestination = (destination: string) => {
+    const path = destination.split(/[?#]/)[0];
+    if (path === '/voice') return orbDirectionTarget;
+    if (path === '/lucky') return luckyDirectionTarget;
+    return getDestinationChannel(destination);
   };
+  const channelForStop = (stop: { path: string | null; orb?: boolean } | null) =>
+    stop ? channelForDestination(stop.orb ? '/voice' : stop.path || '/') : null;
   const directionTargets = {
     north: channelForStop(upStop),
     south: channelForStop(downStop),
@@ -257,7 +259,7 @@ export function BigBangButton() {
     gestureFeedbackTimer.current = setTimeout(() => setGestureFeedback(null), 1200);
   };
   const showDirectionFeedback = (direction: typeof hoverDirection, destination?: string) => {
-    setFeedbackChannel(destination ? getDestinationChannel(destination) : null);
+    setFeedbackChannel(destination ? channelForDestination(destination) : null);
     setGestureFeedback(null);
     if (gestureFeedbackTimer.current) clearTimeout(gestureFeedbackTimer.current);
     if (directionFeedbackTimer.current) clearTimeout(directionFeedbackTimer.current);
@@ -285,13 +287,12 @@ export function BigBangButton() {
     const from = SIDEBAR_MENU[sidebarMenuIndex(location, orbOpen)];
     const stop = adjacentSidebarStop(location, orbOpen, direction);
     if (!stop) return false;
+    showDirectionFeedback(direction === 'previous' ? 'north' : 'south', stop.orb ? '/voice' : stop.path || '/');
     if (stop.orb) {
-      setFeedbackChannel(orbDirectionTarget);
       openMenuPath('/voice');
       triggerHaptic('wormhole');
       return true;
     }
-    setFeedbackChannel(stop.id === 'lucky' ? luckyDirectionTarget : getDestinationChannel(stop.path || '/'));
     if (orbOpen) setOrbCounselOpen(false);
     if ((from?.id === 'epilogue' && stop.id === 'lucy') || (from?.id === 'lucky' && stop.id === 'key')) {
       closeLuckyChannels();
@@ -346,7 +347,7 @@ export function BigBangButton() {
       try { sessionStorage.removeItem(navigationFeedbackStorageKey); } catch { /* ignore */ }
       return;
     }
-    setFeedbackChannel(getDestinationChannel(stored.destination));
+    setFeedbackChannel(channelForDestination(stored.destination));
     setClickedDirection(stored.direction as typeof hoverDirection);
     directionFeedbackTimer.current = setTimeout(() => {
       setClickedDirection('none');
@@ -1368,11 +1369,8 @@ export function BigBangButton() {
       setIsQuickChatOpen(false);
       downDirectionRef.current = 'none';
       setHoverDirection('none');
-      showDirectionFeedback(targetDir);
-      if (targetDir === 'north') {
-        navigateToAdjacentMenuApp('previous');
-      } else if (targetDir === 'south') {
-        navigateToAdjacentMenuApp('next');
+      if (targetDir === 'north' || targetDir === 'south') {
+        if (!navigateToAdjacentMenuApp(targetDir === 'north' ? 'previous' : 'next')) showDirectionFeedback(targetDir);
       } else if (targetDir === 'west') {
         goToPreviousDapp();
       } else if (targetDir === 'east') {
