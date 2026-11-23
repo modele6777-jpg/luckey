@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface GalicianCaminoResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '속도·걸음' | '전환·시야' | '연대·정화' | '순례 전반';
   atlanticSign: string;
   companionSign: string;
+  caminoHorizonAxis: string;
   caminoInsight: string;
   galiciaTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const GALICIAN_SHADOWS = [
+  '나만의 속도를 지킨다는 명분으로 마감이나 함께 맞추기로 한 약속 시계까지 늦추지 않도록 살피세요.',
+  '지난 뿌리와 그리움에만 머무르다 지금 눈앞에 펼쳐진 오늘의 걸음을 멈추지 않도록 주의하세요.',
+  '새로운 시야를 찾겠다고 지금 마무리지어야 할 현재의 매듭을 성급히 닫아 버리지 마세요.',
+  '곁의 온기를 나누는 일에 기대어 정작 내가 직접 판단하고 책임져야 할 몫까지 미루지 마세요.',
+  '불안을 말로 꺼내 털어낸 뒤에도 실제 행동으로 이어지는 작은 정돈 한 가지를 빠뜨리지 마세요.',
+];
+
+function classifyGalicianTopic(q: string): GalicianCaminoResult['questionTopic'] {
+  if (/속도|걸음|비교|길|걷/.test(q)) return '속도·걸음';
+  if (/전환|시야|끝|시작|그리움|뿌리/.test(q)) return '전환·시야';
+  if (/연대|정화|걱정|사람|혼자/.test(q)) return '연대·정화';
+  return '순례 전반';
+}
+
 export function calculateGalicianCaminoAtlanticReflection(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): GalicianCaminoResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyGalicianTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % SIGNS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (SIGNS.length - 1));
   const picked = SIGNS[idx];
   const companion = SIGNS[(idx + companionOffset) % SIGNS.length];
+  const caminoHorizonAxis = `${picked.sign.split('(')[0].trim()} ↔ ${companion.sign.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = GALICIAN_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-GALICIAN-CAMINO-v2.2.0',
+    engineVersion: 'LUCKEY-GALICIAN-CAMINO-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     atlanticSign: picked.sign,
     companionSign: companion.sign,
+    caminoHorizonAxis,
     caminoInsight: picked.insight,
     galiciaTone: picked.tone,
     reflectionFocus: `갈리시아 대서양 순례길의 '${picked.sign}'과 동반 표식 '${companion.sign}'을 함께 바라보며 나만의 호흡을 되찾아 보세요.`,
     ritualAction: picked.ritual,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '이베리아 반도 북서부 갈리시아(Galicia)의 카미노·피니스테레 대서양 성찰 문화를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatGalicianCaminoPrompt(res: GalicianCaminoResult): string {
   return [
     `[갈리시아 카미노·대서양 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 순례·수평선 축: ${res.caminoHorizonAxis}`,
     `- 대서양 상징: ${res.atlanticSign} (${res.galiciaTone})`,
     `- 동반 상징: ${res.companionSign}`,
     `- 중심 통찰: ${res.caminoInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
