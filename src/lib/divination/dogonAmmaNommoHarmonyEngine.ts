@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface DogonAmmaNommoResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '기다림·주기' | '관계·대화' | '일·실행' | '질서 전반';
   starPhase: string;
   companionPhase: string;
+  cosmicOrderAxis: string;
   nommoInsight: string;
   cliffTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const DOGON_SHADOWS = [
+  '때를 기다린다는 명분으로 지금 바로 답을 줘야 할 상대와의 약속까지 미루지 않도록 살피세요.',
+  '부드럽고 맑은 말투를 지키려다 정작 분명히 전달해야 할 핵심 의사를 에두르지 마세요.',
+  '당장 손으로 옮기는 실행에 집중하다 전체 그림과 장기 방향성을 놓치지 않도록 점검하세요.',
+  '작은 밀도를 다지는 데만 몰두해 세상에 내어 보일 시기를 계속 뒤로 미루지 않도록 주의하세요.',
+  '감정을 절제하고 자리에 앉아 있느라 필요한 문제 제기와 건강한 경계 설정까지 참지 마세요.',
+];
+
+function classifyDogonTopic(q: string): DogonAmmaNommoResult['questionTopic'] {
+  if (/기다림|주기|때|시리우스|인내/.test(q)) return '기다림·주기';
+  if (/관계|대화|말|사람|화|사랑/.test(q)) return '관계·대화';
+  if (/일|직장|실행|기본기|계획|행동/.test(q)) return '일·실행';
+  return '질서 전반';
+}
+
 export function calculateDogonAmmaNommoHarmony(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): DogonAmmaNommoResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyDogonTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % PHASES.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (PHASES.length - 1));
   const picked = PHASES[idx];
   const companion = PHASES[(idx + companionOffset) % PHASES.length];
+  const cosmicOrderAxis = `${picked.phase.split('(')[0].trim()} ↔ ${companion.phase.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = DOGON_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-DOGON-AMMA-v2.2.0',
+    engineVersion: 'LUCKEY-DOGON-AMMA-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     starPhase: picked.phase,
     companionPhase: companion.phase,
+    cosmicOrderAxis,
     nommoInsight: picked.insight,
     cliffTone: picked.tone,
     reflectionFocus: `도곤 우주관의 '${picked.phase}'와 동반 위상 '${companion.phase}'을 함께 살피며, 당장 겉모습을 재촉하기보다 내 말과 태도의 결을 먼저 고르게 다듬어 보세요.`,
     ritualAction: picked.ritual,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '서아프리카 말리 도곤 전통의 우주 질서와 공동체 대화 지혜를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatDogonAmmaNommoPrompt(res: DogonAmmaNommoResult): string {
   return [
     `[도곤 암마·노모 우주 질서 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 우주 질서 축: ${res.cosmicOrderAxis}`,
     `- 별자리 위상: ${res.starPhase} (${res.cliffTone})`,
     `- 동반 위상: ${res.companionPhase}`,
     `- 중심 통찰: ${res.nommoInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

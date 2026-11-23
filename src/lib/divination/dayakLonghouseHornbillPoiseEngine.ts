@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface DayakHornbillResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계·나눔' | '일·시야' | '유연·휴식' | '균형 전반';
   dayakMotif: string;
   companionMotif: string;
+  canopyRiverAxis: string;
   dayakInsight: string;
   riverTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const DAYAK_SHADOWS = [
+  '숲 전체를 내려다보는 데에만 머물러 오늘 바로 밟아야 할 눈앞의 작은 한 걸음을 놓치지 마세요.',
+  '열린 마루의 온기를 나누려다 정작 내 안의 피로와 혼자만의 정돈 시간을 소홀히 하지 마세요.',
+  '다음 휴식 구간만 기다리다 지금 눈앞에 닥친 여울의 방향타를 놓치지 않도록 주의하세요.',
+  '모든 일의 의미를 하나로 연결하려다 당장 우선순위가 낮은 일까지 끌어안지 않도록 살피세요.',
+  '유연하게 경로를 트는 습관이 핵심 목표까지 흐려 버리는 핑계가 되지 않게 중심을 잡으세요.',
+];
+
+function classifyDayakTopic(q: string): DayakHornbillResult['questionTopic'] {
+  if (/관계|나눔|혼자|곁|사람|사랑/.test(q)) return '관계·나눔';
+  if (/일|직장|시야|전체|흐름|문제/.test(q)) return '일·시야';
+  if (/유연|휴식|여울|긴장|탄력/.test(q)) return '유연·휴식';
+  return '균형 전반';
+}
+
 export function calculateDayakLonghouseHornbillPoise(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): DayakHornbillResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyDayakTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const canopyRiverAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = DAYAK_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-DAYAK-HORNBILL-v2.2.0',
+    engineVersion: 'LUCKEY-DAYAK-HORNBILL-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     dayakMotif: picked.motif,
     companionMotif: companion.motif,
+    canopyRiverAxis,
     dayakInsight: picked.insight,
     riverTone: picked.tone,
     reflectionFocus: `보르네오 다약 롱하우스의 '${picked.motif}'과 동반 결 '${companion.motif}'을 겹쳐 보며, 혼자 짊어지던 긴장을 내려놓고 등나무처럼 유연한 탄력으로 오늘을 지나가 보세요.`,
     ritualAction: picked.ritual,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '보르네오 다약족의 롱하우스 공존·코뿔새 시야 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatDayakHornbillPrompt(res: DayakHornbillResult): string {
   return [
     `[보르네오 다약·롱하우스 코뿔새 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 수관·강변 축: ${res.canopyRiverAxis}`,
     `- 다약 모티프: ${res.dayakMotif} (${res.riverTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.dayakInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
