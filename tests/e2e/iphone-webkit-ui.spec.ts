@@ -1301,15 +1301,20 @@ test('Lucy can return to the latest conversation and tap blank header space to r
   await page.mouse.click(topTap.x, topTap.y);
   await expect.poll(() => messages.evaluate(element => element.scrollTop)).toBeLessThan(3);
 
-  await page.evaluate(() => {
+  await page.evaluate(async () => {
     let visibility: 'hidden' | 'visible' = 'hidden';
     Object.defineProperty(document, 'visibilityState', {
       configurable: true,
       get: () => visibility,
     });
-    document.dispatchEvent(new Event('visibilitychange'));
-    visibility = 'visible';
-    document.dispatchEvent(new Event('visibilitychange'));
+    try {
+      document.dispatchEvent(new Event('visibilitychange'));
+      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+      visibility = 'visible';
+      document.dispatchEvent(new Event('visibilitychange'));
+    } finally {
+      Reflect.deleteProperty(document, 'visibilityState');
+    }
   });
   await expect.poll(() => messages.evaluate(element => element.scrollHeight - element.scrollTop - element.clientHeight)).toBeLessThan(3);
   await expect(returnButton).toBeHidden();

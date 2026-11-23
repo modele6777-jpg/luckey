@@ -3467,21 +3467,24 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const wasAppHiddenRef = useRef(false);
   useEffect(() => {
     if (!isLucyReady) return;
+    const reopenLatest = () => {
+      refreshEntryGreeting();
+      restoreLatestSavedMessages();
+      isUserScrolledUpRef.current = false;
+      setShowReturnToRecentConversation(false);
+      scrollToBottom(true, false);
+      followLatestLayoutRef.current();
+    };
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
         wasAppHiddenRef.current = true;
       } else if (document.visibilityState === 'visible' && wasAppHiddenRef.current) {
         wasAppHiddenRef.current = false;
-        // 카메라·사진 고르기에서 돌아온 것: 다시 들어온 게 아니므로 보던 자리를 그대로 둔다.
         if (isReturningFromPhotoPicker()) {
           restoreAfterPhotoPicker();
           return;
         }
-        refreshEntryGreeting();
-        restoreLatestSavedMessages();
-        isUserScrolledUpRef.current = false;
-        setShowReturnToRecentConversation(false);
-        scrollToBottom(true, false);
+        reopenLatest();
       }
     };
 
@@ -3490,12 +3493,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         restoreAfterPhotoPicker();
         return;
       }
-      refreshEntryGreeting();
-      restoreLatestSavedMessages();
-      isUserScrolledUpRef.current = false;
-      setShowReturnToRecentConversation(false);
-      scrollToBottom(true, false);
-      followLatestLayoutRef.current();
+      reopenLatest();
     };
     let navigationFrame: number | null = null;
     const onLucyNavigation = (event: Event) => {
