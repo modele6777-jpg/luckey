@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface ChavinLanzonResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계·조율' | '일·중심' | '흐름·전환' | '균형 전반';
   chavinMotif: string;
   companionMotif: string;
+  stoneBalanceAxis: string;
   chavinInsight: string;
   stoneTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const CHAVIN_SHADOWS = [
+  '중심축을 세우려다 주변의 실제 변화와 다른 시선까지 모두 막아서지 않도록 경계하세요.',
+  '묵묵히 흐르는 데만 머물러 꼭 목소리를 내고 합의를 구해야 할 시점을 놓치지 마세요.',
+  '두 갈래를 모두 품으려다 정작 지금 먼저 치워야 할 한 가지 우선순위가 흐려지지 않게 살피세요.',
+  '유연한 적응을 핑계로 스스로 세운 핵심 원칙까지 쉽게 흔들리지 않도록 주의하세요.',
+  '상승 기류를 기다리며 움직임을 미루다가 지금 내가 내디뎌야 할 작은 발걸음을 놓치지 마세요.',
+];
+
+function classifyChavinTopic(q: string): ChavinLanzonResult['questionTopic'] {
+  if (/관계|조율|사람|사랑|대화|합류/.test(q)) return '관계·조율';
+  if (/일|직장|진로|중심|기준|결정/.test(q)) return '일·중심';
+  if (/흐름|전환|변화|유연|바람|길/.test(q)) return '흐름·전환';
+  return '균형 전반';
+}
+
 export function calculateChavinLanzonStoneBalance(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): ChavinLanzonResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyChavinTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const stoneBalanceAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = CHAVIN_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-CHAVIN-LANZON-v2.2.0',
+    engineVersion: 'LUCKEY-CHAVIN-LANZON-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     chavinMotif: picked.motif,
     companionMotif: companion.motif,
+    stoneBalanceAxis,
     chavinInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     stoneTone: picked.tone,
     reflectionFocus: `안데스 차빈 라손의 '${picked.motif}'와 동반 결 '${companion.motif}'처럼, 사방의 갈래가 복잡할수록 내 안의 중심축을 먼저 세우고 흐름을 타 보세요.`,
     ritualAction: picked.ritual,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '고대 페루 안데스 차빈 데 우안타르의 라손 석주·수로 공명 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatChavinLanzonPrompt(res: ChavinLanzonResult): string {
   return [
     `[차빈·라손 돌기둥 균형 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 석주 축: ${res.stoneBalanceAxis}`,
     `- 차빈 모티프: ${res.chavinMotif} (${res.stoneTone})`,
     `- 동반 결: ${res.companionMotif}`,
     `- 중심 통찰: ${res.chavinInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

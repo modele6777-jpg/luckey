@@ -1,10 +1,10 @@
 {
-  "version": "1.8.405",
-  "builtAt": "2026-11-24T04:25:00+09:00",
-  "summary": "카렐리아 루노·그레이트 짐바브웨·오지브웨 7대 가르침 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.405)",
+  "version": "1.8.406",
+  "builtAt": "2026-11-24T04:35:00+09:00",
+  "summary": "차빈 라손·체첸 바이나흐·치로에 팔라피토 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.406)",
   "items": [
-    "카렐리야 루노·칸텔레 공명 엔진(v2.3.0): 질문 맥락(questionTopic), 공명 축(kanteleChordAxis), 과잉 경계(shadowWarning) 추가",
-    "그레이트 짐바브웨 석조 성벽 엔진(v2.3.0): 질문 맥락(questionTopic), 석조 축(stoneLockAxis), 과잉 경계(shadowWarning) 추가",
-    "오지브웨 7대 할아버지 가르침 엔진(v2.3.0): 질문 맥락(questionTopic), 덕목 축(virtueBalanceAxis), 과잉 경계(shadowWarning) 추가"
+    "차빈 라손 돌기둥 균형 엔진(v2.3.0): 질문 맥락(questionTopic), 석주 축(stoneBalanceAxis), 과잉 경계(shadowWarning) 추가",
+    "체첸 바이나흐 카바흐 명예 엔진(v2.3.0): 질문 맥락(questionTopic), 명예 축(honorBalanceAxis), 과잉 경계(shadowWarning) 추가",
+    "치로에 팔라피토 물때 균형 엔진(v2.3.0): 질문 맥락(questionTopic), 물때 축(tidePoiseAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }
