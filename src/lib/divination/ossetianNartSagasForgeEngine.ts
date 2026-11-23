@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface OssetianNartResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '단련·수고' | '회복·휴식' | '진실·담백' | '관찰·타이밍' | '연대·보폭' | '나르트 전반';
   nartEmblem: string;
   companionEmblem: string;
+  nartForgeAxis: string;
   nartInsight: string;
   caucasusTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const NART_SHADOWS = [
+  '대장간의 쇠를 두드리는 단련이 스스로를 한계까지 몰아붙여 과열로 깨뜨리는 자기 학대가 되지 않게 식힐 시간도 함께 두세요.',
+  '황금 사과처럼 돌봄과 휴식을 우선하는 지혜가 정작 지금 마무리해야 할 작은 책임까지 뒤로 미루는 안주로 흐르지 않게 하세요.',
+  '포장을 걷어낸 담백한 진심이 상대의 처지나 감정을 헤아리지 않는 직설과 무례함으로 들리지 않도록 온도를 살피세요.',
+  '한 걸음 물러서서 때를 기다리는 침착함이 결단해야 할 순간에도 행동하지 않는 관망으로 길어지지 않게 기한을 정해 두세요.',
+  '어깨를 나란히 하고 함께 추는 춤이 내 고유의 기준을 지우고 분위기나 주변 속도에 무조건 맞추는 휩쓸림이 되어서는 안 됩니다.',
+];
+
+function classifyNartTopic(q: string): OssetianNartResult['questionTopic'] {
+  if (/수고|단련|부담|과제/.test(q)) return '단련·수고';
+  if (/회복|쉼|휴식|지친/.test(q)) return '회복·휴식';
+  if (/진실|솔직|담백|포장/.test(q)) return '진실·담백';
+  if (/타이밍|기다|갈등|위기/.test(q)) return '관찰·타이밍';
+  if (/함께|동료|혼자|보폭/.test(q)) return '연대·보폭';
+  return '나르트 전반';
+}
+
 export function calculateOssetianNartSagasForge(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): OssetianNartResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyNartTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % EMBLEMS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (EMBLEMS.length - 1));
   const picked = EMBLEMS[idx];
   const companion = EMBLEMS[(idx + companionOffset) % EMBLEMS.length];
+  const nartForgeAxis = `${picked.emblem.split('(')[0].trim()} ↔ ${companion.emblem.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-OSSETIAN-NART-v2.2.0',
+    engineVersion: 'LUCKEY-OSSETIAN-NART-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     nartEmblem: picked.emblem,
     companionEmblem: companion.emblem,
+    nartForgeAxis,
     nartInsight: picked.insight,
     caucasusTone: picked.tone,
     reflectionFocus: `코카서스 오세트 나르트 서사시의 '${picked.emblem}'처럼, 지금 겪는 수고와 단련은 나를 더 명료하고 단단하게 벼리는 과정입니다. (동반 결: ${companion.emblem.split('(')[0].trim()})`,
     ritualAction: picked.action,
+    shadowWarning: NART_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '코카서스 오세트(Ossetian) 나르트 서사시의 대장간·진실의 잔 철학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +126,13 @@ export function formatOssetianNartPrompt(res: OssetianNartResult): string {
   return [
     `[오세트 나르트 서사시·단련 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 나르트 단련 축: ${res.nartForgeAxis}`,
     `- 나르트 상징: ${res.nartEmblem} (${res.caucasusTone})`,
     `- 동반 상징: ${res.companionEmblem}`,
     `- 중심 통찰: ${res.nartInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

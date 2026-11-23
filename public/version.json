@@ -1,10 +1,10 @@
 {
-  "version": "1.8.428",
-  "builtAt": "2026-11-24T07:45:00+09:00",
-  "summary": "나바호 호조·나시 동파·누비아 메로에 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.428)",
+  "version": "1.8.429",
+  "builtAt": "2026-11-24T07:55:00+09:00",
+  "summary": "오세티아 나르트·오크니 스카라 브레·페니키아 별 나침반 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.429)",
   "items": [
-    "나바호 호조 아름다움·균형 걷기 엔진(v2.3.0): 질문 맥락(questionTopic), 호조 균형 축(hozhoWalkAxis), 과잉 경계(shadowWarning) 추가",
-    "나시 동파 상형문자 바람종 엔진(v2.3.0): 질문 맥락(questionTopic), 동파 상형 축(dongbaScriptAxis), 과잉 경계(shadowWarning) 추가",
-    "누비아 메로에 아페데막 균형 엔진(v2.3.0): 질문 맥락(questionTopic), 메로에 주권 축(meroeSovereigntyAxis), 과잉 경계(shadowWarning) 추가"
+    "오세티아 나르트 서사시 대장간 엔진(v2.3.0): 질문 맥락(questionTopic), 나르트 단련 축(nartForgeAxis), 과잉 경계(shadowWarning) 추가",
+    "오크니 스카라 브레 돌화덕 엔진(v2.3.0): 질문 맥락(questionTopic), 석실 화덕 축(skaraHearthAxis), 과잉 경계(shadowWarning) 추가",
+    "페니키아 항해 별 나침반 엔진(v2.3.0): 질문 맥락(questionTopic), 별 나침반 축(starCompassAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }

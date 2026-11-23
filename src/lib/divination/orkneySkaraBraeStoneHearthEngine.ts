@@ -9,11 +9,14 @@ export interface OrkneySkaraInput {
 export interface OrkneySkaraResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '화덕·중심' | '질서·정돈' | '경계·휴식' | '온기·보온' | '스카라 전반';
   hearthMotif: string;
   companionMotif: string;
+  skaraHearthAxis: string;
   stoneShelterState: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,28 +68,49 @@ function stableHash(seed: string): number {
   return hash >>> 0;
 }
 
+const ORKNEY_SHADOWS = [
+  '가운데 화덕에 불씨를 모으는 집중이 환기와 쉼을 잊고 한 가지 고민에만 과열되어 매달리는 집착으로 번지지 않게 하세요.',
+  '돌 선반에 소중한 것을 정갈히 올려 두는 질서가 사소한 배열까지 완벽해야 마음이 놓이는 강박으로 굳어지지 않도록 살피세요.',
+  '바닷바람을 피해 문을 낮추는 보호가 꼭 만나고 소통해야 할 외부의 좋은 기회까지 닫아거는 고립이 되지 않게 조절하세요.',
+  '두꺼운 벽 안에서 온기를 지키는 보온이 이미 밖으로 나와 움직여야 할 때에도 안전한 안쪽에만 머무르는 안주가 되어서는 안 됩니다.',
+] as const;
+
+function classifyOrkneyTopic(q: string): OrkneySkaraResult['questionTopic'] {
+  if (/화덕|중심|불씨|구심/.test(q)) return '화덕·중심';
+  if (/정돈|선반|질서|정리/.test(q)) return '질서·정돈';
+  if (/경계|휴식|바람|문턱/.test(q)) return '경계·휴식';
+  if (/온기|보온|회복|기본/.test(q)) return '온기·보온';
+  return '스카라 전반';
+}
+
 export function calculateOrkneySkaraHearth(input: OrkneySkaraInput): OrkneySkaraResult {
   const now = input.now ?? new Date();
   const fate = input.profile?.fate ?? {};
-  const seedText = `${JSON.stringify(fate)}|${input.question ?? ''}|${now.toISOString().slice(0, 10)}|orkney-skara`;
+  const q = (input.question ?? '').trim();
+  const questionTopic = classifyOrkneyTopic(q);
+  const seedText = `${JSON.stringify(fate)}|${q}|${now.toISOString().slice(0, 10)}|orkney-skara`;
   const h = stableHash(seedText);
 
   const motifIdx = h % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seedText}|companion`) % (MOTIFS.length - 1));
   const hearthMotif = MOTIFS[motifIdx];
   const companionMotif = MOTIFS[(motifIdx + companionOffset) % MOTIFS.length];
+  const skaraHearthAxis = `${hearthMotif.split('(')[0].trim()} ↔ ${companionMotif.split('(')[0].trim()} (${questionTopic})`;
   const stoneShelterState = SHELTER_STATES[(h >>> 3) % SHELTER_STATES.length];
   const ritualAction = RITUALS[motifIdx];
   const reflectiveQuestion = QUESTIONS[motifIdx];
 
   return {
-    engineVersion: 'LUCKEY-ORKNEY-SKARA-v2.2.0',
+    engineVersion: 'LUCKEY-ORKNEY-SKARA-v2.3.0',
     calculatedAtKst: toKstIso(now),
+    questionTopic,
     hearthMotif,
     companionMotif,
+    skaraHearthAxis,
     stoneShelterState,
     reflectionFocus: `북해의 거센 바람을 흙과 돌벽으로 막고 중앙 화덕에 온기를 지킨 오크니 스카라 브레처럼, 주 모티프와 동반 모티프('${companionMotif}')가 어우러져 지금은 '${stoneShelterState}'의 아늑한 중심 잡기가 어울립니다.`,
     ritualAction,
+    shadowWarning: ORKNEY_SHADOWS[motifIdx],
     reflectiveQuestion,
     interpretiveBoundary: '스코틀랜드 오크니 제도 신석기 스카라 브레 석실 주거의 지혜를 빌린 상징적 성찰 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +119,13 @@ export function calculateOrkneySkaraHearth(input: OrkneySkaraInput): OrkneySkara
 export function formatOrkneySkaraPrompt(result: OrkneySkaraResult): string {
   return [
     `[오크니 스카라 브레 석실 (${result.engineVersion}) · ${result.calculatedAtKst}]`,
+    `- 질문 맥락: ${result.questionTopic} | 석실 화덕 축: ${result.skaraHearthAxis}`,
     `- 상징 모티프: ${result.hearthMotif}`,
     `- 동반 모티프: ${result.companionMotif}`,
     `- 현재 결: ${result.stoneShelterState}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 작은 실천: ${result.ritualAction}`,
+    `- 과잉 경계: ${result.shadowWarning}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 해석 경계: ${result.interpretiveBoundary}`,
   ].join('\n');
