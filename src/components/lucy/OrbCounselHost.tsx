@@ -47,6 +47,7 @@ export function OrbPage() {
       open
       nickname={nickname}
       chart={chart}
+      profile={profile}
       account={account}
       onFinish={(summary) => {
         // 채팅에 남기기: 상담 기록은 보이지 않는 참고 자료로 넘기고, 루시가 요약 보고서를 써 준다.

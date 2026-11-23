@@ -8,7 +8,7 @@ import { generateHeavenlyAdvice } from '@/lib/orbHeavenlyAdvice';
 import { playTTSInChunks, stopTTS, useTTSActive, useTTSState } from '@/utils/tts';
 import { CHANNEL_MENU_ICONS, MessageCircleMinus } from '@/lib/channelMenuIcons';
 import {
-  ORB_CARD_PICK_CARDS, ORB_CARD_PICK_GUIDE, ORB_CARD_POSITIONS, ORB_DECK_SIZE, buildOrbMemoryBrief, countStopWords, isStopAll, latestOrbMemoryLine, loadOrbMemory,
+  ORB_CARD_POSITIONS, ORB_DECK_SIZE, buildOrbMemoryBrief, countStopWords, isStopAll, latestOrbMemoryLine, loadOrbMemory,
   orbCardPickMessage, parseCardNumbers, pickOrbCards, saveOrbMemory, shuffleOrbDeck, summarizeOrbSession,
   type OrbDeckCard, type OrbMemoryEntry, type OrbPickedCard,
 } from '@/lib/orbConsult';
@@ -18,6 +18,9 @@ import { useLocation } from 'wouter';
 import { setMicCaptureActive } from '@/lib/audioMixingPolicy';
 import { rememberBgmBeforeMic, resumeBgmAfterMicSoon } from '@/lib/micBgmResume';
 import { drawTalisman, pickTalisman, saveTalismanImage, type TalismanSpec } from '@/lib/orbTalisman';
+import { buildOrbMasterRules } from '@/lib/orb/orbTools';
+import { createOrbToolExecutor, type OrbToolExecutor } from '@/lib/orb/orbToolExecutor';
+import type { UserProfile } from '@/lib/sharedState';
 import './lucy-orb-counsel.css';
 
 const BOKCHAE = [
@@ -161,12 +164,15 @@ export function LucyOrbCounsel({
   open,
   nickname,
   chart,
+  profile = null,
   account = 'device',
   onFinish,
 }: {
   open: boolean;
   nickname: string;
   chart: string;
+  /** 🔮 마스터가 부르는 계산 도구가 읽는 프로필 (생년월일·생시). */
+  profile?: UserProfile | null;
   /** 단골 기억(지난 상담 기록)을 계정별로 나눠 둔다. */
   account?: string;
   onFinish: (summary: string | null) => void;
@@ -217,6 +223,8 @@ export function LucyOrbCounsel({
   const deckRef = useRef<OrbDeckCard[]>([]);
   const pickedRef = useRef(false);
   const [pickedCards, setPickedCards] = useState<OrbPickedCard[] | null>(null);
+  const pickedCardsRef = useRef(pickedCards);
+  pickedCardsRef.current = pickedCards;
   const [pickOpen, setPickOpen] = useState(false);
   const [pickSel, setPickSel] = useState<number[]>([]);
   const pickCloseTimer = useRef<number | null>(null);
@@ -234,6 +242,11 @@ export function LucyOrbCounsel({
   const stopSeenRef = useRef(0);
   const stopBufRef = useRef('');
   const pickOpenRef = useRef(false);
+  // 🃏 타로는 마스터가 부르거나(open_tarot_shuffle) 손님이 '카드 섞기'를 누를 때만 켠다.
+  // 그 전에는 "그만" 같은 말로 카드가 뽑히지 않는다.
+  const tarotArmedRef = useRef(false);
+  const executorRef = useRef<OrbToolExecutor | null>(null);
+  const [toolBusy, setToolBusy] = useState('');
   pickOpenRef.current = pickOpen;
   const autoOpenedRef = useRef(false);
   // 📒 단골 기억: 지난 상담 기록 (이 기기, 계정별)
@@ -533,9 +546,10 @@ export function LucyOrbCounsel({
     setPhase('live');
     setNotice('');
     setMicUnavailable(false);
-    // 타로 마스터는 카드를 미리 뽑지 않는다: 이번 상담용 카드 더미만 섞어 두고, 손님이 고르면 펼친다.
-    const usesCards = Boolean(next.cardPick);
-    deckRef.current = usesCards ? shuffleOrbDeck() : [];
+    // 🔮 마스터 한 명이 15가지 도구를 함께 쓴다. 카드는 미리 뽑지 않고 더미만 섞어 둔다 (타로를 부르면 손님이 고른다).
+    deckRef.current = shuffleOrbDeck();
+    tarotArmedRef.current = false;
+    setToolBusy('');
     pickedRef.current = false;
     setPickedCards(null);
     setPickSel([]);
@@ -547,21 +561,46 @@ export function LucyOrbCounsel({
     stopSeenRef.current = 0;
     stopBufRef.current = '';
     const memoryBrief = buildOrbMemoryBrief(memory, next.id);
-    const notes = [usesCards ? ORB_CARD_PICK_GUIDE : '', memoryBrief].filter(Boolean).join('\n');
+    const notes = memoryBrief;
+    const executor = createOrbToolExecutor({
+      profile,
+      events: {
+        onToolStart: (_id, name) => setToolBusy(name),
+        onToolEnd: () => setToolBusy(''),
+        openTarot: () => {
+          if (pickedRef.current) {
+            return { opened: false, alreadyPicked: (pickedCardsRef.current || []).map(card => `${card.position} ${card.nameKo} ${card.orientationKo}`).join(', ') || '이미 뽑음' };
+          }
+          tarotArmedRef.current = true;
+          setPickMode('shuffle');
+          setPickOpen(true);
+          return { opened: true };
+        },
+      },
+    });
+    executorRef.current = executor;
     const session = startGeminiLiveVoice({
       nickname,
-      chart,
-      cards: usesCards ? ORB_CARD_PICK_CARDS : '',
       notes,
       voice: next.voice,
-      focus: next.focus,
       greet: next.greet,
+      orb: {
+        persona: next.focus,
+        rules: buildOrbMasterRules({
+          birthdate: Boolean(profile?.basic?.birthdate?.trim()),
+          birthtime: Boolean(profile?.basic?.birthtime?.trim()),
+        }),
+      },
+      onToolCall: (call) => executor.execute(call),
+      onToolBusy: (busy) => { if (!busy) setToolBusy(''); },
       onState: (state) => setSpeaking(state === 'speaking'),
       onAudioLevel: (level) => setAudioLevel(level),
       onUserText: (text) => {
         if (lucyBuf.current) take('루시', lucyBuf);
+        // 손님이 새로 말하기 시작하면 한 차례 도구 호출 수를 다시 센다.
+        if (!userBuf.current) executorRef.current?.newTurn();
         userBuf.current = mergeTranscript(userBuf.current, text);
-        if (usesCards && !pickedRef.current) {
+        if (tarotArmedRef.current && !pickedRef.current) {
           // "멈춰"라고 말할 때마다 섞이던 카드 한 장을 뽑는다.
           const buf = userBuf.current;
           if (!buf.startsWith(stopBufRef.current)) stopSeenRef.current = 0;
@@ -586,7 +625,7 @@ export function LucyOrbCounsel({
         lucyBuf.current = mergeTranscript(lucyBuf.current, text);
         setCaption(captionLine(lucyBuf.current));
         // 마스터가 "멈춰라고 말씀해 주세요"라고 안내하면 섞는 화면을 연다 (한 번만).
-        if (usesCards && !pickedRef.current && !autoOpenedRef.current && /멈춰|멈추/.test(lucyBuf.current)) {
+        if (tarotArmedRef.current && !pickedRef.current && !autoOpenedRef.current && /멈춰|멈추/.test(lucyBuf.current)) {
           autoOpenedRef.current = true;
           setPickOpen(true);
         }
@@ -919,6 +958,7 @@ export function LucyOrbCounsel({
       setDraft(text);
       return;
     }
+    executorRef.current?.newTurn();
     sessionRef.current.sendText(text);
     userBuf.current = text;
     take('나', userBuf);
@@ -982,6 +1022,7 @@ export function LucyOrbCounsel({
     const text = draft.trim();
     if (!text) return;
     if (!sessionRef.current) return;
+    executorRef.current?.newTurn();
     sessionRef.current.sendText(text);
     userBuf.current = text;
     take('나', userBuf);
@@ -1071,7 +1112,7 @@ export function LucyOrbCounsel({
             </div>
           </div>
         )}
-        {phase === 'live' && master?.cardPick && pickOpen && (
+        {phase === 'live' && master && pickOpen && (
           <div className="lucy-cardpick-layer" role="dialog" aria-label="타로 카드 고르기">
             <div className="lucy-cardpick">
               {!pickedCards && pickMode === 'shuffle' ? (
@@ -1357,17 +1398,19 @@ export function LucyOrbCounsel({
           )}
           {phase === 'live' && master && (
             <div className="lucy-orb-keywords">
-              {master.cardPick && (
-                <button type="button" className={`lucy-orb-cardchip ${pickedCards ? '' : 'is-waiting'}`} onClick={() => setPickOpen(true)}>
-                  {pickedCards ? '🃏 내 카드 보기' : '🃏 카드 섞기'}
-                </button>
-              )}
+              <button type="button" className={`lucy-orb-cardchip ${pickedCards ? '' : 'is-waiting'}`} onClick={() => { tarotArmedRef.current = true; setPickOpen(true); }}>
+                {pickedCards ? '🃏 내 카드 보기' : '🃏 카드 섞기'}
+              </button>
               {master.prompts.map(prompt => (
                 <button key={prompt} type="button" onClick={() => ask(prompt)}>{prompt}</button>
               ))}
             </div>
           )}
           {/* 자막: 마스터가 지금 하는 말만 한 줄씩 (내가 한 말은 보이지 않는다) */}
+          {/* 🔮 마스터가 도구를 계산하는 동안 */}
+          {phase === 'live' && toolBusy && (
+            <p className="lucy-orb-toolbusy" role="status">🔮 {toolBusy} 살펴보는 중…</p>
+          )}
           {phase === 'live' && caption && (
             <p key={caption.slice(0, 12)} className="lucy-orb-caption" aria-live="polite">{caption}</p>
           )}

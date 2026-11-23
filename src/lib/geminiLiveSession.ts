@@ -1,4 +1,5 @@
-import { buildLucyLiveInstruction } from './lucyLiveBrief';
+import { buildLucyLiveInstruction, buildOrbLiveInstruction } from './lucyLiveBrief';
+import { orbFunctionDeclarations } from './orb/orbTools';
 import { orbVoice } from './orbMasters';
 
 export type LiveVoiceState = 'listening' | 'speaking';
@@ -40,6 +41,12 @@ type LiveVoiceHandlers = {
   releaseMicWhileMuted?: boolean;
   /** When set, a missing microphone is not fatal: the session continues with typed input and spoken answers. */
   onNotice?: (message: string) => void;
+  /** 🔮 오브 통합 마스터: 마스터가 도구를 함수로 부른다. persona = 말투, rules = 도구 사용 규칙. */
+  orb?: { persona: string; rules: string };
+  /** 마스터가 부른 함수를 실행하고 결과(JSON)를 돌려준다. */
+  onToolCall?: (call: { id?: string; name: string; args?: Record<string, unknown> }) => Promise<Record<string, unknown>>;
+  /** 도구 실행 중 여부 (오브 표시용). */
+  onToolBusy?: (busy: boolean) => void;
 };
 
 function downsample(input: Float32Array, inRate: number, outRate = 16000): Float32Array {
@@ -154,6 +161,30 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     return true;
   };
 
+  const cancelledCalls = new Set<string>();
+  // 🔮 마스터가 부른 도구를 실행하고 결과를 돌려준다 (결과가 와야 마스터가 이어서 말한다).
+  const answerToolCall = async (toolCall: any) => {
+    const calls: Array<{ id?: string; name: string; args?: Record<string, unknown> }> = toolCall.functionCalls || toolCall.function_calls || [];
+    if (!calls.length) return;
+    handlers.onToolBusy?.(true);
+    const functionResponses = [];
+    for (const call of calls) {
+      let response: Record<string, unknown>;
+      try {
+        response = handlers.onToolCall
+          ? await handlers.onToolCall({ id: call.id, name: String(call.name || ''), args: call.args || {} })
+          : { ok: false, message: '이 상담에서는 도구를 쓸 수 없습니다.' };
+      } catch {
+        response = { ok: false, message: '도구 실행에 실패했습니다. 계산값 없이 이어 가세요.' };
+      }
+      if (call.id && cancelledCalls.has(String(call.id))) continue;
+      functionResponses.push({ ...(call.id ? { id: call.id } : {}), name: call.name, response });
+    }
+    handlers.onToolBusy?.(false);
+    if (stopped || !functionResponses.length || socket?.readyState !== WebSocket.OPEN) return;
+    try { socket.send(JSON.stringify({ toolResponse: { functionResponses } })); } catch { /* socket closing */ }
+  };
+
   const handleMessage = (raw: string) => {
     let message: any;
     try { message = JSON.parse(raw); } catch { return; }
@@ -170,6 +201,13 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
         pendingText = '';
         sendTyped(queued);
       }
+      return;
+    }
+    const toolCall = message.toolCall || message.tool_call;
+    if (toolCall) { void answerToolCall(toolCall); return; }
+    const cancelled = message.toolCallCancellation || message.tool_call_cancellation;
+    if (cancelled) {
+      for (const id of cancelled.ids || []) cancelledCalls.add(String(id));
       return;
     }
     const content = message.serverContent || message.server_content;
@@ -258,6 +296,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
           focus: handlers.focus || '',
           greet: handlers.greet || '',
           notes: handlers.notes || '',
+          ...(handlers.orb ? { orb: true, persona: handlers.orb.persona, rules: handlers.orb.rules } : {}),
         }),
       });
       const body = await response.json().catch(() => ({}));
@@ -320,8 +359,12 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
           inputAudioTranscription: {},
           outputAudioTranscription: {},
           systemInstruction: {
-            parts: [{ text: buildLucyLiveInstruction(handlers.nickname || '', handlers.chart || '', handlers.cards || '', handlers.focus || '', handlers.greet || '', handlers.notes || '') }],
+            parts: [{ text: handlers.orb
+              ? buildOrbLiveInstruction(handlers.nickname || '', handlers.orb.persona, handlers.greet || '', handlers.notes || '', handlers.orb.rules)
+              : buildLucyLiveInstruction(handlers.nickname || '', handlers.chart || '', handlers.cards || '', handlers.focus || '', handlers.greet || '', handlers.notes || '') }],
           },
+          // 🔮 오브 마스터는 15가지 도구를 함수로 부른다.
+          ...(handlers.orb ? { tools: [{ functionDeclarations: orbFunctionDeclarations() }] } : {}),
         },
       }));
     };
