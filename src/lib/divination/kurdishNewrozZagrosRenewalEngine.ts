@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface KurdishNewrozResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '재생·새출발' | '서사·연대' | '정화·비움' | '네우로즈 전반';
   zagrosSymbol: string;
   companionSymbol: string;
+  newrozRenewalAxis: string;
   newrozInsight: string;
   kurdishTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,48 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const KURDISH_SHADOWS = [
+  '새로운 날의 불씨를 지피려다 어제까지 정성껏 쌓아 둔 기반과 마무리해야 할 책무까지 한꺼번에 덮어 버리지 마세요.',
+  '척박한 바위 틈에서도 꽃을 피우는 강인함을 믿되, 지금 내 몸과 마음이 쉬어야 할 신호까지 무리하게 무시하지는 마세요.',
+  '지나온 아픔을 이야기로 꺼내어 치유하는 과정에서, 이미 끝난 후회에 너무 오래 머물러 오늘의 발걸음이 느려지지 않게 하세요.',
+  '곁의 손과 호흡을 맞추는 연대에 기대다 보면 스스로 정해야 할 나만의 중심과 경계가 흐려질 수 있으니 함께 살피세요.',
+  '묵은 먼지를 씻어 내고 비워 내는 개운함에 취해 정작 앞으로 채워 넣어야 할 구체적인 다음 계획까지 비워 두지 마세요.',
+];
+
+function classifyKurdishTopic(q: string): KurdishNewrozResult['questionTopic'] {
+  if (/새로|시작|피로|전환|출발/.test(q)) return '재생·새출발';
+  if (/이야기|사람|연대|혼자|도움/.test(q)) return '서사·연대';
+  if (/비움|정화|씻어|습관|정리/.test(q)) return '정화·비움';
+  return '네우로즈 전반';
+}
+
 export function calculateKurdishNewrozZagrosRenewal(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): KurdishNewrozResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyKurdishTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % SYMBOLS.length;
   const picked = SYMBOLS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (SYMBOLS.length - 1));
   const companion = SYMBOLS[(idx + companionOffset) % SYMBOLS.length];
+  const newrozRenewalAxis = `${picked.symbol.split('(')[0].trim()} ↔ ${companion.symbol.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-KURDISH-NEWROZ-v2.2.0',
+    engineVersion: 'LUCKEY-KURDISH-NEWROZ-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     zagrosSymbol: picked.symbol,
     companionSymbol: companion.symbol,
+    newrozRenewalAxis,
     newrozInsight: picked.insight,
     kurdishTone: picked.tone,
     reflectionFocus: `쿠르드 네우로즈의 '${picked.symbol}'을 중심에 두고 '${companion.symbol}'의 흐름을 함께 엮어, 어제의 피로를 오늘까지 끌고 오지 말고 지금 이 순간을 새로운 첫날로 열어 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: KURDISH_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '쿠르드(Kurdish) 네우로즈 새날의 불과 자그로스 산맥 회복 문화를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +119,13 @@ export function formatKurdishNewrozPrompt(res: KurdishNewrozResult): string {
   return [
     `[쿠르드 네우로즈·자그로스 재생 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 네우로즈 재생 축: ${res.newrozRenewalAxis}`,
     `- 네우로즈 상징: ${res.zagrosSymbol} (${res.kurdishTone})`,
     `- 동반 상징: ${res.companionSymbol}`,
     `- 중심 통찰: ${res.newrozInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
