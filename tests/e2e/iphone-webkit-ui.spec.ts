@@ -637,17 +637,24 @@ test('Big Bang hold enters Lucy Master, deepens it, and a single tap leaves', as
   await openLucy(page);
   const button = page.locator('#bigbang-omnibutton');
   await expect(button).toBeVisible();
-  const box = await button.boundingBox();
-  expect(box).not.toBeNull();
-  if (!box) throw new Error('Big Bang button is missing for hold test');
-  const x = box.x + box.width / 2;
-  const y = box.y + box.height / 2;
-  const hold = async () => {
-    await page.mouse.move(x, y);
-    await page.mouse.down();
-    await page.waitForTimeout(650);
-    await page.mouse.up();
-  };
+  const press = (duration: number) => button.evaluate((target, elapsed) => {
+    const box = target.getBoundingClientRect();
+    const pointer = {
+      bubbles: true, cancelable: true, pointerId: 7, pointerType: 'touch', isPrimary: true, button: 0,
+      clientX: box.x + box.width / 2, clientY: box.y + box.height / 2,
+    };
+    const now = performance.now;
+    let gestureTime = now.call(performance);
+    try {
+      performance.now = () => gestureTime;
+      target.dispatchEvent(new PointerEvent('pointerdown', { ...pointer, buttons: 1 }));
+      gestureTime += elapsed;
+      target.dispatchEvent(new PointerEvent('pointerup', { ...pointer, buttons: 0 }));
+    } finally {
+      performance.now = now;
+    }
+  }, duration);
+  const hold = () => press(650);
 
   await hold();
   await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
@@ -671,7 +678,7 @@ test('Big Bang hold enters Lucy Master, deepens it, and a single tap leaves', as
 
   // 한 번 탭: 일반 루시로 돌아가고 깊이도 초기화
   await expect(page.getByTestId('lucy-master-suction')).toBeHidden();
-  await button.tap();
+  await press(50);
   await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBeNull();
   await expect(page.locator('.lucy-master-room')).toHaveCount(0);
   expect(await page.evaluate(() => sessionStorage.getItem('lucy_master_depth'))).toBeNull();
@@ -1293,7 +1300,7 @@ test('Lucy can return to the latest conversation and tap blank header space to r
   expect(returnButtonBox.width).toBeLessThan(110);
   expect(Math.abs(viewport.width - (returnButtonBox.x + returnButtonBox.width) - sidebarBox.width - 16)).toBeLessThanOrEqual(3);
   expect(returnButtonBox.y).toBeGreaterThan(viewport.height / 2);
-  await returnButton.click();
+  await returnButton.tap();
   await expect.poll(() => messages.evaluate(element => element.scrollHeight - element.scrollTop - element.clientHeight)).toBeLessThan(3);
   await expect(returnButton).toBeHidden();
 

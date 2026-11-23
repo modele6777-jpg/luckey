@@ -3191,15 +3191,20 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     const previous = messageGeometryRef.current;
     const layoutChanged = previous.height !== scrollHeight || previous.viewport !== clientHeight;
     messageGeometryRef.current = { height: scrollHeight, viewport: clientHeight };
-    if (clientHeight < 2 || isAutoScrollingRef.current) return;
-    // 낭독 중 문장 중앙 정렬로 생기는 이동은 사용자의 스크롤이 아니다.
-    // 여기서 사용자가 위로 올렸다고 판단하면 낭독 위치와 하단 사이를 오가게 된다.
-    if (ttsHoldsScrollRef.current) return;
+    if (clientHeight < 2 || ttsHoldsScrollRef.current) return;
+    const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
+    if (isAutoScrollingRef.current) {
+      // WebKit can restore an older offset before the programmatic scroll
+      // settles. A manual reading gesture releases this temporary pin.
+      if (!isUserScrolledUpRef.current && lucyScrollPinHeld() && isLucyScrollPinned() && distanceFromBottom > 80) {
+        followLatestLayoutRef.current();
+      }
+      return;
+    }
     if (layoutChanged && !isUserScrolledUpRef.current) {
       followLatestLayoutRef.current();
       return;
     }
-    const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
     // Only a layer over this conversation may ignore layout noise. A content-pane dialog stays independent.
     if (!isUserScrolledUpRef.current && (overlayCoversElement(container) || lucyScrollPinHeld())) {
       if (isLucyScrollPinned() || distanceFromBottom <= 80) followLatestLayoutRef.current();
