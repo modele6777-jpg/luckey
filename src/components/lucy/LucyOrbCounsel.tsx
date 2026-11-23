@@ -180,7 +180,7 @@ export function LucyOrbCounsel({
   const [thrown, setThrown] = useState(0);
   const [location] = useLocation();
   const [awayFromOrb, setAwayFromOrb] = useState(false);
-  const [bedOn, setBedOn] = useState(true);
+  const [bedOn, setBedOn] = useState(false);
   const [bok, setBok] = useState<string | null>(null);
   const [hearted, setHearted] = useState(false);
   // 복채를 내면 이 상담에 맞는 부적을 그려 준다 (채팅에는 남기지 않고, 사진으로만 저장).
@@ -280,9 +280,10 @@ export function LucyOrbCounsel({
     if (isLucyMasterBgmPlaying()) stopLucyMasterBgm();
     const bed = createOrbCounselBed();
     bedRef.current = bed;
-    const on = sessionStorage.getItem('lucy_orb_bed') !== 'off';
+    // 배경음은 기본 꺼짐: 사용자가 이번 탭에서 직접 켠 경우에만 켜진 채로 시작한다.
+    const on = sessionStorage.getItem('lucy_orb_bed') === 'on';
     setBedOn(on);
-    void bed?.resume().then(() => bed.setAudible(on && document.visibilityState !== 'hidden', false));
+    if (on) void bed?.resume().then(() => bed.setAudible(document.visibilityState !== 'hidden', false));
     return () => {
       window.clearTimeout(appear);
       if (flashTimer.current) window.clearTimeout(flashTimer.current);
@@ -786,7 +787,7 @@ export function LucyOrbCounsel({
         data-orb-counsel="true"
         role="region"
         aria-label="오브 상담"
-        onPointerDown={() => { void bedRef.current?.resume().then(() => bedRef.current?.setAudible(bedAudible, speaking)); }}
+        onPointerDown={() => { if (bedAudible) void bedRef.current?.resume().then(() => bedRef.current?.setAudible(bedAudible, speaking)); }}
       >
         {Array.from({ length: 18 }, (_, index) => (
           <span key={`mote-${index}`} className="lucy-mote" style={{ left: `${3 + index * 5.4}%`, animationDelay: `${(index * 0.83) % 12}s`, ['--mote-x' as string]: `${(index % 2 ? 1 : -1) * (10 + (index % 4) * 8)}px` }} />
@@ -851,7 +852,7 @@ export function LucyOrbCounsel({
                 const next = !bedOn;
                 setBedOn(next);
                 sessionStorage.setItem('lucy_orb_bed', next ? 'on' : 'off');
-                void bedRef.current?.resume();
+                if (next) void bedRef.current?.resume();
               }}
             >
               {bedOn ? '배경음 켜짐' : '배경음 꺼짐'}
