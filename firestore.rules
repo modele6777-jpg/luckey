@@ -91,6 +91,10 @@ service cloud.firestore {
       allow read, create, update: if isKnowledgeAdmin();
       allow delete: if false;
     }
+    match /lucyKnowledgeSourceCandidates/{candidateId} {
+      allow read: if isKnowledgeAdmin();
+      allow write: if false;
+    }
     match /lucyKnowledgeDrafts/{draftId} {
       allow read, create, update: if isKnowledgeAdmin();
       allow delete: if false;
