@@ -13425,14 +13425,15 @@ test('Basque Lauburu & Basajaun Harmony engine: cycle balance, +09:00 KST, and i
 
 test('Ojibwe Seven Grandfather Teachings engine: virtues, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateOjibweSevenGrandfatherTeachings({ profile, now: new Date('2026-11-20T04:40:00Z'), question: '관계에서 중심을 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-OJIBWE-SEVEN-GRANDFATHERS-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-OJIBWE-SEVEN-GRANDFATHERS-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.balancingTeaching.id !== rep.dominantTeaching.id);
+  assert.ok(rep.virtueBalanceAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('수치적 운세 점수가 아닙니다'));
   const prompt = formatOjibweSevenGrandfatherPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('오지브웨') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.balancingTeaching.koreanName));
+  assert.ok(prompt.includes('오지브웨') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.balancingTeaching.koreanName) && prompt.includes('과잉 경계'));
 });
 
 test('Sami Noaidi Drum & Joik engine: drum zone, +09:00 KST, and interpretive boundary', () => {
@@ -14243,14 +14244,15 @@ test('Oromo Gadaa Saffuu Harmony engine: cycle, +09:00 KST, and interpretive bou
 
 test('Karelian Runo Kantele Resonance engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKarelianRunoKanteleResonance({ profile, now: new Date('2026-11-20T08:11:00Z'), question: '내 마음에 남은 소박한 울림을 듣고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KARELIAN-KANTELE-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-KARELIAN-KANTELE-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.runoMotif);
+  assert.ok(rep.kanteleChordAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKarelianRunoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('카렐리야') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('카렐리야') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
 });
 
 test('Maltese Megalith Luzzu Harbor engine: symbol, +09:00 KST, and interpretive boundary', () => {
@@ -14966,14 +14968,15 @@ test('Palauan Bai Rafter Balance engine: motif, +09:00 KST, and interpretive bou
 
 test('Zimbabwe Great Stone Wall engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateZimbabweGreatStoneWall({ profile, now: new Date('2026-11-20T20:19:00Z'), question: '제 무게로 맞물리는 자리를 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ZIMBABWE-STONE-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ZIMBABWE-STONE-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.zimbabweMotif);
+  assert.ok(rep.stoneLockAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatZimbabweStonePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('짐바브웨') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('짐바브웨') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
 });
 
 test('Bulgarian Rose Valley Dawn engine: motif, +09:00 KST, and interpretive boundary', () => {

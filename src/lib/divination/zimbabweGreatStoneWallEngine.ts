@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface ZimbabweStoneResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계·자리' | '일·축적' | '시야·균형' | '구조 전반';
   zimbabweMotif: string;
   companionMotif: string;
+  stoneLockAxis: string;
   zimbabweInsight: string;
   graniteTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const ZIMBABWE_SHADOWS = [
+  '자연스러운 맞물림을 기다리다 꼭 필요한 약속과 기준까지 느슨하게 두지 않도록 경계하세요.',
+  '묵묵히 버티는 데에만 익숙해져 정작 도움을 요청하거나 문을 열어야 할 때를 놓치지 마세요.',
+  '먼 지평선만 바라보다 지금 발밑에서 치워야 할 작은 돌부리를 지나치지 않도록 살피세요.',
+  '일상의 리듬과 아름다움을 더하려다 핵심 구조가 느슨해지지 않게 균형을 맞추세요.',
+  '한 걸음씩 천천히 가는 안전함에만 머물러 과감히 넘어야 할 문턱을 미루지 않도록 주의하세요.',
+];
+
+function classifyZimbabweTopic(q: string): ZimbabweStoneResult['questionTopic'] {
+  if (/관계|자리|사람|사랑|가족|맞물/.test(q)) return '관계·자리';
+  if (/일|직장|진로|축적|계획|통로/.test(q)) return '일·축적';
+  if (/시야|균형|지평선|휴식|마음/.test(q)) return '시야·균형';
+  return '구조 전반';
+}
+
 export function calculateZimbabweGreatStoneWall(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): ZimbabweStoneResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyZimbabweTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const stoneLockAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = ZIMBABWE_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-ZIMBABWE-STONE-v2.2.0',
+    engineVersion: 'LUCKEY-ZIMBABWE-STONE-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     zimbabweMotif: picked.motif,
     companionMotif: companion.motif,
+    stoneLockAxis,
     zimbabweInsight: picked.insight,
     graniteTone: picked.tone,
     reflectionFocus: `그레이트 짐바브웨 돌담의 '${picked.motif}'처럼, 억지로 묶으려 하기보다 제 무게로 알맞게 맞물리는 자리를 찾아보세요. (동반 결: ${companion.motif.split('(')[0].trim()})`,
     ritualAction: picked.action,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '남부 아프리카 그레이트 짐바브웨의 무모르타르 화강암 건축 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatZimbabweStonePrompt(res: ZimbabweStoneResult): string {
   return [
     `[그레이트 짐바브웨·돌담 지혜 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 석조 축: ${res.stoneLockAxis}`,
     `- 짐바브웨 모티프: ${res.zimbabweMotif} (${res.graniteTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.zimbabweInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
