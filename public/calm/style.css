@@ -8370,3 +8370,22 @@ html.luckey-parent-actions .top-nav { padding-right: 140px !important; }
   .modal-top-bar { padding: 6px 12px; }
   .modal-scrollable-body { padding: 8px 12px; }
 }
+
+/* 🔊 연습 창 '방법 듣기' 버튼 */
+.key-voice-wrap { margin-left: auto; margin-right: 8px; flex: 0 0 auto; }
+.key-voice-btn {
+  border: 1px solid rgba(162, 89, 59, .35);
+  background: #fff;
+  color: var(--copper-primary, #a2593b);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.key-voice-btn.is-on { background: var(--copper-primary, #a2593b); color: #fff; border-color: transparent; }
+.key-voice-btn.is-loading { opacity: .8; }
+.key-voice-note { display: block; padding: 6px 16px; font-size: 0.78rem; color: #a2593b; background: #fbf1ea; }
+.key-voice-note[hidden] { display: none; }
+@media (max-height: 560px) { .key-voice-btn { padding: 4px 9px; font-size: 0.74rem; } }
