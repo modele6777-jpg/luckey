@@ -3,7 +3,7 @@
  * Epiphany is located in Stephen Hero; see https://www.joyceproject.com/notes/Wk-bJZUBeQi-aLQfd7Cb.
  * Ulysses episode 4 presents Bloom's household cat, not a lost cat.
  * This engine intentionally emits no personal scores, diagnosis, prediction, or attributed quotation.
- * @version LUCKEY-JOYCE-ULYSSES-EPIPHANY-v2.2.0
+ * @version LUCKEY-JOYCE-ULYSSES-EPIPHANY-v2.4.0
  */
 
 export const IRISH_JAMES_JOYCE_ULYSSES_EPIPHANY_VERSION = 'LUCKEY-JOYCE-ULYSSES-EPIPHANY-v2.4.0';
@@ -24,6 +24,7 @@ export interface JoyceTheme {
   themeTitleKo: string;
   literaryInsight: string;
   practicalCounsel: string;
+  shadowWarning: string;
 }
 
 export interface IrishJamesJoyceUlyssesEpiphanyResult {
@@ -42,6 +43,7 @@ export interface IrishJamesJoyceUlyssesEpiphanyResult {
   boundaryNotice: string;
   interpretiveBoundary: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
 }
@@ -53,6 +55,7 @@ export const JOYCE_THEMES: JoyceTheme[] = [
     themeTitleKo: '일상의 에피파니 — 평범한 순간을 세심하게 살피기',
     literaryInsight: '《Stephen Hero》에서 스티븐은 일상적인 말과 행동에서 어떤 본질이 드러나는 순간을 에피파니로 설명합니다. 이후 《더블린 사람들》 등에서도 일상의 장면을 통해 인물과 사회를 드러내는 문학적 효과를 살펴볼 수 있습니다.',
     practicalCounsel: '당장 결론을 내리기보다 오늘의 작은 사건과 자신의 반응을 잠시 관찰해 보세요. 그 관찰이 상황을 새롭게 이해하는 데 도움이 될 수 있습니다.',
+    shadowWarning: '사소한 징후를 세밀하게 관찰하려다 작은 말실수나 우연에 지나친 의미를 부여해 스스로를 지치게 하지 마세요.',
   },
   {
     themeKey: 'forgeInSoulSmithy',
@@ -60,6 +63,7 @@ export const JOYCE_THEMES: JoyceTheme[] = [
     themeTitleKo: '예술가의 길 — 관습을 살피며 창작의 자율성을 찾기',
     literaryInsight: '《젊은 예술가의 초상》은 스티븐 디덜러스가 가족과 종교, 사회적 관습과 씨름하며 예술가로서의 길을 모색하는 과정을 그립니다.',
     practicalCounsel: '주변의 기대를 무조건 따르거나 거부하기보다, 당신에게 중요한 가치를 적고 작고 되돌릴 수 있는 선택부터 시험해 보세요.',
+    shadowWarning: '독립성과 자율성을 지키려다 주변의 선의나 현실적인 협력의 손길까지 모두 관습의 족쇄로 밀어내지 마세요.',
   },
   {
     themeKey: 'bloomCompassion',
@@ -67,6 +71,7 @@ export const JOYCE_THEMES: JoyceTheme[] = [
     themeTitleKo: '레오폴드 블룸 — 일상의 조용한 친절과 배려',
     literaryInsight: '《율리시스》 4화에서 블룸은 집 안의 고양이에게 우유를 주며, 이후에는 스티븐을 돕는 장면도 나옵니다. 이런 장면은 거창하지 않은 배려를 통해 인물을 바라보게 합니다.',
     practicalCounsel: '상대에게 필요한 것이 무엇인지 먼저 물어보고, 가능한 범위에서 구체적인 도움을 건네 보세요. 배려와 함께 자신의 경계도 지키는 것이 중요합니다.',
+    shadowWarning: '타인의 사정을 배려하고 챙기느라 정작 내 안의 피로와 내가 감당할 수 있는 한계선까지 비워 두지 마세요.',
   },
   {
     themeKey: 'mollyYesAffirmation',
@@ -74,6 +79,7 @@ export const JOYCE_THEMES: JoyceTheme[] = [
     themeTitleKo: '몰리 블룸 — 기억과 욕망을 통해 삶을 바라보기',
     literaryInsight: '《율리시스》의 마지막 장은 몰리 블룸의 긴 내적 독백으로 이루어져 있습니다. 기억과 욕망을 따라가는 형식은 삶에 대한 복합적인 해석을 남깁니다.',
     practicalCounsel: '삶을 한 문장으로 긍정하거나 부정하기보다, 지금 지키고 싶은 것과 바꾸고 싶은 것을 각각 하나씩 적어 보세요.',
+    shadowWarning: '기억과 감정의 흐름을 있는 그대로 품으려다 지금 당장 정리하고 매듭지어야 할 현실의 선택을 미루지는 마세요.',
   },
 ];
 
@@ -117,6 +123,7 @@ export function calculateIrishJamesJoyceUlyssesEpiphany(query?: string, nowArg?:
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     ritualAction,
+    shadowWarning: activeJoyceTheme.shadowWarning,
     reflectionFocus,
     reflectiveQuestion,
   };
@@ -131,6 +138,7 @@ export function formatIrishJamesJoyceUlyssesEpiphanyPrompt(res: IrishJamesJoyceU
     `- 작품 맥락: ${res.activeJoyceTheme.literaryInsight}`,
     `- 조심스럽게 적용할 제안: ${res.activeJoyceTheme.practicalCounsel}`,
     `- 실천 의례(Ritual Action): ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 성찰 초점(Reflection Focus): ${res.reflectionFocus}`,
     `- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.boundaryNotice}`,

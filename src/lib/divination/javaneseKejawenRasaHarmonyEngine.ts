@@ -18,12 +18,15 @@ export interface JavaneseKejawenResult {
   engineName: string;
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '평정·분별' | '인내·수용' | '공감·조화' | '라사 전반';
   activePrinciple: KejawenRasaPrinciple;
   supportingPrinciple: KejawenRasaPrinciple;
+  rasaBalanceAxis: string;
   rasaTone: string;
   qualitativeSynthesis: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   isSymbolicFramework: true;
@@ -85,6 +88,20 @@ function stableHash(input: string): number {
   return h >>> 0;
 }
 
+const KEJAWEN_SHADOWS: Record<KejawenRasaPrincipleId, string> = {
+  eling_lan_waspada: '깨어 있으려는 분별이 모든 상황을 의심하거나 자기 검열로 굳어져 마음을 쉬지 못하게 만들지 않도록 살피세요.',
+  sabar_lan_narima: '흐름을 수용하고 기다리는 태도가 정작 내가 먼저 목소리를 내고 바꾸어야 할 불합리까지 체념하는 일이 되지 않게 하세요.',
+  tepa_slira: '상대의 마음을 헤아리는 온기가 내가 꼭 세워야 할 솔직한 경계선과 거절의 의사까지 삼켜 버리지 않도록 하세요.',
+  memayu_hayuning_bawana: '주변과 공간을 정갈히 가꾸는 정성이 완벽주의나 끝없는 정리 강박으로 이어져 본래의 휴식을 빼앗지 않게 하세요.',
+};
+
+function classifyKejawenTopic(q: string): JavaneseKejawenResult['questionTopic'] {
+  if (/평정|분별|흔들|불안|조급/.test(q)) return '평정·분별';
+  if (/인내|수용|기다|통제|내려/.test(q)) return '인내·수용';
+  if (/공감|조화|관계|대화|온기/.test(q)) return '공감·조화';
+  return '라사 전반';
+}
+
 export function calculateJavaneseKejawenRasaHarmony(params: {
   profile: UserProfile;
   now?: Date;
@@ -92,6 +109,7 @@ export function calculateJavaneseKejawenRasaHarmony(params: {
 }): JavaneseKejawenResult {
   const now = params.now ?? new Date();
   const query = (params.question ?? '').trim();
+  const questionTopic = classifyKejawenTopic(query);
 
   const seedInput = [
     params.profile.basic?.name ?? '',
@@ -108,6 +126,8 @@ export function calculateJavaneseKejawenRasaHarmony(params: {
 
   const activePrinciple = KEJAWEN_PRINCIPLES[activeIdx];
   const supportingPrinciple = KEJAWEN_PRINCIPLES[supportingIdx];
+  const rasaBalanceAxis = `${activePrinciple.koreanTitle} ↔ ${supportingPrinciple.koreanTitle} (${questionTopic})`;
+  const shadowWarning = KEJAWEN_SHADOWS[activePrinciple.id];
 
   const qualitativeSynthesis =
     `인도네시아 자바 케자웬(Kejawen) 철학의 내면 감각 ‘라사(Rasa)’로 비추어 보면, 지금 흐름에는 ` +
@@ -126,14 +146,17 @@ export function calculateJavaneseKejawenRasaHarmony(params: {
 
   return {
     engineName: '자바 케자웬(Kejawen) 라사·내면 평정 (Javanese Kejawen Rasa)',
-    engineVersion: 'LUCKEY-JAVANESE-KEJAWEN-v2.2.0',
+    engineVersion: 'LUCKEY-JAVANESE-KEJAWEN-v2.3.0',
     calculatedAtKst: formatJavaneseKstTimestamp(now),
+    questionTopic,
     activePrinciple,
     supportingPrinciple,
+    rasaBalanceAxis,
     rasaTone,
     qualitativeSynthesis,
     reflectionFocus,
     ritualAction,
+    shadowWarning,
     reflectiveQuestion,
     interpretiveBoundary:
       '본 결과는 인도네시아 자바 전통 케자웬(Kejawen)의 내면 평정 철학을 활용한 자기 성찰 프레임워크이며, 의학적 진단·미래 예측이나 수치적 운세 점수가 아닙니다.',
@@ -145,12 +168,14 @@ export function formatJavaneseKejawenPrompt(res: JavaneseKejawenResult): string 
   return [
     `[보조 상징 관점 — ${res.engineName}]`,
     `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 라사 균형 축: ${res.rasaBalanceAxis}`,
     `- 중심 덕목: ${res.activePrinciple.javanesePhrase} · ${res.activePrinciple.koreanTitle}`,
     `- 보조 덕목: ${res.supportingPrinciple.javanesePhrase} · ${res.supportingPrinciple.koreanTitle}`,
     `- 라사(Rasa) 결: ${res.rasaTone}`,
     `- 성찰 해석: ${res.qualitativeSynthesis}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 실천 의례: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
