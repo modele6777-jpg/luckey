@@ -1,4 +1,6 @@
 import { createPublicKey, randomUUID, verify as verifySignature } from 'node:crypto';
+import { CONTROL_DOCUMENT, decodedFields, firestoreDocumentUrl, firestoreGet, firestorePatch, typedValue } from './lucyKnowledgeFirestore.js';
+import { searchKnowledgeMetadata } from './lucyKnowledgeSources.js';
 import express, { type Request, type Response } from 'express';
 import { GoogleGenAI } from '@google/genai';
 import firebaseConfig from '../../firebase-applet-config.json';
@@ -9,11 +11,9 @@ const CERT_URL = 'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@
 const router = express.Router();
 const requestTimes = new Map<string, number[]>();
 const PROJECT_ID = firebaseConfig.projectId;
-const DATABASE_ID = firebaseConfig.firestoreDatabaseId || '(default)';
 const PROJECT_ISSUER = `https://securetoken.google.com/${PROJECT_ID}`;
 const SOURCES_COLLECTION = 'lucyKnowledgeResearchRuns';
 const DAILY_BUDGET_COLLECTION = 'lucyKnowledgeBudgetDays';
-const CONTROL_DOCUMENT = 'lucyKnowledgeSettings/control';
 const MAX_BODY_TEXT = 6000;
 let publicCerts: Record<string, string> = {};
 let certsExpireAt = 0;
@@ -96,52 +96,6 @@ async function requireAdmin(req: Request, res: Response): Promise<VerifiedAdmin 
 }
 function tokenFor(req: Request): string {
   return String(req.headers.authorization).replace(/^Bearer\s+/i, '');
-}
-function firestoreDocumentUrl(path: string): string {
-  return `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(PROJECT_ID)}/databases/${encodeURIComponent(DATABASE_ID)}/documents/${path}`;
-}
-function fieldValue(value: unknown): unknown {
-  if (!value || typeof value !== 'object') return value;
-  const record = value as Record<string, any>;
-  if ('stringValue' in record) return record.stringValue;
-  if ('integerValue' in record) return Number(record.integerValue);
-  if ('doubleValue' in record) return Number(record.doubleValue);
-  if ('booleanValue' in record) return record.booleanValue;
-  if ('timestampValue' in record) return record.timestampValue;
-  if ('nullValue' in record) return null;
-  if ('arrayValue' in record) return (record.arrayValue.values ?? []).map(fieldValue);
-  if ('mapValue' in record) return Object.fromEntries(Object.entries(record.mapValue.fields ?? {}).map(([key, item]) => [key, fieldValue(item)]));
-  return undefined;
-}
-function decodedFields(document: any): Record<string, any> {
-  return Object.fromEntries(Object.entries(document?.fields ?? {}).map(([key, value]) => [key, fieldValue(value)]));
-}
-function typedValue(value: unknown): unknown {
-  if (value === null) return { nullValue: null };
-  if (typeof value === 'string') return { stringValue: value };
-  if (typeof value === 'boolean') return { booleanValue: value };
-  if (typeof value === 'number') return Number.isInteger(value) ? { integerValue: String(value) } : { doubleValue: value };
-  if (Array.isArray(value)) return { arrayValue: { values: value.map(typedValue) } };
-  if (value && typeof value === 'object') return { mapValue: { fields: Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, item]) => [key, typedValue(item)])) } };
-  return { nullValue: null };
-}
-async function firestoreGet(path: string, token: string): Promise<Record<string, any> | null> {
-  const response = await fetch(firestoreDocumentUrl(path), { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(5000) });
-  if (response.status === 404) return null;
-  if (!response.ok) throw new Error(`Firestore read failed (${response.status})`);
-  return decodedFields(await response.json());
-}
-async function firestorePatch(path: string, token: string, value: Record<string, unknown>, precondition: 'must_not_exist' | string): Promise<boolean> {
-  const url = new URL(firestoreDocumentUrl(path));
-  if (precondition === 'must_not_exist') url.searchParams.set('currentDocument.exists', 'false');
-  else url.searchParams.set('currentDocument.updateTime', precondition);
-  const response = await fetch(url, {
-    method: 'PATCH',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ fields: Object.fromEntries(Object.entries(value).map(([key, item]) => [key, typedValue(item)])) }),
-    signal: AbortSignal.timeout(5000),
-  });
-  return response.ok;
 }
 async function firestoreUpdate(path: string, token: string, value: Record<string, unknown>): Promise<boolean> {
   const url = new URL(firestoreDocumentUrl(path));
@@ -280,21 +234,6 @@ function validSource(source: any): source is KnowledgeSource {
   if (!['full_text', 'abstract_only', 'metadata_only', 'unavailable'].includes(source.access)) return false;
   return Boolean(source.doi || source.url);
 }
-function metadataOnlySource(item: any): KnowledgeSource | null {
-  const title = Array.isArray(item?.title) ? String(item.title[0] ?? '') : '';
-  if (!title) return null;
-  const authorList = Array.isArray(item.author) ? item.author : [];
-  const authors = authorList.map((author: any) => [author.given, author.family].filter(Boolean).join(' ')).filter(Boolean).slice(0, 16);
-  const yearParts = item.published?.['date-parts']?.[0] ?? item.created?.['date-parts']?.[0] ?? [];
-  const year = yearParts[0] ? String(yearParts[0]) : undefined;
-  const doi = typeof item.DOI === 'string' ? item.DOI : undefined;
-  const url = doi ? `https://doi.org/${doi}` : (typeof item.URL === 'string' && item.URL.startsWith('https://') ? item.URL : '');
-  if (!url) return null;
-  return {
-    title: title.slice(0, 240), authors, publication: Array.isArray(item['container-title']) ? String(item['container-title'][0] ?? '').slice(0, 240) : undefined,
-    year, doi, url, sourceKind: item.type === 'book' ? 'book' : 'journal', verification: 'unreviewed', access: 'metadata_only',
-  };
-}
 function validEngine(id: unknown): id is DivinationToolId {
   return typeof id === 'string' && ENGINE_IDS.has(id as DivinationToolId);
 }
@@ -307,15 +246,16 @@ router.get('/status', async (req, res) => {
     const budget = getBudgetConfig(settings);
     const enabled = settings.researchEnabled === true;
     const aiDraftReady = enabled && settings.aiDraftEnabled === true && Boolean(budget) && Boolean(process.env.GEMINI_API_KEY);
+    const scheduledResearchAvailable = process.env.LUCY_KNOWLEDGE_SCHEDULE_CONFIGURED === 'true';
     res.json({
       ok: true,
       researchEnabled: enabled,
       sourceSearchAvailable: enabled,
       aiDraftAvailable: aiDraftReady,
       aiBlockReason: aiDraftReady ? null : !enabled ? '관리자 설정에서 공개 문헌 연구를 켜야 합니다.' : !budget ? '서버 비용 상한·요금·토큰 한도가 모두 구성되어야 AI 초안을 사용할 수 있습니다.' : !process.env.GEMINI_API_KEY ? '서버 AI 키가 설정되지 않았습니다.' : '관리자 설정에서 AI 초안 생성을 켜야 합니다.',
-      scheduledResearchAvailable: false,
-      scheduledResearchEnabled: false,
-      scheduledBlockReason: '정기 연구 작업자가 구현·운영 검증되지 않아 기본 비활성 상태입니다.',
+      scheduledResearchAvailable,
+      scheduledResearchEnabled: scheduledResearchAvailable && enabled && settings.scheduledResearchEnabled === true,
+      scheduledBlockReason: !scheduledResearchAvailable ? 'Render 정기 작업 연결이 필요합니다.' : !enabled ? 'Crossref 메타데이터 연구를 먼저 허용해 주세요.' : null,
       hardDailyCapUsd: numberEnv('LUCY_KNOWLEDGE_HARD_MAX_DAILY_USD'),
       configuredDailyCapUsd: budget?.dailyCap ?? 0,
       maxPerRunUsd: budget?.runCap ?? 0,
@@ -338,15 +278,8 @@ router.post('/search', async (req, res) => {
     const queryText = String(rawQuery ?? '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 120);
     if (queryText.length < 3) return res.status(400).json({ error: '검색어는 3자 이상 입력해 주세요.', code: 'INVALID_QUERY' });
     const rows = Math.max(1, Math.min(8, Math.floor(Number(rawRows) || 5)));
-    const url = new URL('https://api.crossref.org/works');
-    url.searchParams.set('query', queryText);
-    url.searchParams.set('rows', String(rows));
-    url.searchParams.set('select', 'DOI,title,author,published,created,container-title,publisher,URL,type');
-    const response = await fetch(url, { headers: { Accept: 'application/json', 'User-Agent': 'LuckeyKnowledgeResearch/1.0' }, signal: AbortSignal.timeout(7000) });
-    if (!response.ok) return res.status(502).json({ error: 'Crossref 서지 검색이 일시적으로 실패했습니다.', code: 'SOURCE_PROVIDER_ERROR' });
-    const body = await response.json() as { message?: { items?: any[]; 'total-results'?: number } };
-    const candidates = (body.message?.items ?? []).map(metadataOnlySource).filter(Boolean);
-    res.json({ engineId, query: queryText, provider: 'Crossref REST', sourceAccess: 'metadata_only', total: Number(body.message?.['total-results'] ?? candidates.length), candidates });
+    const { candidates, total } = await searchKnowledgeMetadata(queryText, rows);
+    res.json({ engineId, query: queryText, provider: 'Crossref REST', sourceAccess: 'metadata_only', total, candidates });
   } catch {
     res.status(502).json({ error: '출처 검색을 완료하지 못했습니다. 상담 기능에는 영향을 주지 않았습니다.', code: 'SOURCE_PROVIDER_ERROR' });
   }

@@ -10,6 +10,7 @@ import { compareKnowledgeCards, hasVerifiedFullTextSource, type GovernedKnowledg
 import type { DivinationToolId } from '@/lib/lucyToolRegistry';
 
 type Candidate = KnowledgeSource;
+interface ScheduledCandidate { id: string; engineId: DivinationToolId; source: Candidate }
 interface ApiStatus {
   researchEnabled: boolean;
   sourceSearchAvailable: boolean;
@@ -72,6 +73,7 @@ export default function LucyKnowledgeAdminPage() {
   const [engineId, setEngineId] = React.useState<DivinationToolId>('iching');
   const [searchQuery, setSearchQuery] = React.useState('');
   const [candidates, setCandidates] = React.useState<Candidate[]>([]);
+  const [scheduledCandidates, setScheduledCandidates] = React.useState<ScheduledCandidate[]>([]);
   const [candidateIndex, setCandidateIndex] = React.useState<number | null>(null);
   const [evidenceNotes, setEvidenceNotes] = React.useState('');
   const [school, setSchool] = React.useState('');
@@ -118,6 +120,7 @@ export default function LucyKnowledgeAdminPage() {
     let stopPublished: (() => void) | undefined;
     let stopRuns: (() => void) | undefined;
     let stopSettings: (() => void) | undefined;
+    let stopScheduled: (() => void) | undefined;
     setError('');
     authorizedFetch(user, '/api/lucy-knowledge/status').then((result) => { if (alive) setStatus(result); }).catch((reason) => { if (alive) setError(String(reason?.message || reason)); });
     stopDrafts = onSnapshot(query(collection(db, 'lucyKnowledgeDrafts'), orderBy('createdAt', 'desc'), limit(100)), (snapshot) => {
@@ -129,10 +132,13 @@ export default function LucyKnowledgeAdminPage() {
     stopRuns = onSnapshot(query(collection(db, 'lucyKnowledgeResearchRuns'), orderBy('createdAt', 'desc'), limit(500)), (snapshot) => {
       if (alive) setRuns(snapshot.docs.map((item) => ({ id: item.id, ...item.data() } as ResearchRun)));
     }, (reason) => { if (alive) setError(`비용 원장을 불러오지 못했습니다: ${reason?.message || reason}`); });
+    stopScheduled = onSnapshot(query(collection(db, 'lucyKnowledgeSourceCandidates'), orderBy('createdAt', 'desc'), limit(30)), (snapshot) => {
+      if (alive) setScheduledCandidates(snapshot.docs.map((item) => ({ ...item.data(), id: item.id } as ScheduledCandidate)));
+    }, () => { if (alive) setError('정기 수집 자료를 불러오지 못했습니다.'); });
     stopSettings = onSnapshot(doc(db, 'lucyKnowledgeSettings', 'control'), (snapshot) => {
       if (alive && snapshot.exists()) setSettings({ ...initialSettings, ...snapshot.data() } as typeof initialSettings);
     }, (reason) => { if (alive) setError(`관리 설정을 불러오지 못했습니다: ${reason?.message || reason}`); });
-    return () => { alive = false; stopDrafts?.(); stopPublished?.(); stopRuns?.(); stopSettings?.(); };
+    return () => { alive = false; stopDrafts?.(); stopPublished?.(); stopRuns?.(); stopSettings?.(); stopScheduled?.(); };
   }, [user, isAdmin]);
 
   const selectedDraft = drafts.find((item) => item.id === selectedDraftId) ?? null;
@@ -144,8 +150,8 @@ export default function LucyKnowledgeAdminPage() {
     if (!user) return;
     setWorking(true); setError(''); setNotice('');
     try {
-      const next = { ...settings, ...patch, scheduledResearchEnabled: false };
-      await setDoc(doc(db, 'lucyKnowledgeSettings', 'control'), { ...next, updatedBy: user.uid, updatedAt: new Date().toISOString() }, { merge: true });
+      const next = { ...settings, ...patch };
+      await setDoc(doc(db, 'lucyKnowledgeSettings', 'control'), { ...patch, updatedBy: user.uid, updatedAt: new Date().toISOString() }, { merge: true });
       setSettings(next);
       const refreshedStatus = await authorizedFetch(user, '/api/lucy-knowledge/status');
       setStatus(refreshedStatus);
@@ -162,6 +168,13 @@ export default function LucyKnowledgeAdminPage() {
       setNotice(`Crossref 서지 메타데이터 ${result.candidates?.length ?? 0}건을 가져왔습니다. 원문을 확인한 것은 아닙니다.`);
     } catch (reason: any) { setError(reason?.message || '출처 검색에 실패했습니다.'); }
     finally { setWorking(false); }
+  };
+  const selectSource = (index: number) => {
+    setCandidateIndex(index);
+    setSourceVerified(false);
+    setSourceAccess('metadata_only');
+    setEvidenceNotes('');
+    setSchool('');
   };
   const generateDraft = async () => {
     if (!user || candidateIndex === null) return;
@@ -276,25 +289,40 @@ export default function LucyKnowledgeAdminPage() {
         </div>
         <button type="button" disabled={working} onClick={() => void saveSettings({ dailyBudgetUsd: settings.dailyBudgetUsd, maxPerRunUsd: settings.maxPerRunUsd })} className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50">예산 저장</button>
         <div className="mt-4 rounded-xl bg-slate-50 p-3 text-xs leading-5 text-slate-600 dark:bg-slate-900 dark:text-slate-300">서버 안전 상한: 일 ${status?.hardDailyCapUsd?.toFixed(4) ?? '0.0000'} · 회당 ${status?.maxPerRunUsd?.toFixed(4) ?? '0.0000'}. AI 생성은 서버 모델 요금·토큰 상한·API 키와 이 설정이 모두 준비되지 않으면 차단됩니다. 이 화면에서 비용 상한을 넘겨 강제로 켤 수 없습니다.</div>
-        <label className="mt-3 flex items-start gap-2 text-xs text-slate-500"><input type="checkbox" checked={false} disabled /> 정기 연구 <span>{status?.scheduledBlockReason || '지속형 작업자가 확인되지 않아 기본 비활성입니다.'}</span></label>
+        <label className="mt-3 flex items-start gap-2 text-xs text-slate-500"><input type="checkbox" checked={settings.scheduledResearchEnabled} disabled={working || (!settings.scheduledResearchEnabled && (!status?.scheduledResearchAvailable || !settings.researchEnabled))} onChange={(event) => void saveSettings({ scheduledResearchEnabled: event.target.checked })} /> 정기 연구 <span>{status?.scheduledBlockReason || '매일 오전 9시(한국 시간)에 공개 문헌 후보를 모읍니다.'}</span></label>
       </section>
 
       <section className="rounded-2xl border border-slate-200 p-4 dark:border-slate-700">
         <h2 className="mb-2 flex items-center gap-2 font-semibold"><Search className="h-4 w-4" /> 공개 문헌 서지 검색</h2>
         <p className="mb-3 text-xs leading-5 text-slate-500">Crossref의 제목·저자·학술지·DOI 메타데이터만 가져옵니다. 원문 전문을 확인했다는 뜻은 아니며, 초록이나 저작권 본문을 저장하지 않습니다.</p>
+        <div className="mb-4 space-y-2">
+          <h3 className="text-sm font-medium">정기 수집 검토함</h3>
+          {scheduledCandidates.length === 0 && <p className="text-xs text-slate-500">아직 수집된 자료가 없습니다.</p>}
+          {scheduledCandidates.map(({ id, engineId: candidateEngine, source }) => (
+            <button key={id} type="button" className="block w-full rounded-xl border p-2 text-left text-sm" onClick={() => {
+              setEngineId(candidateEngine);
+              setCandidates([source]);
+              selectSource(0);
+            }}>
+              <strong>{source.title}</strong>
+              <span className="block text-xs text-slate-500">{ENGINE_OPTIONS.find((engine) => engine.id === candidateEngine)?.label} · {source.authors.join(', ') || '저자 메타데이터 없음'}</span>
+            </button>
+          ))}
+        </div>
         <div className="grid gap-2 sm:grid-cols-[1fr_2fr_auto]">
-          <select value={engineId} onChange={(event) => setEngineId(event.target.value as DivinationToolId)} className="rounded-lg border bg-transparent px-3 py-2 text-sm">{ENGINE_OPTIONS.map((engine) => <option key={engine.id} value={engine.id}>{engine.label}</option>)}</select>
+          <select value={engineId} onChange={(event) => { setEngineId(event.target.value as DivinationToolId); setCandidates([]); setCandidateIndex(null); }} className="rounded-lg border bg-transparent px-3 py-2 text-sm">{ENGINE_OPTIONS.map((engine) => <option key={engine.id} value={engine.id}>{engine.label}</option>)}</select>
           <input value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') void runSearch(); }} placeholder="전통명, 학파, 연구 주제" className="rounded-lg border bg-transparent px-3 py-2 text-sm" />
           <button type="button" disabled={working || !status?.sourceSearchAvailable} onClick={() => void runSearch()} className="rounded-lg bg-slate-800 px-4 py-2 text-sm text-white disabled:opacity-50">검색</button>
         </div>
         {!status?.sourceSearchAvailable && <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">{status?.aiBlockReason || '관리자 설정에서 연구를 활성화해야 합니다.'}</p>}
         <div className="mt-3 space-y-2">{candidates.map((candidate, index) => (
-          <button key={`${candidate.doi || candidate.url}-${index}`} type="button" onClick={() => { setCandidateIndex(index); setSourceVerified(false); setSourceAccess('metadata_only'); setEvidenceNotes(''); }} className={`block w-full rounded-xl border p-3 text-left text-sm ${candidateIndex === index ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/30' : 'border-slate-200 dark:border-slate-700'}`}>
+          <button key={`${candidate.doi || candidate.url}-${index}`} type="button" onClick={() => selectSource(index)} className={`block w-full rounded-xl border p-3 text-left text-sm ${candidateIndex === index ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-950/30' : 'border-slate-200 dark:border-slate-700'}`}>
             <strong>{candidate.title}</strong><span className="mt-1 block text-xs text-slate-500">{candidate.authors.join(', ') || '저자 메타데이터 없음'}{candidate.year ? ` · ${candidate.year}` : ''}{candidate.publication ? ` · ${candidate.publication}` : ''}</span><span className="mt-1 block break-all text-xs text-indigo-600 dark:text-indigo-300">{candidate.doi || candidate.url}</span>
           </button>
         ))}</div>
         {candidateIndex !== null && candidates[candidateIndex] && <div className="mt-4 space-y-3 rounded-xl border border-indigo-200 p-3 dark:border-indigo-900">
           <p className="text-sm font-medium">선택한 자료를 직접 대조한 뒤에만 AI 초안을 만들 수 있습니다.</p>
+          {candidates[candidateIndex].url.startsWith('https://') && <a href={candidates[candidateIndex].url} target="_blank" rel="noopener noreferrer" className="text-sm text-indigo-600 underline dark:text-indigo-300">자료 페이지 열기</a>}
           <label className="block text-xs">해당 학파 또는 해석 전통<input value={school} onChange={(event) => setSchool(event.target.value)} placeholder="예: 특정 전통·판본·학파" className="mt-1 block w-full rounded-lg border bg-transparent px-3 py-2 text-sm" /></label>
           <label className="block text-xs">확인 가능한 접근 수준<select value={sourceAccess} onChange={(event) => setSourceAccess(event.target.value as KnowledgeSource['access'])} className="mt-1 block w-full rounded-lg border bg-transparent px-3 py-2 text-sm"><option value="full_text">원문 전문 확인</option><option value="abstract_only">초록만 확인</option><option value="metadata_only">서지 메타데이터만 확인</option><option value="unavailable">원문 접근 불가</option></select></label>
           <label className="flex items-start gap-2 text-xs"><input type="checkbox" checked={sourceVerified} onChange={(event) => setSourceVerified(event.target.checked)} /> 원문 전문을 직접 대조했습니다. (초록·메타데이터만 본 경우는 체크하지 마세요.)</label>
