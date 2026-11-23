@@ -1,10 +1,10 @@
 {
-  "version": "1.8.409",
-  "builtAt": "2026-11-24T05:05:00+09:00",
-  "summary": "다약 롱하우스·도곤 암마·엘람 수사 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.409)",
+  "version": "1.8.410",
+  "builtAt": "2026-11-24T05:15:00+09:00",
+  "summary": "에스토니아 레길라울·에벤키 부가·페로 풀지붕 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.410)",
   "items": [
-    "보르네오 다약 롱하우스 코뿔새 엔진(v2.3.0): 질문 맥락(questionTopic), 수관·강변 축(canopyRiverAxis), 과잉 경계(shadowWarning) 추가",
-    "도곤 암마·노모 우주 질서 엔진(v2.3.0): 질문 맥락(questionTopic), 우주 질서 축(cosmicOrderAxis), 과잉 경계(shadowWarning) 추가",
-    "엘람 수사·수로 정원 엔진(v2.3.0): 질문 맥락(questionTopic), 수로·벽돌 축(chogaCanalAxis), 과잉 경계(shadowWarning) 추가"
+    "에스토니아 레기라울·숲의 정적 엔진(v2.3.0): 질문 맥락(questionTopic), 숲·선율 축(forestSongAxis), 과잉 경계(shadowWarning) 추가",
+    "에벤키 부가·타이가 길잡이 엔진(v2.3.0): 질문 맥락(questionTopic), 타이가 길 축(taigaTrailAxis), 과잉 경계(shadowWarning) 추가",
+    "페로 제도 풀지붕 안식 엔진(v2.3.0): 질문 맥락(questionTopic), 절벽·안식 축(cliffShelterAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }
