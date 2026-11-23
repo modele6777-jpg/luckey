@@ -164,3 +164,19 @@ test('a live tool call runs the executor and answers with a toolResponse carryin
     for (const undo of restore.reverse()) undo();
   }
 });
+
+test('Orb I Ching tool distinguishes and caches the two casting methods', async () => {
+  const executor = createOrbToolExecutor({});
+  const call = (ichingMethod: string) => executor.execute({
+    name: ORB_FN_RUN_TOOL,
+    args: { tool: 'iching', ichingMethod },
+  });
+  const [time, dice] = [await call('time'), await call('dice')];
+  assert.equal(time.ok, true);
+  assert.match(String(time.scope), /지금 시각/);
+  assert.equal(dice.ok, true);
+  assert.match(String(dice.casting), /두 주사위/);
+  assert.match(String(dice.scope), /이번 질문/);
+  assert.ok(Array.isArray(dice.cards) && dice.cards.length > 0);
+  assert.deepEqual(await call('dice'), { ...dice, cached: true });
+});

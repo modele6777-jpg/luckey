@@ -9,6 +9,7 @@
  */
 import { TAROT_DECK, getTarotCardImageUrl, type TarotCard } from '@/data/tarotData';
 import { safeLocalStorage } from '@/utils/safeStorage';
+import { randomIndex } from './orb/orbDice';
 
 export const ORB_DECK_SIZE = 78;
 export const ORB_CARD_POSITIONS = ['과거', '지금', '앞으로'] as const;
@@ -23,14 +24,7 @@ export interface OrbPickedCard extends OrbDeckCard {
   number: number;
   position: (typeof ORB_CARD_POSITIONS)[number];
   /** 'shuffle' = "멈춰!" 셔플로 뽑음, 'number' = 숫자로 고름 */
-  how?: 'shuffle' | 'number';
-}
-
-function randomIndex(limit: number): number {
-  const values = new Uint32Array(1);
-  const upper = Math.floor(0x100000000 / limit) * limit;
-  do { globalThis.crypto.getRandomValues(values); } while (values[0] >= upper);
-  return values[0] % limit;
+  how?: 'shuffle' | 'number' | 'dice';
 }
 
 /** 이번 상담의 카드 더미: 1번부터 78번까지 섞인 카드 (정·역방향 포함). */
@@ -46,9 +40,9 @@ export function shuffleOrbDeck(): OrbDeckCard[] {
   });
 }
 
-export function pickOrbCards(deck: OrbDeckCard[], numbers: number[], how: 'shuffle' | 'number' = 'number'): OrbPickedCard[] {
-  return numbers.slice(0, 3).map((number, index) => ({
-    ...deck[(number - 1) % deck.length],
+export function pickOrbCards(deck: OrbDeckCard[], numbers: number[], how: 'shuffle' | 'number' | 'dice' = 'number'): OrbPickedCard[] {
+  return [...new Set(numbers.filter(number => Number.isInteger(number) && number >= 1 && number <= deck.length))].slice(0, 3).map((number, index) => ({
+    ...deck[number - 1],
     number,
     position: ORB_CARD_POSITIONS[index],
     how,
@@ -58,8 +52,9 @@ export function pickOrbCards(deck: OrbDeckCard[], numbers: number[], how: 'shuff
 /** 마스터에게 보내는 '카드 선택' 알림 (마스터는 이 문장을 읽지 않는다). */
 export function orbCardPickMessage(cards: OrbPickedCard[]): string {
   const shuffled = cards.some(card => card.how === 'shuffle');
-  const spread = cards.map(card => `${card.position} 자리 ${shuffled ? '' : `${card.number}번 `}${card.nameKo} ${card.orientationKo}`).join(', ');
-  const how = shuffled ? '섞이는 카드를 직접 세 번 멈춰 세 장을 뽑았습니다' : '숫자를 골라 카드 세 장을 펼쳤습니다';
+  const dice = cards.some(card => card.how === 'dice');
+  const spread = cards.map(card => `${card.position} 자리 ${shuffled || dice ? '' : `${card.number}번 `}${card.nameKo} ${card.orientationKo}`).join(', ');
+  const how = shuffled ? '섞이는 카드를 직접 세 번 멈춰 세 장을 뽑았습니다' : dice ? '주사위로 카드를 뽑아 세 장을 펼쳤습니다' : '숫자를 골라 카드 세 장을 펼쳤습니다';
   return `[카드 선택] 손님이 ${how}. ${spread}. 이제 이 세 장만으로 손님의 고민을 과거, 지금, 앞으로 순서로 풀어 주세요. 카드 이름을 먼저 짧게 불러 주고 풀이하세요. 이 지시 문장은 읽지 마세요.`;
 }
 

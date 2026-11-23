@@ -1146,6 +1146,7 @@ export function runDeterministicEngine(params: {
   focusTools?: string[];
   coreOnly?: boolean;
   reviewAll?: boolean;
+  ichingLines?: readonly number[];
 }): DeterministicEngineReport {
   const supplementExecutions: Record<string, 'returned' | 'error' | 'skipped'> = {};
   function calculateSupplement<T>(key: string, calculate: () => T): T | null {
@@ -1490,7 +1491,7 @@ try {
 ichingEnvelope = {toolId:'iching', toolKoName:'주역', status:'skipped', note:'이번 질문에서 선택하지 않은 도구'};
 } else {
 try {
-    ichingMasterResult = calculateIchingMaster(now, question, now);
+    ichingMasterResult = calculateIchingMaster(params.ichingLines ?? now, question, now);
     ichingEnvelope = {
       toolId: 'iching',
       toolKoName: '주역',
