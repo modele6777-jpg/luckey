@@ -639,6 +639,7 @@ export function LucyOrbCounsel({
       },
     });
     executorRef.current = executor;
+    let warmupStarted = false;
     const session = startGeminiLiveVoice({
       nickname,
       notes,
@@ -656,8 +657,10 @@ export function LucyOrbCounsel({
       onUsageMetadata: metrics.recordUsage,
       onInputSent: metrics.startTurn,
       onAudioScheduled: metrics.responseAudio,
+      onToolResponseSent: metrics.toolResponseSent,
       onToolBusy: (busy) => { if (!busy) setToolBusy(''); },
       onState: (state) => {
+        if (!warmupStarted) { warmupStarted = true; void executor.prewarm(); }
         setLiveReady(true);
         setSpeaking(state === 'speaking');
         if (state === 'speaking') setThinkingOn(false);

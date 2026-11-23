@@ -58,3 +58,17 @@ test('measures the first scheduled audio once and preserves duration across reco
   assert.equal(snapshot.lastLatencyMs, 220);
   assert.equal(snapshot.averageLatencyMs, 420);
 });
+
+test('measures the first audio after the final tool result and ignores extra chunks', () => {
+  let now = 0;
+  const metrics = createOrbSessionMetrics(() => now);
+  metrics.toolResponseSent();
+  now = 300;
+  metrics.toolResponseSent();
+  now = 500;
+  metrics.responseAudio(10);
+  now = 800;
+  metrics.responseAudio(0);
+  assert.equal(metrics.snapshot().averageToolLatencyMs, 210);
+  assert.equal(metrics.snapshot().averageLatencyMs, null);
+});

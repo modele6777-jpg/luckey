@@ -17,6 +17,7 @@ export function OrbSessionMetricsView({ data }: { data: ReturnType<OrbSessionMet
     ['예상 API 원가', data.estimatedUsd == null ? '단가 또는 토큰 세부 정보 없음' : `US$ ${data.estimatedUsd.toFixed(6)}`],
     ['평균 첫 음성 응답', seconds(data.averageLatencyMs)],
     ['최근 첫 음성 응답', seconds(data.lastLatencyMs)],
+    ['도구 계산 후 첫 음성 응답', seconds(data.averageToolLatencyMs)],
   ];
   return (
     <Dialog.Root modal={false} open={open} onOpenChange={setOpen}>

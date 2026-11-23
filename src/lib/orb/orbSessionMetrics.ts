@@ -42,6 +42,9 @@ export function createOrbSessionMetrics(now = () => performance.now()) {
   let unpricedReports = 0;
   let latencySum = 0;
   let lastLatency: number | null = null;
+  let toolSentAt: number | null = null;
+  let toolLatencySum = 0;
+  let toolResponses = 0;
   let responses = 0;
   let model = '';
   let prices: OrbLivePrices | null = null;
@@ -49,6 +52,7 @@ export function createOrbSessionMetrics(now = () => performance.now()) {
   return {
     setConnection(name: string, nextPrices: OrbLivePrices | null) {
       pending = null;
+      toolSentAt = null;
       model = name;
       prices = nextPrices;
     },
@@ -56,10 +60,17 @@ export function createOrbSessionMetrics(now = () => performance.now()) {
       if (source === 'realtime' && pending && pending.source !== 'realtime') return;
       pending = { source, at: now() };
     },
-    dropPending() { pending = null; },
+    dropPending() { pending = null; toolSentAt = null; },
+    toolResponseSent() { toolSentAt = now(); },
     responseAudio(scheduledDelayMs: number) {
+      const scheduled = now() + scheduledDelayMs;
+      if (toolSentAt !== null) {
+        toolLatencySum += Math.max(0, scheduled - toolSentAt);
+        toolResponses += 1;
+        toolSentAt = null;
+      }
       if (!pending) return;
-      lastLatency = Math.max(0, now() + scheduledDelayMs - pending.at);
+      lastLatency = Math.max(0, scheduled - pending.at);
       latencySum += lastLatency;
       responses += 1;
       pending = null;
@@ -92,6 +103,7 @@ export function createOrbSessionMetrics(now = () => performance.now()) {
         lastLatencyMs: lastLatency,
         averageLatencyMs: responses ? latencySum / responses : null,
         responses,
+        averageToolLatencyMs: toolResponses ? toolLatencySum / toolResponses : null,
       };
     },
   };

@@ -60,6 +60,7 @@ type LiveVoiceHandlers = {
   onUsageMetadata?: (usage: unknown) => void;
   onInputSent?: (source: 'hold' | 'text') => void;
   onAudioScheduled?: (delayMs: number) => void;
+  onToolResponseSent?: () => void;
 };
 
 function downsample(input: Float32Array, inRate: number, outRate = 16000): Float32Array {
@@ -229,27 +230,37 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   };
 
   const cancelledCalls = new Set<string>();
-  // 🔮 마스터가 부른 도구를 실행하고 결과를 돌려준다 (결과가 와야 마스터가 이어서 말한다).
+  let activeToolBatches = 0;
+  // 같은 소켓의 다른 배치가 진행 중이어도 준비된 결과는 바로 돌려준다.
   const answerToolCall = async (toolCall: any) => {
     const calls: Array<{ id?: string; name: string; args?: Record<string, unknown> }> = toolCall.functionCalls || toolCall.function_calls || [];
     if (!calls.length) return;
-    handlers.onToolBusy?.(true);
-    const functionResponses = [];
-    for (const call of calls) {
-      let response: Record<string, unknown>;
-      try {
-        response = handlers.onToolCall
-          ? await handlers.onToolCall({ id: call.id, name: String(call.name || ''), args: call.args || {} })
-          : { ok: false, message: '이 상담에서는 도구를 쓸 수 없습니다.' };
-      } catch {
-        response = { ok: false, message: '도구 실행에 실패했습니다. 계산값 없이 이어 가세요.' };
+    if (activeToolBatches++ === 0) handlers.onToolBusy?.(true);
+    try {
+      const isCancelled = (id?: string) => Boolean(id && cancelledCalls.has(String(id)));
+      const responses = [];
+      for (const call of calls) {
+        if (stopped || isCancelled(call.id)) continue;
+        let response: Record<string, unknown>;
+        try {
+          response = handlers.onToolCall
+            ? await handlers.onToolCall({ id: call.id, name: String(call.name || ''), args: call.args || {} })
+            : { ok: false, message: '이 상담에서는 도구를 쓸 수 없습니다.' };
+        } catch {
+          response = { ok: false, message: '도구 실행에 실패했습니다. 계산값 없이 이어 가세요.' };
+        }
+        responses.push({ ...(call.id ? { id: call.id } : {}), name: call.name, response });
       }
-      if (call.id && cancelledCalls.has(String(call.id))) continue;
-      functionResponses.push({ ...(call.id ? { id: call.id } : {}), name: call.name, response });
+      const functionResponses = responses.filter(response => !isCancelled(response.id));
+      if (stopped || !functionResponses.length || socket?.readyState !== WebSocket.OPEN) return;
+      try {
+        socket.send(JSON.stringify({ toolResponse: { functionResponses } }));
+        handlers.onToolResponseSent?.();
+      } catch { /* socket closing */ }
+    } finally {
+      activeToolBatches -= 1;
+      if (!activeToolBatches && !stopped) handlers.onToolBusy?.(false);
     }
-    handlers.onToolBusy?.(false);
-    if (stopped || !functionResponses.length || socket?.readyState !== WebSocket.OPEN) return;
-    try { socket.send(JSON.stringify({ toolResponse: { functionResponses } })); } catch { /* socket closing */ }
   };
 
   const handleMessage = (raw: string) => {
