@@ -13502,14 +13502,15 @@ test('Phoenician Navigator Star Compass engine: beacons, +09:00 KST, and interpr
 
 test('Kazakh Abai Book of Words engine: pillars, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKazakhAbaiBookOfWords({ profile, now: new Date('2026-11-20T05:30:00Z'), question: '나만의 기준을 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KAZAKH-ABAI-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-KAZAKH-ABAI-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.balancingPillar.id !== rep.primaryPillar.id);
+  assert.ok(rep.virtueBalanceAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKazakhAbaiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('아바이') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.balancingPillar.koreanLabel));
+  assert.ok(prompt.includes('아바이') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.balancingPillar.koreanLabel) && prompt.includes('과잉 경계'));
 });
 
 test('Amazigh Desert Star Oasis engine: waypoints, +09:00 KST, and interpretive boundary', () => {
@@ -13732,14 +13733,15 @@ test('Swahili Utu Dhow Monsoon engine: wind, +09:00 KST, and interpretive bounda
 
 test('Khmer Angkor Baray Water Balance engine: state, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKhmerAngkorBarayWaterBalance({ profile, now: new Date('2026-11-20T06:30:00Z'), question: '마음의 에너지를 흘려보내고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KHMER-ANGKOR-BARAY-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-KHMER-ANGKOR-BARAY-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionState !== rep.barayState);
+  assert.ok(rep.barayWaterAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKhmerAngkorBarayPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('크메르') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionState));
+  assert.ok(prompt.includes('크메르') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionState) && prompt.includes('과잉 경계'));
 });
 
 test('Malagasy Fihavanana Kinship engine: principle, +09:00 KST, and interpretive boundary', () => {
@@ -15483,14 +15485,15 @@ test('Hmong Story Cloth engine: pattern, +09:00 KST, and interpretive boundary',
 
 test('Karen Bamboo Clock engine: cadence, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKarenBambooClock({ profile, now: new Date('2026-11-20T22:25:00Z'), question: '조급함을 내려놓고 페이스를 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KAREN-BAMBOO-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-KAREN-BAMBOO-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionCadence !== rep.bambooCadence);
+  assert.ok(rep.waterClockAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKarenBambooPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('카렌') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionCadence));
+  assert.ok(prompt.includes('카렌') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionCadence) && prompt.includes('과잉 경계'));
 });
 
 test('Shan Inle Rowing engine: posture, +09:00 KST, and interpretive boundary', () => {

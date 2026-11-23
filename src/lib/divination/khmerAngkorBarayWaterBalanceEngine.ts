@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface KhmerAngkorBarayResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '저수·비축' | '순환·정화' | '시선·경계' | '바라이 전반';
   barayState: string;
   companionState: string;
+  barayWaterAxis: string;
   waterCycleInsight: string;
   templeTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const KHMER_SHADOWS = [
+  '감정과 일을 고요히 담아 두기만 하다가 정작 지금 말로 풀어내거나 물꼬를 터야 할 시점까지 놓치지 마세요.',
+  '막힌 생각에 작은 틈을 내어 흘려보내는 과정에서, 꼭 붙잡아 두어야 할 핵심 우선순위까지 함께 흘러가지 않게 살피세요.',
+  '초심으로 마음을 씻어 내는 멈춤이 당장 눈앞에 놓인 마감과 현실적인 조율을 회피하는 핑계가 되지 않도록 하세요.',
+  '네 방향에서 온화하게 바라보는 넓은 시선 속에서도, 결국 내가 오늘 내디뎌야 할 한 방향의 결정은 미루지 마세요.',
+  '바깥의 소음을 다리 밖에 두고 쉬는 시간 뒤에는 다시 현실의 다리를 건너와 응답해야 할 약속들을 챙기세요.',
+];
+
+function classifyKhmerTopic(q: string): KhmerAngkorBarayResult['questionTopic'] {
+  if (/저수|비축|모아|여유/.test(q)) return '저수·비축';
+  if (/순환|흘려|정화|초심|물길/.test(q)) return '순환·정화';
+  if (/시선|경계|소음|중심|방향/.test(q)) return '시선·경계';
+  return '바라이 전반';
+}
+
 export function calculateKhmerAngkorBarayWaterBalance(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): KhmerAngkorBarayResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyKhmerTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % STATES.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (STATES.length - 1));
   const picked = STATES[idx];
   const companion = STATES[(idx + companionOffset) % STATES.length];
+  const barayWaterAxis = `${picked.state.split('(')[0].trim()} ↔ ${companion.state.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = KHMER_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-KHMER-ANGKOR-BARAY-v2.2.0',
+    engineVersion: 'LUCKEY-KHMER-ANGKOR-BARAY-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     barayState: picked.state,
     companionState: companion.state,
+    barayWaterAxis,
     waterCycleInsight: picked.insight,
     templeTone: picked.tone,
     reflectionFocus: `거대한 저수지 바라이처럼 '${picked.state}'의 리듬으로 에너지를 모으고 흘려보내 보세요. (동반 결: ${companion.state.split('(')[0].trim()})`,
     ritualAction: picked.action,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '캄보디아 크메르 앙코르 바라이 수리·순환 철학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatKhmerAngkorBarayPrompt(res: KhmerAngkorBarayResult): strin
   return [
     `[크메르 앙코르 바라이 물 순환 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 바라이 순환 축: ${res.barayWaterAxis}`,
     `- 순환 국면: ${res.barayState} (${res.templeTone})`,
     `- 동반 국면: ${res.companionState}`,
     `- 중심 통찰: ${res.waterCycleInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
