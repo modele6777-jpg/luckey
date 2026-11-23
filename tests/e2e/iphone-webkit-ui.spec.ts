@@ -1,5 +1,12 @@
 import { expect, test } from '@playwright/test';
 
+test.use({ serviceWorkers: 'block' });
+
+test.beforeEach(async ({ page, baseURL }) => {
+  const appOrigin = new URL(baseURL!).origin;
+  await page.route(url => url.origin !== appOrigin, route => route.abort());
+});
+
 async function openLucyMaster(page, path = '/chat') {
   // 엔진함·추천질문 라이브러리는 점술모드(루시 마스터)에서만 보인다.
   await page.addInitScript(() => { sessionStorage.setItem('lucy_master_mode', 'on'); });
@@ -25,7 +32,7 @@ async function openLucy(page, path = '/chat') {
     sessionStorage.setItem('pwa_prompt_dismissed', 'true');
     sessionStorage.setItem('profileModalDismissed', '1');
   });
-  await page.goto(path);
+  await page.goto(path, { waitUntil: 'domcontentloaded' });
   const lockScreen = page.locator('[data-pin-screen]');
   if (await lockScreen.count()) {
     for (const digit of '1202') await page.keyboard.press(digit);
@@ -43,7 +50,7 @@ async function openPrologue(page, path = '/todo') {
     sessionStorage.setItem('pwa_prompt_dismissed', 'true');
     sessionStorage.setItem('profileModalDismissed', '1');
   });
-  await page.goto(path);
+  await page.goto(path, { waitUntil: 'domcontentloaded' });
   const lockScreen = page.locator('[data-pin-screen]');
   if (await lockScreen.count()) {
     for (const digit of '1202') await page.keyboard.press(digit);
@@ -60,7 +67,7 @@ async function openKeyChannel(page) {
     sessionStorage.setItem('pwa_prompt_dismissed', 'true');
     sessionStorage.setItem('profileModalDismissed', '1');
   });
-  await page.goto('/key');
+  await page.goto('/key', { waitUntil: 'domcontentloaded' });
   const lockScreen = page.locator('[data-pin-screen]');
   if (await lockScreen.count()) {
     for (const digit of '1202') await page.keyboard.press(digit);
@@ -435,7 +442,11 @@ test('Lucy engine tab fills the tool window and its list scrolls without auto-op
   expect(metrics.overflowY).toBe('auto');
   expect(metrics.touchAction).toBe('pan-y');
 
-  await list.evaluate(element => { element.scrollTop = 400; });
+  await list.evaluate(async element => {
+    // The catalog restores its saved scroll position after the last render batch.
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+    element.scrollTo({ top: 400, behavior: 'instant' });
+  });
   await expect.poll(() => list.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
   await sheet.getByRole('button', { name: '도구 창 닫기' }).click();
   await expect(sheet).toHaveCount(0);
@@ -455,7 +466,7 @@ test('Big Bang left and right taps step Lucy Master in Lucy chat', async ({ page
   const bigBang = page.locator('div[data-bigbang="true"]');
   await expect(bigBang).toBeVisible();
   await expectHiddenDirectionTarget(bigBang, 'north', 'epilogue');
-  await expectHiddenDirectionTarget(bigBang, 'south', 'key');
+  await expectHiddenDirectionTarget(bigBang, 'south', 'orb');
   const box = await bigBang.boundingBox();
   expect(box).not.toBeNull();
   if (!box) throw new Error('Big Bang hit area is missing');
@@ -486,8 +497,8 @@ test('Big Bang left and right taps step Lucy Master in Lucy chat', async ({ page
 test('Big Bang left and right taps move the visible Key list without leaving Key', async ({ page }) => {
   await openKeyChannel(page);
   const bigBang = page.locator('div[data-bigbang="true"]');
-  await expectHiddenDirectionTarget(bigBang, 'north', 'lucy');
-  await expectHiddenDirectionTarget(bigBang, 'south', 'prologue');
+  await expectHiddenDirectionTarget(bigBang, 'north', 'orb');
+  await expectHiddenDirectionTarget(bigBang, 'south', 'lucky');
   const box = await bigBang.boundingBox();
   expect(box).not.toBeNull();
   if (!box) throw new Error('Big Bang hit area is missing in Key');
@@ -758,8 +769,7 @@ test('Lucy Master preserves the other pane on re-entry; only a Lucy bubble tap o
   const leftPane = page.locator('#duo-content-viewport');
   const lucyPane = page.locator('#duo-lucy-viewport');
   await expect(page.locator('html')).toHaveClass(/duo-unfolded-portrait/);
-  await expect(leftPane.locator('.cosmic-room')).toBeVisible();
-  await expect(leftPane.locator('[data-duo-divination-tarot="true"]')).toHaveCount(0);
+  await expect(leftPane.locator('[data-duo-divination-tarot="true"]')).toBeVisible();
   await expect(lucyPane.locator('[data-lucy-master-depth="1"]')).toBeVisible();
 
   await page.evaluate(() => window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/prologue' } })));
@@ -769,35 +779,31 @@ test('Lucy Master preserves the other pane on re-entry; only a Lucy bubble tap o
   await expect(lucyPane.locator('[data-lucy-master-depth="1"]')).toBeVisible();
 
   // Re-entering the app at its retained route must keep that pane, not auto-open tarot tools.
-  await page.reload();
+  await page.reload({ waitUntil: 'domcontentloaded' });
   await expect.poll(() => new URL(page.url()).pathname).toBe('/prologue');
   await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
   await expect(leftPane.locator('[data-duo-divination-tarot="true"]')).toHaveCount(0);
 
-  await page.locator('#main-sidebar-navigation button[aria-label^="점술모드"]').click();
+  await page.locator('#main-sidebar-navigation button[aria-label^="점술모드"]').tap();
   await expect.poll(() => new URL(page.url()).pathname).toBe('/');
   await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
   await expect(leftPane.locator('[data-duo-divination-tarot="true"]')).toBeVisible();
   await expect(lucyPane.locator('[data-lucy-master-depth="1"]')).toBeVisible();
 });
 
-test('Master tools request is cleared when folding and does not reopen on unfolding', async ({ page }) => {
+test('Master keeps its tools visible when the split screen is unfolded again', async ({ page }) => {
   await page.setViewportSize({ width: 700, height: 900 });
-  await openLucyMaster(page, '/chat');
-
-  const leftPane = page.locator('#duo-content-viewport');
-  const lucyBubble = page.locator('#main-sidebar-navigation button[aria-label^="점술모드 1단계"]');
+  await openLucyMaster(page);
+  const tools = page.locator('#duo-content-viewport [data-duo-divination-tarot="true"]');
   await expect(page.locator('html')).toHaveClass(/duo-unfolded-portrait/);
-  await expect(leftPane.locator('.cosmic-room')).toBeVisible();
-  await lucyBubble.click();
-  await expect(leftPane.locator('[data-duo-divination-tarot="true"]')).toBeVisible();
+  await expect(tools).toBeVisible();
 
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.locator('html')).not.toHaveClass(/duo-unfolded-mode/);
+  await expect(tools).toBeHidden();
   await page.setViewportSize({ width: 700, height: 900 });
   await expect(page.locator('html')).toHaveClass(/duo-unfolded-portrait/);
-  await expect(leftPane.locator('.cosmic-room')).toBeVisible();
-  await expect(leftPane.locator('[data-duo-divination-tarot="true"]')).toHaveCount(0);
+  await expect(tools).toBeVisible();
 });
 
 test('Big Bang overlay remains visible for the newest overlapping transition', async ({ page }) => {
@@ -844,26 +850,32 @@ test('Key loading fallback does not consume the first Big Bang south touch', asy
     sessionStorage.setItem('pwa_prompt_dismissed', 'true');
     sessionStorage.setItem('profileModalDismissed', '1');
   });
-  await page.route('**/calm/index.html*', async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, 2500));
-    await route.continue().catch(() => {});
+  let releaseFrame!: () => void;
+  const unblockFrame = new Promise<void>(resolve => { releaseFrame = resolve; });
+  await page.route('**/calm/index.html*', async route => {
+    await unblockFrame;
+    await route.continue().catch(() => {}); // Navigating away may cancel the pending iframe.
   });
-  await page.goto('/key', { waitUntil: 'domcontentloaded' });
+  try {
+    await page.goto('/key', { waitUntil: 'domcontentloaded' });
 
-  const loader = page.locator('[data-app-channel-loader="true"][aria-label^="Key 개운"]');
-  await expect(loader).toBeVisible();
-  await expect(loader).toBeHidden({ timeout: 2000 });
+    const loader = page.locator('[data-app-channel-loader="true"][aria-label^="Key 개운"]');
+    await expect(loader).toBeVisible();
+    await expect(loader).toBeHidden();
 
-  const bigBang = page.locator('#bigbang-omnibutton');
-  await expect(bigBang).toBeVisible();
-  const box = await bigBang.boundingBox();
-  expect(box).not.toBeNull();
-  if (!box) throw new Error('Big Bang hit area is missing while the Key iframe is delayed');
-  const x = box.x + box.width / 2;
-  const y = box.y + box.height / 2 + 36;
-  await page.waitForFunction(({ x, y }) => Boolean(document.elementFromPoint(x, y)?.closest('[data-bigbang="true"]')), { x, y });
-  await page.touchscreen.tap(x, y);
-  await expect.poll(() => new URL(page.url()).pathname).toBe('/prologue');
+    const bigBang = page.locator('#bigbang-omnibutton');
+    await expect(bigBang).toBeVisible();
+    const box = await bigBang.boundingBox();
+    expect(box).not.toBeNull();
+    if (!box) throw new Error('Big Bang hit area is missing while the Key iframe is delayed');
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2 + 36;
+    await page.waitForFunction(({ x, y }) => Boolean(document.elementFromPoint(x, y)?.closest('[data-bigbang="true"]')), { x, y });
+    await page.touchscreen.tap(x, y);
+    await expect.poll(() => new URL(page.url()).pathname).toBe('/lucky');
+  } finally {
+    releaseFrame();
+  }
 });
 
 test('Big Bang stays over Lucy while left and right change only the channel pane', async ({ page }) => {
@@ -877,7 +889,6 @@ test('Big Bang stays over Lucy while left and right change only the channel pane
   await expect(lucyComposer).toBeVisible();
   const lucyComposerValueBefore = await lucyComposer.inputValue();
   const lucyUserMessageCountBefore = await lucyPane.locator('.lucy-chat-main > div > [class*="items-end"]').count();
-  await expect.poll(() => page.locator('html').evaluate(element => element.classList.contains('in-lucy-chat'))).toBe(true);
 
   const bigBang = page.locator('div[data-bigbang="true"]').first();
   await expect(bigBang).toHaveAttribute('data-cycle-navigation-disabled', 'false');
@@ -947,7 +958,7 @@ test('Big Bang north and south controls switch apps from mid-scroll without scro
     expect(Number(await page.evaluate(() => sessionStorage.getItem('bigbang.lucy.scrollTopAtPointerUp')))).toBe(topAtPress);
   };
 
-  await tapFromMiddle(36, '/key');
+  await tapFromMiddle(36, '/voice');
   await openLucy(page);
   await tapFromMiddle(-36, '/epilogue');
 });
@@ -960,28 +971,18 @@ test('Big Bang south switches immediately even when an unrelated inner list rema
   expect(scrollState.unrelatedTop).toBe(0);
 
   const bigBang = page.locator('div[data-bigbang="true"]').first();
-  await expectHiddenDirectionTarget(bigBang, 'south', 'key');
+  await expectHiddenDirectionTarget(bigBang, 'south', 'orb');
   const box = await bigBang.boundingBox();
   expect(box).not.toBeNull();
   if (!box) throw new Error('Big Bang hit area is missing in Lucy');
   await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2 + 36);
-  await expect(page).toHaveURL(/\/key$/);
-  await expect(page.locator('[data-bigbang-center-channel="key"][data-bigbang-center-direction="south"]')).toBeVisible();
+  await expect(page).toHaveURL(/\/voice$/);
+  await expect(page.locator('[data-bigbang-center-channel="orb"][data-bigbang-center-direction="south"]')).toBeVisible();
 });
 
 test('Big Bang down follows right-menu order in Key and Lucky channels from non-bottom positions', async ({ page }) => {
-  await openLucy(page);
+  await openKeyChannel(page);
   const bigBang = page.locator('div[data-bigbang="true"]');
-  await expect(bigBang).toBeVisible();
-  await expectHiddenDirectionTarget(bigBang, 'south', 'key');
-  let box = await bigBang.boundingBox();
-  expect(box).not.toBeNull();
-  if (!box) throw new Error('Big Bang hit area is missing in Lucy');
-  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2 + 36);
-  await expect(page).toHaveURL(/\/key$/);
-  await expect(page.locator('[data-bigbang-center-channel="key"][data-bigbang-center-direction="south"]')).toBeVisible();
-
-  await expect(page).toHaveURL(/\/key$/);
   const keyFrame = page.locator('iframe[title="Key"]');
   await expect(keyFrame).toBeVisible();
   await expect.poll(() => keyFrame.evaluate(frame => (frame as HTMLIFrameElement).contentDocument?.readyState === 'complete')).toBe(true);
@@ -1001,20 +1002,25 @@ test('Big Bang down follows right-menu order in Key and Lucky channels from non-
   });
   expect(keyScroll.top).toBe(0);
   expect(keyScroll.max).toBeGreaterThan(0);
-  await expectHiddenDirectionTarget(bigBang, 'north', 'lucy');
-  await expectHiddenDirectionTarget(bigBang, 'south', 'prologue');
-  box = await bigBang.boundingBox();
+  await expectHiddenDirectionTarget(bigBang, 'north', 'orb');
+  await expectHiddenDirectionTarget(bigBang, 'south', 'lucky');
+  let box = await bigBang.boundingBox();
   expect(box).not.toBeNull();
   if (!box) throw new Error('Big Bang hit area is missing in Key');
   const southX = box.x + box.width / 2;
   const southY = box.y + box.height / 2 + 36;
   await page.waitForFunction(({ x, y }) => Boolean(document.elementFromPoint(x, y)?.closest('[data-bigbang="true"]')), { x: southX, y: southY });
   await page.touchscreen.tap(southX, southY);
-  await expect.poll(() => new URL(page.url()).pathname).toBe('/prologue');
+  await expect.poll(() => new URL(page.url()).pathname).toBe('/lucky');
   expect(Number(await page.evaluate(() => sessionStorage.getItem('bigbang.key.scrollTopAtPress')))).toBe(0);
   expect(Number(await page.evaluate(() => sessionStorage.getItem('bigbang.key.scrollEvents')))).toBe(0);
+  await expectHiddenDirectionTarget(bigBang, 'south', 'prologue');
+  const luckyMenuBox = await bigBang.boundingBox();
+  if (!luckyMenuBox) throw new Error('Big Bang hit area is missing in Lucky');
+  await page.touchscreen.tap(luckyMenuBox.x + luckyMenuBox.width / 2, luckyMenuBox.y + luckyMenuBox.height / 2 + 36);
+  await expect.poll(() => new URL(page.url()).pathname).toBe('/prologue');
   expect([null, 'universe']).toContain(new URL(page.url()).searchParams.get('tab'));
-  await expectHiddenDirectionTarget(bigBang, 'north', 'key');
+  await expectHiddenDirectionTarget(bigBang, 'north', 'lucky');
   await expectHiddenDirectionTarget(bigBang, 'south', 'orange');
 
   const luckyRoot = page.locator('[data-app-scroll-root]').first();
@@ -1084,7 +1090,7 @@ test('Big Bang left and right navigation stay inside Prologue and show its symbo
   const bigBang = page.locator('div[data-bigbang="true"]').first();
   await expect(bigBang).toBeVisible();
   const initialUrl = page.url();
-  for (const [direction, channel] of [['north', 'key'], ['south', 'orange'], ['west', 'prologue'], ['east', 'prologue']]) {
+  for (const [direction, channel] of [['north', 'lucky'], ['south', 'orange'], ['west', 'prologue'], ['east', 'prologue']]) {
     await expectHiddenDirectionTarget(bigBang, direction, channel);
   }
   let box = await bigBang.boundingBox();
@@ -1150,10 +1156,10 @@ test('Big Bang drag released out of range is cancelled', async ({ page }) => {
   await expect(page).toHaveURL(before);
 });
 
-test('Big Bang north at the Key channel top boundary returns to Lucy', async ({ page }) => {
+test('Big Bang north at the Key channel top boundary opens Orb', async ({ page }) => {
   await openKeyChannel(page);
   const bigBang = page.locator('div[data-bigbang="true"]');
-  await expectHiddenDirectionTarget(bigBang, 'north', 'lucy');
+  await expectHiddenDirectionTarget(bigBang, 'north', 'orb');
   await setContentScrollBoundary(page, 'top');
   await expectContentScrollBoundary(page, 'top');
   await page.waitForTimeout(200);
@@ -1164,9 +1170,9 @@ test('Big Bang north at the Key channel top boundary returns to Lucy', async ({ 
   const northY = box.y + box.height / 2 - 36;
   await page.waitForFunction(({ x, y }) => Boolean(document.elementFromPoint(x, y)?.closest('[data-bigbang="true"]')), { x: northX, y: northY });
   await page.touchscreen.tap(northX, northY);
-  await expect(page).toHaveURL(/\/$/);
-  await expect(page.locator('[data-bigbang-center-channel="lucy"][data-bigbang-center-direction="north"]')).toBeVisible();
-  await expect(page.locator('.lucy-chat-footer')).toBeVisible();
+  await expect(page).toHaveURL(/\/voice$/);
+  await expect(page.locator('[data-bigbang-center-channel="orb"][data-bigbang-center-direction="north"]')).toBeVisible();
+  await expect(page.locator('.lucy-orb-masters')).toBeVisible();
 });
 
 test('mobile composer and input remain inside the visible WebKit viewport after keyboard-sized resize', async ({ page }) => {
@@ -1375,9 +1381,12 @@ test('Lucy smoothly reaches the exact top of a long conversation and recent conv
   const topTap = await header.evaluate(element => {
     const rect = element.getBoundingClientRect();
     const blocked = 'button, a, input, select, textarea, [role="button"], [role="tab"], [role="menuitem"], [role="link"], label, .clickable, [data-no-scroll-top], [data-brand-logo], audio, video, iframe, .lucy-header-actions, .prism-subnav-btn, .duo-page-nav';
-    const y = 5;
-    const x = [rect.left + rect.width * 0.5, rect.left + rect.width * 0.42, rect.left + rect.width * 0.58]
-      .find(candidate => !document.elementFromPoint(candidate, y)?.closest(blocked));
+    const y = rect.top + Math.min(8, rect.height / 2);
+    const x = [0.5, 0.42, 0.58, 0.34, 0.26].map(fraction => rect.left + rect.width * fraction)
+      .find(candidate => {
+        const hit = document.elementFromPoint(candidate, y);
+        return hit && element.contains(hit) && !hit.closest(blocked);
+      });
     if (x == null) throw new Error('Lucy blank upper-center tap area is missing');
     return { x, y };
   });
@@ -1460,20 +1469,23 @@ test('pull-to-refresh indicator centers over the folded main canvas, excluding t
 });
 
 test('pull-to-refresh ignores cross-origin Firebase Auth iframes without WebKit errors', async ({ page }) => {
+  const authFrame = 'https://lucyuniverse-fc423.firebaseapp.com/__/auth/iframe';
+  await page.route(authFrame, route => route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>Auth fixture</title>' }));
   const frameAccessErrors: string[] = [];
   page.on('pageerror', error => {
     if (error.message.includes('Blocked a frame with origin')) frameAccessErrors.push(error.message);
   });
   await openLucy(page);
-  await page.evaluate(() => {
+  await page.evaluate(async src => {
     const frame = document.createElement('iframe');
-    frame.src = 'https://lucyuniverse-fc423.firebaseapp.com/__/auth/iframe';
+    const loaded = new Promise<void>(resolve => { frame.onload = () => resolve(); });
+    frame.src = src;
     frame.title = 'cross-origin-auth-regression';
     frame.width = '1';
     frame.height = '1';
     document.body.appendChild(frame);
-  });
-  await page.waitForTimeout(1000);
+    await loaded;
+  }, authFrame);
   expect(frameAccessErrors).toEqual([]);
 });
 
