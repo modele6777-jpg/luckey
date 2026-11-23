@@ -102,13 +102,13 @@ async function getLucyHeaderBackground(page: import('@playwright/test').Page, ed
     }
     return null;
   }, edge);
-  let point: Awaited<ReturnType<typeof findPoint>> = null;
+  const result: { point: Awaited<ReturnType<typeof findPoint>> } = { point: null };
   await expect.poll(async () => {
-    point = await findPoint();
-    return Boolean(point);
+    result.point = await findPoint();
+    return Boolean(result.point);
   }).toBe(true);
-  if (!point) throw new Error(`Lucy header has no tappable background at its ${edge}`);
-  return point;
+  if (!result.point) throw new Error(`Lucy header has no tappable background at its ${edge}`);
+  return result.point;
 }
 
 async function setContentScrollBoundary(page, edge: 'top' | 'bottom') {
