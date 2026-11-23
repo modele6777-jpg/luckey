@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.427",
+    "builtAt": "2026-11-24T07:35:00+09:00",
+    "summary": "몰도바 오르헤이·모시 황토 벽화·나바테아 페트라 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.427)",
+    "items": [
+      "몰도바 오르헤이 석회암 엔진(v2.3.0): 질문 맥락(questionTopic), 석회암 협곡 축(limestoneCanyonAxis), 과잉 경계(shadowWarning) 추가",
+      "모시 황토 벽화 질서 엔진(v2.3.0): 질문 맥락(questionTopic), 황토 벽화 축(earthMuralAxis), 과잉 경계(shadowWarning) 추가",
+      "나바테아 페트라 사막 수로 엔진(v2.3.0): 질문 맥락(questionTopic), 사막 수로 축(cisternFlowAxis), 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.426",
     "builtAt": "2026-11-24T07:25:00+09:00",
     "summary": "메노미니 숲지속·메노르카 탈라요트·미노스 미궁 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.426)",

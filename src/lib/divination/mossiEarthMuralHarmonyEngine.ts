@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface MossiMuralResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '질서·루틴' | '협업·손길' | '휴식·겸손' | '보폭·보호' | '모시벽화 전반';
   mossiMotif: string;
   companionMotif: string;
+  earthMuralAxis: string;
   mossiInsight: string;
   earthTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const MOSSI_SHADOWS = [
+  '기하학 무늬처럼 정해진 질서와 루틴을 지키는 데만 집중하다 보면, 예외적인 돌발 상황에 유연하게 선을 바꿀 여지가 좁아질 수 있습니다.',
+  '여럿의 손길을 모아 벽을 다지는 협업이 각자가 책임져야 할 분명한 경계와 마감까지 흐리지 않도록 역할을 깔끔히 나누세요.',
+  '몸을 낮추고 속도를 줄이는 겸손함이 정작 당당하게 목소리를 내야 할 자리에서도 스스로를 과하게 움츠리게 해서는 안 됩니다.',
+  '내 보폭을 지키는 느긋함이 마감이 정해진 현실의 발걸음까지 한없이 늦추는 안이함으로 번지지 않게 살피세요.',
+  '미리 보호막을 덧대는 준비성이 지나치면 비가 오기도 전에 온종일 벽만 매만지다 정작 집 안에서 누릴 오늘을 놓칠 수 있습니다.',
+];
+
+function classifyMossiTopic(q: string): MossiMuralResult['questionTopic'] {
+  if (/질서|루틴|반복|기하학/.test(q)) return '질서·루틴';
+  if (/협업|함께|손길|나누/.test(q)) return '협업·손길';
+  if (/휴식|속도|낮추|그늘/.test(q)) return '휴식·겸손';
+  if (/보폭|보호|미리|점검/.test(q)) return '보폭·보호';
+  return '모시벽화 전반';
+}
+
 export function calculateMossiEarthMuralHarmony(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): MossiMuralResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyMossiTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const picked = MOTIFS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const earthMuralAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-MOSSI-MURAL-v2.2.0',
+    engineVersion: 'LUCKEY-MOSSI-MURAL-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     mossiMotif: picked.motif,
     companionMotif: companion.motif,
+    earthMuralAxis,
     mossiInsight: picked.insight,
     earthTone: picked.tone,
     reflectionFocus: `티에벨레 모시 벽화의 '${picked.motif}'을 중심에 두고 '${companion.motif}'의 결을 함께 얹어, 소박한 일상에 반복되는 리듬과 미리 챙기는 보호막을 더해 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: MOSSI_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '서아프리카 부르키나파소 티에벨레 모시족의 황토 벽화·공동체 수공예 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +120,13 @@ export function formatMossiMuralPrompt(res: MossiMuralResult): string {
   return [
     `[모시·황토 벽화 질서 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 황토 벽화 축: ${res.earthMuralAxis}`,
     `- 모시 모티프: ${res.mossiMotif} (${res.earthTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.mossiInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
