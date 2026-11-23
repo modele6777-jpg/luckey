@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface HebrideanTartanResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '박자·직조' | '방풍·유연' | '고유·양분' | '트위드 전반';
   hebrideanMotif: string;
   companionMotif: string;
+  loomWeaveAxis: string;
   hebrideanInsight: string;
   tweedTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const HEBRIDEAN_SHADOWS = [
+  '지금 쥔 익숙한 재료만 고집하다 꼭 필요한 새로운 도구와 배움의 창까지 닫아 두지 마세요.',
+  '나만의 발박자를 지킨다는 명분으로 함께 호흡을 맞추어야 할 공동 일정의 속도까지 놓치지 마세요.',
+  '몸을 낮춰 바람을 흘려보내되 꼭 지켜야 할 삶의 울타리와 원칙적 경계까지 무너뜨리지 마세요.',
+  '서로 다른 실을 다 엮으려다 무늬의 중심이 흐려지지 않도록 오늘의 주색 하나를 분명히 두세요.',
+  '지나간 파도 뒤의 양분을 챙기는 데만 머무르지 말고, 다음 항해를 위한 새 돛도 제때 점검하세요.',
+];
+
+function classifyHebrideanTopic(q: string): HebrideanTartanResult['questionTopic'] {
+  if (/박자|속도|베틀|격자|직조/.test(q)) return '박자·직조';
+  if (/바람|강풍|지붕|낮추|흘려/.test(q)) return '방풍·유연';
+  if (/재료|고유|양분|이끼|파도/.test(q)) return '고유·양분';
+  return '트위드 전반';
+}
+
 export function calculateHebrideanTartanLoomCalm(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): HebrideanTartanResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyHebrideanTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const loomWeaveAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = HEBRIDEAN_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-HEBRIDEAN-TARTAN-v2.2.0',
+    engineVersion: 'LUCKEY-HEBRIDEAN-TARTAN-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     hebrideanMotif: picked.motif,
     companionMotif: companion.motif,
+    loomWeaveAxis,
     hebrideanInsight: picked.insight,
     tweedTone: picked.tone,
     reflectionFocus: `헤브리디스 트위드의 '${picked.motif}'과 동반 결 '${companion.motif}'을 함께 엮어, 내 발박자에 맞는 고유한 격자를 짜 보세요.`,
     ritualAction: picked.ritual,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '스코틀랜드 아우터 헤브리디스의 해리스 트위드 직조와 블랙하우스 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatHebrideanTartanPrompt(res: HebrideanTartanResult): string 
   return [
     `[헤브리디스·타르탄 베틀 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 베틀·직조 축: ${res.loomWeaveAxis}`,
     `- 헤브리디스 모티프: ${res.hebrideanMotif} (${res.tweedTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.hebrideanInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

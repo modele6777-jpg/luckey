@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.415",
+    "builtAt": "2026-11-24T05:45:00+09:00",
+    "summary": "하이다 과이 삼나무 카누·하우사 키라리·헤브리디스 타르탄 베틀 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.415)",
+    "items": [
+      "하이다 과이·삼나무 카누 엔진(v2.3.0): 질문 맥락(questionTopic), 삼나무·물때 축(cedarTideAxis), 과잉 경계(shadowWarning) 추가",
+      "서아프리카 하우사 키라리·알아다 지혜 엔진(v2.3.0): 질문 맥락(questionTopic), 사헬·품격 축(sahelDignityAxis), 과잉 경계(shadowWarning) 추가",
+      "헤브리디스·타르탄 베틀 성찰 엔진(v2.3.0): 질문 맥락(questionTopic), 베틀·직조 축(loomWeaveAxis), 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.413",
     "builtAt": "2026-11-24T05:35:00+09:00",
     "summary": "조지아 루스타벨리·고구려 삼족오·고려 청자 비색 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.413)",

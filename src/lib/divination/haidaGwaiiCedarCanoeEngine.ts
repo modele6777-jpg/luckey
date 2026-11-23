@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface HaidaGwaiiResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '부력·비움' | '순환·연대' | '호흡·거름' | '항해 전반';
   haidaMotif: string;
   companionMotif: string;
+  cedarTideAxis: string;
   haidaInsight: string;
   cedarTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const HAIDA_SHADOWS = [
+  '가볍게 비워 부력을 키우려다 정작 험한 물살을 버텨 줄 꼭 필요한 식량과 노까지 내려놓지 마세요.',
+  '아낌없이 나누며 순환을 만들되 내 카누가 가라앉지 않을 최소한의 여력까지 모두 내어주지는 마세요.',
+  '둥근 호흡으로 자연스럽게 잇는 데만 신경 쓰다 꼭 매듭짓고 끊어 내야 할 경계선까지 흐리지 마세요.',
+  '지나간 멈춤에서 거름을 길어 올리되 옛 시행착오를 되새기며 오늘의 새 싹을 밟지 않도록 살피세요.',
+  '썰물 뒤에 남은 내 몫을 챙기는 동안 다시 밀려올 다음 밀물의 방향과 시간표도 함께 살펴 두세요.',
+];
+
+function classifyHaidaTopic(q: string): HaidaGwaiiResult['questionTopic'] {
+  if (/비움|짐|가볍|부력|카누/.test(q)) return '부력·비움';
+  if (/나눔|순환|관계|공동체|여력/.test(q)) return '순환·연대';
+  if (/호흡|거름|멈춤|실패|물때/.test(q)) return '호흡·거름';
+  return '항해 전반';
+}
+
 export function calculateHaidaGwaiiCedarCanoe(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): HaidaGwaiiResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyHaidaTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const cedarTideAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = HAIDA_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-HAIDA-GWAII-v2.2.0',
+    engineVersion: 'LUCKEY-HAIDA-GWAII-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     haidaMotif: picked.motif,
     companionMotif: companion.motif,
+    cedarTideAxis,
     haidaInsight: picked.insight,
     cedarTone: picked.tone,
     reflectionFocus: `하이다 과이 삼나무 카누의 '${picked.motif}'과 동반 결 '${companion.motif}'을 함께 헤아리며, 마음을 가볍게 비워 파도를 넘는 부력을 키워 보세요.`,
     ritualAction: picked.ritual,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '태평양 북서부 하이다 과이의 삼나무 카누·포틀래치·형태선 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatHaidaGwaiiPrompt(res: HaidaGwaiiResult): string {
   return [
     `[하이다 과이·삼나무 카누 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 삼나무·물때 축: ${res.cedarTideAxis}`,
     `- 하이다 모티프: ${res.haidaMotif} (${res.cedarTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.haidaInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
