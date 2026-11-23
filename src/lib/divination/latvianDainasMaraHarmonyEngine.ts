@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface LatvianDainasResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '리듬·돌봄' | '빛·노래' | '뿌리·중심' | '다이나스 전반';
   dainasMotif: string;
   companionMotif: string;
+  balticHarmonyAxis: string;
   maraInsight: string;
   balticTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,48 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const LATVIAN_SHADOWS = [
+  '서두르지 않고 마디마디를 잇는 차분함이 지금 당장 결단하고 속도를 내야 할 순간까지 늦추지 않도록 살피세요.',
+  '몸과 일상의 기본을 돌보는 따뜻함이 새로운 도전을 피하고 편안한 안온함에만 머무는 핑계가 되지 않게 하세요.',
+  '어둠 뒤에 빛이 돌아온다는 순환을 믿되 오늘 내가 직접 해결해야 할 작은 과제까지 막연히 미루지는 마세요.',
+  '짧은 문장으로 마음을 붙드는 여유 속에서도 구체적인 다음 행동과 일정을 정리하는 현실 감각을 함께 챙기세요.',
+  '뿌리 깊은 참나무처럼 고요히 중심을 잡다가도, 필요한 소통과 반응의 타이밍까지 놓치지 않도록 귀를 열어 두세요.',
+];
+
+function classifyLatvianTopic(q: string): LatvianDainasResult['questionTopic'] {
+  if (/리듬|돌봄|일상|몸|피로/.test(q)) return '리듬·돌봄';
+  if (/빛|온기|노래|문장|다짐/.test(q)) return '빛·노래';
+  if (/뿌리|중심|원칙|흔들/.test(q)) return '뿌리·중심';
+  return '다이나스 전반';
+}
+
 export function calculateLatvianDainasMaraHarmony(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): LatvianDainasResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyLatvianTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const picked = MOTIFS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const balticHarmonyAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-LATVIAN-DAINAS-v2.2.0',
+    engineVersion: 'LUCKEY-LATVIAN-DAINAS-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     dainasMotif: picked.motif,
     companionMotif: companion.motif,
+    balticHarmonyAxis,
     maraInsight: picked.insight,
     balticTone: picked.tone,
     reflectionFocus: `라트비아 다이나스 전통의 '${picked.motif}'을 중심에 두고 '${companion.motif}'의 리듬을 함께 엮어, 거창한 해답보다 오늘 내 일상의 작은 리듬과 몸의 감각을 정성껏 돌보아 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: LATVIAN_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '발트 라트비아의 전통 구전 시가 다이나스(Dainas)와 자연 순환 철학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +119,13 @@ export function formatLatvianDainasPrompt(res: LatvianDainasResult): string {
   return [
     `[라트비아 다이나스·마라 조화 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 발트 조화 축: ${res.balticHarmonyAxis}`,
     `- 다이나스 상징: ${res.dainasMotif} (${res.balticTone})`,
     `- 동반 상징: ${res.companionMotif}`,
     `- 중심 통찰: ${res.maraInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

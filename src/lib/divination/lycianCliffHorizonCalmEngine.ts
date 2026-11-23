@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface LycianCliffResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '기준·원칙' | '시야·성찰' | '합의·결실' | '리키아 전반';
   lycianMotif: string;
   companionMotif: string;
+  cliffHorizonAxis: string;
   lycianInsight: string;
   cliffTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,48 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const LYCIAN_SHADOWS = [
+  '바위에 새긴 듯한 원칙을 지키는 태도가 상황이 바뀌었을 때도 유연하게 수정해야 할 부분까지 고집하게 만들지 않도록 하세요.',
+  '능선 너머 넓은 수평선을 바라보는 시야가 지금 당장 발밑에서 디뎌야 할 가파른 돌계단을 놓치게 해서는 안 됩니다.',
+  '지난 선택을 맑은 물빛 아래 거울로 비춰 보는 성찰이 끝없는 과거 복기로 흘러 오늘의 발걸음을 묶지 않게 하세요.',
+  '내 안의 크고 작은 목소리를 모두 공평하게 듣다 보면 정작 오늘 하나를 선택해야 할 결정의 순간이 늦어질 수 있습니다.',
+  '바위 틈에서도 열매를 맺는 단단함을 믿되, 스스로 돌보고 물을 주어야 할 휴식의 틈까지 깎아내리지는 마세요.',
+];
+
+function classifyLycianTopic(q: string): LycianCliffResult['questionTopic'] {
+  if (/원칙|기준|흔들|바위/.test(q)) return '기준·원칙';
+  if (/수평선|바라보|시선|선택|거울/.test(q)) return '시야·성찰';
+  if (/합의|현실|목소리|열매|균형/.test(q)) return '합의·결실';
+  return '리키아 전반';
+}
+
 export function calculateLycianCliffHorizonCalm(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): LycianCliffResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyLycianTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const picked = MOTIFS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const cliffHorizonAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-LYCIAN-CLIFF-v2.2.0',
+    engineVersion: 'LUCKEY-LYCIAN-CLIFF-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     lycianMotif: picked.motif,
     companionMotif: companion.motif,
+    cliffHorizonAxis,
     lycianInsight: picked.insight,
     cliffTone: picked.tone,
     reflectionFocus: `리키아 암벽 지평선의 '${picked.motif}'을 중심에 두고 '${companion.motif}'의 시선을 함께 엮어, 오르막의 숨이 가쁠수록 잠시 시선을 들어 능선 너머의 바다를 바라보세요.`,
     ritualAction: picked.action,
+    shadowWarning: LYCIAN_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '고대 아나톨리아 리키아의 암벽·해안 능선 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +119,13 @@ export function formatLycianCliffPrompt(res: LycianCliffResult): string {
   return [
     `[리키아·암벽 지평선 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 지평선 균형 축: ${res.cliffHorizonAxis}`,
     `- 리키아 모티프: ${res.lycianMotif} (${res.cliffTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.lycianInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

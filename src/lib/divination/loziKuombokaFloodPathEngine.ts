@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface LoziKuombokaResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '이동·전환' | '신호·협력' | '회복·휴식' | '쿠옴보카 전반';
   loziMotif: string;
   companionMotif: string;
+  zambeziPathAxis: string;
   loziInsight: string;
   zambeziTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,48 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const LOZI_SHADOWS = [
+  '물길을 타고 더 높은 터로 옮겨 가는 유연함 속에서도, 지금 당장 정리하고 인계해야 할 기존 책임까지 방치하지 마세요.',
+  '변화의 북소리를 듣고 출발하는 결단은 좋으나, 주변의 준비 상태와 속도를 살피지 않고 혼자만 앞서가지 않도록 하세요.',
+  '지나간 범람이 남긴 배움을 건지는 과정에서 이미 지난 물난리의 피로와 아쉬움까지 다시 끌어안지는 마세요.',
+  '곁의 사람과 노 젓는 박자를 맞추려다 정작 내가 방향키를 잡아야 할 순간에 결정을 남에게 미루지 않도록 하세요.',
+  '고지대 리물룽가에서 숨을 고르는 휴식이 길어져 다음 계절에 밭을 갈아야 할 출발 시점까지 놓치지는 마세요.',
+];
+
+function classifyLoziTopic(q: string): LoziKuombokaResult['questionTopic'] {
+  if (/물길|이동|새 터|옮기|전환/.test(q)) return '이동·전환';
+  if (/신호|북소리|박자|함께|협력/.test(q)) return '신호·협력';
+  if (/휴식|숨|회복|배움|고비/.test(q)) return '회복·휴식';
+  return '쿠옴보카 전반';
+}
+
 export function calculateLoziKuombokaFloodPath(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): LoziKuombokaResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyLoziTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const picked = MOTIFS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const zambeziPathAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-LOZI-KUOMBOKA-v2.2.0',
+    engineVersion: 'LUCKEY-LOZI-KUOMBOKA-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     loziMotif: picked.motif,
     companionMotif: companion.motif,
+    zambeziPathAxis,
     loziInsight: picked.insight,
     zambeziTone: picked.tone,
     reflectionFocus: `로지족 쿠옴보카의 '${picked.motif}'을 중심에 두고 '${companion.motif}'의 흐름을 함께 엮어, 계절과 수위가 바뀔 때 옛 자리를 억지로 붙들기보다 물길을 타고 새 터로 옮겨 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: LOZI_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '잠비아 바로체 범람원 로지족의 쿠옴보카 물길 이동 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +119,13 @@ export function formatLoziKuombokaPrompt(res: LoziKuombokaResult): string {
   return [
     `[로지·쿠옴보카 물길 이동 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 잠베지 이동 축: ${res.zambeziPathAxis}`,
     `- 쿠옴보카 모티프: ${res.loziMotif} (${res.zambeziTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.loziInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

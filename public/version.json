@@ -1,10 +1,10 @@
 {
-  "version": "1.8.421",
-  "builtAt": "2026-11-24T06:35:00+09:00",
-  "summary": "코기 알루나 사유 실·쿠바 라피아 기하학·쿠르드 네우로즈 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.421)",
+  "version": "1.8.422",
+  "builtAt": "2026-11-24T06:45:00+09:00",
+  "summary": "라트비아 다이나스·로지 쿠옴보카·리키아 암벽 지평선 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.422)",
   "items": [
-    "코기 알루나 사유 실 엔진(v2.3.0): 질문 맥락(questionTopic), 알루나 직조 축(alunaWeaveAxis), 과잉 경계(shadowWarning) 추가",
-    "쿠바 라피아 기하학 질서 엔진(v2.3.0): 질문 맥락(questionTopic), 라피아 직조 축(raffiaWeaveAxis), 과잉 경계(shadowWarning) 추가",
-    "쿠르드 네우로즈 재생 엔진(v2.3.0): 질문 맥락(questionTopic), 네우로즈 재생 축(newrozRenewalAxis), 과잉 경계(shadowWarning) 추가"
+    "라트비아 다이나스·마라 조화 엔진(v2.3.0): 질문 맥락(questionTopic), 발트 조화 축(balticHarmonyAxis), 과잉 경계(shadowWarning) 추가",
+    "로지 쿠옴보카 물길 이동 엔진(v2.3.0): 질문 맥락(questionTopic), 잠베지 이동 축(zambeziPathAxis), 과잉 경계(shadowWarning) 추가",
+    "리키아 암벽 지평선 성찰 엔진(v2.3.0): 질문 맥락(questionTopic), 지평선 균형 축(cliffHorizonAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }
