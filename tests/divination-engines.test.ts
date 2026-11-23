@@ -13931,14 +13931,15 @@ test('Breton Barzaz Sea Poetry engine: motif, +09:00 KST, and interpretive bound
 
 test('Hausa Kirari Alada Wisdom engine: proverb, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateHausaKirariAladaWisdom({ profile, now: new Date('2026-11-20T07:18:00Z'), question: '긴 호흡으로 신뢰를 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-HAUSA-KIRARI-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-HAUSA-KIRARI-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSign !== rep.proverbSign);
+  assert.ok(rep.sahelDignityAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatHausaKirariPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('하우사') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSign));
+  assert.ok(prompt.includes('하우사') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSign) && prompt.includes('과잉 경계'));
 });
 
 test('Occitan Troubadour Paratge engine: virtue, +09:00 KST, and interpretive boundary', () => {
@@ -14898,14 +14899,15 @@ test('Himba Otjize Desert Poise engine: motif, +09:00 KST, and interpretive boun
 
 test('Haida Gwaii Cedar Canoe engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateHaidaGwaiiCedarCanoe({ profile, now: new Date('2026-11-20T20:00:00Z'), question: '무거운 짐을 가볍게 비우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-HAIDA-GWAII-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-HAIDA-GWAII-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.haidaMotif);
+  assert.ok(rep.cedarTideAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatHaidaGwaiiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('하이다') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('하이다') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
 });
 
 test('Chavin Lanzon Stone Balance engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15134,14 +15136,15 @@ test('Pamir Wakhan Corridor Stars engine: motif, +09:00 KST, and interpretive bo
 
 test('Hebridean Tartan Loom Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateHebrideanTartanLoomCalm({ profile, now: new Date('2026-11-20T20:59:00Z'), question: '내 발박자에 맞춰 고유한 격자를 짜고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-HEBRIDEAN-TARTAN-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-HEBRIDEAN-TARTAN-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.hebrideanMotif);
+  assert.ok(rep.loomWeaveAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatHebrideanTartanPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('헤브리디스') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('헤브리디스') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
 });
 
 test('Chiloe Palafito Tide Poise engine: motif, +09:00 KST, and interpretive boundary', () => {

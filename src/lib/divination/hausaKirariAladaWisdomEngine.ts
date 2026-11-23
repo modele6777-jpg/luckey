@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface HausaKirariAladaResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '인내·품격' | '신뢰·약속' | '경청·자부심' | '알아다 전반';
   proverbSign: string;
   companionSign: string;
+  sahelDignityAxis: string;
   aladaInsight: string;
   sahelTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const HAUSA_SHADOWS = [
+  '긴 호흡의 인내를 지키려다 지금 당장 바로잡아야 할 부당한 선이나 긴급한 대응까지 미루지 마세요.',
+  '내 강점을 당당히 부르는 자부심이 타인의 몫을 가볍게 보거나 고집으로 굳어지지 않도록 살피세요.',
+  '정중한 품격을 유지하는 데 신경 쓰다 정작 꼭 전해야 할 솔직한 거절이나 의견까지 삼키지 마세요.',
+  '사소한 약속을 지키는 성실함 속에서도 이미 상황이 바뀐 무리한 다짐은 제때 다시 조율하세요.',
+  '지혜로운 이의 시선을 구하는 경청 뒤에는 결국 내가 직접 선택하고 책임져야 할 결단이 따릅니다.',
+];
+
+function classifyHausaTopic(q: string): HausaKirariAladaResult['questionTopic'] {
+  if (/인내|품격|호흡|조급|존중/.test(q)) return '인내·품격';
+  if (/신뢰|약속|성실|책임|실행/.test(q)) return '신뢰·약속';
+  if (/경청|조언|강점|자부심|비교/.test(q)) return '경청·자부심';
+  return '알아다 전반';
+}
+
 export function calculateHausaKirariAladaWisdom(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): HausaKirariAladaResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyHausaTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % PROVERBS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (PROVERBS.length - 1));
   const picked = PROVERBS[idx];
   const companion = PROVERBS[(idx + companionOffset) % PROVERBS.length];
+  const sahelDignityAxis = `${picked.sign.split('(')[0].trim()} ↔ ${companion.sign.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = HAUSA_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-HAUSA-KIRARI-v2.2.0',
+    engineVersion: 'LUCKEY-HAUSA-KIRARI-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     proverbSign: picked.sign,
     companionSign: companion.sign,
+    sahelDignityAxis,
     aladaInsight: picked.insight,
     sahelTone: picked.tone,
     reflectionFocus: `서아프리카 하우사 지혜의 '${picked.sign}'처럼, 오늘의 결정에서는 순간의 감정보다 긴 신뢰(Amana)와 내면의 품격을 먼저 세워 보세요. (동반 결: ${companion.sign.split('(')[0].trim()})`,
     ritualAction: picked.action,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '서아프리카 하우사(Hausa) 전통의 키라리(Kirari)·아마나(Amana) 인격 수양 철학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatHausaKirariPrompt(res: HausaKirariAladaResult): string {
   return [
     `[하우사 키라리·알아다 지혜 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 사헬·품격 축: ${res.sahelDignityAxis}`,
     `- 격언 상징: ${res.proverbSign} (${res.sahelTone})`,
     `- 동반 상징: ${res.companionSign}`,
     `- 중심 통찰: ${res.aladaInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
