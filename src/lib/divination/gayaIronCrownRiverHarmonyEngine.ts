@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface GayaIronCrownResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '열정·절도' | '기초·균형' | '소통·품격' | '조화 전반';
   gayaMotif: string;
   companionMotif: string;
+  forgeEstuaryAxis: string;
   gayaInsight: string;
   riverTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const GAYA_SHADOWS = [
+  '식히는 틈을 두느라 정작 불꽃을 올려 벼려야 할 결정적 타이밍까지 식혀 버리지 않도록 살피세요.',
+  '기초 굽을 살피는 데만 머무르다 정작 그 위에 올려야 할 오늘의 핵심 과제 착수를 미루지 마세요.',
+  '여러 갈래 물길을 다 열어 두려다 정작 지금 집중해야 할 내 중심 물줄기가 흩어지지 않게 주의하세요.',
+  '모든 감정의 소리를 다 안고 가려다 지금 먼저 조율해야 할 불협화음 한 가지를 방치하지 마세요.',
+  '부드러운 곡선과 단정한 태도를 지키려다 꼭 짚고 넘어가야 할 원칙까지 모호하게 넘기지 마세요.',
+];
+
+function classifyGayaTopic(q: string): GayaIronCrownResult['questionTopic'] {
+  if (/열정|식힘|절도|불꽃|일/.test(q)) return '열정·절도';
+  if (/기초|균형|굽|중심|수면/.test(q)) return '기초·균형';
+  if (/소통|품격|관계|감정|물길/.test(q)) return '소통·품격';
+  return '조화 전반';
+}
+
 export function calculateGayaIronCrownRiverHarmony(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): GayaIronCrownResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyGayaTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const forgeEstuaryAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = GAYA_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-GAYA-IRON-v2.2.0',
+    engineVersion: 'LUCKEY-GAYA-IRON-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     gayaMotif: picked.motif,
     companionMotif: companion.motif,
+    forgeEstuaryAxis,
     gayaInsight: picked.insight,
     riverTone: picked.tone,
     reflectionFocus: `가야 금관·철기 조화의 '${picked.motif}'처럼, 열정과 식힘의 절도를 맞추며 부드럽고 단정한 중심을 세워 보세요. (동반 결: ${companion.motif.split('(')[0].trim()})`,
     ritualAction: picked.action,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '고대 가야의 철기 제련·토기 균형·가야금 조화 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatGayaIronCrownPrompt(res: GayaIronCrownResult): string {
   return [
     `[가야·금관 철기 조화 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 대장간·하구 축: ${res.forgeEstuaryAxis}`,
     `- 가야 모티프: ${res.gayaMotif} (${res.riverTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.gayaInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
