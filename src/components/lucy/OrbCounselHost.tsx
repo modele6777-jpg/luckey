@@ -1,3 +1,4 @@
+import { safeSessionStorage } from '@/utils/safeStorage';
 import { LucyOrbCounsel } from '@/components/lucy/LucyOrbCounsel';
 import { getPersistentUserProfile, useApp } from '@/contexts/AppContext';
 import { setOrbCounselOpen } from '@/lib/orbCounselGate';
@@ -21,7 +22,9 @@ function buildOrbReportRequestContext(record: string): string {
 /** Orb is a page, not a popup. Only this route is active while it is open. */
 export function OrbPage() {
   const [, navigate] = useLocation();
-  const { sharedState } = useApp();
+  const { sharedState, firebaseUser } = useApp();
+  // 단골 기억(지난 상담 기록)은 계정별로 나눠 둔다.
+  const account = firebaseUser?.uid || safeSessionStorage.getItem('prism_auth_uid') || 'device';
   const persistentProfile = getPersistentUserProfile();
   const profile = sharedState?.userProfile || persistentProfile;
   const nickname = sharedState?.userProfile?.basic?.nickname?.trim()
@@ -44,6 +47,7 @@ export function OrbPage() {
       open
       nickname={nickname}
       chart={chart}
+      account={account}
       onFinish={(summary) => {
         // 채팅에 남기기: 상담 기록은 보이지 않는 참고 자료로 넘기고, 루시가 요약 보고서를 써 준다.
         // (부적은 채팅에 남기지 않는다.)

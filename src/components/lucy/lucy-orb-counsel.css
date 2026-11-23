@@ -1496,3 +1496,113 @@ html.duo-unfolded-mode .lucy-talisman img { height: min(64vh, 560px, var(--orb-t
 .lucy-orb-stage.is-report { justify-content: flex-start; }
 .lucy-orb-stage.is-report .lucy-orb-ritual { width: min(86%, 430px, calc(var(--orb-report-room, 9999px) / .92)); margin-top: 0; }
 html.duo-unfolded-mode .lucy-orb-stage.is-report .lucy-orb-ritual { width: min(62%, 680px, calc(var(--orb-report-room, 9999px) / .92)); }
+
+/* 📒 단골 안내 + 마스터 프로필 카드 */
+.lucy-orb-stage .lucy-orb-regular {
+  margin: 12px auto 0;
+  width: min(420px, 100%);
+  padding: 8px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(243, 207, 134, .35);
+  background: rgba(255, 240, 210, .08);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #fff1c4;
+  word-break: keep-all;
+}
+.lucy-orb-masters .lucy-orb-master-head { display: flex; align-items: center; gap: 6px; margin: 0; }
+.lucy-orb-masters .lucy-orb-master-head em {
+  font-style: normal; font-size: 10.5px; font-weight: 800; color: #3a2410;
+  background: linear-gradient(180deg, #fff6dc, #f3cf86); border-radius: 999px; padding: 2px 7px;
+}
+.lucy-orb-masters .lucy-orb-master-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+.lucy-orb-masters .lucy-orb-master-tags i {
+  font-style: normal; font-size: 11px; color: #fbf7ff; border: 1px solid rgba(214, 196, 255, .35);
+  background: rgba(150, 130, 255, .14); border-radius: 999px; padding: 1px 8px;
+}
+.lucy-orb-masters .lucy-orb-master-intro { margin-top: 5px; font-size: 12.5px; line-height: 1.45; color: rgba(251, 247, 255, .9); word-break: keep-all; }
+.lucy-orb-masters .lucy-orb-master-style { margin-top: 3px; font-size: 11px; line-height: 1.4; color: rgba(243, 207, 134, .82); word-break: keep-all; }
+
+/* 🃏 카드 고르기 칩 + 고르기 창 */
+.lucy-orb-keywords button.lucy-orb-cardchip { border-color: rgba(243, 207, 134, .8); background: rgba(243, 207, 134, .18); font-weight: 800; color: #fff1c4; }
+.lucy-orb-keywords button.lucy-orb-cardchip.is-waiting { animation: lucy-cardchip-glow 2.2s ease-in-out infinite; }
+@keyframes lucy-cardchip-glow { 0%, 100% { box-shadow: 0 0 0 rgba(243, 207, 134, 0); } 50% { box-shadow: 0 0 16px rgba(243, 207, 134, .55); } }
+.lucy-cardpick-layer {
+  position: absolute;
+  inset: 56px 0 0;
+  z-index: 8;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 12px 12px;
+  /* 카드 목록과 버튼이 빅뱅 버튼 위에서 끝나게: 아래쪽을 비우고, 스크롤은 카드 목록 안에서만. */
+  padding-bottom: var(--orb-bok-bottom, 14px);
+  overflow: hidden;
+  background: rgba(6, 4, 18, .8);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+.lucy-cardpick { width: min(520px, 100%); max-height: 100%; min-height: 0; display: flex; flex-direction: column; text-align: center; color: #fbf7ff; animation: lucy-talisman-in .5s cubic-bezier(.22, 1, .36, 1) both; }
+.lucy-orb-stage .lucy-cardpick > strong { display: block; font-size: 15px; color: #fff1c4; word-break: keep-all; }
+.lucy-orb-stage .lucy-cardpick > p { margin: 4px 0 10px; font-size: 12px; color: rgba(251, 247, 255, .75); }
+.lucy-cardpick-grid { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 6px; padding: 8px 6px 4px; align-content: start; }
+.lucy-cardpick-grid button {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  border: 1px solid rgba(243, 207, 134, .45);
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(243, 207, 134, .28) 0 18%, transparent 19%),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, .05) 0 4px, transparent 4px 8px),
+    linear-gradient(160deg, #3b2a6e, #1c1440);
+  color: rgba(255, 241, 196, .85);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.lucy-cardpick-grid button.is-on { transform: translateY(-4px); border-color: #f3cf86; box-shadow: 0 0 12px rgba(243, 207, 134, .7); }
+.lucy-cardpick-grid button em {
+  position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%;
+  font-style: normal; font-size: 11px; line-height: 18px; color: #3a2410; background: #f3cf86;
+}
+.lucy-cardpick-actions { flex: 0 0 auto; display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
+.lucy-cardpick-actions button {
+  border: 1px solid rgba(243, 207, 134, .45); border-radius: 999px; padding: 9px 16px;
+  font-size: 13.5px; font-weight: 700; color: #fbf7ff; background: rgba(255, 255, 255, .08);
+}
+.lucy-cardpick-actions button.is-primary { border: 0; color: #3a2410; background: linear-gradient(180deg, #fff6dc, #f3cf86); }
+.lucy-cardpick-actions button:disabled { opacity: .45; }
+.lucy-cardpick-spread { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; justify-content: center; align-items: flex-start; gap: 10px; margin-top: 12px; }
+.lucy-cardpick-spread figure { margin: 0; width: min(30%, 130px); }
+.lucy-cardpick-flip { position: relative; aspect-ratio: 2 / 3.4; perspective: 600px; }
+.lucy-cardpick-flip > * {
+  position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 8px; backface-visibility: hidden;
+  animation-duration: .9s; animation-fill-mode: both; animation-timing-function: cubic-bezier(.22, 1, .36, 1);
+  animation-delay: calc(var(--i) * .35s);
+}
+.lucy-cardpick-back {
+  display: grid; place-items: center; font-weight: 800; color: #fff1c4; border: 1px solid rgba(243, 207, 134, .6);
+  background: repeating-linear-gradient(45deg, rgba(255, 255, 255, .05) 0 4px, transparent 4px 8px), linear-gradient(160deg, #3b2a6e, #1c1440);
+  animation-name: lucy-card-back-out;
+}
+.lucy-cardpick-flip img { object-fit: cover; box-shadow: 0 8px 20px rgba(0, 0, 0, .45), 0 0 0 1px rgba(243, 207, 134, .5); animation-name: lucy-card-face-in; }
+.lucy-cardpick-flip img.is-reversed { animation-name: lucy-card-face-in-rev; }
+@keyframes lucy-card-back-out { from { transform: rotateY(0); } to { transform: rotateY(180deg); } }
+@keyframes lucy-card-face-in { from { transform: rotateY(-180deg); } to { transform: rotateY(0); } }
+@keyframes lucy-card-face-in-rev { from { transform: rotateY(-180deg) rotate(180deg); } to { transform: rotateY(0) rotate(180deg); } }
+.lucy-cardpick-spread figcaption { display: flex; flex-direction: column; gap: 1px; margin-top: 6px; font-size: 12px; line-height: 1.35; word-break: keep-all; }
+.lucy-cardpick-spread figcaption b { font-size: 11px; color: #f3cf86; }
+.lucy-cardpick-spread figcaption small { font-size: 10.5px; color: rgba(251, 247, 255, .7); }
+@media (prefers-reduced-motion: reduce) {
+  .lucy-cardpick-flip > *, .lucy-orb-keywords button.lucy-orb-cardchip.is-waiting { animation: none; }
+  .lucy-cardpick-back { display: none; }
+  .lucy-cardpick-flip img.is-reversed { transform: rotate(180deg); }
+}
+
+/* 상담 중: 추천 질문·카드 고르기 버튼이 빅뱅 버튼에 가리지 않게 글 영역은 버튼 위에서 끝나고, 수정구슬은 남은 공간에 맞춰 줄어든다. */
+.lucy-orb-stage.is-live { justify-content: flex-start; }
+.lucy-orb-stage.is-live .lucy-orb-ritual { width: min(86%, 430px, calc(var(--orb-live-room, 9999px) / .92)); }
+html.duo-unfolded-mode .lucy-orb-stage.is-live .lucy-orb-ritual { width: min(62%, 680px, calc(var(--orb-live-room, 9999px) / .92)); }
+.lucy-orb-stage.is-live .lucy-orb-copy { margin-bottom: var(--orb-bok-bottom, 0px); padding-bottom: 8px; min-height: 0; }
+.lucy-orb-stage:not(.is-live):not(.is-report) .lucy-orb-copy { margin-bottom: var(--orb-bok-bottom, 0px); min-height: 0; }

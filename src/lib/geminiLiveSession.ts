@@ -25,6 +25,8 @@ type LiveVoiceHandlers = {
   voice?: string;
   focus?: string;
   greet?: string;
+  /** 상담 진행 방식·지난 상담 기록 같은 추가 안내 (참고 자료). */
+  notes?: string;
   onState?: (state: LiveVoiceState) => void;
   onAudioLevel?: (level: number) => void;
   onUserText?: (text: string) => void;
@@ -255,6 +257,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
           voice: orbVoice(handlers.voice || ''),
           focus: handlers.focus || '',
           greet: handlers.greet || '',
+          notes: handlers.notes || '',
         }),
       });
       const body = await response.json().catch(() => ({}));
@@ -317,7 +320,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
           inputAudioTranscription: {},
           outputAudioTranscription: {},
           systemInstruction: {
-            parts: [{ text: buildLucyLiveInstruction(handlers.nickname || '', handlers.chart || '', handlers.cards || '', handlers.focus || '', handlers.greet || '') }],
+            parts: [{ text: buildLucyLiveInstruction(handlers.nickname || '', handlers.chart || '', handlers.cards || '', handlers.focus || '', handlers.greet || '', handlers.notes || '') }],
           },
         },
       }));

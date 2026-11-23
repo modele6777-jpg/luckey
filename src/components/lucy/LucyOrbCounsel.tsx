@@ -7,7 +7,11 @@ import { ORB_MASTERS, orbVoice, type OrbMaster } from '@/lib/orbMasters';
 import { generateHeavenlyAdvice } from '@/lib/orbHeavenlyAdvice';
 import { playTTSInChunks, stopTTS, useTTSActive, useTTSState } from '@/utils/tts';
 import { CHANNEL_MENU_ICONS, MessageCircleMinus } from '@/lib/channelMenuIcons';
-import { drawLucyTarotCards } from '@/utils/tarotDetector';
+import {
+  ORB_CARD_PICK_CARDS, ORB_CARD_PICK_GUIDE, ORB_DECK_SIZE, buildOrbMemoryBrief, latestOrbMemoryLine, loadOrbMemory,
+  orbCardPickMessage, parseCardNumbers, pickOrbCards, saveOrbMemory, shuffleOrbDeck, summarizeOrbSession,
+  type OrbDeckCard, type OrbMemoryEntry, type OrbPickedCard,
+} from '@/lib/orbConsult';
 import { Clover, KeyRound, MessageCirclePlus, type LucideIcon } from 'lucide-react';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
@@ -157,11 +161,14 @@ export function LucyOrbCounsel({
   open,
   nickname,
   chart,
+  account = 'device',
   onFinish,
 }: {
   open: boolean;
   nickname: string;
   chart: string;
+  /** 단골 기억(지난 상담 기록)을 계정별로 나눠 둔다. */
+  account?: string;
   onFinish: (summary: string | null) => void;
 }) {
   const [phase, setPhase] = useState<Phase>('pick');
@@ -206,6 +213,16 @@ export function LucyOrbCounsel({
   const bokTimer = useRef<number | null>(null);
   const stageRef = useRef<HTMLElement | null>(null);
   const [caution, setCaution] = useState(false);
+  // 🃏 타로 마스터: 손님이 숫자 세 개를 말하거나 화면에서 골라 카드를 펼친다.
+  const deckRef = useRef<OrbDeckCard[]>([]);
+  const pickedRef = useRef(false);
+  const [pickedCards, setPickedCards] = useState<OrbPickedCard[] | null>(null);
+  const [pickOpen, setPickOpen] = useState(false);
+  const [pickSel, setPickSel] = useState<number[]>([]);
+  const pickCloseTimer = useRef<number | null>(null);
+  const commitPickRef = useRef<(numbers: number[]) => void>(() => undefined);
+  // 📒 단골 기억: 지난 상담 기록 (이 기기, 계정별)
+  const [memory, setMemory] = useState<OrbMemoryEntry[]>([]);
   const [lit, setLit] = useState(false);
   const [orbBurst, setOrbBurst] = useState(0);
   const [heavenBurst, setHeavenBurst] = useState(false);
@@ -292,6 +309,11 @@ export function LucyOrbCounsel({
     setHeaven(null);
     setCharging(false);
     setOrbBurst(0);
+    pickedRef.current = false;
+    setPickedCards(null);
+    setPickOpen(false);
+    setPickSel([]);
+    setMemory(loadOrbMemory(account));
     const appear = window.setTimeout(() => setReady(true), window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1700);
     if (isLucyMasterBgmPlaying()) stopLucyMasterBgm();
     const bed = createOrbCounselBed();
@@ -307,6 +329,7 @@ export function LucyOrbCounsel({
       if (cautionTimer.current) window.clearTimeout(cautionTimer.current);
       if (holdTimer.current) window.clearTimeout(holdTimer.current);
       if (bokTimer.current) window.clearTimeout(bokTimer.current);
+      if (pickCloseTimer.current) window.clearTimeout(pickCloseTimer.current);
       heavenToken.current += 1;
       releasePrimedMicRef.current();
       if (heavenSpokeRef.current) { stopTTS(); heavenSpokeRef.current = false; }
@@ -490,11 +513,20 @@ export function LucyOrbCounsel({
     setPhase('live');
     setNotice('');
     setMicUnavailable(false);
-    const cards = drawLucyTarotCards(3).map((card, index) => `${index + 1}번 ${card.nameKo} ${card.orientationKo}`).join(', ');
+    // 타로 마스터는 카드를 미리 뽑지 않는다: 이번 상담용 카드 더미만 섞어 두고, 손님이 고르면 펼친다.
+    const usesCards = Boolean(next.cardPick);
+    deckRef.current = usesCards ? shuffleOrbDeck() : [];
+    pickedRef.current = false;
+    setPickedCards(null);
+    setPickSel([]);
+    setPickOpen(false);
+    const memoryBrief = buildOrbMemoryBrief(memory, next.id);
+    const notes = [usesCards ? ORB_CARD_PICK_GUIDE : '', memoryBrief].filter(Boolean).join('\n');
     const session = startGeminiLiveVoice({
       nickname,
       chart,
-      cards,
+      cards: usesCards ? ORB_CARD_PICK_CARDS : '',
+      notes,
       voice: next.voice,
       focus: next.focus,
       greet: next.greet,
@@ -503,6 +535,11 @@ export function LucyOrbCounsel({
       onUserText: (text) => {
         if (lucyBuf.current) take('루시', lucyBuf);
         userBuf.current = mergeTranscript(userBuf.current, text);
+        // 손님이 숫자 세 개를 말하면 그 자리의 카드를 펼친다.
+        if (usesCards && !pickedRef.current) {
+          const numbers = parseCardNumbers(userBuf.current);
+          if (numbers.length === 3) commitPickRef.current(numbers);
+        }
       },
       onLucyText: (text) => {
         if (userBuf.current) take('나', userBuf);
@@ -523,7 +560,9 @@ export function LucyOrbCounsel({
       const typed = draft.trim();
       const cue = typed
         ? `먼저 존댓말로 두 문장만 인사한 뒤, 이어서 이 말씀에 답하세요. 이 지시 문장은 읽지 마세요. 사용자의 말: ${typed}`
-        : '지금 막 도착하셨습니다. 사용자가 말씀하시기 전에 존댓말로 두 문장만 먼저 인사하세요. 이 지시 문장은 읽지 마세요.';
+        : memoryBrief
+          ? '다시 찾아오신 손님입니다. 사용자가 말씀하시기 전에 존댓말로 먼저 인사하고, 지난 상담 이야기를 한 문장으로 안부 삼아 물어보세요. 모두 세 문장을 넘기지 마세요. 이 지시 문장은 읽지 마세요.'
+          : '지금 막 도착하셨습니다. 사용자가 말씀하시기 전에 존댓말로 두 문장만 먼저 인사하세요. 이 지시 문장은 읽지 마세요.';
       session.sendText(cue);
       if (typed) {
         userBuf.current = typed;
@@ -634,10 +673,46 @@ export function LucyOrbCounsel({
   };
   pressHandlers.current = { begin: beginInputPress, end: endInputPress };
 
+  // 🃏 카드 펼치기: 고른 숫자 자리의 카드를 보여 주고, 마스터에게 알린다 (마스터는 이 알림을 읽지 않는다).
+  const commitPick = (numbers: number[]) => {
+    if (pickedRef.current || numbers.length < 3 || !deckRef.current.length) return;
+    pickedRef.current = true;
+    const cards = pickOrbCards(deckRef.current, numbers);
+    setPickedCards(cards);
+    setPickSel(numbers.slice(0, 3));
+    setPickOpen(true);
+    if (userBuf.current) take('나', userBuf);
+    userBuf.current = `🃏 카드 선택: ${cards.map(card => `${card.position} ${card.number}번 ${card.nameKo} ${card.orientationKo}`).join(', ')}`;
+    take('나', userBuf);
+    sessionRef.current?.sendText(orbCardPickMessage(cards));
+    if (pickCloseTimer.current) window.clearTimeout(pickCloseTimer.current);
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    pickCloseTimer.current = window.setTimeout(() => { pickCloseTimer.current = null; setPickOpen(false); }, reduced ? 1800 : 3600);
+  };
+  commitPickRef.current = commitPick;
+  const togglePick = (number: number) => {
+    if (pickedRef.current) return;
+    setPickSel(current => current.includes(number)
+      ? current.filter(value => value !== number)
+      : current.length >= 3 ? current : [...current, number]);
+  };
+
   const openReport = () => {
     if (!master || closedRef.current) return;
     if (userBuf.current) take('나', userBuf);
     if (lucyBuf.current) take('루시', lucyBuf);
+    // 📒 단골 기억: 손님이 한 말과 마지막 조언을 짧게 남겨, 다음 상담에서 안부를 묻게 한다.
+    const remembered = summarizeOrbSession(linesRef.current);
+    if (remembered) {
+      saveOrbMemory(account, {
+        at: Date.now(),
+        masterId: master.id,
+        masterName: master.name,
+        concern: remembered.concern,
+        advice: remembered.advice,
+        ...(pickedCards ? { cards: pickedCards.map(card => `${card.nameKo} ${card.orientationKo}`).join(', ') } : {}),
+      });
+    }
     sessionRef.current?.stop();
     sessionRef.current = null;
     setReport(reportFrom(master, nickname, linesRef.current));
@@ -811,12 +886,11 @@ export function LucyOrbCounsel({
 
   // 보고서 화면의 복채 줄은 빅뱅 버튼 위에 둔다: 버튼 위치를 재서 그만큼 띄운다.
   useLayoutEffect(() => {
-    if (phase !== 'report') return;
     const stage = stageRef.current;
     if (!stage) return;
     const measure = () => {
       const box = stage.getBoundingClientRect();
-      const dock = stage.querySelector('.lucy-orb-report-dock')?.getBoundingClientRect();
+      const dock = stage.querySelector('.lucy-orb-report-dock, .lucy-orb-dock')?.getBoundingClientRect();
       let clear = dock ? box.bottom - dock.top + 10 : 72;
       document.querySelectorAll<HTMLElement>('[data-bigbang="true"]').forEach(el => {
         const r = el.getBoundingClientRect();
@@ -830,6 +904,13 @@ export function LucyOrbCounsel({
         const top = parseFloat(getComputedStyle(stage).paddingTop) || 0;
         const room = box.height - clear - panel.offsetHeight - top - 12;
         stage.style.setProperty('--orb-report-room', `${Math.max(120, Math.round(room))}px`);
+      }
+      // 상담 중: 글·버튼 영역이 빅뱅 버튼 위에서 끝나게 하고, 수정구슬은 남은 공간에 맞춘다.
+      const copy = stage.querySelector<HTMLElement>('.lucy-orb-copy');
+      if (copy && phase === 'live') {
+        const top = parseFloat(getComputedStyle(stage).paddingTop) || 0;
+        const room = box.height - clear - top - copy.scrollHeight - 16;
+        stage.style.setProperty('--orb-live-room', `${Math.max(110, Math.round(room))}px`);
       }
       // 부적 창: 그림 + 이름 + 버튼(약 130px)이 빅뱅 버튼 위 공간에 들어가게 그림 높이를 정한다.
       const header = 56 + 14;
@@ -882,6 +963,49 @@ export function LucyOrbCounsel({
                 {heaven.status === 'ready' && <button type="button" onClick={() => speakHeaven(heaven.text)}>다시 듣기</button>}
                 <button type="button" onClick={closeHeaven}>닫기</button>
               </div>
+            </div>
+          </div>
+        )}
+        {phase === 'live' && master?.cardPick && pickOpen && (
+          <div className="lucy-cardpick-layer" role="dialog" aria-label="타로 카드 고르기">
+            <div className="lucy-cardpick">
+              {!pickedCards ? (
+                <>
+                  <strong>마음속 질문을 떠올리며 카드 세 장을 골라 주세요</strong>
+                  <p>숫자 세 개(1~78)를 말씀하셔도 돼요 · {pickSel.length}/3</p>
+                  <div className="lucy-cardpick-grid">
+                    {Array.from({ length: ORB_DECK_SIZE }, (_, index) => index + 1).map(number => {
+                      const order = pickSel.indexOf(number);
+                      return (
+                        <button key={number} type="button" className={order >= 0 ? 'is-on' : ''} aria-pressed={order >= 0} aria-label={`${number}번 카드`} onClick={() => togglePick(number)}>
+                          <span>{number}</span>
+                          {order >= 0 && <em>{order + 1}</em>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="lucy-cardpick-actions">
+                    <button type="button" className="is-primary" disabled={pickSel.length < 3} onClick={() => commitPick(pickSel)}>이 세 장 펼치기</button>
+                    <button type="button" onClick={() => setPickOpen(false)}>나중에</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <strong>펼쳐진 카드</strong>
+                  <div className="lucy-cardpick-spread">
+                    {pickedCards.map((card, index) => (
+                      <figure key={card.number} style={{ ['--i' as string]: index }}>
+                        <div className="lucy-cardpick-flip">
+                          <span className="lucy-cardpick-back">{card.number}</span>
+                          <img src={card.imageUrl} alt={`${card.nameKo} ${card.orientationKo}`} className={card.reversed ? 'is-reversed' : ''} />
+                        </div>
+                        <figcaption><b>{card.position}</b>{card.nameKo}<small>{card.orientationKo} · {card.number}번</small></figcaption>
+                      </figure>
+                    ))}
+                  </div>
+                  <div className="lucy-cardpick-actions"><button type="button" onClick={() => setPickOpen(false)}>닫기</button></div>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -1086,18 +1210,31 @@ export function LucyOrbCounsel({
               </button>
             </div>
           )}
+          {phase === 'pick' && memory[0] && (
+            <p className="lucy-orb-regular">📒 다시 오셨네요 · {latestOrbMemoryLine(memory)}</p>
+          )}
           {phase === 'pick' && (
             <div className="lucy-orb-masters">
               {ORB_MASTERS.map(item => (
                 <button key={item.id} type="button" disabled={micPermissionBusy || rolling} onClick={() => begin(item)}>
-                  <strong>{item.name}</strong>
-                  <span>{item.tone} · {item.topic}</span>
+                  <span className="lucy-orb-master-head">
+                    <strong>{item.name} 마스터</strong>
+                    {memory[0]?.masterId === item.id && <em>최근 상담</em>}
+                  </span>
+                  <span className="lucy-orb-master-tags">{item.specialty.map(tag => <i key={tag}>{tag}</i>)}</span>
+                  <span className="lucy-orb-master-intro">{item.intro}</span>
+                  <span className="lucy-orb-master-style">🎙 {item.style} · 이럴 때: {item.bestFor}</span>
                 </button>
               ))}
             </div>
           )}
           {phase === 'live' && master && (
             <div className="lucy-orb-keywords">
+              {master.cardPick && (
+                <button type="button" className={`lucy-orb-cardchip ${pickedCards ? '' : 'is-waiting'}`} onClick={() => setPickOpen(true)}>
+                  {pickedCards ? '🃏 내 카드 보기' : '🃏 카드 세 장 고르기'}
+                </button>
+              )}
               {master.prompts.map(prompt => (
                 <button key={prompt} type="button" onClick={() => ask(prompt)}>{prompt}</button>
               ))}

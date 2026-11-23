@@ -2,7 +2,7 @@ function clip(value: string, max: number): string {
   return value.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
 }
 
-export function buildLucyLiveInstruction(nickname: string, chart = '', cards = '', focus = '', greet = ''): string {
+export function buildLucyLiveInstruction(nickname: string, chart = '', cards = '', focus = '', greet = '', notes = ''): string {
   const name = nickname.replace(/[^\p{L}\p{N} _.-]/gu, '').trim().slice(0, 24);
   // 이름을 모르면 '친구님' 같은 어색한 호칭 대신 아예 부르지 않는다.
   const who = name
@@ -12,10 +12,13 @@ export function buildLucyLiveInstruction(nickname: string, chart = '', cards = '
   const cardText = clip(cards, 400) || '뽑힌 카드가 없습니다. 타로를 뽑았다고 말하지 마세요.';
   const focusText = clip(focus, 240) || '사주와 타로를 짧게 상담해.';
   const greetText = clip(greet, 180);
+  // 상담 진행 방식(카드 고르기)과 지난 상담 기록 같은 추가 안내. 줄바꿈은 살린다.
+  const notesText = String(notes || '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, ' ').trim().slice(0, 1400);
   return `${who}
 사용자는 한국어로 말합니다. 사용자의 목소리는 영어처럼 들려도 한국어 발화로 알아듣고, 영어로 답하지 마세요.
 이번 상담의 주제는 이것뿐입니다. ${focusText}
-${greetText ? `상담이 열리면 사용자가 말씀하시기 전에 먼저 인사하세요. 인사는 두 문장을 넘기지 마세요. 말투는 이렇습니다. ${greetText}` : ''}
+${notesText ? `${notesText}
+` : ''}${greetText ? `상담이 열리면 사용자가 말씀하시기 전에 먼저 인사하세요. 인사는 두 문장을 넘기지 마세요. 말투는 이렇습니다. ${greetText}` : ''}
 한 번에 네 문장에서 여섯 문장 정도 말씀으로 풀고, 목록이나 기호는 말하지 마세요.
 없는 사주를 만들지 마세요. 미래, 돈, 건강을 확정해서 말하지 마세요.
 타로를 말할 때는 아래 세 장만 쓰세요.
