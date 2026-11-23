@@ -475,6 +475,6 @@ ${housesSummary}
 - 개운 처방:
   * 길방위: ${rem?.luckyDirection} · 행운 색상: ${rem?.luckyColors.join(', ')} · 수호 보석: ${rem?.luckyGemstone}
   * 실천법: ${rem?.spiritualPractice}${sm ? `\n- 교차 매트릭스 [핵심 긴장: ${sm.dominantTension} | 조율 상태: ${sm.alignmentState}]\n  * 통합 실천: ${sm.integratedAction}` : ''}${result.ritualAction ? `\n- 실천 의례: ${result.ritualAction}` : ''}${result.reflectionFocus ? `\n- 성찰 초점: ${result.reflectionFocus}` : ''}${result.reflectiveQuestion ? `\n- 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}` : ''}${result.interpretiveBoundary ? `\n- 해석 경계: ${result.interpretiveBoundary}` : ''}
-- [AI 해석 절대 지침]: 본 데이터는 미얀마 7궁 마하보테 정통 수리로 계산된 불변의 팩트입니다. 본명궁 및 현재 나이 다샤 하우스의 길흉을 왜곡하지 말고 상담에 정확히 반영하십시오.
+- [AI 해석 지침]: 본 데이터는 구현된 마하보테 산법의 계산 참고값이며, 길흉이나 미래를 보장하는 검증된 사실은 아닙니다. 본명궁과 현재 나이 다샤 표시는 제공된 결과에 맞추되 상징적 관점으로 안내하십시오.
 `.trim();
 }

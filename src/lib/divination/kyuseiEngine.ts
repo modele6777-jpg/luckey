@@ -811,7 +811,7 @@ export function formatKyuseiPrompt(result: KyuseiResult): string {
     .map((u) => `   - ${u.scenario}: ${u.direction} — ${u.advice}`)
     .join('\n');
 
-  return `[🧭 구성학(九星氣學) 9궁 명반·길흉방위 실측 데이터 (Kyusei Nine-Palaces Core)]
+  return `[🧭 구성학(九星氣學) 9궁 명반·길흉방위 계산 참고값 (Kyusei Nine-Palaces Core)]
 ======================================================================
 엔진 버전: ${result.engineVersion} | 기준일: ${result.targetDate} (${result.targetYearGanZhi}년) | 산출 시각: ${result.calculatedAtKst}
 산법: ${result.method}
@@ -842,7 +842,7 @@ ${result.directionalScores.map(d => `   • [${d.direction}] (${d.level}) → �
    * 연간 테마 가이드: ${result.honmyoseiSynergy?.annualThemeGuidance}` : ''}${result.kyuseiSynthesisMatrix ? `\n   * 교차 매트릭스 [핵심 긴장: ${result.kyuseiSynthesisMatrix.dominantTension} | 조율 상태: ${result.kyuseiSynthesisMatrix.alignmentState}]\n   * 통합 실천: ${result.kyuseiSynthesisMatrix.integratedAction}` : ''}${result.ritualAction ? `\n   * 실천 의례: ${result.ritualAction}` : ''}${result.reflectionFocus ? `\n   * 성찰 초점: ${result.reflectionFocus}` : ''}${result.reflectiveQuestion ? `\n   * 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}` : ''}${result.interpretiveBoundary ? `\n   * 해석 경계: ${result.interpretiveBoundary}` : ''}
 ======================================================================
 [★ 루시 구성학 상담 지침]:
-- 위 3반(연반·월반·일반) 포국과 흉살 방위는 순수 수리로 직접 비성한 확정 데이터다. 다른 포국을 지어내지 마십시오.
+- 위 3반(연반·월반·일반) 포국과 흉살 방위는 구현된 산법의 계산 참고값이며, 길흉이나 이동 결과를 보장하는 실측 사실이 아니다. 다른 포국을 지어내지 마십시오.
 - 사용자가 '이사/여행/출장 가는데 어느 방향이 좋아?', '오늘 어느 방위로 움직일까?'라고 물으면 최길방위 [${result.topFortuneDirection?.direction ?? '해당 없음'}]를 1순위로, 흉살 방위는 구체적 행동 지침(공사·도열 피하기, 움직임 타이밍 조정)으로 안내하십시오.
 - 흉방위는 두려움이 아니라 '그 방위의 큰 움직임을 피하고 길방위로 행동을 옮기는' 실용적 개운 전략으로 다정하게 전달하십시오.`;
 }

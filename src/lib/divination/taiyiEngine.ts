@@ -519,6 +519,6 @@ export function formatTaiyiPrompt(result: TaiyiResult): string {
   * 핵심 긴장: ${result.taiyiSynthesisMatrix.dominantTension}
   * 조율 상태: ${result.taiyiSynthesisMatrix.alignmentState}
   * 통합 실천: ${result.taiyiSynthesisMatrix.integratedAction}` : ''}${result.ritualAction ? `\n- 실천 의례: ${result.ritualAction}` : ''}${result.reflectionFocus ? `\n- 성찰 초점: ${result.reflectionFocus}` : ''}${result.reflectiveQuestion ? `\n- 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}` : ''}${result.interpretiveBoundary ? `\n- 해석 경계: ${result.interpretiveBoundary}` : ''}
-- [AI 해석 절대 지침]: 본 리포트는 100% 전통 역법 수리로 계산된 실측 데이터입니다. 주산/객산 수리 및 승부 판정을 임의 변경하지 말고, 거시적 타이밍과 시대 흐름 조언에 충실히 반영하십시오.
+- [AI 해석 지침]: 본 리포트는 구현된 전통 역법 규칙에 따른 계산 참고값이며 실측 데이터나 확정적 승패 예측이 아닙니다. 주산·객산 및 판정 표시는 계산 결과에 맞추되, 시대 흐름·승부·투자 결과를 보장하는 사실처럼 말하지 마십시오.
 `.trim();
 }

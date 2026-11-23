@@ -771,7 +771,7 @@ export function formatTojeongPrompt(result: TojeongResult): string {
     ? `\n- 토정비결 교차 매트릭스: 핵심 긴장(${result.tojeongSynthesisMatrix.dominantTension}) · 조율 상태(${result.tojeongSynthesisMatrix.alignmentState}) · 통합 실천(${result.tojeongSynthesisMatrix.integratedAction})`
     : '';
 
-  return `[🔮 토정비결(土亭秘訣) ${result.targetYear}년 ${result.hexagramCode}괘 실측 데이터 (Tojeong 144-Hexagram Core)]
+  return `[🔮 토정비결(土亭秘訣) ${result.targetYear}년 ${result.hexagramCode}괘 산출 참고값 (Tojeong 144-Hexagram Core)]
 ======================================================================
 엔진 버전: ${result.engineVersion} | 기준 시점: ${result.calculatedAtKst} | 대상 연도: ${result.targetYear}년 (${result.targetYearGanZhi}년)
 작괘 근거: 세는나이 ${result.ageKorean}세 + 태세수 ${result.taeseCount} → 상괘 ${result.upperGua} | ${result.birthMonthGanZhi}월(${result.birthMonthLength === 30 ? '큰달 30일' : `작은달 ${result.birthMonthLength}일`}·월건수 ${result.wolgeonCount}) → 중괘 ${result.middleGua} | ${result.birthdayGanZhi}일(일진수 ${result.iljinCount}) → 하괘 ${result.lowerGua}
