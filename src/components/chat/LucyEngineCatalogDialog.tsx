@@ -5,6 +5,8 @@ import './chat-library-layout.css';
 import React, { useMemo } from 'react';
 import { Search, Sparkles, X } from 'lucide-react';
 import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
+import { KnowledgeDictionaryView } from './KnowledgeDictionaryView';
+import { KNOWLEDGE_DICTIONARY_COUNT } from '@/lib/divination/knowledge/catalog';
 import {
   ENGINE_CATALOG_COUNTS,
   type EngineCatalogCategoryFilter,
@@ -39,6 +41,8 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey }: { isOpen: boolea
   const [filter, setFilter] = useLibrarySessionState<CatalogFilter>(`${sessionKey}:filter`, 'all');
   const [themeFilter, setThemeFilter] = useLibrarySessionState<CatalogThemeFilter>(`${sessionKey}:theme`, 'all');
   const [query, setQuery] = useLibrarySessionState<string>(`${sessionKey}:query`, '');
+  // 📖 해석 사전 보기 (엔진 목록 대신 카드 목록)
+  const [showDictionary, setShowDictionary] = useLibrarySessionState<boolean>(`${sessionKey}:dictionary`, false);
 
   const catalog = useMemo(() => selectCatalogEngines({
     category: filter,
@@ -102,13 +106,22 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey }: { isOpen: boolea
                   type="search"
                   value={query}
                   onChange={event => { scroll.reset(); setQuery(event.target.value); }}
-                  placeholder="이름이나 주제 검색"
-                  aria-label="엔진과 관점 검색"
+                  placeholder={showDictionary ? '괘·별·문 이름이나 뜻으로 검색' : '이름이나 주제 검색'}
+                  aria-label={showDictionary ? '해석 사전 검색' : '엔진과 관점 검색'}
                   className={`w-full rounded-2xl bg-transparent py-2.5 pl-10 pr-3 text-sm outline-none ${isLight ? 'placeholder:text-slate-400 focus:ring-2 focus:ring-amber-400/30' : 'placeholder:text-slate-500 focus:ring-2 focus:ring-amber-400/20'}`}
                 />
               </div>
               <nav aria-label="엔진 목록 분류" className="chat-library-filters flex flex-wrap gap-2 pb-0.5">
-                {FILTERS.map(item => {
+                <button
+                  type="button"
+                  onClick={() => { scroll.reset(); setShowDictionary(!showDictionary); }}
+                  aria-pressed={showDictionary}
+                  data-testid="knowledge-dictionary-toggle"
+                  className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${showDictionary ? 'bg-amber-400 text-slate-950' : inactivePill}`}
+                >
+                  📖 해석 사전 {KNOWLEDGE_DICTIONARY_COUNT}
+                </button>
+                {!showDictionary && FILTERS.map(item => {
                   const count = catalog.counts.categories[item.id];
                   const selected = filter === item.id;
                   return (
@@ -123,9 +136,9 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey }: { isOpen: boolea
                     </button>
                   );
                 })}
-                <span className={`ml-auto shrink-0 self-center text-[11px] ${muted}`}>{filteredEngines.length}개 표시</span>
+                {!showDictionary && <span className={`ml-auto shrink-0 self-center text-[11px] ${muted}`}>{filteredEngines.length}개 표시</span>}
               </nav>
-              <nav aria-label="Lucy 7개 채널 테마" className="chat-library-filters flex flex-wrap gap-2 pb-0.5">
+              {!showDictionary && <nav aria-label="Lucy 7개 채널 테마" className="chat-library-filters flex flex-wrap gap-2 pb-0.5">
                 <button
                   type="button"
                   onClick={() => { scroll.reset(); setThemeFilter('all'); }}
@@ -148,11 +161,13 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey }: { isOpen: boolea
                     </button>
                   );
                 })}
-              </nav>
+              </nav>}
             </div>
 
             <div className="px-4 pb-4 sm:px-6">
-              {filteredEngines.length > 0 && renderedCount === 0 ? (
+              {showDictionary ? (
+                <KnowledgeDictionaryView query={query} isLight={isLight} />
+              ) : filteredEngines.length > 0 && renderedCount === 0 ? (
                 <p role="status" className={`px-4 py-8 text-sm ${muted}`}>엔진 목록을 준비하고 있어요…</p>
               ) : groupedEngines.length ? (
                 <div className="space-y-5">
