@@ -577,13 +577,33 @@ export function applyKeyboardLayoutViewport(box: ViewportBox, doc: Document): vo
   }
 }
 
+/**
+ * Whether a text field has focus, including inside a same-origin iframe (the Key channel).
+ * With focus in an iframe the parent only sees the <iframe> as activeElement; treating that as
+ * "no input" made the parent fight iOS's caret scrolling and the page crept upward while typing.
+ */
+export function isEditableFocused(doc: Document = document): boolean {
+  let active = doc.activeElement as HTMLElement | null;
+  for (let depth = 0; active && active.tagName === 'IFRAME' && depth < 3; depth += 1) {
+    try {
+      active = ((active as HTMLIFrameElement).contentDocument?.activeElement as HTMLElement | null) ?? null;
+    } catch {
+      return false;
+    }
+  }
+  if (!active) return false;
+  if (active.tagName === 'TEXTAREA' || active.isContentEditable) return true;
+  if (active.tagName !== 'INPUT') return false;
+  const type = ((active as HTMLInputElement).type || 'text').toLowerCase();
+  return !['range', 'checkbox', 'radio', 'button', 'submit', 'reset', 'color', 'file', 'image', 'hidden'].includes(type);
+}
+
 export function syncVisualViewportBox(win: Window = window): ViewportBox | null {
   if (typeof document === 'undefined') return null;
   if (document.visibilityState === 'hidden') return null;
   const snapshot = readViewportSnapshot(win);
   document.documentElement.toggleAttribute('data-ios-standalone-flow', Boolean(snapshot.iosStandalone));
-  const active = document.activeElement as HTMLElement | null;
-  const inputActive = active?.tagName === 'INPUT' || active?.tagName === 'TEXTAREA' || Boolean(active?.isContentEditable);
+  const inputActive = isEditableFocused(document);
   // Every event path uses the same owner for keyboard and normal geometry.
   if (isKeyboardViewportOpen(snapshot, inputActive)) {
     const box: ViewportBox = {

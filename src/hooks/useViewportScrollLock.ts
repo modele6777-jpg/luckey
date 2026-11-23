@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { syncVisualViewportBox } from '@/lib/visualViewportBox';
+import { isEditableFocused, syncVisualViewportBox } from '@/lib/visualViewportBox';
 
 /**
  * 📱 모바일 사파리/크롬/PWA 뷰포트 고정 및 하단 여백 방지 엔진:
@@ -52,13 +52,8 @@ export function useViewportScrollLock() {
       }
     };
 
-    const isInputActive = (): boolean => {
-      if (typeof document === 'undefined') return false;
-      const active = document.activeElement;
-      if (!active) return false;
-      const tag = active.tagName;
-      return tag === 'INPUT' || tag === 'TEXTAREA' || (active as HTMLElement).isContentEditable;
-    };
+    // iframe(키 채널) 안의 입력창도 '입력 중'으로 본다.
+    const isInputActive = (): boolean => typeof document !== 'undefined' && isEditableFocused(document);
 
     const updateAppViewportHeight = () => {
       if (typeof window === 'undefined' || typeof document === 'undefined') return;
@@ -143,6 +138,11 @@ export function useViewportScrollLock() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     document.addEventListener('focusin', handleFocusIn, { passive: true });
     document.addEventListener('focusout', handleFocusOut, { passive: true });
+    // iframe 안 입력창에 포커스가 가면 부모 문서에는 focusin 대신 window blur만 온다: 키보드 높이를 다시 잰다.
+    const handleWindowBlur = () => {
+      window.setTimeout(() => { if (isInputActive()) scheduleSync([0, 50, 100, 200, 350, 500]); }, 0);
+    };
+    window.addEventListener('blur', handleWindowBlur);
 
     if (window.screen?.orientation) {
       window.screen.orientation.addEventListener('change', handleOrientationChange);
@@ -165,6 +165,7 @@ export function useViewportScrollLock() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       document.removeEventListener('focusin', handleFocusIn);
       document.removeEventListener('focusout', handleFocusOut);
+      window.removeEventListener('blur', handleWindowBlur);
       if (window.screen?.orientation) {
         window.screen.orientation.removeEventListener('change', handleOrientationChange);
       }
