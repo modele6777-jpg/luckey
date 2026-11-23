@@ -3198,8 +3198,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     if (isAutoScrollingRef.current) {
       // WebKit can restore an older offset before the programmatic scroll
       // settles. A manual reading gesture releases this temporary pin.
-      if (!isUserScrolledUpRef.current && lucyScrollPinHeld() && isLucyScrollPinned() && distanceFromBottom > 80) {
-        followLatestLayoutRef.current();
+      if (!isUserScrolledUpRef.current && lucyScrollPinHeld() && isLucyScrollPinned()) {
+        if (distanceFromBottom > 80) {
+          followLatestLayoutRef.current();
+        } else {
+          setShowReturnToRecentConversation(false);
+        }
       }
       return;
     }

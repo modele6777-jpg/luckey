@@ -1422,13 +1422,9 @@ test('Lucy smoothly reaches the exact top of a long conversation and recent conv
     if (!messages) throw new Error('Lucy message scroller is missing');
     const state = window as Window & { __lucyTopScrollTrace?: number[] };
     state.__lucyTopScrollTrace = [];
-    const sampleUntil = performance.now() + 1000;
-    const sample = () => {
+    messages.addEventListener('scroll', () => {
       state.__lucyTopScrollTrace?.push(messages.scrollTop);
-      if (performance.now() >= sampleUntil) window.clearInterval(sampleTimer);
-    };
-    const sampleTimer = window.setInterval(sample, 16);
-    sample();
+    }, { passive: true });
   });
   await page.touchscreen.tap(topTap.x, topTap.y);
   await expect.poll(() => page.evaluate((start) =>
