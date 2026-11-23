@@ -3,15 +3,25 @@ import type { UserProfile } from '../sharedState';
 export interface KetYeniseiResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: string;
   riverStarSign: string;
   companionSign: string;
+  taigaCycleAxis: string;
   yeniseiInsight: string;
   taigaTone: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
 }
+
+const TAIGA_CYCLE_AXES = [
+  '예니세이 대하 흐름 · 큰 방향 믿고 조급함 내려놓기',
+  '일라임 별빛 흔적 · 발앞의 확실한 한 걸음 짚기',
+  '일룸 계절 호흡 · 지금 내 체력과 계절 맞추기',
+  '자작나무 북 박자 · 흩어진 생각 일정하게 가라앉히기',
+] as const;
 
 const SIGNS = [
   {
@@ -81,17 +91,25 @@ export function calculateKetYeniseiTaigaStars(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (SIGNS.length - 1));
   const picked = SIGNS[idx];
   const companion = SIGNS[(idx + companionOffset) % SIGNS.length];
+  const taigaCycleAxis = TAIGA_CYCLE_AXES[stableHash(`${seed}|axis`) % TAIGA_CYCLE_AXES.length];
+  const trimmedQ = (params.question ?? '').trim();
+  const questionTopic = trimmedQ
+    ? trimmedQ.slice(0, 36)
+    : '큰 물길의 방향과 지금 내 계절 살피기';
 
   return {
-    engineVersion: 'LUCKEY-KET-YENISEI-v2.2.0',
+    engineVersion: 'LUCKEY-KET-YENISEI-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     riverStarSign: picked.sign,
     companionSign: companion.sign,
+    taigaCycleAxis,
     yeniseiInsight: `${picked.insight} (동반 징표: ${companion.sign})`,
     taigaTone: picked.tone,
-    reflectionFocus: `예니세이·케트 타이가 지혜의 '${picked.sign}'와 동반 징표 '${companion.sign}'처럼, 오늘 당장 모든 답을 재촉하기보다 큰 물길의 방향과 지금 내 계절을 차분히 살피세요.`,
+    reflectionFocus: `질문 맥락('${questionTopic}')에서 예니세이·케트 타이가 지혜의 '${picked.sign}'와 타이가 순환 축('${taigaCycleAxis}')을 함께 살피며, 오늘 당장 모든 답을 재촉하기보다 큰 물길의 방향과 지금 내 계절을 차분히 살피세요.`,
     ritualAction: picked.ritual,
     reflectiveQuestion: picked.question,
+    shadowWarning: '긴 물길과 계절의 순환을 기다린다는 이유로 오늘 내 발앞에서 당장 치워야 할 작은 걸림돌까지 방치하지 않도록 살피세요.',
     interpretiveBoundary: '시베리아 예니세이 유역 케트(Ket) 전통의 타이가 별빛·강물 순환 지혜를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -100,12 +118,15 @@ export function formatKetYeniseiPrompt(res: KetYeniseiResult): string {
   return [
     `[예니세이 케트·타이가 별하늘 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic}`,
     `- 북방 징표: ${res.riverStarSign} (${res.taigaTone})`,
     `- 동반 징표: ${res.companionSign}`,
+    `- 타이가 순환 축: ${res.taigaCycleAxis}`,
     `- 중심 통찰: ${res.yeniseiInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

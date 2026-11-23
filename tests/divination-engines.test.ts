@@ -14496,14 +14496,15 @@ test('Champa My Son Brick Sanctuary engine: motif, +09:00 KST, and interpretive 
 
 test('Ket Yenisei Taiga Stars engine: sign, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKetYeniseiTaigaStars({ profile, now: new Date('2026-11-20T08:58:00Z'), question: '큰 물길의 방향과 지금 내 계절을 살피고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KET-YENISEI-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-KET-YENISEI-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSign !== rep.riverStarSign);
+  assert.ok(rep.questionTopic.length > 0 && rep.taigaCycleAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKetYeniseiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('예니세이') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSign));
+  assert.ok(prompt.includes('예니세이') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSign) && prompt.includes(rep.taigaCycleAxis));
 });
 
 test('Chachapoya Cloud Forest Kuelap engine: citadel, +09:00 KST, and interpretive boundary', () => {
@@ -14914,14 +14915,15 @@ test('Maramures Wood Gate Calm engine: motif, +09:00 KST, and interpretive bound
 
 test('Luang Prabang Mekong Dawn engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateLuangPrabangMekongDawn({ profile, now: new Date('2026-11-20T20:09:00Z'), question: '계절에 맞게 마음을 내려놓고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-LAO-MEKONG-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-LAO-MEKONG-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.mekongMotif);
+  assert.ok(rep.questionTopic.length > 0 && rep.mekongDawnAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatLuangPrabangDawnPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('루앙프라방') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('루앙프라방') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.mekongDawnAxis));
 });
 
 test('Mossi Earth Mural Harmony engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15534,14 +15536,15 @@ test('Batammariba Takienta engine: tower, +09:00 KST, and interpretive boundary'
 
 test('Kuna Mola Stitch engine: layer, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKunaMolaStitch({ profile, now: new Date('2026-11-20T22:45:00Z'), question: '불필요한 겹을 덜어내고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KUNA-MOLA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-KUNA-MOLA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionLayer !== rep.fabricLayer);
+  assert.ok(rep.questionTopic.length > 0 && rep.molaStitchAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKunaMolaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('쿠나·몰라') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLayer));
+  assert.ok(prompt.includes('쿠나·몰라') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLayer) && prompt.includes(rep.molaStitchAxis));
 });
 
 test('Venetian Lagoon Forcola engine: notch, +09:00 KST, and interpretive boundary', () => {

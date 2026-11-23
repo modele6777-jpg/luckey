@@ -9,14 +9,24 @@ export interface KunaMolaInput {
 export interface KunaMolaResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: string;
   fabricLayer: string;
   companionLayer: string;
+  molaStitchAxis: string;
   reverseStitch: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
 }
+
+const MOLA_STITCH_AXES = [
+  '역아플리케 덜어내기 · 겉겹 걷고 본질 색 드러내기',
+  '다층 원색 조화 · 서로 다른 역할 겹쳐 깊이 세우기',
+  '바닷물 미로 선 · 직선과 곡선 번갈아 흐름 잇기',
+  '안쪽 감침질 · 보이지 않는 시접 단정히 여미기',
+] as const;
 
 const LAYERS = [
   '윗천을 조심히 도려내어 아래의 밝은 색을 드러내는 역아플리케',
@@ -73,16 +83,24 @@ export function calculateKunaMolaStitch(input: KunaMolaInput): KunaMolaResult {
   const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (LAYERS.length - 1));
   const fabricLayer = LAYERS[layerIdx];
   const companionLayer = LAYERS[(layerIdx + companionOffset) % LAYERS.length];
+  const molaStitchAxis = MOLA_STITCH_AXES[hashSeed(`${seedText}|axis`) % MOLA_STITCH_AXES.length];
+  const trimmedQ = (input.question ?? '').trim();
+  const questionTopic = trimmedQ
+    ? trimmedQ.slice(0, 36)
+    : '불필요한 겹을 덜어내고 본질 드러내기';
 
   return {
-    engineVersion: 'LUCKEY-KUNA-MOLA-v2.2.0',
+    engineVersion: 'LUCKEY-KUNA-MOLA-v2.3.0',
     calculatedAtKst: toKstIso(input.now),
+    questionTopic,
     fabricLayer,
     companionLayer,
+    molaStitchAxis,
     reverseStitch: STITCHES[(seed >>> 3) % STITCHES.length],
-    reflectionFocus: `파나마 산블라스 제도 쿠나 족 여인들이 여러 겹의 천을 오려 내며 아래의 색을 드러내는 몰라(Mola) 직물처럼, 주 겹('${fabricLayer}')과 동반 겹('${companionLayer}')을 함께 짚어 덜어냄으로 본질을 드러내는 상징적 관점입니다.`,
+    reflectionFocus: `질문 맥락('${questionTopic}')에서 파나마 산블라스 제도 쿠나 족 여인들의 몰라(Mola) 직물처럼, 주 겹('${fabricLayer}')과 겹바느질 축('${molaStitchAxis}')을 함께 짚어 덜어냄으로 본질을 드러내는 상징적 관점입니다.`,
     ritualAction: ACTIONS[layerIdx],
     reflectiveQuestion: QUESTIONS[layerIdx],
+    shadowWarning: '불필요한 겹을 도려내는 데만 집중하다가 정작 전체 문양을 지탱하는 바닥 천의 온기와 맥락까지 잘라 내지 않도록 살피세요.',
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
 }
@@ -91,12 +109,15 @@ export function formatKunaMolaPrompt(res: KunaMolaResult): string {
   return [
     `[쿠나·몰라 겹 바느질 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
+    `질문 맥락: ${res.questionTopic}`,
     `천의 겹: ${res.fabricLayer}`,
     `동반 겹: ${res.companionLayer}`,
+    `겹바느질 축: ${res.molaStitchAxis}`,
     `역아플리케 결: ${res.reverseStitch}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
     `성찰 질문: ${res.reflectiveQuestion}`,
+    `과잉 경계: ${res.shadowWarning}`,
     `경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

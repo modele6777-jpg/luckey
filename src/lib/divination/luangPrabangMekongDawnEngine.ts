@@ -3,15 +3,25 @@ import type { UserProfile } from '../sharedState';
 export interface LuangPrabangDawnResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: string;
   mekongMotif: string;
   companionMotif: string;
+  mekongDawnAxis: string;
   luangPrabangInsight: string;
   dawnTone: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
 }
+
+const MEKONG_DAWN_AXES = [
+  '메콩 새벽 물안개 · 걷힐 때까지 기다리는 여유',
+  '침묵의 탁발 · 생색 없이 건네는 작은 친절',
+  '남칸·메콩 합류 · 일상과 목표의 자연스러운 연결',
+  '대나무 다리 계절 · 때가 지나면 가볍게 접어두기',
+] as const;
 
 const MOTIFS = [
   {
@@ -81,17 +91,25 @@ export function calculateLuangPrabangMekongDawn(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const mekongDawnAxis = MEKONG_DAWN_AXES[stableHash(`${seed}|axis`) % MEKONG_DAWN_AXES.length];
+  const trimmedQ = (params.question ?? '').trim();
+  const questionTopic = trimmedQ
+    ? trimmedQ.slice(0, 36)
+    : '계절에 맞춰 놓고 거두는 고요한 호흡';
 
   return {
-    engineVersion: 'LUCKEY-LAO-MEKONG-v2.2.0',
+    engineVersion: 'LUCKEY-LAO-MEKONG-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     mekongMotif: picked.motif,
     companionMotif: companion.motif,
+    mekongDawnAxis,
     luangPrabangInsight: `${picked.insight} (동반 모티프: ${companion.motif})`,
     dawnTone: picked.tone,
-    reflectionFocus: `루앙프라방 메콩 새벽의 '${picked.motif}'와 동반 모티프 '${companion.motif}'처럼, 안개 속에서 서두르기보다 계절에 맞춰 놓거나 거두는 고요한 호흡을 지켜 보세요.`,
+    reflectionFocus: `질문 맥락('${questionTopic}')에서 루앙프라방 메콩 새벽의 '${picked.motif}'와 메콩 새벽 축('${mekongDawnAxis}')을 함께 살피며, 안개 속에서 서두르기보다 계절에 맞춰 놓거나 거두는 고요한 호흡을 지켜 보세요.`,
     ritualAction: picked.ritual,
     reflectiveQuestion: picked.question,
+    shadowWarning: '안개가 걷히길 기다린다는 이유로 이미 드러난 위험 신호나 지금 건네야 할 솔직한 한마디까지 미루지 않도록 살피세요.',
     interpretiveBoundary: '라오스 루앙프라방의 메콩 새벽·탁발 나눔·대나무 다리 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
 }
@@ -100,12 +118,15 @@ export function formatLuangPrabangDawnPrompt(res: LuangPrabangDawnResult): strin
   return [
     `[루앙프라방·메콩 새벽 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic}`,
     `- 메콩 모티프: ${res.mekongMotif} (${res.dawnTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
+    `- 메콩 새벽 축: ${res.mekongDawnAxis}`,
     `- 중심 통찰: ${res.luangPrabangInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }
