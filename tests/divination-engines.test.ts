@@ -13804,14 +13804,15 @@ test('Tongan Kava Circle Tauhi Va engine: practice, +09:00 KST, and interpretive
 
 test('Dogon Amma Nommo Harmony engine: star phase, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateDogonAmmaNommoHarmony({ profile, now: new Date('2026-11-20T06:55:00Z'), question: '기다림과 대화의 균형을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-DOGON-AMMA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-DOGON-AMMA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPhase !== rep.starPhase);
+  assert.ok(rep.cosmicOrderAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatDogonAmmaNommoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('도곤') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPhase));
+  assert.ok(prompt.includes('도곤') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPhase) && prompt.includes('과잉 경계'));
 });
 
 test('Aymara Pachamama Amauta Wisdom engine: nayra lens, +09:00 KST, and interpretive boundary', () => {
@@ -14802,14 +14803,15 @@ test('Paracas Weave Textile Harmony engine: motif, +09:00 KST, and interpretive 
 
 test('Dayak Longhouse Hornbill Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateDayakLonghouseHornbillPoise({ profile, now: new Date('2026-11-20T19:45:00Z'), question: '혼자 버티던 긴장을 풀고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-DAYAK-HORNBILL-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-DAYAK-HORNBILL-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.dayakMotif);
+  assert.ok(rep.canopyRiverAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatDayakHornbillPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('다약') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('다약') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
 });
 
 test('Carthaginian Tanit Harbor Compass engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14839,14 +14841,15 @@ test('Gaya Iron Crown River Harmony engine: motif, +09:00 KST, and interpretive 
 
 test('Elamite Susa Water Choga engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateElamiteSusaWaterChoga({ profile, now: new Date('2026-11-20T19:55:00Z'), question: '단단한 일상 루틴을 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ELAMITE-SUSA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ELAMITE-SUSA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.susaMotif);
+  assert.ok(rep.chogaCanalAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatElamiteSusaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('수사') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('수사') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
 });
 
 test('Lycian Cliff Horizon Calm engine: motif, +09:00 KST, and interpretive boundary', () => {

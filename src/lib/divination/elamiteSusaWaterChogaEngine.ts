@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface ElamiteSusaResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '루틴·질서' | '분산·여유' | '꾸준·기록' | '기반 전반';
   susaMotif: string;
   companionMotif: string;
+  chogaCanalAxis: string;
   elamiteInsight: string;
   chogaTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const ELAMITE_SHADOWS = [
+  '루틴이라는 외벽을 세우느라 정작 예기치 못한 즐거운 변화와 유연성까지 막아 서지 마세요.',
+  '할 일을 여러 날로 나누어 흘려보내다 긴급한 마감의 물줄기까지 늦어지지 않도록 살피세요.',
+  '어제와 같은 결을 이어 가는 데만 집중해 이미 낡은 방식까지 그대로 반복하지 않도록 점검하세요.',
+  '부담을 곡선으로 분산하려다 내가 직접 책임지고 매듭지어야 할 핵심 과제까지 넘기지 마세요.',
+  '나만의 샘물에서 기운을 채우는 시간이 현실의 바쁜 과제에서 물러나는 도피가 되지 않게 하세요.',
+];
+
+function classifyElamiteTopic(q: string): ElamiteSusaResult['questionTopic'] {
+  if (/루틴|질서|벽돌|생활|규칙/.test(q)) return '루틴·질서';
+  if (/분산|여유|휴식|무게|부담|샘/.test(q)) return '분산·여유';
+  if (/꾸준|기록|매일|인장|일|직장/.test(q)) return '꾸준·기록';
+  return '기반 전반';
+}
+
 export function calculateElamiteSusaWaterChoga(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): ElamiteSusaResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyElamiteTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const chogaCanalAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = ELAMITE_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-ELAMITE-SUSA-v2.2.0',
+    engineVersion: 'LUCKEY-ELAMITE-SUSA-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     susaMotif: picked.motif,
     companionMotif: companion.motif,
+    chogaCanalAxis,
     elamiteInsight: picked.insight,
     chogaTone: picked.tone,
     reflectionFocus: `엘람 수사·초가 잔빌의 '${picked.motif}'과 동반 결 '${companion.motif}'을 함께 헤아리며, 부드러운 속마음을 지켜 주는 단단한 일상 루틴을 차분히 다져 보세요.`,
     ritualAction: picked.ritual,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '고대 엘람·수사의 초가 잔빌 지구라트와 수로 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatElamiteSusaPrompt(res: ElamiteSusaResult): string {
   return [
     `[엘람 수사·수로 정원 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 수로·벽돌 축: ${res.chogaCanalAxis}`,
     `- 수사 모티프: ${res.susaMotif} (${res.chogaTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.elamiteInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
