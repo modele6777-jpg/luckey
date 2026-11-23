@@ -1,3 +1,4 @@
+import { OrbMemorySettings } from './OrbMemorySettings';
 import { PageGuideButton } from '@/components/guide/PageGuide';
 import { getPageGuide } from '@/lib/pageGuides';
 import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
@@ -287,6 +288,7 @@ export function LucyOrbCounsel({
   const autoOpenedRef = useRef(false);
   // 📒 단골 기억: 지난 상담 기록 (이 기기, 계정별)
   const [memory, setMemory] = useState<OrbMemoryEntry[]>([]);
+  const refreshMemory = () => setMemory(loadOrbMemory(account));
   const [lit, setLit] = useState(false);
   const [orbBurst, setOrbBurst] = useState(0);
   const [heavenBurst, setHeavenBurst] = useState(false);
@@ -394,12 +396,14 @@ export function LucyOrbCounsel({
       window.clearTimeout(appear);
       if (flashTimer.current) window.clearTimeout(flashTimer.current);
       if (dieTimer.current) window.clearTimeout(dieTimer.current);
+      dieTimer.current = null;
       if (cautionTimer.current) window.clearTimeout(cautionTimer.current);
       if (holdTimer.current) window.clearTimeout(holdTimer.current);
       if (bokTimer.current) window.clearTimeout(bokTimer.current);
       if (pickCloseTimer.current) window.clearTimeout(pickCloseTimer.current);
       if (drawTimer.current) window.clearTimeout(drawTimer.current);
       stopAllTimers.current.forEach(timer => window.clearTimeout(timer));
+      stopAllTimers.current = [];
       heavenToken.current += 1;
       releasePrimedMicRef.current();
       if (heavenSpokeRef.current) { stopTTS(); heavenSpokeRef.current = false; }
@@ -409,7 +413,7 @@ export function LucyOrbCounsel({
       sessionRef.current?.stop();
       sessionRef.current = null;
     };
-  }, [open]);
+  }, [open, account]);
 
   // Leaving the Orb page (route change, another pane's navigation, hidden tab) silences the bed at once,
   // even if the page stays mounted for a moment during the transition.
@@ -607,7 +611,7 @@ export function LucyOrbCounsel({
     stopSeenRef.current = 0;
     stopBufRef.current = '';
     }
-    const memoryBrief = buildOrbMemoryBrief(memory, next.id);
+    const memoryBrief = buildOrbMemoryBrief(loadOrbMemory(account), next.id);
     const notes = [memoryBrief, recap].filter(Boolean).join('\n');
     const executor = resume && executorRef.current ? executorRef.current : createOrbToolExecutor({
       profile,
@@ -970,6 +974,7 @@ export function LucyOrbCounsel({
         ...(pickedCards ? { cards: pickedCards.map(card => `${card.nameKo} ${card.orientationKo}`).join(', ') } : {}),
       });
     }
+    refreshMemory();
     sessionRef.current?.stop();
     sessionRef.current = null;
     setReport(reportFrom(master, nickname, linesRef.current));
@@ -1389,6 +1394,7 @@ export function LucyOrbCounsel({
             >
               {bedOn ? '배경음 켜짐' : '배경음 꺼짐'}
             </button>
+            <OrbMemorySettings account={account} onChange={refreshMemory} />
             <PageGuideButton guide={getPageGuide('orb')} />
           </div>
         </header>

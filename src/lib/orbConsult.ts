@@ -10,6 +10,7 @@
 import { TAROT_DECK, getTarotCardImageUrl, type TarotCard } from '@/data/tarotData';
 import { safeLocalStorage } from '@/utils/safeStorage';
 import { randomIndex } from './orb/orbDice';
+import { deleteLucyConsultMemory, readLucyConsultMemory, saveLucyConsultMemory, setLucyConsultMemoryEnabled } from './lucyConsultMemory';
 
 export const ORB_DECK_SIZE = 78;
 export const ORB_CARD_POSITIONS = ['과거', '지금', '앞으로'] as const;
@@ -128,14 +129,13 @@ export interface OrbMemoryEntry {
 }
 
 const MEMORY_PREFIX = 'orb_consult_memory_v1:';
-const MEMORY_MAX = 8;
 const MEMORY_DAYS = 90;
 
 function memoryKey(account: string): string {
   return `${MEMORY_PREFIX}${account || 'device'}`;
 }
 
-export function loadOrbMemory(account: string, now = Date.now()): OrbMemoryEntry[] {
+function loadLegacyOrbMemory(account: string, now = Date.now()): OrbMemoryEntry[] {
   try {
     const parsed = JSON.parse(safeLocalStorage.getItem(memoryKey(account)) || '[]');
     if (!Array.isArray(parsed)) return [];
@@ -169,11 +169,35 @@ export function summarizeOrbSession(lines: { who: string; text: string }[]): { c
   };
 }
 
-export function saveOrbMemory(account: string, entry: OrbMemoryEntry): void {
-  try {
-    const list = [entry, ...loadOrbMemory(account).filter(item => item.at !== entry.at)].slice(0, MEMORY_MAX);
-    safeLocalStorage.setItem(memoryKey(account), JSON.stringify(list));
-  } catch { /* storage unavailable */ }
+export function orbMemorySettings(account: string, now = Date.now()) {
+  const state = readLucyConsultMemory(account, 'voice', now);
+  const entries = state.entries.flatMap(entry => typeof entry.masterId === 'string' && typeof entry.masterName === 'string'
+    ? [{ ...entry, masterId: entry.masterId, masterName: entry.masterName }]
+    : []);
+  return { enabled: state.enabled, entries, legacyCount: loadLegacyOrbMemory(account, now).length };
+}
+
+export function loadOrbMemory(account: string, now = Date.now()): OrbMemoryEntry[] {
+  const { enabled, entries } = orbMemorySettings(account, now);
+  return enabled ? entries : [];
+}
+
+export function setOrbMemoryEnabled(account: string, enabled: boolean, now = Date.now()): void {
+  setLucyConsultMemoryEnabled(account, 'voice', enabled, now);
+  if (!enabled) return;
+  for (const entry of loadLegacyOrbMemory(account, now)) {
+    saveLucyConsultMemory(account, { ...entry, id: `legacy-${entry.at}`, source: 'voice' }, now);
+  }
+  safeLocalStorage.removeItem(memoryKey(account));
+}
+
+export function deleteOrbMemory(account: string, id?: string): void {
+  deleteLucyConsultMemory(account, 'voice', id);
+  if (id === undefined) safeLocalStorage.removeItem(memoryKey(account));
+}
+
+export function saveOrbMemory(account: string, entry: OrbMemoryEntry, now = Date.now()): void {
+  saveLucyConsultMemory(account, { ...entry, source: 'voice', id: globalThis.crypto.randomUUID() }, now);
 }
 
 function daysAgo(at: number, now: number): string {
