@@ -1,10 +1,10 @@
 {
-  "version": "1.8.403",
-  "builtAt": "2026-11-24T04:05:00+09:00",
-  "summary": "루앙프라방 메콩·예니세이 케트·쿠나 몰라 3대 엔진 질문 맥락·순환 축·과잉 경계 심층 강화(v1.8.403)",
+  "version": "1.8.404",
+  "builtAt": "2026-11-24T04:15:00+09:00",
+  "summary": "히타이트 테레피누·미낭카바우 루마 가당·과라니 테코 포라 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.404)",
   "items": [
-    "루앙프라방 메콩 새벽 엔진(v2.3.0): 질문 맥락(questionTopic), 메콩 새벽 축(mekongDawnAxis), 과잉 경계(shadowWarning) 추가",
-    "시베리아 예니세이 케트 타이가 별 엔진(v2.3.0): 질문 맥락(questionTopic), 타이가 순환 축(taigaCycleAxis), 과잉 경계(shadowWarning) 추가",
-    "파나마 쿠나 몰라 겹바느질 엔진(v2.3.0): 질문 맥락(questionTopic), 겹바느질 축(molaStitchAxis), 과잉 경계(shadowWarning) 추가"
+    "히타이트 테레피누 조화·회복 엔진(v2.3.0): 질문 맥락(questionTopic), 회복 축(telepinuReturnAxis), 과잉 경계(shadowWarning) 추가",
+    "미낭카바우 루마 가당 엔진(v2.3.0): 질문 맥락(questionTopic), 균형 축(gonjongBalanceAxis), 과잉 경계(shadowWarning) 추가",
+    "구아라니 테코 포랑 숲 조화 엔진(v2.3.0): 질문 맥락(questionTopic), 공존 축(tekoPoraCycleAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }
