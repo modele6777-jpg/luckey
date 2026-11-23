@@ -8,7 +8,7 @@ import { generateHeavenlyAdvice } from '@/lib/orbHeavenlyAdvice';
 import { playTTSInChunks, stopTTS, useTTSActive, useTTSState } from '@/utils/tts';
 import { CHANNEL_MENU_ICONS, MessageCircleMinus } from '@/lib/channelMenuIcons';
 import {
-  ORB_CARD_PICK_CARDS, ORB_CARD_PICK_GUIDE, ORB_DECK_SIZE, buildOrbMemoryBrief, latestOrbMemoryLine, loadOrbMemory,
+  ORB_CARD_PICK_CARDS, ORB_CARD_PICK_GUIDE, ORB_CARD_POSITIONS, ORB_DECK_SIZE, buildOrbMemoryBrief, countStopWords, latestOrbMemoryLine, loadOrbMemory,
   orbCardPickMessage, parseCardNumbers, pickOrbCards, saveOrbMemory, shuffleOrbDeck, summarizeOrbSession,
   type OrbDeckCard, type OrbMemoryEntry, type OrbPickedCard,
 } from '@/lib/orbConsult';
@@ -221,6 +221,19 @@ export function LucyOrbCounsel({
   const [pickSel, setPickSel] = useState<number[]>([]);
   const pickCloseTimer = useRef<number | null>(null);
   const commitPickRef = useRef<(numbers: number[]) => void>(() => undefined);
+  // "멈춰!" 셔플: 카드가 계속 섞이고, 멈출 때마다 그 순간의 카드 한 장이 뽑힌다 (세 번).
+  const [pickMode, setPickMode] = useState<'shuffle' | 'numbers'>('shuffle');
+  const [drawn, setDrawn] = useState<number[]>([]);
+  const drawnRef = useRef<number[]>([]);
+  const cursorRef = useRef(0);
+  const lastStopRef = useRef(0);
+  const drawTimer = useRef<number | null>(null);
+  const stopDrawRef = useRef<() => void>(() => undefined);
+  const stopSeenRef = useRef(0);
+  const stopBufRef = useRef('');
+  const pickOpenRef = useRef(false);
+  pickOpenRef.current = pickOpen;
+  const autoOpenedRef = useRef(false);
   // 📒 단골 기억: 지난 상담 기록 (이 기기, 계정별)
   const [memory, setMemory] = useState<OrbMemoryEntry[]>([]);
   const [lit, setLit] = useState(false);
@@ -313,6 +326,9 @@ export function LucyOrbCounsel({
     setPickedCards(null);
     setPickOpen(false);
     setPickSel([]);
+    setPickMode('shuffle');
+    drawnRef.current = [];
+    setDrawn([]);
     setMemory(loadOrbMemory(account));
     const appear = window.setTimeout(() => setReady(true), window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 1700);
     if (isLucyMasterBgmPlaying()) stopLucyMasterBgm();
@@ -330,6 +346,7 @@ export function LucyOrbCounsel({
       if (holdTimer.current) window.clearTimeout(holdTimer.current);
       if (bokTimer.current) window.clearTimeout(bokTimer.current);
       if (pickCloseTimer.current) window.clearTimeout(pickCloseTimer.current);
+      if (drawTimer.current) window.clearTimeout(drawTimer.current);
       heavenToken.current += 1;
       releasePrimedMicRef.current();
       if (heavenSpokeRef.current) { stopTTS(); heavenSpokeRef.current = false; }
@@ -520,6 +537,12 @@ export function LucyOrbCounsel({
     setPickedCards(null);
     setPickSel([]);
     setPickOpen(false);
+    setPickMode('shuffle');
+    drawnRef.current = [];
+    setDrawn([]);
+    autoOpenedRef.current = false;
+    stopSeenRef.current = 0;
+    stopBufRef.current = '';
     const memoryBrief = buildOrbMemoryBrief(memory, next.id);
     const notes = [usesCards ? ORB_CARD_PICK_GUIDE : '', memoryBrief].filter(Boolean).join('\n');
     const session = startGeminiLiveVoice({
@@ -535,8 +558,18 @@ export function LucyOrbCounsel({
       onUserText: (text) => {
         if (lucyBuf.current) take('루시', lucyBuf);
         userBuf.current = mergeTranscript(userBuf.current, text);
-        // 손님이 숫자 세 개를 말하면 그 자리의 카드를 펼친다.
         if (usesCards && !pickedRef.current) {
+          // "멈춰"라고 말할 때마다 섞이던 카드 한 장을 뽑는다.
+          const buf = userBuf.current;
+          if (!buf.startsWith(stopBufRef.current)) stopSeenRef.current = 0;
+          stopBufRef.current = buf;
+          // 새로 들어온 말 조각에 멈춤 말이 있거나, 모인 말에서 멈춤 말이 늘었으면 한 장 (0.45초 안의 중복은 무시).
+          const stops = countStopWords(buf);
+          if (countStopWords(text) > 0 || stops > stopSeenRef.current) {
+            stopSeenRef.current = Math.max(stops, stopSeenRef.current);
+            stopDrawRef.current();
+          }
+          // 숫자 세 개를 말하면 그 자리의 카드를 펼친다.
           const numbers = parseCardNumbers(userBuf.current);
           if (numbers.length === 3) commitPickRef.current(numbers);
         }
@@ -545,6 +578,11 @@ export function LucyOrbCounsel({
         if (userBuf.current) take('나', userBuf);
         lucyBuf.current = mergeTranscript(lucyBuf.current, text);
         setCaption(captionLine(lucyBuf.current));
+        // 마스터가 "멈춰라고 말씀해 주세요"라고 안내하면 섞는 화면을 연다 (한 번만).
+        if (usesCards && !pickedRef.current && !autoOpenedRef.current && /멈춰|멈추/.test(lucyBuf.current)) {
+          autoOpenedRef.current = true;
+          setPickOpen(true);
+        }
       },
       onError: (error) => setNotice(error.message),
       onNotice: (message) => {
@@ -674,15 +712,16 @@ export function LucyOrbCounsel({
   pressHandlers.current = { begin: beginInputPress, end: endInputPress };
 
   // 🃏 카드 펼치기: 고른 숫자 자리의 카드를 보여 주고, 마스터에게 알린다 (마스터는 이 알림을 읽지 않는다).
-  const commitPick = (numbers: number[]) => {
+  const commitPick = (numbers: number[], how: 'shuffle' | 'number' = 'number') => {
     if (pickedRef.current || numbers.length < 3 || !deckRef.current.length) return;
     pickedRef.current = true;
-    const cards = pickOrbCards(deckRef.current, numbers);
+    if (drawTimer.current) { window.clearTimeout(drawTimer.current); drawTimer.current = null; }
+    const cards = pickOrbCards(deckRef.current, numbers, how);
     setPickedCards(cards);
-    setPickSel(numbers.slice(0, 3));
+    if (how === 'number') setPickSel(numbers.slice(0, 3));
     setPickOpen(true);
     if (userBuf.current) take('나', userBuf);
-    userBuf.current = `🃏 카드 선택: ${cards.map(card => `${card.position} ${card.number}번 ${card.nameKo} ${card.orientationKo}`).join(', ')}`;
+    userBuf.current = `🃏 카드 선택: ${cards.map(card => `${card.position} ${how === 'number' ? `${card.number}번 ` : ''}${card.nameKo} ${card.orientationKo}`).join(', ')}`;
     take('나', userBuf);
     sessionRef.current?.sendText(orbCardPickMessage(cards));
     if (pickCloseTimer.current) window.clearTimeout(pickCloseTimer.current);
@@ -690,6 +729,34 @@ export function LucyOrbCounsel({
     pickCloseTimer.current = window.setTimeout(() => { pickCloseTimer.current = null; setPickOpen(false); }, reduced ? 1800 : 3600);
   };
   commitPickRef.current = commitPick;
+  // 멈춤: 지금 섞이는 자리의 카드를 한 장 뽑는다. 세 장이 모이면 잠시 뒤 펼친다.
+  const stopDraw = () => {
+    if (pickedRef.current || drawnRef.current.length >= 3 || !deckRef.current.length) return;
+    const now = Date.now();
+    if (now - lastStopRef.current < 450) return;
+    lastStopRef.current = now;
+    if (!pickOpenRef.current) setPickOpen(true);
+    setPickMode('shuffle');
+    const size = deckRef.current.length;
+    let index = cursorRef.current % size;
+    while (drawnRef.current.includes(index)) index = (index + 1) % size;
+    const next = [...drawnRef.current, index];
+    drawnRef.current = next;
+    setDrawn(next);
+    flashOrb();
+    if (next.length === 3) {
+      drawTimer.current = window.setTimeout(() => { drawTimer.current = null; commitPick(next.map(value => value + 1), 'shuffle'); }, 800);
+    }
+  };
+  stopDrawRef.current = stopDraw;
+  // 섞는 동안 '지금 멈추면 나올 카드' 자리를 계속 돌린다 (멈추는 순간이 카드를 정한다).
+  useEffect(() => {
+    if (!pickOpen || pickedCards || pickMode !== 'shuffle') return;
+    const timer = window.setInterval(() => {
+      cursorRef.current = (cursorRef.current + 1 + Math.floor(Math.random() * 3)) % ORB_DECK_SIZE;
+    }, 55);
+    return () => window.clearInterval(timer);
+  }, [pickOpen, pickedCards, pickMode]);
   const togglePick = (number: number) => {
     if (pickedRef.current) return;
     setPickSel(current => current.includes(number)
@@ -898,6 +965,7 @@ export function LucyOrbCounsel({
         clear = Math.max(clear, box.bottom - r.top + 6);
       });
       stage.style.setProperty('--orb-bok-bottom', `${Math.round(clear)}px`);
+      stage.style.setProperty('--orb-dock-clear', dock ? `${Math.max(0, Math.round(box.bottom - dock.top + 6))}px` : '0px');
       const panel = stage.querySelector<HTMLElement>('.lucy-bok');
       const ritual = stage.querySelector<HTMLElement>('.lucy-orb-ritual');
       if (panel && ritual) {
@@ -969,7 +1037,28 @@ export function LucyOrbCounsel({
         {phase === 'live' && master?.cardPick && pickOpen && (
           <div className="lucy-cardpick-layer" role="dialog" aria-label="타로 카드 고르기">
             <div className="lucy-cardpick">
-              {!pickedCards ? (
+              {!pickedCards && pickMode === 'shuffle' ? (
+                <>
+                  <strong>질문을 떠올리다 끌리는 순간 멈춰 주세요</strong>
+                  <p>"멈춰"라고 말하거나 카드를 누르세요 · {drawn.length}/3</p>
+                  <button type="button" className={`lucy-shuffle-deck ${drawn.length >= 3 ? 'is-done' : ''}`} onClick={stopDraw} aria-label="섞이는 카드 멈추기" disabled={drawn.length >= 3}>
+                    {Array.from({ length: 7 }, (_, index) => <span key={index} style={{ ['--k' as string]: index }} />)}
+                    <b>{drawn.length >= 3 ? '카드를 펼칩니다' : '멈춰!'}</b>
+                  </button>
+                  <div className="lucy-shuffle-slots">
+                    {ORB_CARD_POSITIONS.map((position, index) => (
+                      <div key={position} className={drawn[index] !== undefined ? 'is-filled' : ''}>
+                        <span aria-hidden="true" />
+                        <small>{position}</small>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="lucy-cardpick-actions">
+                    <button type="button" disabled={drawn.length > 0} onClick={() => setPickMode('numbers')}>숫자로 고르기</button>
+                    <button type="button" onClick={() => setPickOpen(false)}>나중에</button>
+                  </div>
+                </>
+              ) : !pickedCards ? (
                 <>
                   <strong>마음속 질문을 떠올리며 카드 세 장을 골라 주세요</strong>
                   <p>숫자 세 개(1~78)를 말씀하셔도 돼요 · {pickSel.length}/3</p>
@@ -986,7 +1075,7 @@ export function LucyOrbCounsel({
                   </div>
                   <div className="lucy-cardpick-actions">
                     <button type="button" className="is-primary" disabled={pickSel.length < 3} onClick={() => commitPick(pickSel)}>이 세 장 펼치기</button>
-                    <button type="button" onClick={() => setPickOpen(false)}>나중에</button>
+                    <button type="button" onClick={() => setPickMode('shuffle')}>섞어서 뽑기</button>
                   </div>
                 </>
               ) : (
@@ -996,10 +1085,10 @@ export function LucyOrbCounsel({
                     {pickedCards.map((card, index) => (
                       <figure key={card.number} style={{ ['--i' as string]: index }}>
                         <div className="lucy-cardpick-flip">
-                          <span className="lucy-cardpick-back">{card.number}</span>
+                          <span className="lucy-cardpick-back">{card.how === 'number' ? card.number : '✦'}</span>
                           <img src={card.imageUrl} alt={`${card.nameKo} ${card.orientationKo}`} className={card.reversed ? 'is-reversed' : ''} />
                         </div>
-                        <figcaption><b>{card.position}</b>{card.nameKo}<small>{card.orientationKo} · {card.number}번</small></figcaption>
+                        <figcaption><b>{card.position}</b>{card.nameKo}<small>{card.orientationKo}{card.how === 'number' ? ` · ${card.number}번` : ''}</small></figcaption>
                       </figure>
                     ))}
                   </div>
@@ -1232,7 +1321,7 @@ export function LucyOrbCounsel({
             <div className="lucy-orb-keywords">
               {master.cardPick && (
                 <button type="button" className={`lucy-orb-cardchip ${pickedCards ? '' : 'is-waiting'}`} onClick={() => setPickOpen(true)}>
-                  {pickedCards ? '🃏 내 카드 보기' : '🃏 카드 세 장 고르기'}
+                  {pickedCards ? '🃏 내 카드 보기' : '🃏 카드 섞기'}
                 </button>
               )}
               {master.prompts.map(prompt => (

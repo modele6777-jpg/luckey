@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   parseCardNumbers, parseSinoKorean, shuffleOrbDeck, pickOrbCards, orbCardPickMessage,
-  summarizeOrbSession, saveOrbMemory, loadOrbMemory, buildOrbMemoryBrief, latestOrbMemoryLine,
+  summarizeOrbSession, saveOrbMemory, loadOrbMemory, buildOrbMemoryBrief, latestOrbMemoryLine, countStopWords,
 } from '../src/lib/orbConsult.ts';
 
 const store = new Map<string, string>();
@@ -71,4 +71,18 @@ test('a finished session is remembered per account and briefed back to the maste
 
 test('a session with nothing said by the guest is not remembered', () => {
   assert.equal(summarizeOrbSession([{ who: '루시', text: '안녕하세요' }]), null);
+});
+
+test('stop words for the "멈춰!" shuffle are counted, ordinary talk is not', () => {
+  assert.equal(countStopWords('멈춰'), 1);
+  assert.equal(countStopWords('멈춰 멈춰요 스톱'), 3);
+  assert.equal(countStopWords('연애 고민이 있어요'), 0);
+});
+
+test('a shuffle pick tells the master the cards without numbers', () => {
+  const deck = shuffleOrbDeck();
+  const cards = pickOrbCards(deck, [1, 2, 3], 'shuffle');
+  const message = orbCardPickMessage(cards);
+  assert.match(message, /세 번 멈춰/);
+  assert.doesNotMatch(message, /\d+번/);
 });
