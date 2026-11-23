@@ -3,10 +3,13 @@ import type { UserProfile } from '../sharedState';
 export interface MaldivianAtollResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '경계·보호' | '순환·소통' | '연대·조화' | '산호초 전반';
   reflectionFocus: string;
   symbolicMotif: string;
   companionMotif: string;
+  atollCurrentAxis: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -54,31 +57,52 @@ const MALDIVIAN_QUESTIONS = [
   '깊은 고민과 가벼운 일상 사이의 경계를 어떻게 나누어야 둘 다 맑게 숨 쉴 수 있을까요?'
 ];
 
+const MALDIVIAN_SHADOWS = [
+  '바깥의 파도를 걸러 내는 경계선이 지나치게 높아지면, 오히려 맑은 새 물이 들어오는 수로까지 닫아 버릴 수 있습니다.',
+  '고인 물을 순환시키려 틈을 여는 것은 좋지만, 한꺼번에 너무 많은 변화와 자극을 들이면 안쪽 라군이 흔들립니다.',
+  '바닷바람을 견디며 빗물을 모으는 인내가 외부의 도움을 청하거나 새로운 바람을 맞는 유연함까지 막지는 않아야 합니다.',
+  '모든 것이 아래에서 이어져 있다는 연대감 속에서도, 오늘 내가 직접 구분해 맡아야 할 내 몫의 경계는 분명히 두세요.',
+  '깊이와 얕음의 경계를 나누다 자칫 가벼운 일상을 사소하다며 치부하거나 깊은 고민을 무겁게만 키우지 않도록 하세요.',
+];
+
+function classifyMaldivianTopic(q: string): MaldivianAtollResult['questionTopic'] {
+  if (/라군|경계|보호|파도|지키/.test(q)) return '경계·보호';
+  if (/수로|순환|소통|고여|숨/.test(q)) return '순환·소통';
+  if (/연대|이어|조화|깊이|리듬/.test(q)) return '연대·조화';
+  return '산호초 전반';
+}
+
 export function calculateMaldivianCoralAtoll(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): MaldivianAtollResult {
   const { profile, now = new Date(), question = '' } = params;
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${question.trim()}|${now.toISOString().slice(0, 13)}`;
+  const q = question.trim();
+  const questionTopic = classifyMaldivianTopic(q);
+  const seed = `${JSON.stringify(profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const hash = stableHash(seed);
   const idx = hash % MALDIVIAN_MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MALDIVIAN_MOTIFS.length - 1));
 
   const motif = MALDIVIAN_MOTIFS[idx];
   const companionMotif = MALDIVIAN_MOTIFS[(idx + companionOffset) % MALDIVIAN_MOTIFS.length];
+  const atollCurrentAxis = `${motif.split('(')[0].trim()} ↔ ${companionMotif.split('(')[0].trim()} (${questionTopic})`;
   const ritualAction = MALDIVIAN_ACTIONS[idx];
   const reflectiveQuestion = MALDIVIAN_QUESTIONS[idx];
 
   return {
-    engineVersion: 'LUCKEY-MALDIVIAN-ATOLL-v2.2.0',
+    engineVersion: 'LUCKEY-MALDIVIAN-ATOLL-v2.3.0',
     calculatedAtKst: getKstTimeString(now),
-    reflectionFocus: question.trim()
-      ? `질문 "${question.trim()}" 속에서 내 안의 고요한 라군을 지키는 산호초 물길 관점 (동반 결: ${companionMotif.slice(0, 24)}…)`
+    questionTopic,
+    reflectionFocus: q
+      ? `질문 "${q}" 속에서 내 안의 고요한 라군을 지키는 산호초 물길 관점 (동반 결: ${companionMotif.slice(0, 24)}…)`
       : '바깥의 파도를 걸러 안쪽의 평온을 지키는 몰디브 산호초 물길 관점',
     symbolicMotif: motif,
     companionMotif,
+    atollCurrentAxis,
     ritualAction,
+    shadowWarning: MALDIVIAN_SHADOWS[idx],
     reflectiveQuestion,
     interpretiveBoundary:
       '몰디브 산호초 환초의 상징적 비유로, 개인 점수·성격 진단·미래 예측이 아닙니다.'
@@ -89,10 +113,12 @@ export function formatMaldivianAtollPrompt(result: MaldivianAtollResult): string
   return [
     `[몰디브·산호초 물길 관점 (${result.engineVersion})]`,
     `- 기준 시각: ${result.calculatedAtKst}`,
+    `- 질문 맥락: ${result.questionTopic} | 산호초 물길 축: ${result.atollCurrentAxis}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 상징 모티프: ${result.symbolicMotif}`,
     `- 동반 모티프: ${result.companionMotif}`,
     `- 제안 의식: ${result.ritualAction}`,
+    `- 과잉 경계: ${result.shadowWarning}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 경계: ${result.interpretiveBoundary}`
   ].join('\n');

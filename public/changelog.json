@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.424",
+    "builtAt": "2026-11-24T07:05:00+09:00",
+    "summary": "몰디브 산호초·몰타 루조·만주 무쿤 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.424)",
+    "items": [
+      "몰디브 산호초 물길 엔진(v2.3.0): 질문 맥락(questionTopic), 산호초 물길 축(atollCurrentAxis), 과잉 경계(shadowWarning) 추가",
+      "몰타 메갈리스·루조 항구 엔진(v2.3.0): 질문 맥락(questionTopic), 항구 나침반 축(harborCompassAxis), 과잉 경계(shadowWarning) 추가",
+      "만주 무쿤·흰산 검은강 엔진(v2.3.0): 질문 맥락(questionTopic), 백두·흑룡 축(whiteMountainAxis), 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.423",
     "builtAt": "2026-11-24T06:55:00+09:00",
     "summary": "리디아 사르디스·말라가시 바오밥·말라가시 피하바나나 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.423)",

@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface MalteseLuzzuResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '방향·중심' | '정박·휴식' | '인내·고요' | '루조 항구 전반';
   harborSymbol: string;
   companionSymbol: string;
+  harborCompassAxis: string;
   luzzuInsight: string;
   mediterraneanTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,48 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const MALTESE_SHADOWS = [
+  '방향타를 살피는 신중함이 지나쳐, 정작 바람을 타고 돛을 펼쳐야 할 출발 타이밍까지 계속 늦추지 않도록 하세요.',
+  '거석처럼 묵직한 중심을 지키는 태도가 새로운 변화나 다른 관점을 받아들이는 유연함까지 굳게 닫아 버리지 않게 하세요.',
+  '항구에 닻을 내리고 정비하는 쉼이 길어져, 다시 바다로 나가야 할 다음 일정과 약속까지 미루는 핑계가 되지 않게 하세요.',
+  '시간이 스며들기를 기다리는 인내가 지금 당장 내가 직접 보완하고 손을 보아야 할 기본 작업까지 놓치게 해서는 안 됩니다.',
+  '소음을 잠재우는 고요한 골목이 좋지만, 필요한 소통과 현실의 확인 요청까지 너무 오래 차단해 두지는 마세요.',
+];
+
+function classifyMalteseTopic(q: string): MalteseLuzzuResult['questionTopic'] {
+  if (/방향|시야|중심|기준|거석/.test(q)) return '방향·중심';
+  if (/닻|항구|휴식|정비|쉼/.test(q)) return '정박·휴식';
+  if (/소금|기다|고요|소음|골목/.test(q)) return '인내·고요';
+  return '루조 항구 전반';
+}
+
 export function calculateMalteseMegalithLuzzuHarbor(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): MalteseLuzzuResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyMalteseTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % SYMBOLS.length;
   const picked = SYMBOLS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (SYMBOLS.length - 1));
   const companion = SYMBOLS[(idx + companionOffset) % SYMBOLS.length];
+  const harborCompassAxis = `${picked.symbol.split('(')[0].trim()} ↔ ${companion.symbol.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-MALTESE-LUZZU-v2.2.0',
+    engineVersion: 'LUCKEY-MALTESE-LUZZU-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     harborSymbol: picked.symbol,
     companionSymbol: companion.symbol,
+    harborCompassAxis,
     luzzuInsight: picked.insight,
     mediterraneanTone: picked.tone,
     reflectionFocus: `몰타 지중해 지혜의 '${picked.symbol}'을 중심에 두고 '${companion.symbol}'의 시야를 함께 엮어, 바깥의 파도에 휩쓸리기 전에 내 마음의 닻을 내리고 맑은 시야를 회복해 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: MALTESE_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '지중해 몰타의 메갈리스 거석 유산과 루조(Luzzu) 항해 상징을 바탕으로 한 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +119,13 @@ export function formatMalteseLuzzuPrompt(res: MalteseLuzzuResult): string {
   return [
     `[몰타 메갈리스·루조 항구 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 항구 나침반 축: ${res.harborCompassAxis}`,
     `- 지중해 상징: ${res.harborSymbol} (${res.mediterraneanTone})`,
     `- 동반 상징: ${res.companionSymbol}`,
     `- 중심 통찰: ${res.luzzuInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
