@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface NabataeanPetraResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '비축·여유' | '내실·축적' | '신뢰·연결' | '페트라 전반';
   desertConduit: string;
   companionConduit: string;
+  cisternFlowAxis: string;
   petraInsight: string;
   sandstoneTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,48 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const NABATAEAN_SHADOWS = [
+  '작은 물방울까지 빠짐없이 모으려는 꼼꼼함이 지나쳐, 흘려보내도 될 사소한 잡음까지 붙잡고 에너지를 쓰지 않도록 살피세요.',
+  '바위 속에 조용히 내실을 쌓는 겸손함이 이미 세상에 내놓고 시험받아도 될 결과물을 계속 숨겨 두는 주저함이 되지 않게 하세요.',
+  '앞날의 가뭄을 대비해 여유를 비축하는 신중함이 오늘 마주한 정당한 기쁨과 투자까지 아끼게 만들지 않도록 균형을 잡으세요.',
+  '서로 다른 상대와 신뢰를 지키려는 배려가 내 쪽의 무리한 양보나 불균형한 부담으로 굳어지지 않게 경계를 확인하세요.',
+  '역할을 나누어 흐르게 하는 연결이 정작 내가 끝까지 쥐고 결단해야 할 핵심 책임까지 남의 손에 넘기는 분산이 되지 않게 하세요.',
+];
+
+function classifyNabataeanTopic(q: string): NabataeanPetraResult['questionTopic'] {
+  if (/여유|비축|저수조|체력|모아/.test(q)) return '비축·여유';
+  if (/내실|기초|배움|역량/.test(q)) return '내실·축적';
+  if (/신뢰|약속|연결|나누/.test(q)) return '신뢰·연결';
+  return '페트라 전반';
+}
+
 export function calculateNabataeanPetraCisternWater(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): NabataeanPetraResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyNabataeanTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % CONDUITS.length;
   const picked = CONDUITS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (CONDUITS.length - 1));
   const companion = CONDUITS[(idx + companionOffset) % CONDUITS.length];
+  const cisternFlowAxis = `${picked.conduit.split('(')[0].trim()} ↔ ${companion.conduit.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-NABATAEAN-PETRA-v2.2.0',
+    engineVersion: 'LUCKEY-NABATAEAN-PETRA-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     desertConduit: picked.conduit,
     companionConduit: companion.conduit,
+    cisternFlowAxis,
     petraInsight: picked.insight,
     sandstoneTone: picked.tone,
     reflectionFocus: `나바테아 페트라 수로 지혜의 '${picked.conduit}'을 중심에 두고 '${companion.conduit}'의 흐름을 곁들여, 작은 배움과 여유를 차곡차곡 저수조에 모아 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: NABATAEAN_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '고대 나바테아 페트라의 사막 빗물 수로·지하 저수조 지혜를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +119,13 @@ export function formatNabataeanPetraPrompt(res: NabataeanPetraResult): string {
   return [
     `[나바테아 페트라·사막 수로 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 사막 수로 축: ${res.cisternFlowAxis}`,
     `- 사막 수로: ${res.desertConduit} (${res.sandstoneTone})`,
     `- 동반 수로: ${res.companionConduit}`,
     `- 중심 통찰: ${res.petraInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
