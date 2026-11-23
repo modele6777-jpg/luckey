@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { captureLucySearchAnchor, resolveLucySearchRestoreTop } from '../src/lib/lucySearchScroll';
 
 const page = readFileSync(new URL('../src/pages/LucyStandalonePage.tsx', import.meta.url), 'utf8');
-const searchPanel = page.slice(page.indexOf('{/*  Search Input Dropdown */}'), page.indexOf('</header>'));
+const searchPanel = page.slice(page.indexOf('className="lucy-search-overlay"'), page.indexOf('className="lucy-search-results"'));
 
 test('a reader at the latest message is captured as pinned to the bottom', () => {
   const anchor = captureLucySearchAnchor(900, 1000, 100);
@@ -67,5 +67,7 @@ test('opening a search remembers the reading position and closing it restores th
 test('the search toggle closes with a cleared query and follows the latest match while typing', () => {
   assert.match(page, /onClick=\{toggleSearch\}/);
   assert.match(page, /onClick=\{closeSearch\}/);
-  assert.match(page, /if \(!isSearchOpen \|\| !searchQuery\.trim\(\)\) return;[\s\S]{0,220}noteLucyScrollPin\(true\);[\s\S]{0,60}scrollToBottom\(true, false\);/);
+  // 검색은 결과 목록을 보여 주고, 고른 결과의 대화로 이동한다 (입력 중에 화면을 끌고 다니지 않는다).
+  assert.match(page, /searchHits\.map\(\(hit\)/);
+  assert.match(page, /onClick=\{\(\) => openSearchHit\(String\(hit\.id\)\)\}/);
 });

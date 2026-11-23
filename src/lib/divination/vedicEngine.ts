@@ -22,7 +22,7 @@
  *
  * 3. 항성황도(Sidereal / Lahiri Ayanamsa) 경도 산출:
  *    astronomy-engine의 지구중심 황경(열대)에 라히리 아얀암사를 차감한다.
- *    아얀암사는 J2000 기준값(23°51'11")에서 세차율 50.29"/년의 선형 근사이며
+ *    아얀암사는 J2000 기준값(23°51'11")에 IAU 2006 일반 세차 다항식을 더한 값이며
  *    정밀 Lahiri 천문력은 아니므로 경계 부근의 결과는 확정하지 않는다.
  *
  * 4. 120년 빔쇼타리 다샤(Vimshottari Dasha):
@@ -59,7 +59,7 @@ function formatVedicKstTimestamp(now: Date = new Date()): string {
 }
 
 export const VEDIC_METHOD =
-  '정통 베딕 조티시 결정론 산법: J2000 라히리(Lahiri) 근방 아얀암사 선형 근사 기반 항성황도 달·태양 경도로 27 나크샤트라·108 파다(주재신·상징·지배 행성·군·원소·카스트·나바암사 파다주인) 산출, 120년 빔쇼타리 다샤의 9대 마하다샤와 마하다샤×안타르다샤 9×9=81구간 타임라인(태양년 365.25일 환산, 출생 잔여 다샤 포함) 및 현재 마하다샤·안타르다샤 식별, 찬드라·수리야·라그나 12 라시 산출';
+  '정통 베딕 조티시 결정론 산법: J2000 라히리(Lahiri) 기준값 + IAU 2006 일반 세차 다항식 아얀암사 기반 항성황도 달·태양 경도로 27 나크샤트라·108 파다(주재신·상징·지배 행성·군·원소·카스트·나바암사 파다주인) 산출, 120년 빔쇼타리 다샤의 9대 마하다샤와 마하다샤×안타르다샤 9×9=81구간 타임라인(태양년 365.25일 환산, 출생 잔여 다샤 포함) 및 현재 마하다샤·안타르다샤 식별, 찬드라·수리야·라그나 12 라시 산출';
 
 export type VedicGana = '신성(Deva)' | '인간(Manushya)' | '마성(Rakshasa)';
 export type VedicTattva = '지(土·Prithvi)' | '수(水·Apas)' | '화(火·Tejas)' | '풍(風·Vayu)' | '공(空·Akasha)';
@@ -241,16 +241,21 @@ const NAVAMSA_SIGN_LORDS = ['화성', '금성', '수성', '달', '태양', '수�
 
 /** 다샤 연수 환산에 쓰는 태양년 (일) */
 const YEAR_DAYS = 365.25;
-/** J2000 라히리 아얀암사 기준값 (23°51'11")과 연평균 세차율 (초각/년) */
+/** J2000 라히리 아얀암사 기준값 (23°51'11") */
 const AYANAMSA_J2000 = 23.853055556;
-const PRECESSION_ARCSEC_PER_YEAR = 50.29;
 
 const normalize360 = (n: number) => ((n % 360) + 360) % 360;
 
-/** J2000 라히리 근방 기준값 + 평균 세차율 선형 근사 아얀암사 */
+/**
+ * 라히리 아얀암사: J2000 기준값(23°51'11") + 일반 세차(IAU 2006 다항식 5028.796195″T + 1.1054348″T², T = 율리우스 세기).
+ * 예전 선형 근사(50.29″/년)보다 1900~2100년에서 더 정밀하다 (차이는 0.01° 안팎).
+ */
 export function lahiriAyanamsaAt(date: Date): number {
-  const years = (date.getTime() - Date.UTC(2000, 0, 1, 12, 0, 0)) / 86400000 / 365.25;
-  return AYANAMSA_J2000 + (years * PRECESSION_ARCSEC_PER_YEAR) / 3600;
+  return lahiriAyanamsaFromUtcMs(date.getTime());
+}
+export function lahiriAyanamsaFromUtcMs(utcMs: number): number {
+  const t = (utcMs - Date.UTC(2000, 0, 1, 12, 0, 0)) / 86400000 / 36525;
+  return AYANAMSA_J2000 + (5028.796195 * t + 1.1054348 * t * t) / 3600;
 }
 
 /** 천체의 항성황도(Sidereal / Lahiri 근사) 경도 */
@@ -773,6 +778,6 @@ ${rashiLines}
 ${currentLines}
 ${synergyLine ? synergyLine + '\n' : ''}${kendraLine ? kendraLine + '\n' : ''}${purusharthaLine ? purusharthaLine + '\n' : ''}- 120년 빔쇼타리 다샤 전수 타임라인 (9 마하다샤 × 9 안타르다샤 = ${result.antardashaCount}구간, 태양년 365.25일 환산):
 ${timelineLines}${matrixLine}${secondaryLine}${reflectionLine}${ritualLine}${focusLine}${boundaryLine}
-- [AI 해석 지침]: 아래 내용은 입력된 출생 정보와 구현된 항성황도 산법을 적용한 계산 참고값이며, 정확성이나 미래 예측을 보장하지 않습니다. 나크샤트라·파다·다샤 주인과 기간은 제공된 계산 결과에 맞춰 설명하십시오. 아얀암사는 평균 세차율 근사이므로 나크샤트라·파다·다샤 경계일 전후 1일 이내의 결과는 단정하지 마십시오.
+- [AI 해석 지침]: 아래 내용은 입력된 출생 정보와 구현된 항성황도 산법을 적용한 계산 참고값이며, 정확성이나 미래 예측을 보장하지 않습니다. 나크샤트라·파다·다샤 주인과 기간은 제공된 계산 결과에 맞춰 설명하십시오. 아얀암사는 세차 다항식 계산이므로 정밀 천문력과 미세한 차이가 있어 나크샤트라·파다·다샤 경계일 전후 1일 이내의 결과는 단정하지 마십시오.
 `.trim();
 }

@@ -104,7 +104,7 @@ test('Lucy and Lucy+ require a basic tool and one symbolic deep perspective, eve
   }
 });
 
-test('Lucy selects a broad, relevant deep set per question while master retains all 500 catalog perspectives', () => {
+test('Lucy selects a broad, relevant deep set per question while master retains every catalog perspective', () => {
   const text = '이번 이직 면접과 커리어 전략, 다음 진로 방향을 어떻게 잡을까?';
   const preferred = analyzeQuestionIntent(text).deepEngineKeys ?? [];
   const routed = routeAndExecute({ text, profile, requireBasicAndDeep: true, allowMaster: false });
@@ -118,7 +118,8 @@ test('Lucy selects a broad, relevant deep set per question while master retains 
   assert.equal(routed.routePlan.deepEnginesKo?.length, selected.length);
 
   const master = routeAndExecute({ text: '올인원 종합 인생 분석', profile, isMasterRequested: true });
-  assert.equal(master.routePlan.deepEngineKeys?.length, 500);
+  // 카탈로그가 늘어도 마스터는 심층 관점을 빠짐없이 모두 검토한다.
+  assert.equal(master.routePlan.deepEngineKeys?.length, ALL_DCE_ENGINES.filter(engine => engine.category === 'deep_master').length);
 });
 
 test('smart agent router routes immediate decision to Kierkegaard, Descartes, and Sun Tzu', () => {

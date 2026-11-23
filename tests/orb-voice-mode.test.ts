@@ -53,9 +53,10 @@ test('Orb defaults to hold-to-talk on the input itself; a short Orb tap still sw
   assert.match(component, /useState<OrbVoiceMode>\('hold'\)/);
   assert.match(component, /setVoiceMode\('hold'\)/);
   assert.match(component, /startMuted: voiceMode === 'hold'/);
-  assert.match(component, /className="lucy-orb-input-wrap"[\s\S]*?onPointerDown=\{\(event\) => startPushToTalk\(event\)\}[\s\S]*?onPointerUp=\{stopPushToTalk\}/);
+  // 입력창을 누르면 말하기 시작, 떼면 전송 (마우스는 pointer, 터치는 touchstart/touchend로 처리).
+  assert.match(component, /className="lucy-orb-input-wrap"[\s\S]*?onPointerDown=\{\(event\) => \{ if \(event\.pointerType === 'mouse'\) beginInputPress\(event\.clientX, event\.clientY\); \}\}[\s\S]*?onPointerUp=\{\(event\) => \{ if \(event\.pointerType === 'mouse'\) endInputPress\(\); \}\}/);
   assert.doesNotMatch(component, /lucy-orb-dock-ptt/);
-  assert.match(component, /className="lucy-orb-input-wave"/);
+  assert.match(component, /className=\{`lucy-orb-input-wave /);
   assert.match(component, /onAudioLevel: \(level\) => setAudioLevel\(level\)/);
   assert.match(liveSession, /onAudioLevel\?: \(level: number\) => void/);
   assert.match(liveSession, /handlers\.onAudioLevel\?\.\(Math\.max\(0, Math\.min\(1,/);
@@ -113,8 +114,11 @@ test('Gemini Live hold-to-talk session does not send audio until unmuted and mut
     session.setMuted(true);
     assert.equal(track.enabled, false, 'releasing the talk control disables the microphone track');
     assert.equal(audioLevels.at(-1), 0, 'releasing the talk control clears the waveform');
+    // 손을 떼면 '말 끝' 신호(audioStreamEnd)를 한 번 보내 마스터가 바로 답하게 한다.
+    assert.equal(socket.sent.length, 3, 'release sends one end-of-speech signal');
+    assert.equal(JSON.parse(socket.sent[2]).realtimeInput.audioStreamEnd, true);
     processor.onaudioprocess?.(event);
-    assert.equal(socket.sent.length, 2, 'audio stops immediately after release');
+    assert.equal(socket.sent.length, 3, 'audio stops immediately after release');
   } finally {
     session.stop();
     for (const undo of restore.reverse()) undo();

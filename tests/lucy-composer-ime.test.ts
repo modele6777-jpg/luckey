@@ -30,6 +30,7 @@ function composer() {
   const context = {
     input: '',
     currentGhostPromptRef: { current: '예시 질문' },
+    hasPendingAnswer: false,
     isInputComposingRef: { current: false },
     handleSend: () => { sends++; },
     setInput: (value: string) => { completed = value; },

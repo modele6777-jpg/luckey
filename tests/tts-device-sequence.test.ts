@@ -43,7 +43,8 @@ test('server failure stops reading and never uses device speech', async () => {
   try {
     const text = Array.from({ length: 18 }, (_, i) => `${i + 1}번째 문장이야. 서버 음성으로만 읽어야 해.`).join(' ');
     await assert.rejects(playTTSInChunks(text, 'Aoede', 240, undefined, undefined, { skipCompletionChime: true }));
-    assert.equal(serverRequests, 1, 'provider rejection must stop without repeated chunk requests');
+    // 지금 조각 + 미리 받아 두는 다음 조각 1개까지만. 거절 뒤에 조각마다 다시 요청하지 않는다.
+    assert.ok(serverRequests <= 2, `provider rejection must stop without repeated chunk requests (got ${serverRequests})`);
     assert.deepEqual(spoken, [], 'device speech must never be used');
     assert.equal(current, null);
     assert.equal(getCurrentTTSState().activeSessionId, null);
