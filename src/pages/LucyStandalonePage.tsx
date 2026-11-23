@@ -3191,7 +3191,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     const previous = messageGeometryRef.current;
     const layoutChanged = previous.height !== scrollHeight || previous.viewport !== clientHeight;
     messageGeometryRef.current = { height: scrollHeight, viewport: clientHeight };
-    if (clientHeight < 2 || ttsHoldsScrollRef.current) return;
+    if (clientHeight < 2) return;
+    // 낭독 중 문장 중앙 정렬로 생기는 이동은 사용자의 스크롤이 아니다.
+    if (ttsHoldsScrollRef.current) return;
     const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
     if (isAutoScrollingRef.current) {
       // WebKit can restore an older offset before the programmatic scroll
