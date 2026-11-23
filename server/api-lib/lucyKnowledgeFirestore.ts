@@ -7,7 +7,7 @@ export const CONTROL_DOCUMENT = 'lucyKnowledgeSettings/control';
 export function firestoreDocumentUrl(path: string): string {
   return `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(PROJECT_ID)}/databases/${encodeURIComponent(DATABASE_ID)}/documents/${path}`;
 }
-function fieldValue(value: unknown): unknown {
+export function fieldValue(value: unknown): unknown {
   if (!value || typeof value !== 'object') return value;
   const record = value as Record<string, any>;
   if ('stringValue' in record) return record.stringValue;

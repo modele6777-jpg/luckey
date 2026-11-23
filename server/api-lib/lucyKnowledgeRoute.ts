@@ -1,5 +1,5 @@
 import { createPublicKey, randomUUID, verify as verifySignature } from 'node:crypto';
-import { CONTROL_DOCUMENT, decodedFields, firestoreDocumentUrl, firestoreGet, firestorePatch, typedValue } from './lucyKnowledgeFirestore.js';
+import { CONTROL_DOCUMENT, decodedFields, fieldValue, firestoreDocumentUrl, firestoreGet, firestorePatch, typedValue } from './lucyKnowledgeFirestore.js';
 import { searchKnowledgeMetadata } from './lucyKnowledgeSources.js';
 import express, { type Request, type Response } from 'express';
 import { GoogleGenAI } from '@google/genai';
