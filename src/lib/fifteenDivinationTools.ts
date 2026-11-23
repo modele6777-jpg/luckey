@@ -4,22 +4,8 @@ import { UserProfile } from './sharedState';
 import { getFiredEngineBadges, getCalculationAudit, ALL_DCE_ENGINES } from './divination/deterministicEngine';
 import { routeAndExecute } from './divination/smartAgentRouter';
 
-export type DivinationToolId =
-  | 'saju'           // 1. 사주 (四柱命理)
-  | 'astrology'      // 2. 점성술 (Western Astrology)
-  | 'ziwei'          // 3. 자미두수 (紫微斗數)
-  | 'tarot'          // 4. 타로 (Tarot)
-  | 'sukuyo'         // 5. 숙요 (宿曜經 / 27숙)
-  | 'mahabote'       // 6. 마하보테 (Mahabote 미얀마 8요일 점성술)
-  | 'vedic'          // 7. 베딕 (Vedic Jyotish 인도점성술)
-  | 'liuren'         // 8. 육임 (大六壬)
-  | 'qimen'          // 9. 홍국기문 (洪局奇門 / 기문둔갑)
-  | 'kabbalah'       // 10. 카발라 (Kabbalah 세피로트 생명나무)
-  | 'iching'         // 11. 주역 (周易 64괘)
-  | 'thai_astrology' // 12. 태국점성술 (Thai Horasat)
-  | 'tojeong'        // 13. 토정비결 (土亭秘訣)
-  | 'kyusei'         // 14. 구성학 (九星氣學)
-  | 'taiyi';         // 15. 태을신수 (太乙神數)
+import type { DivinationToolId } from './lucyToolRegistry';
+export type { DivinationToolId } from './lucyToolRegistry';
 
 export type SevenThemeChannel =
   | 'prologue'

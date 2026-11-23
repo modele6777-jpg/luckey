@@ -13,7 +13,8 @@
  *    호리(Hori) AI를 뛰어넘는 민첩하고 집중력 있는 맞춤형 통찰 제공
  */
 
-import type { DivinationToolId } from '../fifteenDivinationTools';
+import type { DivinationToolId } from '../lucyToolRegistry';
+import { runLucyCoreCalculation } from '../lucyMasterCore';
 import type { UserProfile } from '../sharedState';
 import { DIVINATION_REQUEST_PATTERN } from '../divinationIntent';
 import { runDeterministicEngine, formatDeterministicEnginePrompt, getFiredEngineBadges, type DeterministicEngineReport, ALL_DCE_ENGINES } from './deterministicEngine';
@@ -643,12 +644,10 @@ export function routeAndExecute(params: {
   }
 
   // 선별된 최적 도구들만 대상으로 결정론적 계산 엔진 가동
-  const engineReport = runDeterministicEngine({
+  const engineReport = runLucyCoreCalculation(runDeterministicEngine, {
     profile: params.profile,
     question: params.text,
-    forceAllTools: true,
     focusTools: routePlan.isMasterMobilization ? undefined : routePlan.targetTools,
-    coreOnly: true,
     reviewAll: routePlan.isMasterMobilization,
   });
 
