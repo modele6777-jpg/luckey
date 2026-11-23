@@ -1682,3 +1682,8 @@ html.duo-unfolded-mode .lucy-orb-stage.is-live .lucy-orb-ritual { width: min(62%
 @keyframes lucy-slot-drop { from { transform: translateY(-60px) scale(1.3) rotate(-8deg); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (max-height: 640px) { .lucy-shuffle-deck { min-height: 120px; } .lucy-shuffle-deck span { width: 62px; height: 102px; margin: -58px 0 0 -31px; } }
 @media (prefers-reduced-motion: reduce) { .lucy-shuffle-deck span { animation: none; } .lucy-shuffle-slots .is-filled span { animation: none; } }
+
+/* ⚡ 전부 멈춰: 남은 카드를 한 번에 뽑는다 */
+.lucy-cardpick-actions { flex-wrap: wrap; }
+.lucy-cardpick-actions button.lucy-stop-all { border-color: rgba(243, 207, 134, .85); color: #fff1c4; background: rgba(243, 207, 134, .16); }
+@media (max-width: 380px) { .lucy-cardpick-actions button { padding: 8px 12px; font-size: 12.5px; } }

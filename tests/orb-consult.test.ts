@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   parseCardNumbers, parseSinoKorean, shuffleOrbDeck, pickOrbCards, orbCardPickMessage,
-  summarizeOrbSession, saveOrbMemory, loadOrbMemory, buildOrbMemoryBrief, latestOrbMemoryLine, countStopWords,
+  summarizeOrbSession, saveOrbMemory, loadOrbMemory, buildOrbMemoryBrief, latestOrbMemoryLine, countStopWords, isStopAll,
 } from '../src/lib/orbConsult.ts';
 
 const store = new Map<string, string>();
@@ -85,4 +85,9 @@ test('a shuffle pick tells the master the cards without numbers', () => {
   const message = orbCardPickMessage(cards);
   assert.match(message, /세 번 멈춰/);
   assert.doesNotMatch(message, /\d+번/);
+});
+
+test('"전부 멈춰" draws the rest at once, a single "멈춰" does not', () => {
+  for (const text of ['전부 멈춰', '다 멈춰요', '한꺼번에 뽑아 주세요', '모두 스톱', '세 장 다 멈춰']) assert.equal(isStopAll(text), true, text);
+  for (const text of ['멈춰', '멈춰요', '연애 고민이 다 있어요']) assert.equal(isStopAll(text), false, text);
 });
