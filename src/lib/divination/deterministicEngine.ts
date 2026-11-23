@@ -1,3 +1,5 @@
+import { LUCY_COUNSEL_GROUNDING } from '../lucyMasterCore';
+import { getLucyToolScope } from '../lucyToolRegistry';
 import { buildKnowledgeCards } from './knowledge';
 import { slimToolDataToBudget } from './promptSlim';
 import { getSymbolicPerspective } from './symbolicPerspective';
@@ -7501,6 +7503,7 @@ export function getCalculationAudit(report: DeterministicEngineReport, options?:
   const core = getIncludedCalculationTools(report, options).map(tool => {
     const symbolic = report.masterReview && REVIEW_PENDING_CORE.has(tool.toolId);
     const perspectives = symbolic ? getSymbolicPerspective(tool.data) : [];
+    const scope = getLucyToolScope(tool.toolId);
     const status = symbolic ? (perspectives.length ? 'symbolic' as const : 'skipped' as const) : tool.status;
     const sentToModel = status === 'symbolic'
       ? perspectives.length > 0
@@ -8459,13 +8462,6 @@ function shouldIncludeEngine(engineKey: string, options?: FormatDeterministicEng
  * 명확하고 가독성 높은 구조화된 텍스트 및 JSON 블록으로 변환합니다.
  */
 /** 생년월일과 무관하게 질문 시각(또는 올해)으로만 정해지는 도구. */
-const SHARED_CHART_SCOPE: Partial<Record<string, string>> = {
-  iching: '지금 시각의 괘 · 같은 시각에 물으면 누구나 같은 괘 · 개인 운명이 아니라 이번 물음의 상(象)으로만 풀 것',
-  liuren: '지금 시각의 판 · 같은 시각이면 누구나 같음 · 이번 일의 흐름으로만 풀고 타고난 운명처럼 말하지 말 것',
-  qimen: '지금 시각의 기문 판(점시) · 누구나 같음 · 생년월일 기반 홍국기문이 아님',
-  taiyi: '올해의 연국 · 올해 모든 사람에게 같은 시대 흐름 · 개인 운명처럼 말하지 말 것',
-};
-
 export function formatDeterministicEnginePrompt(
   report: DeterministicEngineReport,
   options?: FormatDeterministicEngineOptions
@@ -8474,11 +8470,12 @@ export function formatDeterministicEnginePrompt(
   const evidence = included.map(tool => {
     const symbolic = report.masterReview && REVIEW_PENDING_CORE.has(tool.toolId);
     const perspectives = symbolic ? getSymbolicPerspective(tool.data) : [];
+    const scope = getLucyToolScope(tool.toolId);
     return {
       tool: tool.toolKoName,
       status: symbolic ? (perspectives.length ? 'symbolic' : 'skipped') : tool.status,
       // 시각·연도로만 정해지는 판은 사람마다 같다: 개인 운명처럼 말하지 않게 표시한다.
-      ...(SHARED_CHART_SCOPE[tool.toolId] ? { scope: SHARED_CHART_SCOPE[tool.toolId] } : {}),
+      ...(scope ? { scope } : {}),
       method: tool.method,
       note: tool.note,
       limitations: Array.isArray(tool.limitations) ? tool.limitations.slice(0, 2) : tool.limitations,
@@ -8495,6 +8492,7 @@ export function formatDeterministicEnginePrompt(
 입력 생년월일: ${report.inputProfile.solarDateString || '미입력'} · 생시: ${report.inputProfile.birthtime || '미입력'}
 답변에 전달한 계산 성공 도구: ${calculated.map(tool => tool.toolKoName).join(', ') || '없음'}
 
+${LUCY_COUNSEL_GROUNDING}
 아래 상태표의 calculated와 실제 data가 함께 있는 항목만 계산 근거로 사용한다.
 이 결과는 천문 위치 또는 구현된 전통 규칙의 산출값이며, 해석·미래 예측의 정확성을 입증한 실측값이 아니다.
 skipped/error/partial/symbolic/not_implemented는 계산 성공으로 표현하거나 엔진 가동 수에 포함하지 않는다.

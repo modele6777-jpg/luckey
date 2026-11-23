@@ -1,3 +1,5 @@
+import { runLucyCoreCalculation } from '../lucyMasterCore';
+import { getLucyToolScope } from '../lucyToolRegistry';
 /**
  * 🔮 오브 도구 실행기: 마스터가 부른 함수를 기존 계산 엔진으로 실행한다.
  *
@@ -39,13 +41,6 @@ const defaultLoader: OrbToolLoader = {
     ]);
     return { engine, slim, cards };
   },
-};
-
-const SHARED_SCOPE: Record<string, string> = {
-  iching: '지금 시각의 괘, 같은 시각이면 누구나 같음. 이번 물음의 상으로만 풀 것',
-  liuren: '지금 시각의 판, 이번 일의 흐름으로만 풀 것',
-  qimen: '지금 시각의 기문 판(점시), 생년월일 기반 아님',
-  taiyi: '올해의 연국, 모든 사람에게 같은 시대 흐름',
 };
 
 /** 결과 크기: 음성 상담은 짧게 (도구당 약 2,400자). */
@@ -102,21 +97,20 @@ export function createOrbToolExecutor(options: {
     const started = performance.now();
     try {
       const { engine, slim, cards } = await load();
-      const report = engine.runDeterministicEngine({
+      const report = runLucyCoreCalculation(engine.runDeterministicEngine, {
         profile: options.profile || null,
         question: reason,
-        forceAllTools: true,
         focusTools: [toolId],
-        coreOnly: true,
         ...(dice ? { ichingLines: drawOrbIchingLines() } : {}),
       });
       const envelope = Object.values(report.tools || {}).find(tool => tool?.toolId === toolId);
+      const scope = getLucyToolScope(toolId);
       const calculated = envelope?.status === 'calculated' && envelope.data != null;
       const result: Record<string, unknown> = {
         ok: calculated,
         tool: meta.name,
         status: envelope?.status || 'skipped',
-        ...(dice ? { scope: '이번 질문의 무작위 괘', casting: '두 주사위 육효 변형 (동전 3개 방식과 같은 확률)' } : SHARED_SCOPE[toolId] ? { scope: SHARED_SCOPE[toolId] } : {}),
+        ...(dice ? { scope: '이번 질문의 무작위 괘', casting: '두 주사위 육효 변형 (동전 3개 방식과 같은 확률)' } : scope ? { scope } : {}),
         ...(envelope?.method ? { method: envelope.method } : {}),
         ...(envelope?.note ? { note: envelope.note } : {}),
         ...(Array.isArray(envelope?.limitations) && envelope.limitations.length ? { limitations: envelope.limitations.slice(0, 2) } : {}),

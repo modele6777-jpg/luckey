@@ -7,39 +7,15 @@
  */
 
 /** 도구를 계산하려면 무엇이 필요한가. */
-export type OrbToolNeed = 'birthdate' | 'none';
+import { LUCY_TOOL_REGISTRY, type LucyToolMeta } from '../lucyToolRegistry';
+import { LUCY_COUNSEL_GROUNDING } from '../lucyMasterCore';
 
-export interface OrbToolMeta {
-  id: string;
-  name: string;
-  /** 마스터가 도구를 고를 때 보는 한 줄 설명 (해석 문장 아님). */
-  about: string;
-  needs: OrbToolNeed;
-  /** 생시가 있으면 더 정확해지는 도구. */
-  betterWithTime?: boolean;
-}
-
-/** 기존 15대 도구 중 계산 엔진으로 실행하는 14개 (타로는 손님이 직접 뽑으므로 따로 둔다). */
-export const ORB_CALC_TOOLS: readonly OrbToolMeta[] = [
-  { id: 'saju', name: '사주명리', about: '생년월일시의 네 기둥과 오행, 대운으로 타고난 기질과 시기의 흐름', needs: 'birthdate', betterWithTime: true },
-  { id: 'astrology', name: '서양 점성술', about: '태어난 때의 행성 위치와 각도로 성향과 관계의 결', needs: 'birthdate', betterWithTime: true },
-  { id: 'ziwei', name: '자미두수', about: '명궁의 별과 열두 궁으로 삶의 영역별 그릇 (연애·재물·일)', needs: 'birthdate', betterWithTime: true },
-  { id: 'vedic', name: '베딕 점성술', about: '달의 별자리와 다샤(지금 흐르는 행성 시기)로 마음과 시기', needs: 'birthdate', betterWithTime: true },
-  { id: 'sukuyo', name: '숙요', about: '태어난 날의 27숙으로 기질과 사람 사이의 인연 관계', needs: 'birthdate' },
-  { id: 'kyusei', name: '구성학', about: '본명성(아홉 별)으로 기질과 올해·이달의 방위 흐름', needs: 'birthdate' },
-  { id: 'tojeong', name: '토정비결', about: '올해 한 해의 괘와 열두 달 흐름', needs: 'birthdate' },
-  { id: 'mahabote', name: '마하보테', about: '미얀마 요일 점성으로 태어난 요일의 별과 집', needs: 'birthdate' },
-  { id: 'thai_astrology', name: '태국 점성술', about: '태어난 요일의 수호신과 나이별 시기 흐름', needs: 'birthdate' },
-  { id: 'kabbalah', name: '카발라 수비학', about: '생년월일 숫자로 생명나무의 자리 (현대 헤르메스 전통의 상징 대응)', needs: 'birthdate' },
-  { id: 'iching', name: '주역', about: '지금 시각으로 세운 괘 하나로 이번 물음의 상(象). 사람마다 같은 시각의 판', needs: 'none' },
-  { id: 'liuren', name: '육임', about: '지금 시각의 판으로 이번 일의 진행과 사람 관계의 흐름', needs: 'none' },
-  { id: 'qimen', name: '기문둔갑', about: '지금 시각의 판으로 방향과 때, 움직일지 기다릴지', needs: 'none' },
-  { id: 'taiyi', name: '태을수', about: '올해의 연국으로 큰 시대 흐름 (개인 운명 아님)', needs: 'none' },
-];
+export type OrbToolMeta = LucyToolMeta;
+export const ORB_CALC_TOOLS = LUCY_TOOL_REGISTRY.filter(tool => !tool.voicePick);
 
 export const ORB_CALC_TOOL_IDS: readonly string[] = ORB_CALC_TOOLS.map(tool => tool.id);
 
-export const ORB_TOOL_BY_ID = new Map(ORB_CALC_TOOLS.map(tool => [tool.id, tool]));
+export const ORB_TOOL_BY_ID = new Map<string, OrbToolMeta>(ORB_CALC_TOOLS.map(tool => [tool.id, tool]));
 
 /** 한 번의 질문(손님 말 한 차례)에 부를 수 있는 계산 수. */
 export const ORB_MAX_CALLS_PER_TURN = 3;
@@ -87,6 +63,7 @@ export function buildOrbMasterRules(profile: OrbProfileStatus): string {
     '[오브 상담 방식] 당신은 오브 하나에 깃든 상담 마스터 한 명입니다. 15가지 운세 도구를 직접 골라 씁니다.',
     '먼저 손님 고민을 한두 마디 듣고, 고민에 꼭 맞는 도구만 고르세요. 한 번에 한두 개, 한 상담에서 많아야 서너 개입니다. 모든 도구를 다 부르지 마세요.',
     `계산이 필요하면 ${ORB_FN_RUN_TOOL} 함수를 부르세요. 별도 대기 멘트 없이 곧바로 함수를 부르고 결과를 받으면 핵심부터 말하세요. 타로가 어울리면 ${ORB_FN_TAROT} 함수를 부르고 섞기 안내를 하세요.`,
+    LUCY_COUNSEL_GROUNDING,
     '함수 결과의 계산값과 해석 카드만 근거로 풀이하세요. 결과에 없는 별, 괘, 카드, 숫자를 지어내지 마세요. status가 calculated가 아니면 계산되지 않았다고 솔직히 말하세요.',
     'scope를 확인하세요. 시간식 주역·육임·기문·태을은 공통 판이고, 주사위 주역은 이번 질문의 무작위 괘입니다. 손님의 타고난 운명처럼 말하지 마세요.',
     '결론은 가능성과 선택지로 표현하고 결과를 보장하지 마세요. 건강 진단·법적 판단·투자 결정을 대신하지 마세요. 고민을 한 문장으로 확인하고 바로 해볼 수 있는 행동 하나를 남겨 주세요.',

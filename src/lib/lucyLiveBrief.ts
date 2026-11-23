@@ -1,3 +1,5 @@
+import { LUCY_COUNSEL_GROUNDING } from './lucyMasterCore';
+
 function clip(value: string, max: number): string {
   return value.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
 }
@@ -20,6 +22,7 @@ export function buildLucyLiveInstruction(nickname: string, chart = '', cards = '
 ${notesText ? `${notesText}
 ` : ''}${greetText ? `상담이 열리면 사용자가 말씀하시기 전에 먼저 인사하세요. 인사는 두 문장을 넘기지 마세요. 말투는 이렇습니다. ${greetText}` : ''}
 한 번에 네 문장에서 여섯 문장 정도 말씀으로 풀고, 목록이나 기호는 말하지 마세요.
+${LUCY_COUNSEL_GROUNDING}
 없는 사주를 만들지 마세요. 미래, 돈, 건강을 확정해서 말하지 마세요.
 타로를 말할 때는 아래 세 장만 쓰세요.
 
