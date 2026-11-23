@@ -670,8 +670,8 @@ test('Big Bang hold enters Lucy Master, deepens it, and a single tap leaves', as
   expect(await page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
 
   // 한 번 탭: 일반 루시로 돌아가고 깊이도 초기화
-  await page.waitForTimeout(400);
-  await page.mouse.click(x, y);
+  await expect(page.getByTestId('lucy-master-suction')).toBeHidden();
+  await button.tap();
   await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBeNull();
   await expect(page.locator('.lucy-master-room')).toHaveCount(0);
   expect(await page.evaluate(() => sessionStorage.getItem('lucy_master_depth'))).toBeNull();
