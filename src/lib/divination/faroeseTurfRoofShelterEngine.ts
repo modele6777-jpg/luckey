@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface FaroeseTurfResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '안식·포용' | '이정표·걸음' | '본질·온기' | '안식 전반';
   faroeseMotif: string;
   companionMotif: string;
+  cliffShelterAxis: string;
   faroeseInsight: string;
   atlanticTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const FAROESE_SHADOWS = [
+  '감정과 변수를 다 받아안으려다 정작 지붕이 버틸 수 있는 무게를 넘는 일까지 떠안지 마세요.',
+  '당장 눈앞의 돌무더기만 보며 걷더라도 큰 위험 신호가 떴을 때는 한 번 멈춰 방향을 재확인하세요.',
+  '본래의 거친 성정을 지킨다는 명분으로 주변과 부드럽게 맞출 수 있는 유연함까지 닫아걸지 마세요.',
+  '내 일의 물줄기를 묵묵히 흘려보내느라 곁에서 보내는 중요한 피드백이나 경고까지 지나치지 마세요.',
+  '안락한 부엌의 온기에만 머무르다 바깥 날씨가 개었을 때 나아가야 할 타이밍을 놓치지 않도록 살피세요.',
+];
+
+function classifyFaroeseTopic(q: string): FaroeseTurfResult['questionTopic'] {
+  if (/안식|포용|지붕|감정|완충/.test(q)) return '안식·포용';
+  if (/이정표|돌무더기|걸음|안개|길|방향/.test(q)) return '이정표·걸음';
+  if (/본질|온기|성정|물줄기|차|집/.test(q)) return '본질·온기';
+  return '안식 전반';
+}
+
 export function calculateFaroeseTurfRoofShelter(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): FaroeseTurfResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyFaroeseTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const cliffShelterAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = FAROESE_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-FAROESE-TURF-v2.2.0',
+    engineVersion: 'LUCKEY-FAROESE-TURF-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     faroeseMotif: picked.motif,
     companionMotif: companion.motif,
+    cliffShelterAxis,
     faroeseInsight: picked.insight,
     atlanticTone: picked.tone,
     reflectionFocus: `페로 제도 풀지붕의 '${picked.motif}'과 동반 결 '${companion.motif}'을 함께 헤아리며, 짙은 안개 속에서도 당장 눈앞에 보이는 돌무더기 하나만큼의 걸음만 믿어 보세요.`,
     ritualAction: picked.ritual,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '북대서양 페로 제도의 잔디 지붕 건축과 바르디 돌무더기 길잡이 지혜를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatFaroeseTurfPrompt(res: FaroeseTurfResult): string {
   return [
     `[페로·풀지붕 안식 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 절벽·안식 축: ${res.cliffShelterAxis}`,
     `- 페로 모티프: ${res.faroeseMotif} (${res.atlanticTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.faroeseInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
