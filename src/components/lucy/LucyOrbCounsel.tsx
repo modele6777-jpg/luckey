@@ -9,7 +9,7 @@ import { playTTSInChunks, stopTTS, useTTSActive, useTTSState } from '@/utils/tts
 import { CHANNEL_MENU_ICONS, MessageCircleMinus } from '@/lib/channelMenuIcons';
 import { drawLucyTarotCards } from '@/utils/tarotDetector';
 import { Clover, KeyRound, MessageCirclePlus, type LucideIcon } from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
 import { setMicCaptureActive } from '@/lib/audioMixingPolicy';
 import { rememberBgmBeforeMic, resumeBgmAfterMicSoon } from '@/lib/micBgmResume';
@@ -30,6 +30,19 @@ function HeartGlyph() {
     </svg>
   );
 }
+/** 인스타 라이브처럼 떠오르는 하트들 (위치·지연·크기·색이 조금씩 다르다). */
+const IG_HEARTS = [
+  { x: 0, delay: 0, scale: 1.25, color: '#ff3b5c', sway: 14 },
+  { x: -10, delay: 90, scale: .9, color: '#ff7aa8', sway: -18 },
+  { x: 12, delay: 170, scale: 1, color: '#ffb02e', sway: 16 },
+  { x: -4, delay: 260, scale: .8, color: '#c86bff', sway: -12 },
+  { x: 8, delay: 340, scale: 1.1, color: '#ff3b5c', sway: 20 },
+  { x: -14, delay: 430, scale: .75, color: '#5ec8ff', sway: -16 },
+  { x: 4, delay: 520, scale: .95, color: '#ff7aa8', sway: 12 },
+  { x: -6, delay: 610, scale: .85, color: '#ffb02e', sway: -20 },
+  { x: 10, delay: 700, scale: 1, color: '#ff3b5c', sway: 14 },
+  { x: -2, delay: 800, scale: .7, color: '#c86bff', sway: -10 },
+];
 /** Faint shapes drifting inside the crystal ball: every Luckey icon plus runes. */
 const ORB_ICONS: LucideIcon[] = [Clover, MessageCircleMinus, MessageCirclePlus, KeyRound, ...Object.values(CHANNEL_MENU_ICONS).filter(icon => icon !== KeyRound)];
 const ORB_RUNES = ['ᚠ', 'ᚢ', 'ᚦ', 'ᚨ', 'ᚱ', 'ᚲ', 'ᚷ', 'ᚹ', 'ᛉ', 'ᛋ', 'ᛏ', 'ᛒ', 'ᛗ', 'ᛟ'];
@@ -189,6 +202,9 @@ export function LucyOrbCounsel({
   const [talismanOpen, setTalismanOpen] = useState(false);
   const talismanCanvas = useRef<HTMLCanvasElement | null>(null);
   const [burst, setBurst] = useState(0);
+  const burstFrom = useRef<number>(50);
+  const bokTimer = useRef<number | null>(null);
+  const stageRef = useRef<HTMLElement | null>(null);
   const [caution, setCaution] = useState(false);
   const [lit, setLit] = useState(false);
   const [orbBurst, setOrbBurst] = useState(0);
@@ -290,6 +306,7 @@ export function LucyOrbCounsel({
       if (dieTimer.current) window.clearTimeout(dieTimer.current);
       if (cautionTimer.current) window.clearTimeout(cautionTimer.current);
       if (holdTimer.current) window.clearTimeout(holdTimer.current);
+      if (bokTimer.current) window.clearTimeout(bokTimer.current);
       heavenToken.current += 1;
       releasePrimedMicRef.current();
       if (heavenSpokeRef.current) { stopTTS(); heavenSpokeRef.current = false; }
@@ -728,11 +745,19 @@ export function LucyOrbCounsel({
     take('나', userBuf);
   };
 
-  const offerBok = () => {
-    if (!bok || hearted) return;
-    const picked = BOKCHAE.find(item => item.id === bok);
+  // 금액을 누르면 바로 복채가 올라간다: 그 버튼에서 하트가 인스타 라이브처럼 떠오르고, 잠시 뒤 부적이 열린다.
+  const offerBok = (id: string, origin?: HTMLElement | null) => {
+    if (hearted) return;
+    const picked = BOKCHAE.find(item => item.id === id);
     if (!picked) return;
+    setBok(id);
     setHearted(true);
+    const stage = stageRef.current?.querySelector('.lucy-bok');
+    if (origin && stage) {
+      const a = origin.getBoundingClientRect();
+      const b = stage.getBoundingClientRect();
+      burstFrom.current = b.width ? ((a.left + a.width / 2 - b.left) / b.width) * 100 : 50;
+    }
     setBurst(value => value + 1);
     // 상담에서 내가 한 말과 마스터의 주제로 부적 종류를 고르고, 전통 부적처럼 그린다.
     const userText = linesRef.current.filter(line => line.who === '나').map(line => line.text).join(' ');
@@ -742,7 +767,9 @@ export function LucyOrbCounsel({
     drawTalisman(canvas, spec, `${today.getFullYear()}. ${today.getMonth() + 1}. ${today.getDate()}.`, today.getTime());
     talismanCanvas.current = canvas;
     setTalisman({ spec, url: canvas.toDataURL('image/png') });
-    setTalismanOpen(true);
+    if (bokTimer.current) window.clearTimeout(bokTimer.current);
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    bokTimer.current = window.setTimeout(() => { bokTimer.current = null; setTalismanOpen(true); }, reduced ? 0 : 1300);
   };
 
   const saveTalisman = async () => {
@@ -781,9 +808,39 @@ export function LucyOrbCounsel({
     setDraft('');
   };
 
+  // 보고서 화면의 복채 줄은 빅뱅 버튼 위에 둔다: 버튼 위치를 재서 그만큼 띄운다.
+  useLayoutEffect(() => {
+    if (phase !== 'report') return;
+    const stage = stageRef.current;
+    if (!stage) return;
+    const measure = () => {
+      const box = stage.getBoundingClientRect();
+      const dock = stage.querySelector('.lucy-orb-report-dock')?.getBoundingClientRect();
+      let clear = dock ? box.bottom - dock.top + 10 : 72;
+      document.querySelectorAll<HTMLElement>('[data-bigbang="true"]').forEach(el => {
+        const r = el.getBoundingClientRect();
+        if (!r.width || !r.height || r.right < box.left || r.left > box.right || r.bottom < box.top || r.top > box.bottom) return;
+        clear = Math.max(clear, box.bottom - r.top + 6);
+      });
+      stage.style.setProperty('--orb-bok-bottom', `${Math.round(clear)}px`);
+      const panel = stage.querySelector<HTMLElement>('.lucy-bok');
+      const ritual = stage.querySelector<HTMLElement>('.lucy-orb-ritual');
+      if (panel && ritual) {
+        const top = parseFloat(getComputedStyle(stage).paddingTop) || 0;
+        const room = box.height - clear - panel.offsetHeight - top - 12;
+        stage.style.setProperty('--orb-report-room', `${Math.max(120, Math.round(room))}px`);
+      }
+    };
+    measure();
+    const timer = window.setInterval(measure, 800);
+    window.addEventListener('resize', measure);
+    return () => { window.clearInterval(timer); window.removeEventListener('resize', measure); };
+  }, [phase]);
+
   return (
       <section
-        className={`lucy-orb-stage ${ready ? 'is-ready' : ''} ${phase === 'live' ? 'is-live' : ''} ${speaking ? 'is-speaking' : ''} ${leaving ? 'is-leaving' : ''}`}
+        ref={stageRef}
+        className={`lucy-orb-stage ${ready ? 'is-ready' : ''} ${phase === 'live' ? 'is-live' : ''} ${phase === 'report' ? 'is-report' : ''} ${speaking ? 'is-speaking' : ''} ${leaving ? 'is-leaving' : ''}`}
         data-orb-counsel="true"
         role="region"
         aria-label="오브 상담"
@@ -992,29 +1049,6 @@ export function LucyOrbCounsel({
         <div className="lucy-orb-copy">
           {phase === 'pick' && <p>탁자 위 주사위를 누르거나 마스터를 고르시면 상담이 시작됩니다</p>}
           {phase === 'live' && <p>{speaking ? `${master?.name} 마스터가 말하고 있습니다` : `${master?.name} · ${master?.tone}. 말씀하셔도 되고, 적으셔도 됩니다`}</p>}
-          {phase === 'report' && <p>상담을 마쳤습니다. 채팅에 남기기를 누르면 루시가 상담을 요약한 보고서를 만들어 드려요.{hearted ? '' : ' 복채를 내시면 이 상담에 맞는 부적을 써 드립니다.'}</p>}
-          {phase === 'report' && master && (
-          <div className="lucy-bok is-inline">
-            <p>{hearted ? '복채 감사합니다. 부적을 써 드렸어요' : '복채를 내시면 부적을 써 드려요 · 금액은 마음껏'}</p>
-            <div>
-              {BOKCHAE.map(item => (
-                <button key={item.id} type="button" className={bok === item.id ? 'is-on' : ''} disabled={hearted} onClick={() => setBok(item.id)}>{item.label}</button>
-              ))}
-            </div>
-            {talisman && !talismanOpen && <button type="button" className="lucy-talisman-reopen" onClick={() => setTalismanOpen(true)}>🧧 부적 다시 보기</button>}
-            <button type="button" className={`lucy-ig-like ${hearted ? 'is-liked' : ''}`} disabled={!bok} onClick={offerBok} aria-label="복채 내기">
-              <HeartGlyph />
-            </button>
-            {burst > 0 && (
-              <span key={burst} className="lucy-ig-pop" aria-hidden="true">
-                <HeartGlyph />
-                {[-72, -46, -18, 12, 40, 68].map(angle => (
-                  <i key={angle} style={{ ['--a' as string]: `${angle}deg` }}><HeartGlyph /></i>
-                ))}
-              </span>
-            )}
-          </div>
-          )}
           {(phase === 'pick' || phase === 'live') && (
             <div className="lucy-orb-voice-controls">
               <span className="lucy-orb-voice-label">음성 대화 방식</span>
@@ -1096,6 +1130,23 @@ export function LucyOrbCounsel({
         )}
         {phase === 'report' && master && (
           <>
+          <div className="lucy-bok">
+            <p className="lucy-bok-done">상담을 마쳤습니다. 채팅에 남기기를 누르면 루시가 요약 보고서를 만들어 드려요.</p>
+            <p>{hearted ? `${BOKCHAE.find(item => item.id === bok)?.label || ''} 복채 감사합니다. 부적을 써 드렸어요` : '복채를 내시면 부적을 써 드려요 · 금액을 누르세요'}</p>
+            <div className="lucy-bok-chips">
+              {!hearted && BOKCHAE.map(item => (
+                <button key={item.id} type="button" onClick={event => offerBok(item.id, event.currentTarget)}>{item.label}</button>
+              ))}
+              {hearted && <button type="button" className="lucy-talisman-reopen" disabled={!talisman || talismanOpen} onClick={() => setTalismanOpen(true)}>🧧 부적 보기</button>}
+            </div>
+            {burst > 0 && (
+              <span key={burst} className="lucy-ig-live" style={{ left: `${burstFrom.current}%` }} aria-hidden="true">
+                {IG_HEARTS.map((heart, index) => (
+                  <i key={index} style={{ ['--x' as string]: `${heart.x}px`, ['--d' as string]: `${heart.delay}ms`, ['--s' as string]: String(heart.scale), ['--c' as string]: heart.color, ['--sway' as string]: `${heart.sway}px` }}><HeartGlyph /></i>
+                ))}
+              </span>
+            )}
+          </div>
           <div className="lucy-orb-dock lucy-orb-report-dock">
             <button type="button" onClick={keepReport}>채팅에 남기기</button>
             <button type="button" className="lucy-orb-report-close" onClick={closeWithoutSaving}>닫기</button>

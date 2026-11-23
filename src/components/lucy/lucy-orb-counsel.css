@@ -1097,55 +1097,69 @@ html.duo-unfolded-mode .lucy-orb-copy { width: min(720px, 92%); }
   padding: 10px 6px;
   font-size: clamp(11px, 3.4vw, 14px);
 }
-.lucy-bok { position: absolute; left: 16px; right: 16px; bottom: calc(64px + max(16px, env(safe-area-inset-bottom))); z-index: 3; text-align: center; }
-.lucy-bok p { margin: 0 0 8px; font-size: 12px; color: rgba(247,244,238,.78); }
-.lucy-bok div { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
-.lucy-bok div button {
+.lucy-bok {
+  position: absolute;
+  left: 50%;
+  width: min(420px, calc(100% - 24px));
+  transform: translateX(-50%);
+  padding: 12px 12px 14px;
+  border-radius: 20px;
+  background: rgba(14, 11, 34, .62);
+  box-shadow: inset 0 0 0 1px rgba(243, 207, 134, .22), 0 10px 30px rgba(0, 0, 0, .35);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  bottom: var(--orb-bok-bottom, calc(72px + env(safe-area-inset-bottom)));
+  z-index: 4;
+  text-align: center;
+  pointer-events: none;
+}
+.lucy-bok p { margin: 0 0 8px; font-size: 12px; color: rgba(247,244,238,.82); text-shadow: 0 1px 6px rgba(8,6,24,.8); }
+.lucy-bok p.lucy-bok-done { margin-bottom: 6px; font-size: 13.5px; line-height: 1.5; color: #fbf7ff; word-break: keep-all; }
+.lucy-orb-stage.is-report .lucy-orb-copy { display: none; }
+.lucy-bok-chips { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; pointer-events: auto; }
+@container (max-width: 330px) { .lucy-bok-chips button { padding: 7px 8px; font-size: 12px; } }
+@media (max-width: 400px) { .lucy-bok-chips button { padding: 7px 9px; font-size: 12.5px; } .lucy-bok { padding: 10px 8px 12px; } }
+.lucy-bok-chips button {
   border: 1px solid rgba(255,255,255,.28);
-  background: rgba(255,255,255,.1);
+  background: rgba(20,16,44,.62);
   color: #f7f4ee;
   border-radius: 999px;
-  padding: 8px 12px;
+  padding: 8px 11px;
   font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  transition: transform .15s ease, background .15s ease;
 }
-.lucy-bok div button.is-on { background: #f7f4ee; color: #172033; }
-.lucy-ig-like {
-  width: 46px;
-  height: 46px;
-  margin: 10px auto 8px;
-  padding: 0;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  display: grid;
-  place-items: center;
+.lucy-bok-chips button:active:not(:disabled) { transform: scale(.94); }
+.lucy-bok-chips button.is-on { background: linear-gradient(180deg, #fff6dc, #f3cf86); color: #3a2410; border-color: transparent; }
+.lucy-bok-chips button:disabled:not(.is-on) { opacity: .45; }
+.lucy-bok-chips .lucy-talisman-reopen { display: inline-block; margin: 0; border-color: rgba(243,207,134,.6); color: #fff1c4; }
+.lucy-bok-chips .lucy-talisman-reopen:disabled { opacity: .55; }
+/* 인스타 라이브 하트: 누른 금액 버튼에서 하트들이 흔들리며 위로 떠오른다. */
+.lucy-ig-live { position: absolute; bottom: 18px; width: 0; height: 0; pointer-events: none; }
+.lucy-ig-live i {
+  position: absolute;
+  left: var(--x);
+  bottom: 0;
+  display: block;
+  width: 30px;
+  height: 30px;
+  margin-left: -15px;
+  opacity: 0;
+  animation: lucy-ig-rise 2.1s cubic-bezier(.25,.6,.4,1) var(--d) forwards;
 }
-.lucy-ig-like svg { width: 32px; height: 32px; fill: none; stroke: #f7f4ee; stroke-width: 1.7; }
-.lucy-ig-like.is-liked { animation: lucy-ig-bounce .45s cubic-bezier(.17,.89,.32,1.27); }
-.lucy-ig-like.is-liked svg { fill: #ed4956; stroke: #ed4956; }
-.lucy-ig-like:disabled { opacity: .4; }
-.lucy-ig-pop { position: absolute; left: 50%; top: 28%; width: 0; height: 0; pointer-events: none; }
-.lucy-ig-pop > svg { position: absolute; width: 92px; height: 92px; margin: -46px 0 0 -46px; fill: #ed4956; animation: lucy-ig-pop .78s cubic-bezier(.17,.89,.32,1.2) forwards; }
-.lucy-ig-pop i { position: absolute; display: block; animation: lucy-ig-float .8s ease-out forwards; }
-.lucy-ig-pop i svg { width: 16px; height: 16px; fill: #ed4956; }
-@keyframes lucy-ig-bounce {
-  0% { transform: scale(1); }
-  20% { transform: scale(.7); }
-  50% { transform: scale(1.35); }
-  75% { transform: scale(.92); }
-  100% { transform: scale(1); }
+.lucy-ig-live i svg { width: 100%; height: 100%; fill: var(--c); filter: drop-shadow(0 2px 6px rgba(0,0,0,.35)); }
+@keyframes lucy-ig-rise {
+  0% { opacity: 0; transform: translate(0, 0) scale(.2); }
+  10% { opacity: 1; transform: translate(0, -18px) scale(calc(var(--s) * 1.15)); }
+  20% { transform: translate(calc(var(--sway) * -.5), -60px) scale(var(--s)); }
+  45% { transform: translate(var(--sway), -140px) scale(var(--s)); }
+  70% { opacity: .9; transform: translate(calc(var(--sway) * -.6), -220px) scale(var(--s)); }
+  100% { opacity: 0; transform: translate(calc(var(--sway) * .4), -300px) scale(calc(var(--s) * .9)); }
 }
-@keyframes lucy-ig-pop {
-  0% { transform: scale(0); opacity: 0; }
-  18% { transform: scale(1.2); opacity: 1; }
-  36% { transform: scale(.92); }
-  52% { transform: scale(1); opacity: 1; }
-  100% { transform: scale(1); opacity: 0; }
-}
-@keyframes lucy-ig-float {
-  0% { transform: rotate(var(--a)) translateY(0) scale(.3); opacity: 1; }
-  100% { transform: rotate(var(--a)) translateY(-78px) scale(1); opacity: 0; }
-}
+@media (prefers-reduced-motion: reduce) { .lucy-ig-live { display: none; } }
 .lucy-orb-caution {
   position: absolute;
   left: 50%;
@@ -1292,7 +1306,7 @@ html.duo-unfolded-mode .lucy-charm { width: min(380px, 70%); }
 }
 .lucy-orb-stage.is-leaving { pointer-events: none; animation: lucy-stage-clear 1.5s ease forwards; }
 .lucy-orb-stage.is-leaving .lucy-orb-cloud { animation: lucy-cloud-clear 1.5s var(--orb-ease) forwards; }
-.lucy-orb-stage.is-leaving :is(.lucy-orb-ritual, .lucy-orb-copy, .lucy-orb-dock, .lucy-orb-end) {
+.lucy-orb-stage.is-leaving :is(.lucy-orb-ritual, .lucy-orb-copy, .lucy-orb-dock, .lucy-orb-end, .lucy-bok) {
   animation: lucy-ritual-away .9s var(--orb-ease) forwards;
 }
 @keyframes lucy-cloud-clear {
@@ -1471,6 +1485,7 @@ html.duo-unfolded-mode .lucy-talisman img { height: min(64vh, 560px); max-width:
 @media (prefers-reduced-motion: reduce) { .lucy-talisman { animation: none; } }
 /* Clouds and particles reach past the stage edge; `clip` (unlike `hidden`) also stops focus/scrollIntoView from shifting the stage sideways. */
 .lucy-orb-stage { overflow: clip; }
-/* 보고서 화면의 복채는 본문 안에 둔다: 아래쪽 빅뱅 버튼에 가리지 않고, 스크롤해 위로 올릴 수 있다. */
-.lucy-orb-copy .lucy-bok.is-inline { position: relative; left: auto; right: auto; bottom: auto; margin-top: 16px; }
-.lucy-orb-stage:has(.lucy-bok.is-inline) .lucy-orb-copy { padding-bottom: 230px; }
+/* 보고서 화면: 복채 상자는 빅뱅 버튼 위에 두고(--orb-bok-bottom), 수정구슬 탁자는 그 위 남은 공간(--orb-report-room)에 맞춰 줄인다. */
+.lucy-orb-stage.is-report { justify-content: flex-start; }
+.lucy-orb-stage.is-report .lucy-orb-ritual { width: min(86%, 430px, calc(var(--orb-report-room, 9999px) / .92)); margin-top: 0; }
+html.duo-unfolded-mode .lucy-orb-stage.is-report .lucy-orb-ritual { width: min(62%, 680px, calc(var(--orb-report-room, 9999px) / .92)); }
