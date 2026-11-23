@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface DalmatianStoneResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '경계·정리' | '관계·쉼' | '자존·회복' | '평온 전반';
   dalmatianMotif: string;
   companionMotif: string;
+  limestoneBreezeAxis: string;
   dalmatianInsight: string;
   adriaticTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const DALMATIAN_SHADOWS = [
+  '돌담을 너무 높게 쌓느라 정작 바깥에서 불어오는 반가운 바람과 새 소식까지 막지 않도록 살피세요.',
+  '척박한 자리에서 버티는 데 익숙해져, 더 나은 환경으로 옮기거나 도움을 청할 기회마저 마다하지 마세요.',
+  '지나간 매듭을 긍정하는 데서 멈추지 말고, 지금 곧바로 펴야 할 습관은 부드럽게 손보도록 하세요.',
+  '덧문을 닫고 쉬는 시간이 길어져 꼭 열어야 할 대화의 창문까지 닫아 두지 않도록 시간을 정해 두세요.',
+  '항구의 평온에 안주해 내일 아침 다시 닻을 올릴 준비와 점검까지 미루지 않도록 균형을 잡으세요.',
+];
+
+function classifyDalmatianTopic(q: string): DalmatianStoneResult['questionTopic'] {
+  if (/돌|울타리|경계|정리|일|집/.test(q)) return '경계·정리';
+  if (/관계|쉼|휴식|그늘|사람|대화/.test(q)) return '관계·쉼';
+  if (/자존|회복|향기|매듭|후회/.test(q)) return '자존·회복';
+  return '평온 전반';
+}
+
 export function calculateDalmatianStoneLavenderCalm(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): DalmatianStoneResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyDalmatianTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const limestoneBreezeAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = DALMATIAN_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-DALMATIAN-STONE-v2.2.0',
+    engineVersion: 'LUCKEY-DALMATIAN-STONE-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     dalmatianMotif: picked.motif,
     companionMotif: companion.motif,
+    limestoneBreezeAxis,
     dalmatianInsight: picked.insight,
     adriaticTone: picked.tone,
     reflectionFocus: `달마티아 석축의 '${picked.motif}'과 동반 결 '${companion.motif}'을 함께 헤아리며, 거친 돌멩이를 내 밭을 지키는 울타리로 바꾸고 서늘한 그늘에서 숨을 골라 보세요.`,
     ritualAction: picked.ritual,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '아드리아해 크로아티아 달마티아·흐바르 섬의 석축 밭과 라벤더 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatDalmatianStonePrompt(res: DalmatianStoneResult): string {
   return [
     `[달마티아·라벤더 석축 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 석축 축: ${res.limestoneBreezeAxis}`,
     `- 달마티아 모티프: ${res.dalmatianMotif} (${res.adriaticTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.dalmatianInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

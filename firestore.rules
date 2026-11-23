@@ -9,6 +9,9 @@ service cloud.firestore {
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
+    function isKnowledgeAdmin() {
+      return isSignedIn() && request.auth.token.knowledgeAdmin == true;
+    }
 
     // 1. Shared State Profile & Standalone User Profiles
     match /sharedState/{userId} {
@@ -81,6 +84,49 @@ service cloud.firestore {
     match /prescriptions/{prescriptionId} {
       allow read: if isSignedIn();
       allow write: if false; 
+    }
+
+    // Lucy knowledge growth is isolated from counseling memory and pairedVaults.
+    match /lucyKnowledgeSettings/{settingId} {
+      allow read, create, update: if isKnowledgeAdmin();
+      allow delete: if false;
+    }
+    match /lucyKnowledgeDrafts/{draftId} {
+      allow read, create, update: if isKnowledgeAdmin();
+      allow delete: if false;
+    }
+    match /lucyKnowledgeVersions/{versionId} {
+      allow read: if isKnowledgeAdmin();
+      allow create: if isKnowledgeAdmin() && request.resource.data.status == 'approved';
+      allow update, delete: if false;
+    }
+    match /lucyKnowledgePublished/{cardId} {
+      allow read: if isSignedIn();
+      allow create, update: if isKnowledgeAdmin() && request.resource.data.status == 'approved';
+      allow delete: if false;
+    }
+    match /lucyKnowledgeResearchRuns/{runId} {
+      allow read: if isKnowledgeAdmin();
+      allow create: if isKnowledgeAdmin()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.status == 'reserved'
+        && request.resource.data.reservedUsd is number
+        && request.resource.data.reservedUsd > 0;
+      allow update: if isKnowledgeAdmin()
+        && resource.data.uid == request.auth.uid
+        && resource.data.status == 'reserved'
+        && request.resource.data.status in ['completed', 'failed_reserved']
+        && request.resource.data.reservedUsd == resource.data.reservedUsd
+        && request.resource.data.actualUsd is number
+        && request.resource.data.actualUsd >= 0;
+      allow delete: if false;
+    }
+    match /lucyKnowledgeBudgetDays/{dayId} {
+      allow read: if isKnowledgeAdmin();
+      allow create, update: if isKnowledgeAdmin()
+        && request.resource.data.reservedUsd is number
+        && request.resource.data.reservedUsd >= 0;
+      allow delete: if false;
     }
 
     // 0. Fallback Safety Net

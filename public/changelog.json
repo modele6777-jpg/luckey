@@ -1,12 +1,93 @@
 [
   {
-    "version": "1.8.401",
-    "builtAt": "2026-11-23T14:31:27.471Z",
-    "summary": "WebKit 오브 이후 화면 동작 회귀 검사 보정",
+    "version": "1.8.409",
+    "builtAt": "2026-11-23T19:59:50.896Z",
+    "summary": "WebKit 화면·음성 회귀 수정",
     "items": [
-      "빅뱅 방향과 점술모드 화면 검사를 현재 메뉴와 화면 규칙에 맞췄어요.",
-      "엔진함과 루시 대화 스크롤을 WebKit에서 다시 확인해요.",
-      "오브로 이동할 때 빅뱅 표시의 방향 정보와 접근성 속성을 전달해요."
+      "오브와 Lucky를 반영해 빅뱅 방향 검사를 바로잡았어요.",
+      "오브 이동 표시와 루시 복귀 후 최신 대화 위치를 복원해요.",
+      "외부 음악이 계속 재생되는지 빌드 서버에서도 검사해요."
+    ]
+  },
+  {
+    "version": "1.8.408",
+    "builtAt": "2026-11-24T04:55:00+09:00",
+    "summary": "코르시카 파겔라·코스타리카 디퀴스·달마티아 석축 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.408)",
+    "items": [
+      "코르시카 파겔라·마키 화음 엔진(v2.3.0): 질문 맥락(questionTopic), 합창 축(paghjellaAxis), 과잉 경계(shadowWarning) 추가",
+      "코스타리카 디퀴스 돌공 엔진(v2.3.0): 질문 맥락(questionTopic), 석구 축(sphereAlignmentAxis), 과잉 경계(shadowWarning) 추가",
+      "달마티아·라벤더 석축 엔진(v2.3.0): 질문 맥락(questionTopic), 석축 축(limestoneBreezeAxis), 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
+    "version": "1.8.407",
+    "builtAt": "2026-11-24T04:45:00+09:00",
+    "summary": "축치 베링해·추바시 투라·콘월 케르노우 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.407)",
+    "items": [
+      "축치 베링해 툰드라 화덕 엔진(v2.3.0): 질문 맥락(questionTopic), 극지 축(tundraHearthAxis), 과잉 경계(shadowWarning) 추가",
+      "추바시 투라 세계수 조화 엔진(v2.3.0): 질문 맥락(questionTopic), 세계수 축(worldTreeAxis), 과잉 경계(shadowWarning) 추가",
+      "콘월 케르노우 화강암 인내 엔진(v2.3.0): 질문 맥락(questionTopic), 해안 축(graniteCoastAxis), 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
+    "version": "1.8.406",
+    "builtAt": "2026-11-24T04:35:00+09:00",
+    "summary": "차빈 라손·체첸 바이나흐·치로에 팔라피토 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.406)",
+    "items": [
+      "차빈 라손 돌기둥 균형 엔진(v2.3.0): 질문 맥락(questionTopic), 석주 축(stoneBalanceAxis), 과잉 경계(shadowWarning) 추가",
+      "체첸 바이나흐 카바흐 명예 엔진(v2.3.0): 질문 맥락(questionTopic), 명예 축(honorBalanceAxis), 과잉 경계(shadowWarning) 추가",
+      "치로에 팔라피토 물때 균형 엔진(v2.3.0): 질문 맥락(questionTopic), 물때 축(tidePoiseAxis), 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
+    "version": "1.8.405",
+    "builtAt": "2026-11-24T04:25:00+09:00",
+    "summary": "카렐리아 루노·그레이트 짐바브웨·오지브웨 7대 가르침 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.405)",
+    "items": [
+      "카렐리야 루노·칸텔레 공명 엔진(v2.3.0): 질문 맥락(questionTopic), 공명 축(kanteleChordAxis), 과잉 경계(shadowWarning) 추가",
+      "그레이트 짐바브웨 석조 성벽 엔진(v2.3.0): 질문 맥락(questionTopic), 석조 축(stoneLockAxis), 과잉 경계(shadowWarning) 추가",
+      "오지브웨 7대 할아버지 가르침 엔진(v2.3.0): 질문 맥락(questionTopic), 덕목 축(virtueBalanceAxis), 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
+    "version": "1.8.404",
+    "builtAt": "2026-11-24T04:15:00+09:00",
+    "summary": "히타이트 테레피누·미낭카바우 루마 가당·과라니 테코 포라 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.404)",
+    "items": [
+      "히타이트 테레피누 조화·회복 엔진(v2.3.0): 질문 맥락(questionTopic), 회복 축(telepinuReturnAxis), 과잉 경계(shadowWarning) 추가",
+      "미낭카바우 루마 가당 엔진(v2.3.0): 질문 맥락(questionTopic), 균형 축(gonjongBalanceAxis), 과잉 경계(shadowWarning) 추가",
+      "구아라니 테코 포랑 숲 조화 엔진(v2.3.0): 질문 맥락(questionTopic), 공존 축(tekoPoraCycleAxis), 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
+    "version": "1.8.403",
+    "builtAt": "2026-11-24T04:05:00+09:00",
+    "summary": "루앙프라방 메콩·예니세이 케트·쿠나 몰라 3대 엔진 질문 맥락·순환 축·과잉 경계 심층 강화(v1.8.403)",
+    "items": [
+      "루앙프라방 메콩 새벽 엔진(v2.3.0): 질문 맥락(questionTopic), 메콩 새벽 축(mekongDawnAxis), 과잉 경계(shadowWarning) 추가",
+      "시베리아 예니세이 케트 타이가 별 엔진(v2.3.0): 질문 맥락(questionTopic), 타이가 순환 축(taigaCycleAxis), 과잉 경계(shadowWarning) 추가",
+      "파나마 쿠나 몰라 겹바느질 엔진(v2.3.0): 질문 맥락(questionTopic), 겹바느질 축(molaStitchAxis), 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
+    "version": "1.8.402",
+    "builtAt": "2026-11-23T15:41:00.000Z",
+    "summary": "Lucy 지식 성장 기능에 출처 검토·승인·버전·비용 안전장치를 더했어요",
+    "items": [
+      "Crossref 서지 메타데이터 검색과 AI 해석 초안 검토 대기함을 추가했어요",
+      "원문 전문 확인·중복·충돌 검토와 관리자 승인 뒤에만 상담 지식으로 공개해요",
+      "승인 버전 보존·복원과 비용 예약 원장을 마련하고 정기 연구는 기본 비활성으로 두었어요",
+      "기존 15개 엔진의 계산 근거와 세 상담 모드 연결을 확인했어요"
+    ]
+  },
+  {
+    "version": "1.8.401",
+    "builtAt": "2026-11-23T15:16:09.679Z",
+    "summary": "15개 점술 엔진의 계산 근거와 해석 연결을 보완했어요",
+    "items": [
+      "계산 성공 결과에만 엔진별 해석 자료를 연결해요",
+      "타로 생일 수비학과 무작위 추첨을 분리해 안내해요",
+      "계산·예측을 과장하던 지침을 바로잡았어요"
     ]
   },
   {

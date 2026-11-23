@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface KarelianRunoResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계·호흡' | '일·꾸준함' | '마음·소박함' | '공명 전반';
   runoMotif: string;
   companionMotif: string;
+  kanteleChordAxis: string;
   kanteleInsight: string;
   forestLakeTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const KARELIAN_SHADOWS = [
+  '소박함을 지키려다 정작 필요한 도움과 새로운 도구까지 모두 밀어내지 않도록 경계하세요.',
+  '상대의 호흡을 맞추려다 내 진심과 속도를 뒤로 미루는 일이 잦아지지 않게 살피세요.',
+  '감정을 말로 꺼내는 데에만 머물고 실제 일상의 정리로 옮기지 못할 수 있음을 유의하세요.',
+  '꾸준함만 붙들다 이미 방향을 바꿔야 할 신호까지 놓치지 않도록 가끔 고개를 들어 보세요.',
+  '새벽의 맑은 시선을 핑계로 어제 매듭지어야 했던 책임을 가볍게 넘기지 않도록 살피세요.',
+];
+
+function classifyKarelianTopic(q: string): KarelianRunoResult['questionTopic'] {
+  if (/관계|호흡|사람|사랑|연애|대화/.test(q)) return '관계·호흡';
+  if (/일|직장|진로|꾸준|루틴|성과/.test(q)) return '일·꾸준함';
+  if (/마음|소박|울림|감정|피로|휴식/.test(q)) return '마음·소박함';
+  return '공명 전반';
+}
+
 export function calculateKarelianRunoKanteleResonance(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): KarelianRunoResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyKarelianTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const kanteleChordAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = KARELIAN_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-KARELIAN-KANTELE-v2.2.0',
+    engineVersion: 'LUCKEY-KARELIAN-KANTELE-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     runoMotif: picked.motif,
     companionMotif: companion.motif,
+    kanteleChordAxis,
     kanteleInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     forestLakeTone: picked.tone,
     reflectionFocus: `카렐리야 루노·칸텔레 전통의 '${picked.motif}'와 동반 결 '${companion.motif}'처럼, 복잡한 꾸밈을 덜어내고 내 마음에 남은 진실한 울림에 귀를 기울여 보세요.`,
     ritualAction: picked.ritual,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '카렐리야(Karelia)의 루노(Runo) 구전 시가·칸텔레(Kantele) 공명 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatKarelianRunoPrompt(res: KarelianRunoResult): string {
   return [
     `[카렐리야 루노·칸텔레 공명 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 공명 축: ${res.kanteleChordAxis}`,
     `- 루노 상징: ${res.runoMotif} (${res.forestLakeTone})`,
     `- 동반 결: ${res.companionMotif}`,
     `- 중심 통찰: ${res.kanteleInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

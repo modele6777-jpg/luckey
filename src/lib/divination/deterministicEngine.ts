@@ -55,7 +55,7 @@ import { calculateHonggukQimen, formatHonggukQimenPrompt, type HonggukQimenResul
 import { calculateDeterministicCompatibility, formatCompatibilityPrompt, type CompatibilityAnalysisResult } from './deterministicCompatibility';
 import { calculateLiurenMaster, liurenPersonalPositions, formatLiurenMasterPrompt, type LiurenMasterResult, LIUREN_MASTER_ENGINE_VERSION, LIUREN_MASTER_METHOD } from './liurenMasterEngine';
 import { calculateIchingMaster, formatIchingMasterPrompt, type IchingMasterResult, ICHING_MASTER_ENGINE_VERSION, ICHING_MASTER_METHOD } from './ichingMasterEngine';
-import { calculateTarotMaster, formatTarotMasterPrompt, type TarotMasterResult, TAROT_MASTER_ENGINE_VERSION, TAROT_MASTER_METHOD } from './tarotMasterEngine';
+import { calculateTarotMaster, type TarotMasterResult, TAROT_MASTER_ENGINE_VERSION, TAROT_MASTER_METHOD } from './tarotMasterEngine';
 import { calculateHeLuoLiShu, formatHeLuoLiShuPrompt, type HeLuoLiShuResult, HELUOLISHU_ENGINE_VERSION, HELUOLISHU_METHOD } from './heLuoLiShuEngine';
 import { calculateDynamicClashTrigger, formatDynamicClashPrompt, type DynamicClashResult } from './dynamicClashTriggerEngine';
 import { calculateTwelveSpiritsCycle, formatTwelveSpiritsPrompt, type TwelveSpiritsResult } from './twelveSpiritsCycleEngine';
@@ -8461,6 +8461,44 @@ function shouldIncludeEngine(engineKey: string, options?: FormatDeterministicEng
  * 결정론적 계산 엔진 리포트를 LLM 프롬프트에 주입하기 위해
  * 명확하고 가독성 높은 구조화된 텍스트 및 JSON 블록으로 변환합니다.
  */
+function formatCalculatedEngineInterpretation(tool: ToolCalculationEnvelope): string {
+  if (tool.status !== 'calculated' || tool.data == null) return '';
+  const data = tool.data as Record<string, unknown>;
+
+  switch (tool.toolId) {
+    case 'tarot': {
+      const result = tool.data as TarotMasterResult;
+      if (!result.soulCard || !result.personalityCard || !result.yearCard) return '';
+      return `[타로 생일 수비학 상징 참고 · 무작위 추첨 아님]
+- 생년월일 계산 소울 카드: ${result.soulCard.name} [${result.soulCard.element}] — ${result.soulCard.keywords.join(', ')}
+- 생년월일 계산 퍼스널리티 카드: ${result.personalityCard.name} [${result.personalityCard.element}] — ${result.personalityCard.coreMessage}
+- ${result.currentYear}년 연간 성찰 카드: ${result.yearCard.name}
+${result.interpretiveBoundary ? `- 해석 경계: ${result.interpretiveBoundary}\n` : ''}이 계산은 생일 수비학에 따른 상징 대응이며 실제 무작위 카드 추첨이나 과거·현재·미래 스프레드가 아니다. 개인의 현재 상황이나 미래 사건을 카드 추첨 결과처럼 말하지 않는다.`;
+    }
+    case 'sukuyo': {
+      const advanced = data.advanced;
+      return advanced ? formatSukuyoPrompt(advanced as SukuyoResult) : '';
+    }
+    case 'mahabote': return formatMahabotePrompt(tool.data as MahaboteResult);
+    case 'vedic': {
+      const advanced = data.advanced;
+      return advanced ? formatVedicPrompt(advanced as VedicResult) : '';
+    }
+    case 'liuren': return formatLiurenMasterPrompt(tool.data as LiurenMasterResult);
+    case 'qimen': {
+      const hongguk = data.honggukQimen;
+      return hongguk ? formatHonggukQimenPrompt(hongguk as HonggukQimenResult) : '';
+    }
+    case 'kabbalah': return formatKabbalahPrompt(tool.data as KabbalahResult);
+    case 'iching': return formatIchingMasterPrompt(tool.data as IchingMasterResult);
+    case 'thai_astrology': return formatThaiHorasatPrompt(tool.data as ThaiHorasatResult);
+    case 'tojeong': return formatTojeongPrompt(tool.data as TojeongResult);
+    case 'kyusei': return formatKyuseiPrompt(tool.data as KyuseiResult);
+    case 'taiyi': return formatTaiyiPrompt(tool.data as TaiyiResult);
+    default: return '';
+  }
+}
+
 /** 생년월일과 무관하게 질문 시각(또는 올해)으로만 정해지는 도구. */
 export function formatDeterministicEnginePrompt(
   report: DeterministicEngineReport,
@@ -8487,6 +8525,10 @@ export function formatDeterministicEnginePrompt(
   const symbolicReview = getMasterSymbolicReview(report, options);
   // 📚 해석 사전: 이번 계산값(주역 본괘·지괘, 숙요 본명숙 등)에 맞는 카드만 붙인다.
   const knowledgeCards = buildKnowledgeCards(calculated);
+  // 넓은 Pro/마스터 프롬프트는 기존 요약 JSON과 관련 카드로 유지해 전체 용량 예산을 지킨다.
+  const engineInterpretations = calculated.length <= 3
+    ? calculated.map(formatCalculatedEngineInterpretation).filter(Boolean)
+    : [];
   return `[이번 질문의 계산 근거 및 한계]
 기준 시각: ${report.calculatedAtKst}
 입력 생년월일: ${report.inputProfile.solarDateString || '미입력'} · 생시: ${report.inputProfile.birthtime || '미입력'}
@@ -8506,11 +8548,15 @@ skipped/error/partial/symbolic/not_implemented는 계산 성공으로 표현하�
 응답에는 이번 질문에 실제 사용한 계산 근거와 필요한 한계만 짧게 알려준다.
 
 scope가 있는 도구(주역·육임·기문 점시·태을)는 생년월일이 아니라 질문 시각이나 올해로 정해진 공통 판이다. '당신의 운명'처럼 말하지 말고 '지금 이 물음의 판', '올해의 흐름'으로 말한다.
-아래 JSON에는 계산값만 담았다. 앱이 붙이던 해석 문장·점수·생일 타로 3카드는 빠져 있으니, 풀이는 계산값을 근거로 직접 한다.
+아래 JSON에는 계산값만 담았다. 이어지는 엔진별 해석자료는 계산 성공한 항목에만 기존 포맷터가 붙인 전통적·상징적 설명이다. 해석 문장을 계산 사실이나 검증된 예측으로 격상하지 말고, 데이터에 없는 개인별 점괘·추첨·사건은 만들지 않는다.
 
 [계산 상태 및 데이터 JSON]
 ${JSON.stringify(evidence)}
 [JSON 끝]
+${engineInterpretations.length ? `[엔진별 계산 결과 해석자료 · calculated + data 항목만]
+${engineInterpretations.join('\n\n')}
+각 자료는 해석을 돕는 참고일 뿐, 해석 경계와 계산 한계를 함께 지킨다.
+` : ''}
 ${knowledgeCards.length ? `[해석 카드 · 앱 해석 사전 (이번 계산값에 해당하는 것만)]
 ${knowledgeCards.map(card => `- ${card}`).join('\n')}
 카드는 계산값의 전통적 뜻을 짧게 정리한 상징적 참고다. 계산값과 함께 근거로 쓰되, 카드에 없는 구절을 원전 인용처럼 지어내지 않는다.

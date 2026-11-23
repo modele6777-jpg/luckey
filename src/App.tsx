@@ -6,6 +6,7 @@ import { rememberOverlayPane } from './lib/overlayPane';
 import { isLucyThemeRoute } from './lib/lucyDayTheme';
 import { TTSFailureNotice } from './components/common/TTSFailureNotice';
 import { recordOneStopPageVisit } from './lib/omniWarp/contextNavCycleEngine';
+import { startPublishedKnowledgeSync } from './lib/divination/knowledge/publishedKnowledgeClient';
 import React from "react";
 import { Route, Switch, Redirect, useLocation, useSearch } from "wouter";
 import { motion, AnimatePresence } from "motion/react";
@@ -84,6 +85,7 @@ const LucyProPage = lazyWithRetry(() => import("./pages/LucyProPage"));
 const HandbookStandalonePage = lazyWithRetry(() => import("./pages/HandbookStandalonePage"));
 const OmniWarpPage = lazyWithRetry(() => import("./pages/OmniWarpPage"));
 const CalmApp = lazyWithRetry(() => import("./pages/CalmApp"));
+const LucyKnowledgeAdminPage = lazyWithRetry(() => import("./pages/LucyKnowledgeAdminPage"));
 
 // ⚡ 0초 무지연 즉각 채널 전환을 위한 전체 채널 백그라운드 프리로더 (체감 로딩 0ms)
 const ALL_CHANNEL_LOADERS = [
@@ -176,6 +178,7 @@ const ROUTES_MAP = [
   { path: "/calm", Component: CalmApp },
   { path: "/key", Component: CalmApp },
   { path: "/voice", Component: OrbPage },
+  { path: "/admin/knowledge", Component: LucyKnowledgeAdminPage },
 ];
 
 function SuspendedPage({ children }: { children: React.ReactNode }) {
@@ -218,6 +221,7 @@ function ActivePage({ loc }: { loc: string }) {
         <Route path="/calm"><React.Suspense fallback={<PageLoader />}><CalmApp /></React.Suspense></Route>
         <Route path="/key"><React.Suspense fallback={<PageLoader />}><CalmApp /></React.Suspense></Route>
         <Route path="/voice"><React.Suspense fallback={<PageLoader />}><OrbPage /></React.Suspense></Route>
+        <Route path="/admin/knowledge"><React.Suspense fallback={<PageLoader />}><LucyKnowledgeAdminPage /></React.Suspense></Route>
       </Switch>
     </ErrorBoundary>
   );
@@ -265,6 +269,7 @@ function GlobalTTSScroll() {
 
 function AppContent() {
   const { firebaseUser, isAuthReady, logout, signInWithGoogle, sharedState, isUnlocked, unlock, isChatOpen, syncPrismDevices } = useApp();
+  React.useEffect(() => startPublishedKnowledgeSync(), []);
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === 'light';
   const [location, navigate] = useLocation();

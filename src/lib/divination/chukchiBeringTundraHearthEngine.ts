@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface ChukchiBeringResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '안식·온기' | '일·첫걸음' | '유연·집중' | '생존 전반';
   tundraSymbol: string;
   companionSymbol: string;
+  tundraHearthAxis: string;
   chukchiInsight: string;
   beringTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const CHUKCHI_SHADOWS = [
+  '천막 안의 온기를 지키려다 바깥에서 건네는 필요한 도움과 기회까지 닫아 버리지 마세요.',
+  '첫 발자국을 내디딘 뒤 너무 빨리 속도를 높여 호흡이 흐트러지지 않도록 조절하세요.',
+  '충격을 유연하게 흘려보내려다 정작 분명히 선을 그어야 할 기준까지 흐려지지 않게 살피세요.',
+  '손끝의 완성도에만 몰두해 전체 흐름과 마감 시점을 놓치지 않도록 고개를 들어 확인하세요.',
+  '서서히 밝아지는 조짐에만 기대어 오늘 처리해야 할 현실적인 정리를 미루지 않도록 주의하세요.',
+];
+
+function classifyChukchiTopic(q: string): ChukchiBeringResult['questionTopic'] {
+  if (/온기|안식|휴식|마음|쉼터|사람/.test(q)) return '안식·온기';
+  if (/일|직장|진로|걸음|길|시작/.test(q)) return '일·첫걸음';
+  if (/유연|집중|기다림|완성|부담/.test(q)) return '유연·집중';
+  return '생존 전반';
+}
+
 export function calculateChukchiBeringTundraHearth(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): ChukchiBeringResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyChukchiTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % SYMBOLS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (SYMBOLS.length - 1));
   const picked = SYMBOLS[idx];
   const companion = SYMBOLS[(idx + companionOffset) % SYMBOLS.length];
+  const tundraHearthAxis = `${picked.symbol.split('(')[0].trim()} ↔ ${companion.symbol.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = CHUKCHI_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-CHUKCHI-BERING-v2.2.0',
+    engineVersion: 'LUCKEY-CHUKCHI-BERING-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     tundraSymbol: picked.symbol,
     companionSymbol: companion.symbol,
+    tundraHearthAxis,
     chukchiInsight: `${picked.insight} (동반 상징: ${companion.symbol})`,
     beringTone: picked.tone,
     reflectionFocus: `축치·베링해 툰드라 지혜의 '${picked.symbol}'와 동반 상징 '${companion.symbol}'처럼, 바깥의 바람이 거칠 때는 내 안의 따뜻한 화덕과 유연한 틀을 먼저 돌보세요.`,
     ritualAction: picked.ritual,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '베링해 축치(Chukchi) 전통의 야랑가 온기·우미악 유연성 지혜를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatChukchiBeringPrompt(res: ChukchiBeringResult): string {
   return [
     `[축치 베링해·툰드라 화덕 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 극지 축: ${res.tundraHearthAxis}`,
     `- 극지 상징: ${res.tundraSymbol} (${res.beringTone})`,
     `- 동반 상징: ${res.companionSymbol}`,
     `- 중심 통찰: ${res.chukchiInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

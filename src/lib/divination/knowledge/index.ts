@@ -9,6 +9,9 @@ import {
   KYUSEI_STAR_CARDS, LIUREN_GENERAL_CARDS, QIMEN_GATE_CARDS, QIMEN_PALACE_DIRECTION, ZIWEI_MUTAGEN_CARDS, ZIWEI_STAR_CARDS,
   findCard, formatSimpleCard,
 } from './moreCards';
+import type { DivinationToolId } from '../../lucyToolRegistry';
+import { getApprovedKnowledgeSnapshot } from './approvedCardsStore';
+import { selectApprovedCardsForEngine } from './governance';
 
 interface ToolLike { toolId: string; status: string; data?: unknown }
 
@@ -17,6 +20,7 @@ export function buildKnowledgeCards(tools: readonly ToolLike[]): string[] {
   for (const tool of tools) {
     if (tool.status !== 'calculated' || !tool.data || typeof tool.data !== 'object') continue;
     const data = tool.data as Record<string, any>;
+    if (Object.keys(data).length === 0) continue;
     if (tool.toolId === 'iching') {
       const primary = findIchingCard(data.primary?.name);
       const moving = Array.isArray(data.movingLines) && data.movingLines.length > 0;
@@ -77,6 +81,14 @@ export function buildKnowledgeCards(tools: readonly ToolLike[]): string[] {
           if (at >= 0 && c && good !== chart['值使']) cards.push(formatSimpleCard(`기문 ${c.hanja}(${good}) 방위 ${QIMEN_PALACE_DIRECTION[palaces[at]] ?? palaces[at]}`, c));
         }
       }
+    }
+    // 운영자가 승인해 공개한 카드만 실제 계산된 같은 엔진 결과에 붙인다.
+    for (const card of selectApprovedCardsForEngine(tool.toolId as DivinationToolId, getApprovedKnowledgeSnapshot(), 2)) {
+      const source = card.sources?.[0];
+      const provenance = source
+        ? `${source.title}${source.authors?.length ? ` · ${source.authors.slice(0, 2).join(', ')}` : ''}${source.year ? ` · ${source.year}` : ''}${source.url ? ` · ${source.url.slice(0, 180)}` : ''}`
+        : '출처 메타데이터 없음';
+      cards.push(`[승인 해석 카드 v${card.version ?? 1} · ${card.school || '학파 미표기'} · ${provenance}] ${card.title}: ${card.core} 활용: ${card.use} 주의: ${card.caution}`);
     }
   }
   return cards;

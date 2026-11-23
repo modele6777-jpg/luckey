@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface CorsicanPaghjellaResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계·화음' | '일·성실' | '균형·기준' | '울림 전반';
   corsicanVoice: string;
   companionVoice: string;
+  paghjellaAxis: string;
   paghjellaInsight: string;
   maquisTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const CORSICAN_SHADOWS = [
+  '첫 음을 띄워 올리느라 정작 함께 노래하는 상대의 호흡과 반응이 들어올 틈을 놓치지 마세요.',
+  '묵묵히 바닥을 받치는 역할에만 머무르다 내가 꼭 내야 할 본인의 목소리마저 삼키지 않도록 살피세요.',
+  '분위기를 부드럽게 밝히려는 배려가 내 진짜 기준과 필요한 거절까지 흐리지 않게 주의하세요.',
+  '양쪽 입장을 고루 품으려다 정작 지금 내 편에서 결단해야 할 우선순위가 늦어지지 않게 하세요.',
+  '나만의 기준을 지킨다는 이유로 외부에서 들어오는 건설적인 화음까지 차단하지 않도록 유의하세요.',
+];
+
+function classifyCorsicanTopic(q: string): CorsicanPaghjellaResult['questionTopic'] {
+  if (/관계|대화|화음|배려|사람|사랑/.test(q)) return '관계·화음';
+  if (/일|직장|성실|음|자리|역할/.test(q)) return '일·성실';
+  if (/균형|기준|경계|선택|고민/.test(q)) return '균형·기준';
+  return '울림 전반';
+}
+
 export function calculateCorsicanPaghjellaMaquisHarmony(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): CorsicanPaghjellaResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyCorsicanTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % VOICES.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (VOICES.length - 1));
   const picked = VOICES[idx];
   const companion = VOICES[(idx + companionOffset) % VOICES.length];
+  const paghjellaAxis = `${picked.voice.split('(')[0].trim()} ↔ ${companion.voice.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = CORSICAN_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-CORSICAN-PAGHJELLA-v2.2.0',
+    engineVersion: 'LUCKEY-CORSICAN-PAGHJELLA-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     corsicanVoice: picked.voice,
     companionVoice: companion.voice,
+    paghjellaAxis,
     paghjellaInsight: picked.insight,
     maquisTone: picked.tone,
     reflectionFocus: `코르시카 파겔라 다성 합창의 '${picked.voice}'와 동반 성부 '${companion.voice}'가 어우러지듯, 모든 일을 나 혼자 다 해내려 하기보다 지금 내 자리의 한 음을 정확하고 맑게 내는 데 집중해 보세요.`,
     ritualAction: picked.ritual,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '지중해 코르시카(Corsica) 파겔라 다성 합창과 마키(Maquis) 산길 문화를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatCorsicanPaghjellaPrompt(res: CorsicanPaghjellaResult): str
   return [
     `[코르시카 파겔라·마키 화음 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 합창 축: ${res.paghjellaAxis}`,
     `- 합창 성부: ${res.corsicanVoice} (${res.maquisTone})`,
     `- 동반 성부: ${res.companionVoice}`,
     `- 중심 통찰: ${res.paghjellaInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

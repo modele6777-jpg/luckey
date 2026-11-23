@@ -25,6 +25,7 @@ import { createProxyMiddleware, fixRequestBody } from "http-proxy-middleware";
 import { buildSpecificSedonaDailyOracle } from "./src/lib/dailyTarotOracle";
 import { installAsyncRouteGuard } from "./server/api-lib/routeGuard";
 import { guardRestrictedRoute } from "./server/api-lib/publicAccess";
+import { lucyKnowledgeRouter } from "./server/api-lib/lucyKnowledgeRoute";
 
 const _filename = typeof __filename !== "undefined" ? __filename : "";
 const _dirname = typeof __dirname !== "undefined" ? __dirname : process.cwd();
@@ -416,6 +417,8 @@ async function startServer() {
   if (process.env.RENDER) {
     app.use(guardRestrictedRoute(5_000_000));
   }
+
+  app.use('/api/lucy-knowledge', lucyKnowledgeRouter);
 
   // AI Handler
   app.post("/api/ai", async (req, res) => {

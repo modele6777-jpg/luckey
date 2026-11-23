@@ -3,10 +3,13 @@ import type { UserProfile } from '../sharedState';
 export interface MinangkabauGadangResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계·합의' | '일·구조' | '쉼·여유' | '균형 전반';
   reflectionFocus: string;
   symbolicMotif: string;
   companionMotif: string;
+  gonjongBalanceAxis: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -54,31 +57,53 @@ const MINANGKABAU_QUESTIONS = [
   '내일의 나를 위해 다 쓰지 않고 랑키앙 창고에 따로 남겨 둘 에너지와 시간은 무엇인가요?'
 ];
 
+const MINANGKABAU_SHADOWS = [
+  '대칭과 품격에만 신경 쓰다 정작 지금 필요한 솔직한 표현을 삼키지 않도록 경계하세요.',
+  '조화와 맞물림을 우선하느라 내 기준이나 속마음을 지나치게 양보하지 않도록 살피세요.',
+  '모든 일에서 의미를 찾으려다 사소한 불편까지 과도하게 해석해 피로해지지 마세요.',
+  '합의를 기다리느라 이미 결단이 필요한 시점까지 계속 뒤로 미루지 않도록 주의하세요.',
+  '여유를 비축하려다 정작 지금 마음껏 써야 할 열정과 호의를 아끼지 않도록 살피세요.'
+];
+
+function classifyMinangkabauTopic(q: string): MinangkabauGadangResult['questionTopic'] {
+  if (/관계|합의|사람|사랑|연애|소통/.test(q)) return '관계·합의';
+  if (/일|직장|진로|구조|사업|선택|홈/.test(q)) return '일·구조';
+  if (/쉼|여유|휴식|지침|회복|마음/.test(q)) return '쉼·여유';
+  return '균형 전반';
+}
+
 export function calculateMinangkabauRumahGadang(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): MinangkabauGadangResult {
   const { profile, now = new Date(), question = '' } = params;
-  const seed = `${JSON.stringify(profile.fate ?? {})}|${question.trim()}|${now.toISOString().slice(0, 13)}`;
+  const trimmed = question.trim();
+  const questionTopic = classifyMinangkabauTopic(trimmed);
+  const seed = `${JSON.stringify(profile.fate ?? {})}|${trimmed}|${now.toISOString().slice(0, 13)}`;
   const hash = stableHash(seed);
   const idx = hash % MINANGKABAU_MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MINANGKABAU_MOTIFS.length - 1));
 
   const motif = MINANGKABAU_MOTIFS[idx];
   const companionMotif = MINANGKABAU_MOTIFS[(idx + companionOffset) % MINANGKABAU_MOTIFS.length];
+  const gonjongBalanceAxis = `${motif.slice(0, 18)}… ↔ ${companionMotif.slice(0, 18)}… (${questionTopic})`;
   const ritualAction = MINANGKABAU_ACTIONS[idx];
+  const shadowWarning = MINANGKABAU_SHADOWS[idx];
   const reflectiveQuestion = MINANGKABAU_QUESTIONS[idx];
 
   return {
-    engineVersion: 'LUCKEY-MINANGKABAU-GADANG-v2.2.0',
+    engineVersion: 'LUCKEY-MINANGKABAU-GADANG-v2.3.0',
     calculatedAtKst: getKstTimeString(now),
-    reflectionFocus: question.trim()
-      ? `질문 "${question.trim()}" 속에서 못 없이 맞물리는 조화와 여유를 살피는 미낭카바우 뿔지붕 관점 (동반 결: ${companionMotif.slice(0, 24)}…)`
+    questionTopic,
+    reflectionFocus: trimmed
+      ? `질문 "${trimmed}" 속에서 못 없이 맞물리는 조화와 여유를 살피는 미낭카바우 뿔지붕 관점 (동반 결: ${companionMotif.slice(0, 24)}…)`
       : '자연의 결을 스승으로 삼아 못 없이 맞물리는 미낭카바우 루마 가당 관점',
     symbolicMotif: motif,
     companionMotif,
+    gonjongBalanceAxis,
     ritualAction,
+    shadowWarning,
     reflectiveQuestion,
     interpretiveBoundary:
       '수마트라 미낭카바우 전통 건축과 지혜 격언의 상징적 비유로, 개인 점수·성격 진단·미래 예측이 아닙니다.'
@@ -89,10 +114,12 @@ export function formatMinangkabauGadangPrompt(result: MinangkabauGadangResult): 
   return [
     `[미낭카바우·뿔지붕 조화 관점 (${result.engineVersion})]`,
     `- 기준 시각: ${result.calculatedAtKst}`,
+    `- 질문 맥락: ${result.questionTopic} | 균형 축: ${result.gonjongBalanceAxis}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 상징 모티프: ${result.symbolicMotif}`,
     `- 동반 모티프: ${result.companionMotif}`,
     `- 제안 의식: ${result.ritualAction}`,
+    `- 과잉 경계: ${result.shadowWarning}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 경계: ${result.interpretiveBoundary}`
   ].join('\n');
