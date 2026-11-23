@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.408",
+    "builtAt": "2026-11-24T04:55:00+09:00",
+    "summary": "코르시카 파겔라·코스타리카 디퀴스·달마티아 석축 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.408)",
+    "items": [
+      "코르시카 파겔라·마키 화음 엔진(v2.3.0): 질문 맥락(questionTopic), 합창 축(paghjellaAxis), 과잉 경계(shadowWarning) 추가",
+      "코스타리카 디퀴스 돌공 엔진(v2.3.0): 질문 맥락(questionTopic), 석구 축(sphereAlignmentAxis), 과잉 경계(shadowWarning) 추가",
+      "달마티아·라벤더 석축 엔진(v2.3.0): 질문 맥락(questionTopic), 석축 축(limestoneBreezeAxis), 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.407",
     "builtAt": "2026-11-24T04:45:00+09:00",
     "summary": "축치 베링해·추바시 투라·콘월 케르노우 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.407)",

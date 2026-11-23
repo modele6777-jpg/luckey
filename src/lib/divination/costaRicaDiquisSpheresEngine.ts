@@ -3,10 +3,13 @@ import type { UserProfile } from '../sharedState';
 export interface DiquisSpheresResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '마음·유연' | '기준·방향' | '일·완성' | '성숙 전반';
   reflectionFocus: string;
   symbolicMotif: string;
   companionMotif: string;
+  sphereAlignmentAxis: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -58,28 +61,50 @@ const DIQUIS_ITEMS = [
   },
 ];
 
+const DIQUIS_SHADOWS = [
+  '모난 귀퉁이를 둥글게 다듬으려다 정작 분명히 지켜야 할 핵심 원칙까지 무뎌지지 않게 살피세요.',
+  '기준점을 세우는 데만 집중해 숲의 변화에 맞춰 경로를 미세 조정하는 유연함을 잃지 마세요.',
+  '시간의 힘을 믿고 천천히 다듬다가도 마감이 정해진 현실의 실행 시점을 놓치지 않도록 주의하세요.',
+  '내 보폭을 지킨다는 이유로 함께 걸어야 할 동료와의 호흡 조율까지 미루지 않도록 균형을 두세요.',
+  '비바람을 견딘 단단함에 취해 새로운 조언과 부드러운 손길까지 튕겨 내지 않도록 마음을 열어 두세요.',
+];
+
+function classifyDiquisTopic(q: string): DiquisSpheresResult['questionTopic'] {
+  if (/마음|둥글|감정|관계|사람|유연/.test(q)) return '마음·유연';
+  if (/기준|방향|방위|선택|고민/.test(q)) return '기준·방향';
+  if (/일|직장|완성|속도|시간|다듬/.test(q)) return '일·완성';
+  return '성숙 전반';
+}
+
 export function calculateCostaRicaDiquisSpheres(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): DiquisSpheresResult {
   const { profile, now = new Date(), question = '' } = params;
-  const seed = `${JSON.stringify(profile.fate ?? {})}|${question.trim()}|${now.toISOString().slice(0, 13)}`;
+  const q = question.trim();
+  const questionTopic = classifyDiquisTopic(q);
+  const seed = `${JSON.stringify(profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const hash = stableHash(seed);
   const idx = hash % DIQUIS_ITEMS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (DIQUIS_ITEMS.length - 1));
   const picked = DIQUIS_ITEMS[idx];
   const companion = DIQUIS_ITEMS[(idx + companionOffset) % DIQUIS_ITEMS.length];
+  const sphereAlignmentAxis = `${picked.motif.slice(0, 14).trim()} ↔ ${companion.motif.slice(0, 14).trim()} (${questionTopic})`;
+  const shadowWarning = DIQUIS_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-DIQUIS-SPHERES-v2.2.0',
+    engineVersion: 'LUCKEY-DIQUIS-SPHERES-v2.3.0',
     calculatedAtKst: getKstTimeString(now),
-    reflectionFocus: question.trim()
-      ? `질문 "${question.trim()}" 속에서 모난 마음을 천천히 둥글려 가는 코스타리카 디퀴스 돌공과 동반 배치(${companion.motif.slice(0, 26)}…) 관점`
+    questionTopic,
+    reflectionFocus: q
+      ? `질문 "${q}" 속에서 모난 마음을 천천히 둥글려 가는 코스타리카 디퀴스 돌공과 동반 배치(${companion.motif.slice(0, 26)}…) 관점`
       : `정글 속에서 오랜 시간 다듬어진 완벽한 원형처럼 중심을 지키는 코스타리카 디퀴스 돌공과 동반 배치(${companion.motif.slice(0, 26)}…) 관점`,
     symbolicMotif: picked.motif,
     companionMotif: companion.motif,
+    sphereAlignmentAxis,
     ritualAction: picked.ritual,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary:
       '코스타리카 디퀴스 석구 유적의 상징적 비유로, 개인 점수·성격 진단·미래 예측이 아닙니다.'
@@ -90,10 +115,12 @@ export function formatDiquisSpheresPrompt(result: DiquisSpheresResult): string {
   return [
     `[디퀴스·정글 돌공 관점 (${result.engineVersion})]`,
     `- 기준 시각: ${result.calculatedAtKst}`,
+    `- 질문 맥락: ${result.questionTopic} | 석구 축: ${result.sphereAlignmentAxis}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 상징 모티프: ${result.symbolicMotif}`,
     `- 동반 모티프: ${result.companionMotif}`,
     `- 제안 의식: ${result.ritualAction}`,
+    `- 과잉 경계: ${result.shadowWarning}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 경계: ${result.interpretiveBoundary}`
   ].join('\n');
