@@ -13,6 +13,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
 import { setMicCaptureActive } from '@/lib/audioMixingPolicy';
 import { rememberBgmBeforeMic, resumeBgmAfterMicSoon } from '@/lib/micBgmResume';
+import { drawTalisman, pickTalisman, saveTalismanImage, type TalismanSpec } from '@/lib/orbTalisman';
 import './lucy-orb-counsel.css';
 
 const BOKCHAE = [
@@ -138,16 +139,6 @@ function reportFrom(master: OrbMaster, nickname: string, lines: Line[]): string 
   ].filter(line => line !== undefined).join('\n');
 }
 
-function saveReportFile(master: OrbMaster, report: string) {
-  const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
-  const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `루시_오브상담_${master.name}_${stamp}.txt`;
-  link.click();
-  URL.revokeObjectURL(url);
-}
 
 export function LucyOrbCounsel({
   open,
@@ -192,6 +183,11 @@ export function LucyOrbCounsel({
   const [bedOn, setBedOn] = useState(true);
   const [bok, setBok] = useState<string | null>(null);
   const [hearted, setHearted] = useState(false);
+  // 복채를 내면 이 상담에 맞는 부적을 그려 준다 (채팅에는 남기지 않고, 사진으로만 저장).
+  const [talisman, setTalisman] = useState<{ spec: TalismanSpec; url: string } | null>(null);
+  const [talismanNotice, setTalismanNotice] = useState('');
+  const [talismanOpen, setTalismanOpen] = useState(false);
+  const talismanCanvas = useRef<HTMLCanvasElement | null>(null);
   const [burst, setBurst] = useState(0);
   const [caution, setCaution] = useState(false);
   const [lit, setLit] = useState(false);
@@ -269,6 +265,9 @@ export function LucyOrbCounsel({
     setLeaving(false);
     setBok(null);
     setHearted(false);
+    setTalisman(null);
+    setTalismanNotice('');
+    setTalismanOpen(false);
     setBurst(0);
     setCaution(false);
     setLit(false);
@@ -734,7 +733,23 @@ export function LucyOrbCounsel({
     if (!picked) return;
     setHearted(true);
     setBurst(value => value + 1);
-    setReport(current => `${current}\n\n복채\n${picked.label}`.trim());
+    // 상담에서 내가 한 말과 마스터의 주제로 부적 종류를 고르고, 전통 부적처럼 그린다.
+    const userText = linesRef.current.filter(line => line.who === '나').map(line => line.text).join(' ');
+    const spec = pickTalisman(userText, master?.topic || '');
+    const canvas = document.createElement('canvas');
+    const today = new Date();
+    drawTalisman(canvas, spec, `${today.getFullYear()}. ${today.getMonth() + 1}. ${today.getDate()}.`, today.getTime());
+    talismanCanvas.current = canvas;
+    setTalisman({ spec, url: canvas.toDataURL('image/png') });
+    setTalismanOpen(true);
+  };
+
+  const saveTalisman = async () => {
+    const canvas = talismanCanvas.current;
+    if (!canvas || !talisman) return;
+    const stamp = new Date().toISOString().slice(0, 10);
+    const result = await saveTalismanImage(canvas, `luckey-부적-${talisman.spec.nameKo.split(' ')[0]}-${stamp}.png`);
+    setTalismanNotice(result === 'failed' ? '저장을 마치지 못했어요. 부적 이미지를 길게 눌러 사진에 저장할 수도 있어요.' : '부적 사진을 저장했어요.');
   };
 
   const rollMaster = () => {
@@ -806,6 +821,22 @@ export function LucyOrbCounsel({
                 <button type="button" onClick={closeHeaven}>닫기</button>
               </div>
             </div>
+          </div>
+        )}
+        {phase === 'report' && talisman && talismanOpen && (
+          <div className="lucy-talisman-layer" role="dialog" aria-label={`부적: ${talisman.spec.nameKo}`}>
+            <figure className="lucy-talisman">
+              <img src={talisman.url} alt={`${talisman.spec.nameKo} — ${talisman.spec.meaning}`} />
+              <figcaption>
+                <strong>{talisman.spec.nameKo}</strong>
+                <span>{talisman.spec.meaning}</span>
+              </figcaption>
+              <div className="lucy-talisman-actions">
+                <button type="button" className="lucy-talisman-save" onClick={() => void saveTalisman()}>부적 사진으로 저장</button>
+                <button type="button" className="lucy-talisman-close" onClick={() => setTalismanOpen(false)}>닫기</button>
+              </div>
+              {talismanNotice && <p className="lucy-talisman-notice" role="status">{talismanNotice}</p>}
+            </figure>
           </div>
         )}
         {caution && <p className="lucy-orb-caution" role="status">이 상담은 참고일 뿐입니다. 맹신하지 마세요.</p>}
@@ -960,7 +991,29 @@ export function LucyOrbCounsel({
         <div className="lucy-orb-copy">
           {phase === 'pick' && <p>탁자 위 주사위를 누르거나 마스터를 고르시면 상담이 시작됩니다</p>}
           {phase === 'live' && <p>{speaking ? `${master?.name} 마스터가 말하고 있습니다` : `${master?.name} · ${master?.tone}. 말씀하셔도 되고, 적으셔도 됩니다`}</p>}
-          {phase === 'report' && <p>이번 상담을 부적으로 남겼습니다. 파일로도 보관할 수 있습니다</p>}
+          {phase === 'report' && <p>상담을 마쳤습니다. 채팅에 남기기를 누르면 루시가 상담을 요약한 보고서를 만들어 드려요.{hearted ? '' : ' 복채를 내시면 이 상담에 맞는 부적을 써 드립니다.'}</p>}
+          {phase === 'report' && master && (
+          <div className="lucy-bok is-inline">
+            <p>{hearted ? '복채 감사합니다. 부적을 써 드렸어요' : '복채를 내시면 부적을 써 드려요 · 금액은 마음껏'}</p>
+            <div>
+              {BOKCHAE.map(item => (
+                <button key={item.id} type="button" className={bok === item.id ? 'is-on' : ''} disabled={hearted} onClick={() => setBok(item.id)}>{item.label}</button>
+              ))}
+            </div>
+            {talisman && !talismanOpen && <button type="button" className="lucy-talisman-reopen" onClick={() => setTalismanOpen(true)}>🧧 부적 다시 보기</button>}
+            <button type="button" className={`lucy-ig-like ${hearted ? 'is-liked' : ''}`} disabled={!bok} onClick={offerBok} aria-label="복채 내기">
+              <HeartGlyph />
+            </button>
+            {burst > 0 && (
+              <span key={burst} className="lucy-ig-pop" aria-hidden="true">
+                <HeartGlyph />
+                {[-72, -46, -18, 12, 40, 68].map(angle => (
+                  <i key={angle} style={{ ['--a' as string]: `${angle}deg` }}><HeartGlyph /></i>
+                ))}
+              </span>
+            )}
+          </div>
+          )}
           {(phase === 'pick' || phase === 'live') && (
             <div className="lucy-orb-voice-controls">
               <span className="lucy-orb-voice-label">음성 대화 방식</span>
@@ -1009,19 +1062,6 @@ export function LucyOrbCounsel({
           {phase === 'live' && caption && (
             <p key={caption.slice(0, 12)} className="lucy-orb-caption" aria-live="polite">{caption}</p>
           )}
-          {phase === 'report' && master && (
-            <article className="lucy-charm" aria-label="상담 부적">
-              <span className="lucy-charm-side">守</span>
-              <span className="lucy-charm-seal">{master.name}</span>
-              <h2>상담 부적</h2>
-              <p>{master.topic}</p>
-              <div className="lucy-charm-lines">
-                {(lines.length ? lines.slice(-6) : [{ who: '루시' as const, text: '오늘은 말을 아끼고, 숨만 고르기로 했습니다.' }]).map((line, index) => (
-                  <span key={`${line.who}-${index}`}>{line.who === '나' ? '원' : '답'} · {line.text}</span>
-                ))}
-              </div>
-            </article>
-          )}
         </div>
         {/* 입력창은 마스터가 정해진 뒤(상담 중)에만 보인다. */}
         {phase === 'live' && (
@@ -1055,27 +1095,7 @@ export function LucyOrbCounsel({
         )}
         {phase === 'report' && master && (
           <>
-          <div className="lucy-bok">
-            <p>복채는 마음껏 고르셔도 됩니다</p>
-            <div>
-              {BOKCHAE.map(item => (
-                <button key={item.id} type="button" className={bok === item.id ? 'is-on' : ''} disabled={hearted} onClick={() => setBok(item.id)}>{item.label}</button>
-              ))}
-            </div>
-            <button type="button" className={`lucy-ig-like ${hearted ? 'is-liked' : ''}`} disabled={!bok} onClick={offerBok} aria-label="복채 내기">
-              <HeartGlyph />
-            </button>
-            {burst > 0 && (
-              <span key={burst} className="lucy-ig-pop" aria-hidden="true">
-                <HeartGlyph />
-                {[-72, -46, -18, 12, 40, 68].map(angle => (
-                  <i key={angle} style={{ ['--a' as string]: `${angle}deg` }}><HeartGlyph /></i>
-                ))}
-              </span>
-            )}
-          </div>
           <div className="lucy-orb-dock lucy-orb-report-dock">
-            <button type="button" onClick={() => saveReportFile(master, report)}>보고서 파일 저장</button>
             <button type="button" onClick={keepReport}>채팅에 남기기</button>
             <button type="button" className="lucy-orb-report-close" onClick={closeWithoutSaving}>닫기</button>
           </div>

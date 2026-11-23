@@ -2,6 +2,7 @@ import { collectSpeechTranscript, createEndOfSpeechWatcher, type EndOfSpeechWatc
 import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
 import { LucyModeName } from '@/components/chat/LucyModeName';
 import { useHoldToTalk } from '@/hooks/useHoldToTalk';
+import { takePendingLucyContext } from '@/lib/lucyPendingContext';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { LucyEntryScreen, type LucyEntryVariant } from '@/components/chat/LucyEntryScreen';
@@ -3986,6 +3987,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       ].filter(Boolean).join('\n\n');
       if (continuity) extraSystemContext = `${extraSystemContext}\n\n${continuity}`;
     }
+
+    // 🔮 다른 화면(오브 등)이 이번 메시지와 함께 넘긴 참고 자료 (채팅에는 보이지 않고 이번 답변에만 쓰인다)
+    const handoffContext = takePendingLucyContext();
+    if (handoffContext) extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${handoffContext}` : handoffContext;
 
     // 🔮 타로 질문 의도 감지 시 실제 운명의 타로 카드를 즉시 드로우하여 루시 프롬프트에 주입 (이미지 비주얼 연동)
     let tarotCardMarkers: string | undefined;
