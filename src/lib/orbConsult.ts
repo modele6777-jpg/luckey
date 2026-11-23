@@ -22,6 +22,8 @@ export interface OrbDeckCard extends TarotCard {
 export interface OrbPickedCard extends OrbDeckCard {
   number: number;
   position: (typeof ORB_CARD_POSITIONS)[number];
+  /** 'shuffle' = "멈춰!" 셔플로 뽑음, 'number' = 숫자로 고름 */
+  how?: 'shuffle' | 'number';
 }
 
 function randomIndex(limit: number): number {
@@ -44,23 +46,33 @@ export function shuffleOrbDeck(): OrbDeckCard[] {
   });
 }
 
-export function pickOrbCards(deck: OrbDeckCard[], numbers: number[]): OrbPickedCard[] {
+export function pickOrbCards(deck: OrbDeckCard[], numbers: number[], how: 'shuffle' | 'number' = 'number'): OrbPickedCard[] {
   return numbers.slice(0, 3).map((number, index) => ({
     ...deck[(number - 1) % deck.length],
     number,
     position: ORB_CARD_POSITIONS[index],
+    how,
   }));
 }
 
 /** 마스터에게 보내는 '카드 선택' 알림 (마스터는 이 문장을 읽지 않는다). */
 export function orbCardPickMessage(cards: OrbPickedCard[]): string {
-  const spread = cards.map(card => `${card.position} 자리 ${card.number}번 ${card.nameKo} ${card.orientationKo}`).join(', ');
-  return `[카드 선택] 손님이 숫자를 골라 카드 세 장을 펼쳤습니다. ${spread}. 이제 이 세 장만으로 손님의 고민을 과거, 지금, 앞으로 순서로 풀어 주세요. 카드 이름을 먼저 짧게 불러 주고 풀이하세요. 이 지시 문장은 읽지 마세요.`;
+  const shuffled = cards.some(card => card.how === 'shuffle');
+  const spread = cards.map(card => `${card.position} 자리 ${shuffled ? '' : `${card.number}번 `}${card.nameKo} ${card.orientationKo}`).join(', ');
+  const how = shuffled ? '섞이는 카드를 직접 세 번 멈춰 세 장을 뽑았습니다' : '숫자를 골라 카드 세 장을 펼쳤습니다';
+  return `[카드 선택] 손님이 ${how}. ${spread}. 이제 이 세 장만으로 손님의 고민을 과거, 지금, 앞으로 순서로 풀어 주세요. 카드 이름을 먼저 짧게 불러 주고 풀이하세요. 이 지시 문장은 읽지 마세요.`;
 }
 
 /** 타로 마스터: 카드는 손님이 고를 때까지 펼치지 않는다. */
-export const ORB_CARD_PICK_GUIDE = '이번 상담의 카드는 아직 펼치지 않았습니다. 인사하고 고민을 한두 마디 들은 뒤, 마음속으로 질문을 떠올리며 1부터 78 사이 숫자 세 개를 말씀하시거나 화면에서 카드 세 장을 골라 달라고 부탁하세요. 손님이 숫자를 말하면 "카드를 펼쳐 보겠습니다" 정도로만 짧게 답하고, [카드 선택] 메시지가 올 때까지 카드 이름을 지어내지 마세요.';
+export const ORB_CARD_PICK_GUIDE = '이번 상담의 카드는 아직 펼치지 않았습니다. 인사하고 고민을 한두 마디 들은 뒤 "이제 카드를 섞겠습니다. 마음속으로 질문을 떠올리시다가 끌리는 순간 멈춰라고 말씀하시거나 화면을 눌러 주세요. 세 번 멈추시면 세 장이 나옵니다." 하고 안내하세요. 손님이 멈춰라고 할 때마다 "네, 한 장" 정도로만 아주 짧게 답하고, [카드 선택] 메시지가 올 때까지 카드 이름을 지어내지 마세요. 손님이 숫자 세 개를 말해도 같은 방식으로 카드가 펼쳐집니다.';
 export const ORB_CARD_PICK_CARDS = '아직 카드를 펼치지 않았습니다. 손님이 고른 카드는 대화 중 [카드 선택] 메시지로 전달됩니다. 그 전에는 어떤 카드도 말하지 마세요.';
+
+/** 셔플을 멈추는 말: "멈춰", "스톱", "그만", "여기요" 등. */
+export const ORB_STOP_WORDS = /멈춰|멈춤|멈추|스톱|스탑|\bstop\b|정지|그만|여기요|여기서|이거요/i;
+
+export function countStopWords(text: string): number {
+  return (String(text || '').match(new RegExp(ORB_STOP_WORDS.source, 'gi')) || []).length;
+}
 
 const KO_DIGIT: Record<string, number> = { 일: 1, 이: 2, 삼: 3, 사: 4, 오: 5, 육: 6, 륙: 6, 칠: 7, 팔: 8, 구: 9 };
 

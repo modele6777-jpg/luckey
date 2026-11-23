@@ -1529,14 +1529,15 @@ html.duo-unfolded-mode .lucy-orb-stage.is-report .lucy-orb-ritual { width: min(6
 @keyframes lucy-cardchip-glow { 0%, 100% { box-shadow: 0 0 0 rgba(243, 207, 134, 0); } 50% { box-shadow: 0 0 16px rgba(243, 207, 134, .55); } }
 .lucy-cardpick-layer {
   position: absolute;
-  inset: 56px 0 0;
+  /* 아래 입력창(누르고 말하기)은 가리지 않는다: 창은 입력창 위에서 끝난다. */
+  inset: 56px 0 var(--orb-dock-clear, 0px);
   z-index: 8;
   display: flex;
   align-items: stretch;
   justify-content: center;
   padding: 12px 12px;
   /* 카드 목록과 버튼이 빅뱅 버튼 위에서 끝나게: 아래쪽을 비우고, 스크롤은 카드 목록 안에서만. */
-  padding-bottom: var(--orb-bok-bottom, 14px);
+  padding-bottom: max(14px, calc(var(--orb-bok-bottom, 14px) - var(--orb-dock-clear, 0px)));
   overflow: hidden;
   background: rgba(6, 4, 18, .8);
   -webkit-backdrop-filter: blur(4px);
@@ -1606,3 +1607,78 @@ html.duo-unfolded-mode .lucy-orb-stage.is-report .lucy-orb-ritual { width: min(6
 html.duo-unfolded-mode .lucy-orb-stage.is-live .lucy-orb-ritual { width: min(62%, 680px, calc(var(--orb-live-room, 9999px) / .92)); }
 .lucy-orb-stage.is-live .lucy-orb-copy { margin-bottom: var(--orb-bok-bottom, 0px); padding-bottom: 8px; min-height: 0; }
 .lucy-orb-stage:not(.is-live):not(.is-report) .lucy-orb-copy { margin-bottom: var(--orb-bok-bottom, 0px); min-height: 0; }
+
+/* 🃏 "멈춰!" 셔플: 카드 더미가 계속 섞이고, 누르거나 "멈춰"라고 말하면 한 장씩 뽑혀 아래 자리에 놓인다. */
+.lucy-shuffle-deck {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 150px;
+  max-height: 260px;
+  width: 100%;
+  margin: 4px auto 0;
+  border: 0;
+  background: radial-gradient(ellipse 50% 45% at 50% 50%, rgba(243, 207, 134, .16), transparent 70%);
+  -webkit-tap-highlight-color: transparent;
+}
+.lucy-shuffle-deck span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 78px;
+  height: 128px;
+  margin: -70px 0 0 -39px;
+  border-radius: 8px;
+  border: 1px solid rgba(243, 207, 134, .6);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(243, 207, 134, .35) 0 14%, transparent 15%),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, .06) 0 5px, transparent 5px 10px),
+    linear-gradient(160deg, #3b2a6e, #1c1440);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .4);
+  animation: lucy-riffle .72s cubic-bezier(.45, .05, .55, .95) infinite;
+  animation-delay: calc(var(--k) * -.1s);
+}
+@keyframes lucy-riffle {
+  0% { transform: translate(-46px, 4px) rotate(-12deg); z-index: 1; }
+  25% { transform: translate(0, -10px) rotate(0deg); z-index: 3; }
+  50% { transform: translate(46px, 4px) rotate(12deg); z-index: 2; }
+  75% { transform: translate(0, 6px) rotate(0deg); z-index: 1; }
+  100% { transform: translate(-46px, 4px) rotate(-12deg); z-index: 1; }
+}
+.lucy-shuffle-deck b {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  transform: translateX(-50%);
+  padding: 7px 18px;
+  border-radius: 999px;
+  font-size: 15px;
+  color: #3a2410;
+  background: linear-gradient(180deg, #fff6dc, #f3cf86);
+  box-shadow: 0 6px 18px rgba(255, 200, 120, .35);
+  white-space: nowrap;
+  z-index: 5;
+}
+.lucy-shuffle-deck:active:not(:disabled) b { transform: translateX(-50%) scale(.94); }
+.lucy-shuffle-deck.is-done span { animation-play-state: paused; opacity: .55; }
+.lucy-shuffle-slots { display: flex; justify-content: center; gap: 14px; margin-top: 10px; }
+.lucy-shuffle-slots div { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.lucy-shuffle-slots span {
+  width: 48px;
+  height: 78px;
+  border-radius: 7px;
+  border: 1.5px dashed rgba(243, 207, 134, .45);
+  background: rgba(255, 255, 255, .04);
+}
+.lucy-shuffle-slots .is-filled span {
+  border: 1px solid rgba(243, 207, 134, .8);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(243, 207, 134, .35) 0 14%, transparent 15%),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, .06) 0 4px, transparent 4px 8px),
+    linear-gradient(160deg, #3b2a6e, #1c1440);
+  box-shadow: 0 0 14px rgba(243, 207, 134, .55);
+  animation: lucy-slot-drop .45s cubic-bezier(.34, 1.4, .64, 1) both;
+}
+.lucy-shuffle-slots small { font-size: 11px; color: rgba(243, 207, 134, .9); }
+@keyframes lucy-slot-drop { from { transform: translateY(-60px) scale(1.3) rotate(-8deg); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (max-height: 640px) { .lucy-shuffle-deck { min-height: 120px; } .lucy-shuffle-deck span { width: 62px; height: 102px; margin: -58px 0 0 -31px; } }
+@media (prefers-reduced-motion: reduce) { .lucy-shuffle-deck span { animation: none; } .lucy-shuffle-slots .is-filled span { animation: none; } }
