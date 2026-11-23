@@ -11,11 +11,14 @@ export interface MinoanLabyrinthStage {
 export interface MinoanLabyrinthResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '실마리·입구' | '우회·인내' | '핵심·결단' | '적용·유연' | '크노소스 전반';
   activeStage: MinoanLabyrinthStage;
   companionStage: MinoanLabyrinthStage;
+  labyrinthAxis: string;
   labrysBalance: string;
   interpretation: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
@@ -72,29 +75,50 @@ function stableHash(input: string): number {
   return hash >>> 0;
 }
 
+const MINOAN_SHADOWS = [
+  '단 하나의 실타래만 붙잡는 단순화가 지나치면, 중간에 새로 생겨난 중요한 변수나 경고 신호까지 외면할 수 있습니다.',
+  '굽이도는 회랑을 인내하며 걷는 태도가 정작 막다른 골목에서 방향을 수정해야 할 결단까지 늦추지 않도록 하세요.',
+  '라브리스의 양날로 군더더기를 쳐내는 명료함이 함께 맞춰 가야 할 상대의 맥락이나 여백까지 단칼에 잘라 내지는 않게 살피세요.',
+  '황소 도약자처럼 유연하게 넘기는 가벼움이 꼭 묵직하게 마주 앉아 정리해야 할 핵심 과제까지 피하게 해서는 안 됩니다.',
+];
+
+function classifyMinoanTopic(q: string): MinoanLabyrinthResult['questionTopic'] {
+  if (/실마리|입구|복잡|얽힌/.test(q)) return '실마리·입구';
+  if (/회랑|우회|돌아|조급/.test(q)) return '우회·인내';
+  if (/핵심|결단|중심|기준/.test(q)) return '핵심·결단';
+  if (/적용|유연|일상|배움/.test(q)) return '적용·유연';
+  return '크노소스 전반';
+}
+
 export function calculateMinoanLabyrinthLabrys(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): MinoanLabyrinthResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyMinoanTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const hash = stableHash(seed);
 
   const activeIdx = hash % MINOAN_LABYRINTH_STAGES.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MINOAN_LABYRINTH_STAGES.length - 1));
   const activeStage = MINOAN_LABYRINTH_STAGES[activeIdx];
   const companionStage = MINOAN_LABYRINTH_STAGES[(activeIdx + companionOffset) % MINOAN_LABYRINTH_STAGES.length];
+  const labyrinthAxis = `${activeStage.motif} ↔ ${companionStage.motif} (${questionTopic})`;
   const labrysBalance = LABRYS_BALANCES[stableHash(`${seed}|balance`) % LABRYS_BALANCES.length];
 
   return {
-    engineVersion: 'LUCKEY-MINOAN-LABYRINTH-v2.2.0',
+    engineVersion: 'LUCKEY-MINOAN-LABYRINTH-v2.3.0',
     calculatedAtKst: formatKstTimestamp(now),
+    questionTopic,
     activeStage,
     companionStage,
+    labyrinthAxis,
     labrysBalance,
     interpretation: `고대 미노스 크노소스 미궁과 라브리스 상징에서는 지금이 '${activeStage.name}'(${activeStage.motif}) 구간에 해당하며 '${companionStage.name}'의 시야가 동반됩니다. ${activeStage.guidance}`,
     ritualAction: activeStage.action,
+    shadowWarning: MINOAN_SHADOWS[activeIdx],
     reflectionFocus: `'${labrysBalance}'을(를) 기준으로 지금 내 선택이 중심을 향하고 있는지 차분히 가늠해 보세요.`,
     reflectiveQuestion: activeStage.question,
     interpretiveBoundary: '본 풀이는 고대 미노스 크노소스 미궁과 라브리스 상징을 바탕으로 한 성찰적 비유이며, 개인 점수·심리 진단·미래 예측이 아닙니다.',
@@ -105,11 +129,13 @@ export function formatMinoanLabyrinthPrompt(result: MinoanLabyrinthResult): stri
   return [
     `[고대 미노스 미궁·라브리스 중심 (${result.engineVersion})]`,
     `- 연산 시각: ${result.calculatedAtKst}`,
+    `- 질문 맥락: ${result.questionTopic} | 미궁 항로 축: ${result.labyrinthAxis}`,
     `- 미궁 구간: ${result.activeStage.name} (${result.activeStage.motif})`,
     `- 동반 구간: ${result.companionStage.name} (${result.companionStage.motif})`,
     `- 라브리스 균형: ${result.labrysBalance}`,
     `- 해석 요지: ${result.interpretation}`,
     `- 실천 의례: ${result.ritualAction}`,
+    `- 과잉 경계: ${result.shadowWarning}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 해석 경계: ${result.interpretiveBoundary}`,
