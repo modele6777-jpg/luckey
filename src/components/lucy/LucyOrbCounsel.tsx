@@ -62,11 +62,15 @@ const ORB_HOLD_WAVE = Array.from({ length: 44 }, (_, index) => {
   const ripple = 0.55 + 0.45 * Math.abs(Math.sin(index * 1.7));
   return Number((0.25 + 0.75 * edge * ripple).toFixed(2));
 });
-/** 마스터가 말하는 중인 문장 하나만 자막 한 줄로. 길면 최근 부분만 보여 준다. */
+/** 마스터가 말하는 중인 문장 하나만 자막으로 (최대 두 줄, 말줄임표 없이). 길면 최근 부분만 보여 준다. */
 function captionLine(spoken: string): string {
   const sentences = spoken.replace(/\s+/g, ' ').trim().split(/(?<=[.!?…。])\s+/).filter(Boolean);
   const last = sentences[sentences.length - 1] || '';
-  return last.length > 38 ? `…${last.slice(-37)}` : last;
+  // 말줄임표 없이 보여 준다. 아주 긴 문장은 지금 말하는 뒷부분만, 단어가 잘리지 않게 띄어쓰기에서 시작한다.
+  const limit = 40;
+  if (last.length <= limit) return last;
+  const cut = last.indexOf(' ', last.length - limit);
+  return (cut > 0 ? last.slice(cut + 1) : last.slice(-limit)).trim();
 }
 /** Sparks thrown out of the ball on a tap: evenly spread angles with varied reach, size and timing. */
 const BURST_PARTICLES = Array.from({ length: 18 }, (_, index) => ({
