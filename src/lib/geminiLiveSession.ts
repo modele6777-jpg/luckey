@@ -13,6 +13,8 @@ export type LiveVoiceSession = {
   releaseMic: () => void;
   /** 닫힌 마이크를 다시 연다. 열렸으면 true. */
   acquireMic: () => Promise<boolean>;
+  /** 지금 재생 중인 마스터 목소리의 크기 (0~1, 오브 맥동용). */
+  outputLevel: () => number;
 };
 
 import { setMicCaptureActive } from './audioMixingPolicy';
@@ -45,6 +47,8 @@ type LiveVoiceHandlers = {
   orb?: { persona: string; rules: string };
   /** 마스터가 부른 함수를 실행하고 결과(JSON)를 돌려준다. */
   onToolCall?: (call: { id?: string; name: string; args?: Record<string, unknown> }) => Promise<Record<string, unknown>>;
+  /** 마스터의 한 차례 답이 끝났다 (생각 중 표시를 끈다). */
+  onTurnComplete?: () => void;
   /** 도구 실행 중 여부 (오브 표시용). */
   onToolBusy?: (busy: boolean) => void;
 };
@@ -100,6 +104,25 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   let setupTimer: ReturnType<typeof setTimeout> | null = null;
   let nextAt = 0;
   const sources = new Set<AudioBufferSourceNode>();
+  // 마스터 목소리 크기를 재는 분석기 (오브가 목소리에 맞춰 맥동한다). 없는 환경이면 그냥 재생한다.
+  let analyser: AnalyserNode | null = null;
+  try {
+    if (typeof (playback as any).createAnalyser === 'function') {
+      analyser = playback.createAnalyser();
+      analyser.fftSize = 512;
+      analyser.connect(playback.destination);
+    }
+  } catch { analyser = null; }
+  const levelBuffer = new Float32Array(512);
+  const outputLevel = () => {
+    if (!analyser || !sources.size) return 0;
+    try {
+      analyser.getFloatTimeDomainData(levelBuffer);
+      let sum = 0;
+      for (let i = 0; i < levelBuffer.length; i += 1) sum += levelBuffer[i] * levelBuffer[i];
+      return Math.max(0, Math.min(1, (Math.sqrt(sum / levelBuffer.length) - 0.004) / 0.12));
+    } catch { return 0; }
+  };
 
   const fail = (code: string, message: string) => {
     if (stopped || failed) return;
@@ -113,14 +136,18 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     }
     sources.clear();
     nextAt = 0;
+    if (speakTimer) { clearTimeout(speakTimer); speakTimer = null; }
+    if (!stopped) handlers.onState?.('listening');
   };
 
   const markSpeaking = () => {
     handlers.onState?.('speaking');
     if (speakTimer) clearTimeout(speakTimer);
+    // 목소리는 도착보다 늦게 재생되므로, 예약된 마지막 소리가 끝날 때 말하기를 끝낸다.
+    const remainingMs = Math.max(0, (nextAt - playback.currentTime) * 1000);
     speakTimer = setTimeout(() => {
       if (!stopped) handlers.onState?.('listening');
-    }, 500);
+    }, remainingMs + 250);
   };
 
   const playPcm = (data: string, mime?: string) => {
@@ -136,7 +163,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     for (let i = 0; i < count; i += 1) channel[i] = view.getInt16(i * 2, true) / 0x8000;
     const source = playback.createBufferSource();
     source.buffer = buffer;
-    source.connect(playback.destination);
+    source.connect(analyser || playback.destination);
     const startAt = Math.max(playback.currentTime + 0.02, nextAt);
     source.start(startAt);
     nextAt = startAt + buffer.duration;
@@ -222,7 +249,11 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       const inline = part.inlineData || part.inline_data;
       if (inline?.data) playPcm(String(inline.data), inline.mimeType || inline.mime_type);
     }
-    if (content.turnComplete || content.turn_complete) handlers.onState?.('listening');
+    if (content.turnComplete || content.turn_complete) {
+      handlers.onTurnComplete?.();
+      // 아직 재생할 목소리가 남았으면 말하기가 끝날 때(markSpeaking 타이머) 듣기로 바꾼다.
+      if (nextAt <= playback.currentTime + 0.05) handlers.onState?.('listening');
+    }
   };
 
   const stop = () => {
@@ -374,7 +405,10 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     };
     socket.onerror = () => fail('live-failed', '실시간 음성 연결이 끊겼습니다. 기본 마이크로 듣습니다.');
     socket.onclose = () => {
-      if (!stopped && !ready) fail('live-failed', '실시간 음성 연결이 끊겼습니다. 기본 마이크로 듣습니다.');
+      if (stopped) return;
+      if (!ready) fail('live-failed', '실시간 음성 연결이 끊겼습니다. 기본 마이크로 듣습니다.');
+      // 상담 도중 끊김(네트워크, 연결 시간 만료): 화면이 다시 연결할 수 있게 알린다.
+      else fail('live-closed', '음성 연결이 끊겼어요.');
     };
   };
 
@@ -391,6 +425,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       stream?.getAudioTracks().forEach(track => { track.enabled = !next; });
     },
     interrupt: stopPlayback,
+    outputLevel,
     releaseMic: () => {
       if (!stream) return;
       detachStream();
