@@ -3,10 +3,13 @@ import type { UserProfile } from '../sharedState';
 export interface IcelandicSagaResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '절제·온기' | '경청·차례' | '회복·이끼' | '화덕 전반';
   reflectionFocus: string;
   symbolicMotif: string;
   companionMotif: string;
+  sagaHearthAxis: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -54,31 +57,53 @@ const ICELANDIC_QUESTIONS = [
   '멈춘 듯 보이는 화산암 위에서 어느새 조용히 초록을 틔우고 있는 내 회복의 싹은 무엇인가요?'
 ];
 
+const ICELANDIC_SHADOWS = [
+  '감정을 절제하고 담담하게 남기려다 정작 꼭 표현해야 할 고마움이나 아픔까지 돌처럼 굳혀 버리지 마세요.',
+  '땅속 깊은 지열을 믿고 버티는 동안에도 지금 겉으로 드러난 피로와 휴식의 신호를 외면하지 마세요.',
+  '방 안의 촛불만 지키는 데 집중하다 문밖에서 도움을 청하는 이웃의 노크 소리까지 닫아 두지 마세요.',
+  '상대의 말을 끝까지 듣는 여유를 지키되 내가 꼭 짚어야 할 사실과 경계선까지 뒤로 미루지는 마세요.',
+  '이끼가 자라듯 시간을 두어 기다리되 이미 썩은 나무를 붙잡고 있는 게 아닌지도 가끔 살피세요.',
+];
+
+function classifyIcelandicTopic(q: string): IcelandicSagaResult['questionTopic'] {
+  if (/절제|온기|과장|촛불|지열/.test(q)) return '절제·온기';
+  if (/경청|차례|대화|듣|이야기/.test(q)) return '경청·차례';
+  if (/회복|이끼|멈춤|기다|시간/.test(q)) return '회복·이끼';
+  return '화덕 전반';
+}
+
 export function calculateIcelandicSagaHearth(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): IcelandicSagaResult {
   const { profile, now = new Date(), question = '' } = params;
-  const seed = `${JSON.stringify(profile.fate ?? {})}|${question.trim()}|${now.toISOString().slice(0, 13)}`;
+  const q = question.trim();
+  const questionTopic = classifyIcelandicTopic(q);
+  const seed = `${JSON.stringify(profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const hash = stableHash(seed);
   const idx = hash % ICELANDIC_MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (ICELANDIC_MOTIFS.length - 1));
 
   const motif = ICELANDIC_MOTIFS[idx];
   const companionMotif = ICELANDIC_MOTIFS[(idx + companionOffset) % ICELANDIC_MOTIFS.length];
+  const sagaHearthAxis = `${motif.slice(0, 18)}… ↔ ${companionMotif.slice(0, 18)}… (${questionTopic})`;
   const ritualAction = ICELANDIC_ACTIONS[idx];
+  const shadowWarning = ICELANDIC_SHADOWS[idx];
   const reflectiveQuestion = ICELANDIC_QUESTIONS[idx];
 
   return {
-    engineVersion: 'LUCKEY-ICELANDIC-SAGA-v2.2.0',
+    engineVersion: 'LUCKEY-ICELANDIC-SAGA-v2.3.0',
     calculatedAtKst: getKstTimeString(now),
-    reflectionFocus: question.trim()
-      ? `질문 "${question.trim()}" 속에서 과장을 덜어내고 담담한 온기를 지키는 아이슬란드 사가 화덕 관점 (동반 결: ${companionMotif.slice(0, 24)}…)`
+    questionTopic,
+    reflectionFocus: q
+      ? `질문 "${q}" 속에서 과장을 덜어내고 담담한 온기를 지키는 아이슬란드 사가 화덕 관점 (동반 결: ${companionMotif.slice(0, 24)}…)`
       : '차가운 바람 속에서도 화덕의 온기와 담백한 말 한마디를 지키는 아이슬란드 사가 화덕 관점',
     symbolicMotif: motif,
     companionMotif,
+    sagaHearthAxis,
     ritualAction,
+    shadowWarning,
     reflectiveQuestion,
     interpretiveBoundary:
       '아이슬란드 사가 문학과 북방 화덕 문화의 상징적 비유로, 개인 점수·성격 진단·미래 예측이 아닙니다.'
@@ -89,10 +114,12 @@ export function formatIcelandicSagaPrompt(result: IcelandicSagaResult): string {
   return [
     `[아이슬란드·사가 화덕 관점 (${result.engineVersion})]`,
     `- 기준 시각: ${result.calculatedAtKst}`,
+    `- 질문 맥락: ${result.questionTopic} | 사가·화덕 축: ${result.sagaHearthAxis}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 상징 모티프: ${result.symbolicMotif}`,
     `- 동반 모티프: ${result.companionMotif}`,
     `- 제안 의식: ${result.ritualAction}`,
+    `- 과잉 경계: ${result.shadowWarning}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 경계: ${result.interpretiveBoundary}`
   ].join('\n');
