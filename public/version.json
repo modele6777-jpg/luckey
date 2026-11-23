@@ -1,10 +1,10 @@
 {
-  "version": "1.8.420",
-  "builtAt": "2026-11-24T06:25:00+09:00",
-  "summary": "카렌 대나무 물시계·카자흐 아바이 교훈·크메르 앙코르 바라이 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.420)",
+  "version": "1.8.421",
+  "builtAt": "2026-11-24T06:35:00+09:00",
+  "summary": "코기 알루나 사유 실·쿠바 라피아 기하학·쿠르드 네우로즈 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.421)",
   "items": [
-    "카렌 대나무 물시계 엔진(v2.3.0): 질문 맥락(questionTopic), 물시계 축(waterClockAxis), 과잉 경계(shadowWarning) 추가",
-    "카자흐 아바이 《교훈의 말씀》 엔진(v2.3.0): 질문 맥락(questionTopic), 덕목 균형 축(virtueBalanceAxis), 과잉 경계(shadowWarning) 추가",
-    "크메르 앙코르 바라이 물 순환 엔진(v2.3.0): 질문 맥락(questionTopic), 바라이 순환 축(barayWaterAxis), 과잉 경계(shadowWarning) 추가"
+    "코기 알루나 사유 실 엔진(v2.3.0): 질문 맥락(questionTopic), 알루나 직조 축(alunaWeaveAxis), 과잉 경계(shadowWarning) 추가",
+    "쿠바 라피아 기하학 질서 엔진(v2.3.0): 질문 맥락(questionTopic), 라피아 직조 축(raffiaWeaveAxis), 과잉 경계(shadowWarning) 추가",
+    "쿠르드 네우로즈 재생 엔진(v2.3.0): 질문 맥락(questionTopic), 네우로즈 재생 축(newrozRenewalAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }

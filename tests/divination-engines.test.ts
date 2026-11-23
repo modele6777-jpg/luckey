@@ -14089,14 +14089,15 @@ test('Catalan Seny Rauxa Balance engine: principle, +09:00 KST, and interpretive
 
 test('Kurdish Newroz Zagros Renewal engine: symbol, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKurdishNewrozZagrosRenewal({ profile, now: new Date('2026-11-20T07:42:00Z'), question: '어제의 피로를 털고 새로 시작하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KURDISH-NEWROZ-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-KURDISH-NEWROZ-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSymbol !== rep.zagrosSymbol);
+  assert.ok(rep.newrozRenewalAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKurdishNewrozPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('쿠르드') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('쿠르드') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Sindhi Bhitai Indus Melody engine: sur, +09:00 KST, and interpretive boundary', () => {
@@ -15046,14 +15047,15 @@ test('Dalmatian Stone Lavender Calm engine: motif, +09:00 KST, and interpretive 
 
 test('Kuba Raffia Geometry Order engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKubaRaffiaGeometryOrder({ profile, now: new Date('2026-11-20T20:24:00Z'), question: '안쪽 매듭을 단단히 하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KUBA-RAFFIA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-KUBA-RAFFIA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.kubaMotif);
+  assert.ok(rep.raffiaWeaveAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKubaRaffiaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('쿠바') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('쿠바') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
 });
 
 test('Samoan Fale Tapa Breeze engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15640,14 +15642,15 @@ test('Badakhshan Lapis Vein engine: vein, +09:00 KST, and interpretive boundary'
 
 test('Kogi Aluna Thread engine: thread, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKogiAlunaThread({ profile, now: new Date('2026-11-20T23:05:00Z'), question: '행동 이전의 마음을 맑히고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KOGI-ALUNA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-KOGI-ALUNA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionThread !== rep.alunaThread);
+  assert.ok(rep.alunaWeaveAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKogiAlunaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('코기·알루나') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionThread));
+  assert.ok(prompt.includes('코기·알루나') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionThread) && prompt.includes('과잉 경계'));
 });
 
 test('Bamileke Beaded Throne engine: pattern, +09:00 KST, and interpretive boundary', () => {

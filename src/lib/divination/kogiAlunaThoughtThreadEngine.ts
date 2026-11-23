@@ -9,11 +9,14 @@ export interface KogiAlunaInput {
 export interface KogiAlunaResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '의도·마음' | '연결·균형' | '명상·정적' | '알루나 전반';
   alunaThread: string;
   companionThread: string;
+  alunaWeaveAxis: string;
   mountainBalance: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,23 +68,43 @@ function hashSeed(text: string): number {
   return h >>> 0;
 }
 
+const SHADOWS = [
+  '보이지 않는 마음의 실을 엮는 데만 머무르다 정작 오늘 손발로 실행해야 할 현실의 작은 걸음까지 미루지 마세요.',
+  '산과 바다의 고요한 연결을 살피면서도 당장 눈앞의 대화에서 해야 할 분명한 표현까지 삼키지 않도록 하세요.',
+  '생각의 실타래를 가라앉히는 시간이 끝없는 망설임으로 변해 결정을 미루는 핑계가 되지 않게 살피세요.',
+  '순수한 의도를 세우는 데 지나치게 완벽을 기하다가 지금 당장 시작할 수 있는 작은 시도의 타이밍을 놓치지 마세요.',
+] as const;
+
+function classifyKogiTopic(q: string): KogiAlunaResult['questionTopic'] {
+  if (/의도|마음|맑히|정직/.test(q)) return '의도·마음';
+  if (/연결|균형|사람|말/.test(q)) return '연결·균형';
+  if (/명상|정적|매듭|가라앉/.test(q)) return '명상·정적';
+  return '알루나 전반';
+}
+
 export function calculateKogiAlunaThread(input: KogiAlunaInput): KogiAlunaResult {
   const fate = input.profile.fate ?? {};
-  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const q = (input.question ?? '').trim();
+  const questionTopic = classifyKogiTopic(q);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${q}`;
   const seed = hashSeed(seedText);
   const threadIdx = seed % THREADS.length;
   const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (THREADS.length - 1));
   const alunaThread = THREADS[threadIdx];
   const companionThread = THREADS[(threadIdx + companionOffset) % THREADS.length];
+  const alunaWeaveAxis = `${alunaThread.slice(0, 16)}… ↔ ${companionThread.slice(0, 16)}… (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-KOGI-ALUNA-v2.2.0',
+    engineVersion: 'LUCKEY-KOGI-ALUNA-v2.3.0',
     calculatedAtKst: toKstIso(input.now),
+    questionTopic,
     alunaThread,
     companionThread,
+    alunaWeaveAxis,
     mountainBalance: BALANCES[(seed >>> 3) % BALANCES.length],
     reflectionFocus: `콜롬비아 시에라 네바다 산맥의 코기 족이 물질 세계 너머의 의도와 연결을 엮는 사유의 실 알루나(Aluna)처럼, 주 실('${alunaThread}')과 동반 실('${companionThread}')을 겹쳐 행동 이전의 마음을 살피는 상징적 관점입니다.`,
     ritualAction: ACTIONS[threadIdx],
+    shadowWarning: SHADOWS[threadIdx],
     reflectiveQuestion: QUESTIONS[threadIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
@@ -91,11 +114,13 @@ export function formatKogiAlunaPrompt(res: KogiAlunaResult): string {
   return [
     `[코기·알루나 사유 실 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
+    `질문 맥락: ${res.questionTopic} | 알루나 직조 축: ${res.alunaWeaveAxis}`,
     `사유의 실: ${res.alunaThread}`,
     `동반 실: ${res.companionThread}`,
     `산맥 균형: ${res.mountainBalance}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
+    `과잉 경계: ${res.shadowWarning}`,
     `성찰 질문: ${res.reflectiveQuestion}`,
     `경계: ${res.interpretiveBoundary}`,
   ].join('\n');
