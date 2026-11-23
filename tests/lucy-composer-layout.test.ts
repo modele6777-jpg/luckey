@@ -17,7 +17,7 @@ test('pending Lucy questions require an answer before another suggested prompt c
   assert.match(page, /if \(hasPendingAnswer\) return;/);
   assert.match(page, /!hasPendingAnswer && currentPrompts\.length > 0/);
   assert.match(page, /data-lucy-answer-required="true"/);
-  assert.match(page, /placeholder=\{\s*hasPendingAnswer\s*\?/);
+  assert.match(page, /placeholder=\{\s*(?:holdTalk\.holding\s*\?\s*''\s*:\s*)?hasPendingAnswer\s*\?/);
   assert.match(page, /disabled=\{!input\.trim\(\) && !attachedImage && \(hasPendingAnswer/);
 });
 

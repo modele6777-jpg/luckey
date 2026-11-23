@@ -1,3 +1,4 @@
+import { lahiriAyanamsaFromUtcMs } from './vedicEngine';
 import { Body, GeoVector, Ecliptic } from 'astronomy-engine';
 import { astro } from 'iztro';
 import type { UserProfile } from '../sharedState';
@@ -47,13 +48,12 @@ export function calculateVedic(profile?: UserProfile) {
   birth(profile);
   const natal=calculateNatalChart(profile);
   if (!natal || !natal.timeKnown || !natal.locationKnown) throw new RangeError('베딕 참고 차트는 유효한 출생시간과 지원 도시가 필요합니다.');
-  const years=(Date.parse(natal.utcInstant)-Date.parse('2000-01-01T12:00:00Z'))/86400000/365.25;
-  const ayanamsa=23.853055556+years*50.29/3600;
+  const ayanamsa=lahiriAyanamsaFromUtcMs(Date.parse(natal.utcInstant));
   const normalize=(n:number)=>(n%360+360)%360;
   const sidereal=(p:typeof natal.sun)=>normalize(ZODIAC_SIGNS.indexOf(p.sign)*30+p.degree-ayanamsa);
   const moon=normalize(Ecliptic(GeoVector(Body.Moon,new Date(natal.utcInstant),true)).elon-ayanamsa),width=360/27,index=Math.floor(moon/width),lord=index%9;
   const balance=YEARS[lord]*(1-(moon%width)/width);
   let elapsed=balance;
   const dashas=Array.from({length:9},(_,i)=>{const at=(lord+i)%9;const startYears=i===0?0:elapsed;const duration=i===0?balance:YEARS[at];if(i>0)elapsed+=duration;return {lord:LORDS[at],startYearsAfterBirth:startYears,endYearsAfterBirth:i===0?balance:elapsed};});
-  return {method:'베딕 참고 계산 · J2000 Lahiri 근방 기준값 + 평균 세차율 선형 근사 (정밀 Lahiri 천문력 아님)',ayanamsa,utcInstant:natal.utcInstant,planets:Object.fromEntries((['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn'] as const).map(k=>[k.toLowerCase(),normalize(Ecliptic(GeoVector(Body[k],new Date(natal.utcInstant),true)).elon-ayanamsa)])),ascendant:natal.ascendant?sidereal(natal.ascendant):null,nakshatra:{index:index+1,name:NAKSHATRAS[index],pada:Math.floor((moon%width)/(width/4))+1,lord:LORDS[lord]},vimshottari:{yearDays:365.25,birthBalanceYears:balance,periods:dashas},limitations:['평균 세차율 근사이므로 경계 부근의 라시·나크샤트라·파다·다샤 날짜는 확정하지 마세요.','라후·케투·분할도·안타르다샤·정밀 하우스는 미산출입니다.']};
+  return {method:'베딕 참고 계산 · J2000 Lahiri 기준값 + IAU 2006 세차 다항식 (정밀 Lahiri 천문력 아님)',ayanamsa,utcInstant:natal.utcInstant,planets:Object.fromEntries((['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn'] as const).map(k=>[k.toLowerCase(),normalize(Ecliptic(GeoVector(Body[k],new Date(natal.utcInstant),true)).elon-ayanamsa)])),ascendant:natal.ascendant?sidereal(natal.ascendant):null,nakshatra:{index:index+1,name:NAKSHATRAS[index],pada:Math.floor((moon%width)/(width/4))+1,lord:LORDS[lord]},vimshottari:{yearDays:365.25,birthBalanceYears:balance,periods:dashas},limitations:['세차 다항식 계산이라 정밀 천문력과 미세한 차이가 있으니 경계 부근의 라시·나크샤트라·파다·다샤 날짜는 확정하지 마세요.','라후·케투·분할도·안타르다샤·정밀 하우스는 미산출입니다.']};
 }

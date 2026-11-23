@@ -7,27 +7,29 @@ import { planTtsScroll, ttsScrollDeadZone } from '../src/lib/ttsScrollFollow';
 const page = readFileSync(new URL('../src/pages/LucyStandalonePage.tsx', import.meta.url), 'utf8');
 const trinityPage = readFileSync(new URL('../src/pages/TrinityApp.tsx', import.meta.url), 'utf8');
 const smartScroll = readFileSync(new URL('../src/hooks/useSmartScroll.ts', import.meta.url), 'utf8');
-const searchPanel = page.slice(page.indexOf('{/*  Search Input Dropdown'), page.indexOf('</header>'));
+const searchPanel = page.slice(page.indexOf('className="lucy-search-overlay"'), page.indexOf('className="lucy-search-results"'));
 
 // ── 검색 버튼: 누르는 순간 대화가 최상단으로 튀지 않아야 한다 ──────────────────────────
 
 test('the search input is 16px on mobile so iOS does not zoom and pan the conversation', () => {
-  const inputTag = searchPanel.slice(searchPanel.indexOf('ref={searchInputRef}'), searchPanel.indexOf('style={{ color:'));
-  assert.match(inputTag, /text-base sm:text-sm/);
-  assert.doesNotMatch(inputTag, /text-xs/);
+  // 검색창은 대화 위에 뜨는 창(lucy-search-overlay)이고, 입력 글자 크기는 CSS에서 16px로 고정한다.
+  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
+  const rule = css.slice(css.indexOf('.lucy-search-bar input {'), css.indexOf('}', css.indexOf('.lucy-search-bar input {')));
+  assert.match(rule, /font-size:\s*16px/);
+  assert.match(searchPanel, /ref=\{searchInputRef\}/);
 });
 
 test('opening the search panel renders its final height immediately, never from height 0', () => {
   assert.doesNotMatch(searchPanel, /initial=\{\{ height: 0/);
   assert.doesNotMatch(searchPanel, /animate=\{\{ height: 'auto'/);
-  assert.match(searchPanel, /initial=\{\{ opacity: 0 \}\}/);
+  // 검색 창은 높이 애니메이션 없이 바로 그려진다.
+  assert.match(page, /\{isSearchOpen && \(\s*<div className="lucy-search-overlay"/);
 });
 
 test('the search and close buttons are explicit buttons, not form submitters', () => {
   const toggle = page.slice(page.indexOf('onClick={toggleSearch}') - 220, page.indexOf('onClick={toggleSearch}') + 40);
   assert.match(toggle, /type="button"/);
-  const close = searchPanel.slice(searchPanel.indexOf('onClick={closeSearch}') - 120, searchPanel.indexOf('onClick={closeSearch}') + 40);
-  assert.match(close, /type="button"/);
+  assert.match(searchPanel, /<button type="button" className="lucy-search-close" onClick=\{closeSearch\}>/);
 });
 
 test('the search input is focused after the panel is laid out, not inside a collapsed box', () => {

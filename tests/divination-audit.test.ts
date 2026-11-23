@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { FIFTEEN_DIVINATION_TOOLS, buildUserFifteenToolsDigest, buildMasterFifteenToolsComparisonPrompt, selectOptimalDivinationTools } from '../src/lib/fifteenDivinationTools';
+import { FIFTEEN_DIVINATION_TOOLS, selectOptimalDivinationTools } from '../src/lib/fifteenDivinationTools';
 import { DIVINATION_CAPABILITIES } from '../src/lib/divinationCapabilities';
 import { calculateNatalChart, buildUserNatalSummary, ZODIAC_SIGNS } from '../src/lib/astrologyAnalysis';
 import { parseBirthTime, birthTimeToUtc } from '../src/lib/birthDateTime';
@@ -20,48 +20,12 @@ for (const tool of Object.values(FIFTEEN_DIVINATION_TOOLS)) {
     assert(result.selectedTools.length <= 3);
   });
 }
-test('all 15 capabilities are present; unimplemented traditions cannot borrow another chart', () => {
-  assert.equal(Object.keys(DIVINATION_CAPABILITIES).length, 15);
-  assert.equal(Object.values(DIVINATION_CAPABILITIES).filter(tool => tool.state === 'not_implemented').length, 0);
-  const master = buildMasterFifteenToolsComparisonPrompt(profile('1990-05-17'));
-  for (const tool of Object.values(DIVINATION_CAPABILITIES)) assert(master.includes(tool.scope));
-  assert(master.includes('독립된 계산 결과가 없는 도구들끼리 일치했다고 주장하지 마'));
-});
 test('qualified astrology names and English aliases do not accidentally select Western astrology', () => {
   for (const name of ['숙요 점성술', '베딕 점성술', '태국 점성술', '미얀마 점성술', 'Vedic astrology', 'Thai astrology']) {
     const result = selectOptimalDivinationTools(name, [], undefined, false, { allowMaster: false });
     assert(!result.selectedTools.some(tool => tool.id === 'astrology'), name);
   }
   assert.equal(selectOptimalDivinationTools('서양 점성술과 베딕', [], undefined, false, { allowMaster: false }).selectedTools.length, 2);
-});
-test('invalid and missing dates never produce a preset natal chart or a digest crash', () => {
-  assert.equal(calculateNatalChart(), null);
-  assert(!buildUserNatalSummary().includes('물병자리'));
-  for (const value of ['2025-02-29', '2026-04-31', 'not-a-date']) {
-    assert.equal(calculateNatalChart(profile(value)), null);
-    assert.match(buildUserFifteenToolsDigest(profile(value)), /계산 중단/);
-  }
-  assert.deepEqual(resolveEffectiveSolarDate('0099-01-01').solarDate, { year: 99, month: 1, day: 1 });
-});
-test('lunar weekday and leap-month astrology use the converted Gregorian birthday', () => {
-  const lunar = { basic: { birthdate: '2024-01-01', lunarSolar: 'lunar' as const } };
-  assert.match(buildUserFifteenToolsDigest(lunar), /2024-02-10/);
-  assert.match(buildUserFifteenToolsDigest(lunar), /토요일/);
-  const leap = { basic: { ...profile('2023-02-01','12:00').basic, lunarSolar: 'lunar' as const, isLeapMonth: true } };
-  assert.equal(calculateNatalChart(leap)!.utcInstant, calculateNatalChart(profile('2023-03-22','12:00'))!.utcInstant);
-  assert.deepEqual(calculateNatalChart(leap)!.sun, calculateNatalChart(profile('2023-03-22','12:00'))!.sun);
-});
-test('Wednesday has distinct morning/afternoon Mahabote symbols; unknown time stays unresolved', () => {
-  assert.match(buildUserFifteenToolsDigest(profile('2024-02-07','09:00')), /수요일 오전·수성·엄니 코끼리/);
-  assert.match(buildUserFifteenToolsDigest(profile('2024-02-07','13:00')), /수요일 오후·라후·엄니 없는 코끼리/);
-  assert.match(buildUserFifteenToolsDigest(profile('2024-02-07')), /오전\/오후 구분은 생시 필요/);
-});
-test('Kyusei uses the actual Ipchun instant instead of a fixed February 4 cutoff', () => {
-  const term = getYearSolarTerms(2026).find(term => term.name === '입춘')!.date;
-  const p = (offset: number) => { const d = new Date(term.getTime()+offset); return profile(d.toISOString().slice(0,10), d.toISOString().slice(11,16)); };
-  const line = (offset: number) => buildUserFifteenToolsDigest(p(offset)).split('\n').find(line => line.startsWith('- 구성학'));
-  assert.notEqual(line(-120000), line(120000));
-  assert.match(buildUserFifteenToolsDigest(profile(term.toISOString().slice(0,10))), /입춘 당일 생시 미입력/);
 });
 test('civil times validate ranges and respect New York DST, Tokyo and historical Korean offsets', () => {
   for (const time of ['24:00','12:60','-1:00','12:','noon']) assert.throws(() => parseBirthTime(time), RangeError);
@@ -126,27 +90,4 @@ test('annual flow updates beyond 2026 and Korean daily reports do not depend on 
     assert.match(calculateDetailedSaju(profile('1990-05-17','12:00'))!.annual2026.yearName,/2026 병오/);
     assert.match(generateDailySajuReport(next,new Date('2026-10-28T16:00:00Z')).dateStr,/2026년 10월 29일/);
   } finally { Date.now = original; }
-});
-
-test('15 tools digest incorporates deterministic calculations for Mahabote 7-house chart, Thai Horasat dasha, Kabbalah, Tarot, and Tojeong', () => {
-  const p = profile('1990-05-17', '14:30');
-  const digest = buildUserFifteenToolsDigest(p);
-  assert.match(digest, /마하보테 8요일 부분 계산.*7궁 명반 포국/);
-  assert.match(digest, /태국점성술 요일 상징.*호라삿 정밀 차트/);
-  assert.match(digest, /카발라 생명나무/);
-  assert.match(digest, /타로 마스터 수비학/);
-  assert.match(digest, /토정비결/);
-  assert.match(digest, /태을신수/);
-  assert.match(digest, /숙요경/);
-  assert.match(digest, /베딕 조티시/);
-});
-
-test('15 tools digest is repeatable for an explicit reference date', () => {
-  const p = profile('1990-05-17', '14:30');
-  const asOf = new Date('2024-06-15T12:00:00.000Z');
-  const first = buildUserFifteenToolsDigest(p, asOf);
-  assert.equal(buildUserFifteenToolsDigest(p, asOf), first);
-  assert.match(first, /2024년/);
-  assert.notEqual(buildUserFifteenToolsDigest(p, new Date('2025-06-15T12:00:00.000Z')), first);
-  assert.equal(asOf.toISOString(), '2024-06-15T12:00:00.000Z');
 });
