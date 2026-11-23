@@ -9,11 +9,14 @@ export interface HmongStoryClothInput {
 export interface HmongStoryClothResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '한땀·과정' | '테두리·습관' | '서사·기억' | '자수 전반';
   stitchPattern: string;
   companionPattern: string;
+  storyWeaveAxis: string;
   clothNarrative: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,23 +68,44 @@ function hashSeed(text: string): number {
   return h >>> 0;
 }
 
+const SHADOWS = [
+  '한 땀 한 땀에 너무 오래 매달리다 전체 지도가 가리키는 방향과 마감 시기를 놓치지 마세요.',
+  '테두리의 규칙을 단단히 세우려다 안쪽의 살아 있는 자유와 즉흥의 숨통까지 막아 두지 마세요.',
+  '지나온 장면들을 한 땀씩 되짚되 이미 지나간 실패의 매듭을 오늘의 색실 위에 덧칠하지 마세요.',
+  '고난을 꽃 무늬로 엮어 내는 힘은 귀하지만 지금 아픈 상처에 억지로 미화된 의미부터 붙이지는 마세요.',
+] as const;
+
+function classifyHmongTopic(q: string): HmongStoryClothResult['questionTopic'] {
+  if (/한땀|과정|단계|오늘|쪼개/.test(q)) return '한땀·과정';
+  if (/테두리|습관|루틴|규칙|유지/.test(q)) return '테두리·습관';
+  if (/서사|기억|이야기|엮|경험/.test(q)) return '서사·기억';
+  return '자수 전반';
+}
+
 export function calculateHmongStoryCloth(input: HmongStoryClothInput): HmongStoryClothResult {
   const fate = input.profile.fate ?? {};
-  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const q = (input.question ?? '').trim();
+  const questionTopic = classifyHmongTopic(q);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${q}`;
   const seed = hashSeed(seedText);
   const patternIdx = seed % PATTERNS.length;
   const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (PATTERNS.length - 1));
   const stitchPattern = PATTERNS[patternIdx];
   const companionPattern = PATTERNS[(patternIdx + companionOffset) % PATTERNS.length];
+  const storyWeaveAxis = `${stitchPattern} ↔ ${companionPattern} (${questionTopic})`;
+  const shadowWarning = SHADOWS[patternIdx];
 
   return {
-    engineVersion: 'LUCKEY-HMONG-CLOTH-v2.2.0',
+    engineVersion: 'LUCKEY-HMONG-CLOTH-v2.3.0',
     calculatedAtKst: toKstIso(input.now),
+    questionTopic,
     stitchPattern,
     companionPattern,
+    storyWeaveAxis,
     clothNarrative: NARRATIVES[(seed >>> 3) % NARRATIVES.length],
     reflectionFocus: `몽족의 파즈 너우(Paj Ntaub) 자수 이야기 천처럼 주 무늬('${stitchPattern}')와 동반 무늬('${companionPattern}')를 나란히 엮어 지나온 이동과 일상의 기억을 전체 서사로 바라보는 상징적 관점입니다.`,
     ritualAction: ACTIONS[patternIdx],
+    shadowWarning,
     reflectiveQuestion: QUESTIONS[patternIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
@@ -91,11 +115,13 @@ export function formatHmongStoryClothPrompt(res: HmongStoryClothResult): string 
   return [
     `[몽족·자수 이야기 천 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
+    `질문 맥락: ${res.questionTopic} | 자수·서사 축: ${res.storyWeaveAxis}`,
     `자수 무늬: ${res.stitchPattern}`,
     `동반 무늬: ${res.companionPattern}`,
     `서사: ${res.clothNarrative}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
+    `과잉 경계: ${res.shadowWarning}`,
     `성찰 질문: ${res.reflectiveQuestion}`,
     `경계: ${res.interpretiveBoundary}`,
   ].join('\n');
