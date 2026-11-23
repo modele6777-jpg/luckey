@@ -1,3 +1,5 @@
+import { OrbSessionMetricsView } from './OrbSessionMetricsView';
+import { createOrbSessionMetrics, type OrbSessionMetrics } from '@/lib/orb/orbSessionMetrics';
 import { OrbMemorySettings } from './OrbMemorySettings';
 import { PageGuideButton } from '@/components/guide/PageGuide';
 import { getPageGuide } from '@/lib/pageGuides';
@@ -192,6 +194,8 @@ export function LucyOrbCounsel({
   onFinish: (summary: string | null) => void;
 }) {
   const [phase, setPhase] = useState<Phase>('pick');
+  const metricsRef = useRef<OrbSessionMetrics | null>(null);
+  const [sessionMetrics, setSessionMetrics] = useState<ReturnType<OrbSessionMetrics['snapshot']> | null>(null);
   const [voiceMode, setVoiceMode] = useState<OrbVoiceMode>('hold');
   const [talkPressed, setTalkPressed] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
@@ -337,6 +341,8 @@ export function LucyOrbCounsel({
     linesRef.current = [];
     userBuf.current = '';
     lucyBuf.current = '';
+    metricsRef.current = null;
+    setSessionMetrics(null);
     setPhase('pick');
     setVoiceMode('hold');
     setTalkPressed(false);
@@ -581,6 +587,8 @@ export function LucyOrbCounsel({
 
   const begin = (next: OrbMaster, micStreamOverride?: Promise<MediaStream> | null, shouldGreet = true, resume = false) => {
     sessionRef.current?.stop();
+    const metrics = metricsRef.current ??= createOrbSessionMetrics();
+    metrics.dropPending();
     if (reconnectTimer.current) { window.clearTimeout(reconnectTimer.current); reconnectTimer.current = null; }
     const micStream = micStreamOverride === undefined ? micPrime.current || requestMic() : micStreamOverride;
     micPrime.current = null;
@@ -644,13 +652,17 @@ export function LucyOrbCounsel({
         }),
       },
       onToolCall: (call) => executor.execute(call),
+      onConnectionInfo: metrics.setConnection,
+      onUsageMetadata: metrics.recordUsage,
+      onInputSent: metrics.startTurn,
+      onAudioScheduled: metrics.responseAudio,
       onToolBusy: (busy) => { if (!busy) setToolBusy(''); },
       onState: (state) => {
         setLiveReady(true);
         setSpeaking(state === 'speaking');
         if (state === 'speaking') setThinkingOn(false);
       },
-      onTurnComplete: () => setThinkingOn(false),
+      onTurnComplete: () => { setThinkingOn(false); metrics.dropPending(); },
       // 실시간 자막: 목소리가 들리는 순간에 맞춰 한 쪽씩 차오른다.
       onCaption: (text) => {
         const { steps, page } = captionSteps(captionPageRef.current, text);
@@ -673,8 +685,12 @@ export function LucyOrbCounsel({
         // 손님이 새로 말하기 시작하면 한 차례 도구 호출 수를 다시 센다. 다음 답의 자막은 새 쪽에서 시작한다.
         if (!userBuf.current) { executorRef.current?.newTurn(); captionPageRef.current = ''; setCaption(''); }
         // 실시간 대화: 손님 말이 들어오면 마스터가 답을 준비한다 (말을 시작하면 꺼진다).
-        if (voiceModeRef.current === 'realtime') setThinkingOn(true);
-        userBuf.current = mergeTranscript(userBuf.current, text);
+        const nextText = mergeTranscript(userBuf.current, text);
+        if (voiceModeRef.current === 'realtime') {
+          setThinkingOn(true);
+          if (nextText !== userBuf.current) metrics.startTurn('realtime');
+        }
+        userBuf.current = nextText;
         if (tarotArmedRef.current && !pickedRef.current) {
           // "멈춰"라고 말할 때마다 섞이던 카드 한 장을 뽑는다.
           const buf = userBuf.current;
@@ -814,7 +830,7 @@ export function LucyOrbCounsel({
     setTalkPressed(false);
     const session = sessionRef.current;
     if (!session) return;
-    session.setMuted(voiceMode === 'hold');
+    session.setMuted(voiceMode === 'hold', true);
     if (voiceMode === 'hold') {
       // 손을 떼면 말이 끝난 것: 마스터가 답을 준비하는 동안 '생각 중'.
       setThinkingOn(true);
@@ -975,6 +991,8 @@ export function LucyOrbCounsel({
       });
     }
     refreshMemory();
+    metricsRef.current?.finish();
+    setSessionMetrics(metricsRef.current?.snapshot() ?? null);
     sessionRef.current?.stop();
     sessionRef.current = null;
     setReport(reportFrom(master, nickname, linesRef.current));
@@ -1078,7 +1096,7 @@ export function LucyOrbCounsel({
       return;
     }
     executorRef.current?.newTurn();
-    sessionRef.current.sendText(text);
+    if (!sessionRef.current.sendText(text, true)) return;
     setThinkingOn(true);
     captionPageRef.current = '';
     userBuf.current = text;
@@ -1144,7 +1162,7 @@ export function LucyOrbCounsel({
     if (!text) return;
     if (!sessionRef.current) return;
     executorRef.current?.newTurn();
-    sessionRef.current.sendText(text);
+    if (!sessionRef.current.sendText(text, true)) return;
     setThinkingOn(true);
     captionPageRef.current = '';
     userBuf.current = text;
@@ -1643,6 +1661,7 @@ export function LucyOrbCounsel({
         {phase === 'report' && master && (
           <>
           <div className="lucy-bok">
+            {sessionMetrics && <OrbSessionMetricsView data={sessionMetrics} />}
             <p className="lucy-bok-done">상담을 마쳤습니다. 채팅에 남기기를 누르면 루시가 요약 보고서를 만들어 드려요.</p>
             <p>{hearted ? `${BOKCHAE.find(item => item.id === bok)?.label || ''} 복채 감사합니다. 부적을 써 드렸어요` : '복채를 내시면 부적을 써 드려요 · 금액을 누르세요'}</p>
             <div className="lucy-bok-chips">

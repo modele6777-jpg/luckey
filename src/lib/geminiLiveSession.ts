@@ -1,14 +1,15 @@
 import { buildLucyLiveInstruction, buildOrbLiveInstruction } from './lucyLiveBrief';
 import { orbFunctionDeclarations } from './orb/orbTools';
 import { orbVoice } from './orbMasters';
+import { parseOrbLivePrices, type OrbLivePrices } from './orb/orbSessionMetrics';
 
 export type LiveVoiceState = 'listening' | 'speaking';
 
 export type LiveVoiceSession = {
   stop: () => void;
-  setMuted: (muted: boolean) => void;
+  setMuted: (muted: boolean, measureTurn?: boolean) => void;
   interrupt: () => void;
-  sendText: (text: string) => boolean;
+  sendText: (text: string, measureTurn?: boolean) => boolean;
   /** 마이크를 완전히 닫는다 (아이폰 마이크 표시도 꺼진다). 연결은 그대로 둔다. */
   releaseMic: () => void;
   /** 닫힌 마이크를 다시 연다. 열렸으면 true. */
@@ -55,6 +56,10 @@ type LiveVoiceHandlers = {
   onTurnComplete?: () => void;
   /** 도구 실행 중 여부 (오브 표시용). */
   onToolBusy?: (busy: boolean) => void;
+  onConnectionInfo?: (model: string, prices: OrbLivePrices | null) => void;
+  onUsageMetadata?: (usage: unknown) => void;
+  onInputSent?: (source: 'hold' | 'text') => void;
+  onAudioScheduled?: (delayMs: number) => void;
 };
 
 function downsample(input: Float32Array, inRate: number, outRate = 16000): Float32Array {
@@ -202,12 +207,13 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     nextAt = startAt + buffer.duration;
     sources.add(source);
     source.onended = () => sources.delete(source);
+    handlers.onAudioScheduled?.((startAt - playback.currentTime) * 1000);
     markSpeaking();
   };
 
-  let pendingText = '';
+  let pendingText: { line: string; measureTurn: boolean } | null = null;
 
-  const sendTyped = (text: string) => {
+  const sendTyped = (text: string, measureTurn = false) => {
     const line = text.replace(/\s+/g, ' ').trim().slice(0, 500);
     if (!line || stopped || socket?.readyState !== WebSocket.OPEN) return false;
     stopPlayback();
@@ -217,6 +223,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
         turnComplete: true,
       },
     }));
+    if (measureTurn) handlers.onInputSent?.('text');
     handlers.onState?.('listening');
     return true;
   };
@@ -252,14 +259,16 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       fail('live-failed', '실시간 음성에 연결하지 못했습니다.');
       return;
     }
+    const usage = message.usageMetadata ?? message.usage_metadata;
+    if (usage != null) handlers.onUsageMetadata?.(usage);
     if (message.setupComplete || message.setup_complete) {
       ready = true;
       if (setupTimer) clearTimeout(setupTimer);
       handlers.onState?.('listening');
       if (pendingText) {
         const queued = pendingText;
-        pendingText = '';
-        sendTyped(queued);
+        pendingText = null;
+        sendTyped(queued.line, queued.measureTurn);
       }
       return;
     }
@@ -373,6 +382,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       }
       token = String(body.token);
       model = String(body.model || LIVE_MODEL);
+      if (!stopped) handlers.onConnectionInfo?.(model, parseOrbLivePrices(body.usagePrices));
     } catch {
       fail('live-unavailable', '실시간 음성을 열지 못해 기본 마이크로 듣습니다.');
       return;
@@ -451,10 +461,13 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   void run();
   return {
     stop,
-    setMuted: (next) => {
+    setMuted: (next, measureTurn = false) => {
       // 누르고 말하기: 손을 떼면(다시 음소거) 말이 끝났다고 알려 바로 답하게 한다.
       if (next && !muted && ready && socket?.readyState === WebSocket.OPEN) {
-        try { socket.send(JSON.stringify({ realtimeInput: { audioStreamEnd: true } })); } catch { /* socket closing */ }
+        try {
+          socket.send(JSON.stringify({ realtimeInput: { audioStreamEnd: true } }));
+          if (measureTurn) handlers.onInputSent?.('hold');
+        } catch { /* socket closing */ }
       }
       muted = next;
       if (next) handlers.onAudioLevel?.(0);
@@ -486,14 +499,14 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
         return false;
       }
     },
-    sendText: (text: string) => {
+    sendText: (text: string, measureTurn = false) => {
       const line = text.replace(/\s+/g, ' ').trim().slice(0, 500);
       if (!line || stopped) return false;
       if (!ready || socket?.readyState !== WebSocket.OPEN) {
-        pendingText = line;
+        pendingText = { line, measureTurn };
         return true;
       }
-      return sendTyped(line);
+      return sendTyped(line, measureTurn);
     },
   };
 }

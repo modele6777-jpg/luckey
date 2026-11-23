@@ -2,6 +2,7 @@ import { getGeminiApiKey } from '../geminiKey.ts';
 import { buildLucyLiveInstruction, buildOrbLiveInstruction } from '../../src/lib/lucyLiveBrief.ts';
 import { orbFunctionDeclarations } from '../../src/lib/orb/orbTools.ts';
 import { orbVoice } from '../../src/lib/orbMasters.ts';
+import { parseOrbLivePrices, type OrbLivePrices } from '../../src/lib/orb/orbSessionMetrics.ts';
 
 const LIVE_MODEL = 'gemini-3.8-live';
 
@@ -9,7 +10,7 @@ export function lucyLiveInstruction(nickname: string, chart = '', cards = '', fo
   return buildLucyLiveInstruction(nickname, chart, cards, focus, greet, notes);
 }
 
-export async function createGeminiLiveToken(nickname = '', reading?: { chart?: string; cards?: string; voice?: string; focus?: string; greet?: string; notes?: string; orb?: boolean; persona?: string; rules?: string }): Promise<{ token: string; model: string; expiresAt: string }> {
+export async function createGeminiLiveToken(nickname = '', reading?: { chart?: string; cards?: string; voice?: string; focus?: string; greet?: string; notes?: string; orb?: boolean; persona?: string; rules?: string }): Promise<{ token: string; model: string; expiresAt: string; usagePrices?: OrbLivePrices }> {
   const key = getGeminiApiKey();
   if (!key) {
     const error = new Error('Gemini 키가 설정되어 있지 않습니다.') as Error & { status?: number; code?: string };
@@ -82,5 +83,10 @@ export async function createGeminiLiveToken(nickname = '', reading?: { chart?: s
     error.code = 'GEMINI_LIVE_TOKEN_FAILED';
     throw error;
   }
-  return { token, model: LIVE_MODEL, expiresAt: expireTime };
+  let usagePrices: OrbLivePrices | null = null;
+  if (reading?.orb && process.env.ORB_LIVE_USAGE_PRICES_USD) {
+    try { usagePrices = parseOrbLivePrices(JSON.parse(process.env.ORB_LIVE_USAGE_PRICES_USD)); }
+    catch { /* usage remains measurable without a configured price */ }
+  }
+  return { token, model: LIVE_MODEL, expiresAt: expireTime, ...(usagePrices ? { usagePrices } : {}) };
 }
