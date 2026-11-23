@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface OmaniFrankincenseResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '물길·배분' | '회복·숙성' | '우회·항해' | '환대·온기' | '여백·기다림' | '오만 전반';
   dhofarSymbol: string;
   companionSymbol: string;
+  falajFlowAxis: string;
   omaniInsight: string;
   falajTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const OMANI_SHADOWS = [
+  '시간과 에너지를 엄격한 시간표로 나누는 규칙이 예상치 못한 변수가 생겼을 때 스스로를 옭아매는 경직된 틀이 되지 않게 여유를 두세요.',
+  '지나간 상처에서 의미를 찾는 성찰이 지금 당장 멈추거나 바로잡아야 할 현재의 불합리까지 무조건 미화하는 체념이 되어서는 안 됩니다.',
+  '역풍을 피해 돛의 각도를 트는 유연함이 정작 가야 할 원래 항로와 목적지까지 잊어버리는 잦은 우회로 흐르지 않도록 방향을 확인하세요.',
+  '먼저 건네는 따뜻한 환대가 내 마음을 돌보기도 전에 타인의 불편함을 다 떠안아 주는 감정 과소비로 이어지지 않게 경계를 살피세요.',
+  '다음 물길을 기다리며 비워 두는 와디의 여백이 실제로 움직여야 할 순간에도 준비만 반복하는 무기력한 대기가 되지 않게 기한을 정하세요.',
+];
+
+function classifyOmaniTopic(q: string): OmaniFrankincenseResult['questionTopic'] {
+  if (/물길|시간|배분|나누/.test(q)) return '물길·배분';
+  if (/상처|배움|아픔|향/.test(q)) return '회복·숙성';
+  if (/역풍|우회|대안|방향/.test(q)) return '우회·항해';
+  if (/안부|온기|친절|관계/.test(q)) return '환대·온기';
+  if (/공백|여백|휴식|기다/.test(q)) return '여백·기다림';
+  return '오만 전반';
+}
+
 export function calculateOmaniFrankincenseFalajWater(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): OmaniFrankincenseResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyOmaniTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % SYMBOLS.length;
   const picked = SYMBOLS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (SYMBOLS.length - 1));
   const companion = SYMBOLS[(idx + companionOffset) % SYMBOLS.length];
+  const falajFlowAxis = `${picked.symbol.split('(')[0].trim()} ↔ ${companion.symbol.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-OMANI-FALAJ-v2.2.0',
+    engineVersion: 'LUCKEY-OMANI-FALAJ-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     dhofarSymbol: picked.symbol,
     companionSymbol: companion.symbol,
+    falajFlowAxis,
     omaniInsight: picked.insight,
     falajTone: picked.tone,
     reflectionFocus: `오만 프랑킨센스·팔라즈 지혜의 '${picked.symbol}'을 중심에 두고 '${companion.symbol}'의 결을 곁들여, 시간과 마음의 물길을 공정하게 나누며 내 안의 향기가 굳기를 기다려 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: OMANI_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '아라비아 반도 오만의 도파르 유향·팔라즈 수로 지혜를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +121,13 @@ export function formatOmaniFrankincensePrompt(res: OmaniFrankincenseResult): str
   return [
     `[오만 프랑킨센스·팔라즈 수로 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 팔라즈 물길 축: ${res.falajFlowAxis}`,
     `- 도파르 상징: ${res.dhofarSymbol} (${res.falajTone})`,
     `- 동반 상징: ${res.companionSymbol}`,
     `- 중심 통찰: ${res.omaniInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

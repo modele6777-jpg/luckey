@@ -1,10 +1,10 @@
 {
-  "version": "1.8.430",
-  "builtAt": "2026-11-24T08:05:00+09:00",
-  "summary": "류큐 이차리바 초데·사르데냐 누라게·웨일스 마비노기온 아웬 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.430)",
+  "version": "1.8.431",
+  "builtAt": "2026-11-24T08:15:00+09:00",
+  "summary": "누미디아 키르타·옥시타니아 파라트제·오만 프랑킨센스 팔라즈 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.431)",
   "items": [
-    "류큐 이차리바 초데 환대 엔진(v2.3.0): 질문 맥락(questionTopic), 환대 유대 축(icharibaBridgeAxis), 과잉 경계(shadowWarning) 추가",
-    "사르데냐 누라게 돌탑 엔진(v2.3.0): 질문 맥락(questionTopic), 거석 균형 축(nuragheDryStoneAxis), 과잉 경계(shadowWarning) 추가",
-    "웨일스 마비노기온 아웬 영감 엔진(v2.3.0): 질문 맥락(questionTopic), 아웬 영감 축(awenInspirationAxis), 과잉 경계(shadowWarning) 추가"
+    "누미디아 키르타 지평선 엔진(v2.3.0): 질문 맥락(questionTopic), 키르타 지평 축(cirtaHorizonAxis), 과잉 경계(shadowWarning) 추가",
+    "옥시타니아 트루바두르 파라트제 엔진(v2.3.0): 질문 맥락(questionTopic), 파라트제 균형 축(paratgeBalanceAxis), 과잉 경계(shadowWarning) 추가",
+    "오만 프랑킨센스·팔라즈 수로 엔진(v2.3.0): 질문 맥락(questionTopic), 팔라즈 물길 축(falajFlowAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }

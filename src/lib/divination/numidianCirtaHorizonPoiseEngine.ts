@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface NumidianCirtaResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '연결·다리' | '경계·균형' | '민첩·유연' | '기초·질서' | '뿌리·휴식' | '누미디아 전반';
   cirtaMotif: string;
   companionMotif: string;
+  cirtaHorizonAxis: string;
   numidianInsight: string;
   plateauTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const NUMIDIAN_SHADOWS = [
+  '서로 다른 두 영역을 잇는 다리를 찾다가 정작 내가 감당할 수 있는 경계선까지 지워 버리는 과잉 연결을 경계하세요.',
+  '극단 사이의 중간 지점을 찾는 균형 감각이 분명한 결단이 필요한 순간마저 양쪽 눈치를 보며 미루는 우유부단으로 흐르지 않게 하세요.',
+  '가볍게 출발해 방향을 틀 수 있는 민첩함이 핵심 원칙이나 약속까지 바람 따라 수시로 바꾸는 변덕이 되지 않도록 중심을 잡으세요.',
+  '발밑의 돌 하나에 집중하는 성실함이 전체 지평선의 큰 방향이 바뀌고 있는데도 고개 들지 않는 매몰로 이어지지 않게 살피세요.',
+  '내면의 뿌리를 내리는 고요한 시간이 밖으로 건네야 할 안부와 표현까지 막아 두는 과도한 위축이 되지 않게 주의하세요.',
+];
+
+function classifyNumidianTopic(q: string): NumidianCirtaResult['questionTopic'] {
+  if (/연결|다리|사이|관계/.test(q)) return '연결·다리';
+  if (/경계|균형|선택|맞서/.test(q)) return '경계·균형';
+  if (/가벼|걸음|민첩|시작/.test(q)) return '민첩·유연';
+  if (/기초|돌|질서|완수/.test(q)) return '기초·질서';
+  if (/뿌리|체력|휴식|그늘/.test(q)) return '뿌리·휴식';
+  return '누미디아 전반';
+}
+
 export function calculateNumidianCirtaHorizonPoise(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): NumidianCirtaResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyNumidianTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const picked = MOTIFS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const cirtaHorizonAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-NUMIDIAN-CIRTA-v2.2.0',
+    engineVersion: 'LUCKEY-NUMIDIAN-CIRTA-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     cirtaMotif: picked.motif,
     companionMotif: companion.motif,
+    cirtaHorizonAxis,
     numidianInsight: picked.insight,
     plateauTone: picked.tone,
     reflectionFocus: `누미디아 키르타 지평선의 '${picked.motif}'을 중심에 두고 '${companion.motif}'의 시야를 함께 엮어, 무거운 조건을 다 갖추려 애쓰기보다 가벼운 고삐와 균형 잡힌 시야로 한 걸음을 옮겨 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: NUMIDIAN_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '고대 북아프리카 누미디아 키르타의 협곡·지평선 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +121,13 @@ export function formatNumidianCirtaPrompt(res: NumidianCirtaResult): string {
   return [
     `[누미디아 키르타·천문 지평선 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 키르타 지평 축: ${res.cirtaHorizonAxis}`,
     `- 키르타 모티프: ${res.cirtaMotif} (${res.plateauTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.numidianInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
