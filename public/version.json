@@ -1,10 +1,10 @@
 {
-  "version": "1.8.404",
-  "builtAt": "2026-11-24T04:15:00+09:00",
-  "summary": "히타이트 테레피누·미낭카바우 루마 가당·과라니 테코 포라 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.404)",
+  "version": "1.8.405",
+  "builtAt": "2026-11-24T04:25:00+09:00",
+  "summary": "카렐리아 루노·그레이트 짐바브웨·오지브웨 7대 가르침 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.405)",
   "items": [
-    "히타이트 테레피누 조화·회복 엔진(v2.3.0): 질문 맥락(questionTopic), 회복 축(telepinuReturnAxis), 과잉 경계(shadowWarning) 추가",
-    "미낭카바우 루마 가당 엔진(v2.3.0): 질문 맥락(questionTopic), 균형 축(gonjongBalanceAxis), 과잉 경계(shadowWarning) 추가",
-    "구아라니 테코 포랑 숲 조화 엔진(v2.3.0): 질문 맥락(questionTopic), 공존 축(tekoPoraCycleAxis), 과잉 경계(shadowWarning) 추가"
+    "카렐리야 루노·칸텔레 공명 엔진(v2.3.0): 질문 맥락(questionTopic), 공명 축(kanteleChordAxis), 과잉 경계(shadowWarning) 추가",
+    "그레이트 짐바브웨 석조 성벽 엔진(v2.3.0): 질문 맥락(questionTopic), 석조 축(stoneLockAxis), 과잉 경계(shadowWarning) 추가",
+    "오지브웨 7대 할아버지 가르침 엔진(v2.3.0): 질문 맥락(questionTopic), 덕목 축(virtueBalanceAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }

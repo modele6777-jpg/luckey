@@ -22,12 +22,15 @@ export interface OjibweSevenGrandfatherResult {
   engineName: string;
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계·중심' | '일·토대' | '마음·진심' | '덕목 전반';
   dominantTeaching: OjibweGrandfatherTeaching;
   balancingTeaching: OjibweGrandfatherTeaching;
   medicineWheelPhase: string;
+  virtueBalanceAxis: string;
   qualitativeSynthesis: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   isSymbolicFramework: true;
@@ -118,6 +121,23 @@ function stableHash(input: string): number {
   return h >>> 0;
 }
 
+function classifyOjibweTopic(q: string): OjibweSevenGrandfatherResult['questionTopic'] {
+  if (/관계|중심|사람|사랑|존중|경계/.test(q)) return '관계·중심';
+  if (/일|직장|진로|토대|선택|결정/.test(q)) return '일·토대';
+  if (/마음|진심|정직|용기|겸손|감정/.test(q)) return '마음·진심';
+  return '덕목 전반';
+}
+
+const OJIBWE_SHADOWS: Record<OjibweGrandfatherTeachingId, string> = {
+  nbwaakaawin_wisdom: '토대를 다지는 데만 골몰해 지금 당장 건네야 할 따뜻한 실행을 미루지 않도록 경계하세요.',
+  zaagidiwin_love: '타인을 품으려다 정작 나를 지키는 건강한 경계까지 내어주지 않도록 살피세요.',
+  manaaji_idiwin_respect: '존중이라는 이름으로 꼭 필요한 솔직한 의견까지 삼켜 버리지 않도록 주의하세요.',
+  aakode_ewin_bravery: '용기를 내어 밀고 가다가 상대와 내 마음의 속도를 놓치지 않도록 숨을 고르세요.',
+  gwayakwaadiziwin_honesty: '솔직함이 날 선 단정으로 흐르지 않도록 부드러운 여백을 함께 두세요.',
+  dabaadendiziwin_humility: '겸손을 핑계로 내가 져야 할 몫과 재능까지 지나치게 낮추지 않도록 살피세요.',
+  debwewin_truth: '진심을 확인하느라 생각이 길어져 오늘 내디뎌야 할 작은 발걸음을 멈추지 마세요.',
+};
+
 export function calculateOjibweSevenGrandfatherTeachings(params: {
   profile: UserProfile;
   now?: Date;
@@ -125,6 +145,7 @@ export function calculateOjibweSevenGrandfatherTeachings(params: {
 }): OjibweSevenGrandfatherResult {
   const now = params.now ?? new Date();
   const query = (params.question ?? '').trim();
+  const questionTopic = classifyOjibweTopic(query);
 
   const seedInput = [
     params.profile.basic?.name ?? '',
@@ -142,6 +163,8 @@ export function calculateOjibweSevenGrandfatherTeachings(params: {
   const dominantTeaching = GRANDFATHER_TEACHINGS[dominantIdx];
   const balancingTeaching = GRANDFATHER_TEACHINGS[balancingIdx];
   const medicineWheelPhase = MEDICINE_WHEEL_PHASES[wheelIdx];
+  const virtueBalanceAxis = `${dominantTeaching.koreanName} ↔ ${balancingTeaching.koreanName} (${questionTopic})`;
+  const shadowWarning = OJIBWE_SHADOWS[dominantTeaching.id];
 
   const qualitativeSynthesis =
     `아니시나베(오지브웨) 일곱 할아버지 가르침의 상징으로 비추어 보면, 지금은 ${dominantTeaching.totemAnimal}이 이끄는 ` +
@@ -160,14 +183,17 @@ export function calculateOjibweSevenGrandfatherTeachings(params: {
 
   return {
     engineName: '오지브웨(아니시나베) 7대 할아버지 가르침 (Seven Grandfather Teachings)',
-    engineVersion: 'LUCKEY-OJIBWE-SEVEN-GRANDFATHERS-v2.2.0',
+    engineVersion: 'LUCKEY-OJIBWE-SEVEN-GRANDFATHERS-v2.3.0',
     calculatedAtKst: formatOjibweKstTimestamp(now),
+    questionTopic,
     dominantTeaching,
     balancingTeaching,
     medicineWheelPhase,
+    virtueBalanceAxis,
     qualitativeSynthesis,
     reflectionFocus,
     ritualAction,
+    shadowWarning,
     reflectiveQuestion,
     interpretiveBoundary:
       '본 결과는 오지브웨(아니시나베) 전통의 일곱 가지 덕목과 약바퀴(Medicine Wheel) 상징을 활용한 자기 성찰 프레임워크이며, 의학적 진단·미래 예측이나 수치적 운세 점수가 아닙니다.',
@@ -179,12 +205,14 @@ export function formatOjibweSevenGrandfatherPrompt(res: OjibweSevenGrandfatherRe
   return [
     `[보조 상징 관점 — ${res.engineName}]`,
     `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 덕목 축: ${res.virtueBalanceAxis}`,
     `- 주된 가르침: ${res.dominantTeaching.ojibweName} (${res.dominantTeaching.koreanName}) · 토템 ${res.dominantTeaching.totemAnimal}`,
     `- 균형 가르침: ${res.balancingTeaching.ojibweName} (${res.balancingTeaching.koreanName}) · 토템 ${res.balancingTeaching.totemAnimal}`,
     `- 약바퀴 방향: ${res.medicineWheelPhase}`,
     `- 성찰 해석: ${res.qualitativeSynthesis}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 실천 의례: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
