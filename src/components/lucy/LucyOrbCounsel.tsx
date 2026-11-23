@@ -26,22 +26,22 @@ const BOKCHAE = [
 function HeartGlyph() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 21s-6.7-4.35-9.33-8.2C.2 10 .4 6.4 3 4.8 5.1 3.5 7.7 4 9.1 5.8 10.5 4 13.1 3.5 15.2 4.8c2.6 1.6 2.8 5.2 1.1 7.9C18.7 16.6 12 21 12 21z" />
+      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
     </svg>
   );
 }
 /** 인스타 라이브처럼 떠오르는 하트들 (위치·지연·크기·색이 조금씩 다르다). */
 const IG_HEARTS = [
-  { x: 0, delay: 0, scale: 1.25, color: '#ff3b5c', sway: 14 },
-  { x: -10, delay: 90, scale: .9, color: '#ff7aa8', sway: -18 },
-  { x: 12, delay: 170, scale: 1, color: '#ffb02e', sway: 16 },
-  { x: -4, delay: 260, scale: .8, color: '#c86bff', sway: -12 },
-  { x: 8, delay: 340, scale: 1.1, color: '#ff3b5c', sway: 20 },
-  { x: -14, delay: 430, scale: .75, color: '#5ec8ff', sway: -16 },
-  { x: 4, delay: 520, scale: .95, color: '#ff7aa8', sway: 12 },
-  { x: -6, delay: 610, scale: .85, color: '#ffb02e', sway: -20 },
-  { x: 10, delay: 700, scale: 1, color: '#ff3b5c', sway: 14 },
-  { x: -2, delay: 800, scale: .7, color: '#c86bff', sway: -10 },
+  { x: 0, delay: 0, scale: 1.15, color: '#ff3040', sway: 16 },
+  { x: -6, delay: 160, scale: .95, color: '#ff6fae', sway: -20 },
+  { x: 6, delay: 320, scale: 1, color: '#ffa53b', sway: 18 },
+  { x: -3, delay: 470, scale: .9, color: '#b56bff', sway: -14 },
+  { x: 4, delay: 620, scale: 1.05, color: '#ff3040', sway: 22 },
+  { x: -5, delay: 780, scale: .85, color: '#4cc3ff', sway: -18 },
+  { x: 2, delay: 930, scale: 1, color: '#ff6fae', sway: 14 },
+  { x: -2, delay: 1090, scale: .9, color: '#ffa53b', sway: -22 },
+  { x: 5, delay: 1240, scale: 1, color: '#ff3040', sway: 16 },
+  { x: -4, delay: 1400, scale: .8, color: '#b56bff', sway: -12 },
 ];
 /** Faint shapes drifting inside the crystal ball: every Luckey icon plus runes. */
 const ORB_ICONS: LucideIcon[] = [Clover, MessageCircleMinus, MessageCirclePlus, KeyRound, ...Object.values(CHANNEL_MENU_ICONS).filter(icon => icon !== KeyRound)];
@@ -770,7 +770,7 @@ export function LucyOrbCounsel({
     setTalisman({ spec, url: canvas.toDataURL('image/png') });
     if (bokTimer.current) window.clearTimeout(bokTimer.current);
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    bokTimer.current = window.setTimeout(() => { bokTimer.current = null; setTalismanOpen(true); }, reduced ? 0 : 1300);
+    bokTimer.current = window.setTimeout(() => { bokTimer.current = null; setTalismanOpen(true); }, reduced ? 0 : 2200);
   };
 
   const saveTalisman = async () => {
