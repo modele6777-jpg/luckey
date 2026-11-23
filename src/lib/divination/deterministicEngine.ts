@@ -1,3 +1,4 @@
+import { buildKnowledgeCards } from './knowledge';
 import { slimToolDataToBudget } from './promptSlim';
 import { getSymbolicPerspective } from './symbolicPerspective';
 import { MASTER_REVIEW_BINDINGS } from './masterReviewBindings';
@@ -8486,6 +8487,8 @@ export function formatDeterministicEnginePrompt(
   });
   const calculated = included.filter(tool => tool.status === 'calculated' && tool.data != null && !(report.masterReview && REVIEW_PENDING_CORE.has(tool.toolId)));
   const symbolicReview = getMasterSymbolicReview(report, options);
+  // 📚 해석 사전: 이번 계산값(주역 본괘·지괘, 숙요 본명숙 등)에 맞는 카드만 붙인다.
+  const knowledgeCards = buildKnowledgeCards(calculated);
   return `[이번 질문의 계산 근거 및 한계]
 기준 시각: ${report.calculatedAtKst}
 입력 생년월일: ${report.inputProfile.solarDateString || '미입력'} · 생시: ${report.inputProfile.birthtime || '미입력'}
@@ -8509,7 +8512,10 @@ scope가 있는 도구(주역·육임·기문 점시·태을)는 생년월일이
 [계산 상태 및 데이터 JSON]
 ${JSON.stringify(evidence)}
 [JSON 끝]
-${report.masterReview ? `[마스터 전체 검토: ${getCalculationAudit(report, options).length}개 항목]
+${knowledgeCards.length ? `[해석 카드 · 앱 해석 사전 (이번 계산값에 해당하는 것만)]
+${knowledgeCards.map(card => `- ${card}`).join('\n')}
+카드는 계산값의 전통적 뜻을 짧게 정리한 상징적 참고다. 계산값과 함께 근거로 쓰되, 카드에 없는 구절을 원전 인용처럼 지어내지 않는다.
+` : ''}${report.masterReview ? `[마스터 전체 검토: ${getCalculationAudit(report, options).length}개 항목]
 아래 항목은 모두 검토 대상으로 평가했다. symbolic은 실제 계산 성공이나 실측값이 아니라 상징적 조언으로만 전달한 것이다.
 skipped/error는 입력 부족·실패·제공할 안전한 관점 없음으로 제외한 항목이다. 모두 사용했다고 주장하지 않는다.
 사용 가능한 계산과 상징 관점을 빠짐없이 검토하고, 질문과 관련된 공통점·차이·충돌을 종합한다. 서로 모순되면 억지로 일치시켜 결론내리지 않는다.
