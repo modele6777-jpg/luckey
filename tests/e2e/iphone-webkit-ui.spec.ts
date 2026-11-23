@@ -87,18 +87,28 @@ async function expectHiddenDirectionTarget(bigBang: import('@playwright/test').L
 }
 
 async function getLucyHeaderBackground(page: import('@playwright/test').Page, edge: 'top' | 'bottom') {
-  return page.locator('[data-lucy-header-tap-scroll="true"]').evaluate((header, edge) => {
-    const rect = header.getBoundingClientRect();
+  const header = page.locator('[data-lucy-header-tap-scroll="true"]');
+  await expect(header).toBeVisible();
+  const findPoint = () => header.evaluate((element, edge) => {
+    const rect = element.getBoundingClientRect();
     const blocked = 'button, a, input, [role="button"], [data-no-scroll-top], [data-brand-logo], .lucy-header-actions';
-    const y = edge === 'top' ? rect.top + 4 : rect.bottom - 4;
-    const x = [0.5, 0.42, 0.58, 0.34, 0.26, 0.18].map(fraction => rect.left + rect.width * fraction)
-      .find(candidate => {
-        const hit = document.elementFromPoint(candidate, y);
-        return hit && header.contains(hit) && !hit.closest(blocked);
-      });
-    if (x == null) throw new Error(`Lucy header has no tappable background at its ${edge}`);
-    return { x, y };
+    for (const inset of [4, 8, 12, Math.floor(rect.height / 2)]) {
+      const y = edge === 'top' ? rect.top + inset : rect.bottom - inset;
+      for (const fraction of [0.5, 0.42, 0.58, 0.34, 0.26, 0.18]) {
+        const x = rect.left + rect.width * fraction;
+        const hit = document.elementFromPoint(x, y);
+        if (hit && element.contains(hit) && !hit.closest(blocked)) return { x, y };
+      }
+    }
+    return null;
   }, edge);
+  let point: Awaited<ReturnType<typeof findPoint>> = null;
+  await expect.poll(async () => {
+    point = await findPoint();
+    return Boolean(point);
+  }).toBe(true);
+  if (!point) throw new Error(`Lucy header has no tappable background at its ${edge}`);
+  return point;
 }
 
 async function setContentScrollBoundary(page, edge: 'top' | 'bottom') {
