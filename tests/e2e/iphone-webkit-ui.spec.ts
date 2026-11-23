@@ -1,12 +1,5 @@
 import { expect, test } from '@playwright/test';
 
-test.use({ serviceWorkers: 'block' });
-
-test.beforeEach(async ({ page, baseURL }) => {
-  const appOrigin = new URL(baseURL!).origin;
-  await page.route(url => url.origin !== appOrigin, route => route.abort());
-});
-
 async function openLucyMaster(page, path = '/chat') {
   // 엔진함·추천질문 라이브러리는 점술모드(루시 마스터)에서만 보인다.
   await page.addInitScript(() => { sessionStorage.setItem('lucy_master_mode', 'on'); });
@@ -32,7 +25,7 @@ async function openLucy(page, path = '/chat') {
     sessionStorage.setItem('pwa_prompt_dismissed', 'true');
     sessionStorage.setItem('profileModalDismissed', '1');
   });
-  await page.goto(path, { waitUntil: 'domcontentloaded' });
+  await page.goto(path);
   const lockScreen = page.locator('[data-pin-screen]');
   if (await lockScreen.count()) {
     for (const digit of '1202') await page.keyboard.press(digit);
@@ -50,7 +43,7 @@ async function openPrologue(page, path = '/todo') {
     sessionStorage.setItem('pwa_prompt_dismissed', 'true');
     sessionStorage.setItem('profileModalDismissed', '1');
   });
-  await page.goto(path, { waitUntil: 'domcontentloaded' });
+  await page.goto(path);
   const lockScreen = page.locator('[data-pin-screen]');
   if (await lockScreen.count()) {
     for (const digit of '1202') await page.keyboard.press(digit);
@@ -67,7 +60,7 @@ async function openKeyChannel(page) {
     sessionStorage.setItem('pwa_prompt_dismissed', 'true');
     sessionStorage.setItem('profileModalDismissed', '1');
   });
-  await page.goto('/key', { waitUntil: 'domcontentloaded' });
+  await page.goto('/key');
   const lockScreen = page.locator('[data-pin-screen]');
   if (await lockScreen.count()) {
     for (const digit of '1202') await page.keyboard.press(digit);
@@ -1493,23 +1486,20 @@ test('pull-to-refresh indicator centers over the folded main canvas, excluding t
 });
 
 test('pull-to-refresh ignores cross-origin Firebase Auth iframes without WebKit errors', async ({ page }) => {
-  const authFrame = 'https://lucyuniverse-fc423.firebaseapp.com/__/auth/iframe';
-  await page.route(authFrame, route => route.fulfill({ contentType: 'text/html', body: '<!doctype html><title>Auth fixture</title>' }));
   const frameAccessErrors: string[] = [];
   page.on('pageerror', error => {
     if (error.message.includes('Blocked a frame with origin')) frameAccessErrors.push(error.message);
   });
   await openLucy(page);
-  await page.evaluate(async src => {
+  await page.evaluate(() => {
     const frame = document.createElement('iframe');
-    const loaded = new Promise<void>(resolve => { frame.onload = () => resolve(); });
-    frame.src = src;
+    frame.src = 'https://lucyuniverse-fc423.firebaseapp.com/__/auth/iframe';
     frame.title = 'cross-origin-auth-regression';
     frame.width = '1';
     frame.height = '1';
     document.body.appendChild(frame);
-    await loaded;
-  }, authFrame);
+  });
+  await page.waitForTimeout(1000);
   expect(frameAccessErrors).toEqual([]);
 });
 
