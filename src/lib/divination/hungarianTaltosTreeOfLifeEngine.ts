@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface HungarianTaltosResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '도약·시야' | '직관·호기심' | '계단·성실' | '세계수 전반';
   treeRealm: string;
   companionRealm: string;
+  worldTreeAxis: string;
   leapInsight: string;
   steppeTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const TALTOS_SHADOWS = [
+  '높은 시야에서 전체를 조망하느라 지금 발밑에서 손봐야 할 작은 실무와 약속까지 가볍게 넘기지 마세요.',
+  '반짝이는 호기심을 따라가되 이미 시작한 일의 마무리와 현실적 책임을 중도에 던져 두지 않도록 살피세요.',
+  '내면의 직관을 신뢰하는 것과 주변의 타당한 경고까지 무조건 차단하는 것은 다릅니다.',
+  '먼 목적지를 바라보는 넓은 시야가 당장 오늘 마주한 갈등을 회피하는 핑계가 되지 않도록 하세요.',
+  '한 계단씩 성실히 오르는 동안에도 지금 내가 오르고 있는 사다리가 진짜 내 벽에 기대어 있는지 가끔 확인하세요.',
+];
+
+function classifyTaltosTopic(q: string): HungarianTaltosResult['questionTopic'] {
+  if (/시야|조망|도약|전체|목적지/.test(q)) return '도약·시야';
+  if (/직관|호기심|진실|느낌|신호/.test(q)) return '직관·호기심';
+  if (/계단|성실|차근|조급|첫/.test(q)) return '계단·성실';
+  return '세계수 전반';
+}
+
 export function calculateHungarianTaltosTreeOfLife(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): HungarianTaltosResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyTaltosTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % REALMS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (REALMS.length - 1));
   const picked = REALMS[idx];
   const companion = REALMS[(idx + companionOffset) % REALMS.length];
+  const worldTreeAxis = `${picked.realm.split('(')[0].trim()} ↔ ${companion.realm.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = TALTOS_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-HUNGARIAN-TALTOS-v2.2.0',
+    engineVersion: 'LUCKEY-HUNGARIAN-TALTOS-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     treeRealm: picked.realm,
     companionRealm: companion.realm,
+    worldTreeAxis,
     leapInsight: picked.insight,
     steppeTone: picked.tone,
     reflectionFocus: `'${picked.realm}'의 시선처럼, 지금 갇혀 있던 작은 틀에서 한 뼘만 위로 시선을 올려 보세요. (동반 결: ${companion.realm.split('(')[0].trim()})`,
     ritualAction: picked.action,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '헝가리 탈토시(Táltos)와 하늘 닿는 세계수 설화를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatHungarianTaltosPrompt(res: HungarianTaltosResult): string 
   return [
     `[헝가리 탈토시 세계수 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 세계수·도약 축: ${res.worldTreeAxis}`,
     `- 세계수 층위: ${res.treeRealm} (${res.steppeTone})`,
     `- 동반 층위: ${res.companionRealm}`,
     `- 중심 통찰: ${res.leapInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

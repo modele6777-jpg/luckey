@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface HimbaOtjizeResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '보호·돌봄' | '기억·물줄기' | '가락·품위' | '사막 전반';
   himbaMotif: string;
   companionMotif: string;
+  ochreHearthAxis: string;
   himbaInsight: string;
   desertTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const HIMBA_SHADOWS = [
+  '나를 지키는 보호막을 두텁게 세우다 정작 따뜻한 바람과 새로운 인연이 드나들 창까지 닫지 마세요.',
+  '중심의 불씨를 지키는 일에 마음을 쓰되 이미 식은 원망의 재까지 계속 끌어안고 있지는 마세요.',
+  '땅속 숨은 물줄기를 믿고 기다리되, 지금 당장 메마른 겉흙에 물 한 바가지를 부어야 할 타이밍도 놓치지 마세요.',
+  '각자의 이름을 다정히 부르는 사이에도 오늘 꼭 끝내야 할 전체 일정의 마감선과 우선순위는 분명히 세워 두세요.',
+  '묵묵한 품위가 쌓이길 기다리는 동안에도 정당하게 말하고 요구해야 할 내 몫까지 삼키지는 마세요.',
+];
+
+function classifyHimbaTopic(q: string): HimbaOtjizeResult['questionTopic'] {
+  if (/돌봄|보호|지키|건강|휴식/.test(q)) return '보호·돌봄';
+  if (/기억|뿌리|불씨|물줄기|성과/.test(q)) return '기억·물줄기';
+  if (/가락|품위|성실|리듬|인정/.test(q)) return '가락·품위';
+  return '사막 전반';
+}
+
 export function calculateHimbaOtjizeDesertPoise(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): HimbaOtjizeResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyHimbaTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const ochreHearthAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = HIMBA_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-HIMBA-OTJIZE-v2.2.0',
+    engineVersion: 'LUCKEY-HIMBA-OTJIZE-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     himbaMotif: picked.motif,
     companionMotif: companion.motif,
+    ochreHearthAxis,
     himbaInsight: picked.insight,
     desertTone: picked.tone,
     reflectionFocus: `힘바 오트지제의 '${picked.motif}'처럼, 겉으로 성과가 드러나지 않는 날에도 나를 지키는 돌봄의 의식과 숨은 물줄기를 믿어 보세요. (동반 결: ${companion.motif.split('(')[0].trim()})`,
     ritualAction: picked.action,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '나미비아 힘바족의 오트지제 돌봄·오쿠루오 기억 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatHimbaOtjizePrompt(res: HimbaOtjizeResult): string {
   return [
     `[나미비아 힘바·오트지제 적토 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 적토·화덕 축: ${res.ochreHearthAxis}`,
     `- 힘바 모티프: ${res.himbaMotif} (${res.desertTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.himbaInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.417",
+    "builtAt": "2026-11-24T05:57:00+09:00",
+    "summary": "힘바 오트지제·몽족 자수 천·헝가리 탈토시 세계수 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.417)",
+    "items": [
+      "나미비아 힘바·오트지제 적토 성찰 엔진(v2.3.0): 질문 맥락(questionTopic), 적토·화덕 축(ochreHearthAxis), 과잉 경계(shadowWarning) 추가",
+      "몽족·자수 이야기 천 엔진(v2.3.0): 질문 맥락(questionTopic), 자수·서사 축(storyWeaveAxis), 과잉 경계(shadowWarning) 추가",
+      "헝가리 탈토시 세계수 성찰 엔진(v2.3.0): 질문 맥락(questionTopic), 세계수·도약 축(worldTreeAxis), 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.416",
     "builtAt": "2026-11-24T05:54:10+09:00",
     "summary": "Lucy 지식 관리자 권한 확인 최신화(v1.8.416)",

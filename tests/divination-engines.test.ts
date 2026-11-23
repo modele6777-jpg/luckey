@@ -13754,14 +13754,15 @@ test('Malagasy Fihavanana Kinship engine: principle, +09:00 KST, and interpretiv
 
 test('Hungarian Taltos Tree of Life engine: realm, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateHungarianTaltosTreeOfLife({ profile, now: new Date('2026-11-20T06:30:00Z'), question: '한 단계 위로 시야를 넓히고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-HUNGARIAN-TALTOS-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-HUNGARIAN-TALTOS-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionRealm !== rep.treeRealm);
+  assert.ok(rep.worldTreeAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatHungarianTaltosPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('헝가리') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionRealm));
+  assert.ok(prompt.includes('헝가리') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionRealm) && prompt.includes('과잉 경계'));
 });
 
 test('Kyrgyz Manas Oral Epic Courage engine: chapter, +09:00 KST, and interpretive boundary', () => {
@@ -14887,14 +14888,15 @@ test('Byzantine Hagia Light Dome engine: motif, +09:00 KST, and interpretive bou
 
 test('Himba Otjize Desert Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateHimbaOtjizeDesertPoise({ profile, now: new Date('2026-11-20T20:00:00Z'), question: '나를 지키는 작은 돌봄을 챙기고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-HIMBA-OTJIZE-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-HIMBA-OTJIZE-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.himbaMotif);
+  assert.ok(rep.ochreHearthAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatHimbaOtjizePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('힘바') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('힘바') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
 });
 
 test('Haida Gwaii Cedar Canoe engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15462,14 +15464,15 @@ test('Naxi Dongba Chime engine: motif, +09:00 KST, and interpretive boundary', (
 
 test('Hmong Story Cloth engine: pattern, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateHmongStoryCloth({ profile, now: new Date('2026-11-20T22:15:00Z'), question: '지나온 일상을 차분히 엮고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-HMONG-CLOTH-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-HMONG-CLOTH-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPattern !== rep.stitchPattern);
+  assert.ok(rep.storyWeaveAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatHmongStoryClothPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('몽족') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPattern));
+  assert.ok(prompt.includes('몽족') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPattern) && prompt.includes('과잉 경계'));
 });
 
 test('Karen Bamboo Clock engine: cadence, +09:00 KST, and interpretive boundary', () => {
