@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface GoguryeoSamjokoResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '기상·도약' | '방위·책임' | '이정표·신념' | '벽화 전반';
   muralMotif: string;
   companionMotif: string;
+  samjokoMuralAxis: string;
   goguryeoInsight: string;
   spiritTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const GOGURYEO_SHADOWS = [
+  '높은 이상과 도약을 꿈꾸느라 오늘 발밑에 놓인 작은 생활 루틴과 현실의 점검을 놓치지 마세요.',
+  '망설임을 접고 시원하게 내달리는 기상 속에서도 과녁 주변의 안전과 맥락은 한 번 더 확인하세요.',
+  '내 방위만 지킨다는 이유로 함께 하늘을 받치고 있는 곁의 흐름과 소통의 끈까지 닫아 두지 마세요.',
+  '여건이 덜 갖춰졌다고 당장 피워 내기만 서두르다 뿌리가 자리 잡을 시간을 뺏지 않도록 살피세요.',
+  '변치 않는 북두칠성의 기준을 세우되 작은 현실 변화에 맞춘 유연한 경로 수정까지 막아 버리지 마세요.',
+];
+
+function classifyGoguryeoTopic(q: string): GoguryeoSamjokoResult['questionTopic'] {
+  if (/시야|도약|기상|시작|당당/.test(q)) return '기상·도약';
+  if (/방위|책임|자리|역할|일/.test(q)) return '방위·책임';
+  if (/방향|이정표|기준|별|어둠/.test(q)) return '이정표·신념';
+  return '벽화 전반';
+}
+
 export function calculateGoguryeoSamjokoMuralSpirit(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): GoguryeoSamjokoResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyGoguryeoTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const samjokoMuralAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = GOGURYEO_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-GOGURYEO-SAMJOKO-v2.2.0',
+    engineVersion: 'LUCKEY-GOGURYEO-SAMJOKO-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     muralMotif: picked.motif,
     companionMotif: companion.motif,
+    samjokoMuralAxis,
     goguryeoInsight: picked.insight,
     spiritTone: picked.tone,
     reflectionFocus: `고구려 벽화·삼족오 기상의 '${picked.motif}'처럼, 좁은 걱정 속에 움츠러들지 말고 시야를 넓혀 당당하고 경쾌한 한 걸음을 내디뎌 보세요. (동반 결: ${companion.motif.split('(')[0].trim()})`,
     ritualAction: picked.action,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '한국 고구려 고분 벽화의 삼족오·사신도·수렵도 기상을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatGoguryeoSamjokoPrompt(res: GoguryeoSamjokoResult): string 
   return [
     `[고구려 삼족오·벽화 기상 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 벽화·삼족오 축: ${res.samjokoMuralAxis}`,
     `- 벽화 모티프: ${res.muralMotif} (${res.spiritTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.goguryeoInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

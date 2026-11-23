@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface GoryeoCeladonResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '여백·절제' | '기다림·인내' | '유연·호흡' | '비색 전반';
   celadonCraft: string;
   companionCraft: string;
+  celadonKilnAxis: string;
   goryeoInsight: string;
   jadeTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const GORYEO_SHADOWS = [
+  '여백을 파내는 절제에 집중하다 지금 꼭 채워야 할 핵심 약속과 일상의 기둥까지 비워 두지 마세요.',
+  '담백한 맑음을 지키려다 꼭 드러내야 할 나만의 선명한 의사와 기준까지 흐릿하게 남기지 않도록 살피세요.',
+  '가마가 식기를 기다리는 여유 속에서도 이미 식어 굳은 뒤 바로 꺼내 다듬어야 할 타이밍은 놓치지 마세요.',
+  '둥글고 부드러운 여백을 남기려다 꼭 바로잡아야 할 원칙적 선까지 무르게 넘기지 않도록 주의하세요.',
+  '숨구멍과 완충 시간을 내는 데만 신경 쓰다 전체 그릇을 지탱하는 단단한 뼈대와 마감까지 느슨하게 두지 마세요.',
+];
+
+function classifyGoryeoTopic(q: string): GoryeoCeladonResult['questionTopic'] {
+  if (/여백|절제|비움|숨구멍|덧칠/.test(q)) return '여백·절제';
+  if (/기다림|조바심|식힘|가마|결과/.test(q)) return '기다림·인내';
+  if (/유연|호흡|관계|표현|곡선/.test(q)) return '유연·호흡';
+  return '비색 전반';
+}
+
 export function calculateGoryeoCeladonInlayClarity(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): GoryeoCeladonResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyGoryeoTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % CRAFTS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (CRAFTS.length - 1));
   const picked = CRAFTS[idx];
   const companion = CRAFTS[(idx + companionOffset) % CRAFTS.length];
+  const celadonKilnAxis = `${picked.craft.split('(')[0].trim()} ↔ ${companion.craft.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = GORYEO_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-GORYEO-CELADON-v2.2.0',
+    engineVersion: 'LUCKEY-GORYEO-CELADON-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     celadonCraft: picked.craft,
     companionCraft: companion.craft,
+    celadonKilnAxis,
     goryeoInsight: picked.insight,
     jadeTone: picked.tone,
     reflectionFocus: `고려 청자 비색·상감 지혜의 '${picked.craft}'처럼, 억지로 더 채우기보다 마음의 홈을 비워 여백과 숨구멍을 먼저 마련해 보세요. (동반 결: ${companion.craft.split('(')[0].trim()})`,
     ritualAction: picked.action,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '한국 고려 청자의 비색·상감 여백 미학과 도공의 기다림을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatGoryeoCeladonPrompt(res: GoryeoCeladonResult): string {
   return [
     `[고려 청자·비색 상감 여백 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 비색·가마 축: ${res.celadonKilnAxis}`,
     `- 청자 기법: ${res.celadonCraft} (${res.jadeTone})`,
     `- 동반 기법: ${res.companionCraft}`,
     `- 중심 통찰: ${res.goryeoInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

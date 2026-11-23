@@ -19,13 +19,16 @@ export interface GeorgianRustaveliResult {
   engineName: string;
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '연대·신의' | '절제·이성' | '용기·품격' | '심성 전반';
   primaryVirtue: RustaveliVirtue;
   counterbalanceVirtue: RustaveliVirtue;
   companionVirtue: RustaveliVirtue;
+  pantherKnightAxis: string;
   heartCompassPrinciple: string;
   qualitativeSynthesis: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   isSymbolicFramework: true;
@@ -91,6 +94,20 @@ function stableHash(input: string): number {
   return h >>> 0;
 }
 
+const RUSTAVELI_SHADOWS: Record<RustaveliVirtueId, string> = {
+  megobroba_fellowship: '신의와 우정을 앞세우다 정작 내가 홀로 감당해야 할 원칙적 판단까지 타인의 눈치에 맡기지 마세요.',
+  sibrdzne_inner_mastery: '감정을 다스리고 유예하는 데만 머무르다 꼭 표현해야 할 진심과 행동의 적기를 놓치지 않도록 살피세요.',
+  simatske_steadfast_courage: '물러서지 않는 담대함을 지키려다 잠시 돌아서 숨을 고르는 지혜까지 포기하지 않도록 주의하세요.',
+  gulis_sinatle_heart_light: '아낌없이 나누는 너그러움 속에서도 나 자신의 최소한의 여력과 경계선까지 비워 버리지 마세요.',
+};
+
+function classifyRustaveliTopic(q: string): GeorgianRustaveliResult['questionTopic'] {
+  if (/우정|신의|관계|함께|사람/.test(q)) return '연대·신의';
+  if (/감정|절제|이성|슬픔|후회/.test(q)) return '절제·이성';
+  if (/용기|품격|결정|선택|도전/.test(q)) return '용기·품격';
+  return '심성 전반';
+}
+
 export function calculateGeorgianRustaveliKnightPanther(params: {
   profile: UserProfile;
   now?: Date;
@@ -98,6 +115,7 @@ export function calculateGeorgianRustaveliKnightPanther(params: {
 }): GeorgianRustaveliResult {
   const now = params.now ?? new Date();
   const query = (params.question ?? '').trim();
+  const questionTopic = classifyRustaveliTopic(query);
 
   const baseSeedStr = [
     params.profile.basic?.name ?? '',
@@ -127,6 +145,8 @@ export function calculateGeorgianRustaveliKnightPanther(params: {
     `${primaryVirtue.koreanTitle}을 중심으로 ${counterbalanceVirtue.koreanTitle}과 ${companionVirtue.koreanTitle}의 균형을 세우는 시점`;
 
   const ritualAction = primaryVirtue.actionPractice;
+  const pantherKnightAxis = `${primaryVirtue.koreanTitle} ↔ ${counterbalanceVirtue.koreanTitle} (${questionTopic})`;
+  const shadowWarning = RUSTAVELI_SHADOWS[primaryVirtue.id];
 
   const reflectiveQuestion = query
     ? `‘${query.slice(0, 36)}’을(를) 두고 고민할 때, 움켜쥐고 지키려는 것보다 나답게 내어주고 품격을 지킬 수 있는 선택은 무엇인가요?`
@@ -134,15 +154,18 @@ export function calculateGeorgianRustaveliKnightPanther(params: {
 
   return {
     engineName: '조지아 루스타벨리 《표범 가죽을 두른 기사》 심성 관점 (Rustaveli Knight in the Panther’s Skin)',
-    engineVersion: 'LUCKEY-GEORGIAN-RUSTAVELI-v2.2.0',
+    engineVersion: 'LUCKEY-GEORGIAN-RUSTAVELI-v2.3.0',
     calculatedAtKst: formatGeorgianKstTimestamp(now),
+    questionTopic,
     primaryVirtue,
     counterbalanceVirtue,
     companionVirtue,
+    pantherKnightAxis,
     heartCompassPrinciple,
     qualitativeSynthesis,
     reflectionFocus,
     ritualAction,
+    shadowWarning,
     reflectiveQuestion,
     interpretiveBoundary:
       '본 결과는 12세기 조지아 서사시 《표범 가죽을 두른 기사》의 인문·철학적 덕목을 바탕으로 한 자기 성찰 프레임워크이며, 운세 수치나 확정적 미래 예측이 아닙니다.',
@@ -154,6 +177,7 @@ export function formatGeorgianRustaveliKnightPantherPrompt(res: GeorgianRustavel
   return [
     `[보조 상징 관점 — ${res.engineName}]`,
     `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 기사도·심성 축: ${res.pantherKnightAxis}`,
     `- 중심 덕목: ${res.primaryVirtue.georgianTerm} · ${res.primaryVirtue.koreanTitle} (${res.primaryVirtue.literaryMotif})`,
     `- 균형 덕목: ${res.counterbalanceVirtue.georgianTerm} · ${res.counterbalanceVirtue.koreanTitle}`,
     `- 동반 덕목: ${res.companionVirtue.georgianTerm} · ${res.companionVirtue.koreanTitle}`,
@@ -161,6 +185,7 @@ export function formatGeorgianRustaveliKnightPantherPrompt(res: GeorgianRustavel
     `- 성찰 해석: ${res.qualitativeSynthesis}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 실천 의례: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
