@@ -136,11 +136,15 @@ test('a live tool call runs the executor and answers with a toolResponse carryin
   ];
   const calls: string[] = [];
   const busy: boolean[] = [];
+  const usage: unknown[] = [];
+  const input: string[] = [];
   const session = startGeminiLiveVoice({
     micStream: Promise.resolve(stream),
     orb: { persona: '차분한 상담가', rules: buildOrbMasterRules({ birthdate: true, birthtime: true }) },
     onToolCall: async (call) => { calls.push(`${call.name}:${call.args?.tool}`); return { ok: true, status: 'calculated' }; },
     onToolBusy: (value) => busy.push(value),
+    onUsageMetadata: value => usage.push(value),
+    onInputSent: source => input.push(source),
   });
   try {
     for (let i = 0; i < 30 && !FakeWebSocket.sockets.length; i += 1) await new Promise(resolve => setTimeout(resolve, 0));
@@ -151,7 +155,12 @@ test('a live tool call runs the executor and answers with a toolResponse carryin
     const setup = JSON.parse(socket.sent[0]).setup;
     assert.equal(setup.tools[0].functionDeclarations[0].name, ORB_FN_RUN_TOOL);
     assert.match(setup.systemInstruction.parts[0].text, /오브의 마스터/);
+    session.sendText('상담 질문이에요.', true);
+    assert.deepEqual(input, []);
     await socket.onmessage?.({ data: JSON.stringify({ setupComplete: true }) });
+    assert.deepEqual(input, ['text']);
+    await socket.onmessage?.({ data: JSON.stringify({ usageMetadata: { totalTokenCount: 15 } }) });
+    assert.deepEqual(usage, [{ totalTokenCount: 15 }]);
     await socket.onmessage?.({ data: JSON.stringify({ toolCall: { functionCalls: [{ id: 'c1', name: ORB_FN_RUN_TOOL, args: { tool: 'iching' } }] } }) });
     for (let i = 0; i < 10 && !socket.sent.some(m => m.includes('toolResponse')); i += 1) await new Promise(resolve => setTimeout(resolve, 0));
     assert.deepEqual(calls, [`${ORB_FN_RUN_TOOL}:iching`]);
