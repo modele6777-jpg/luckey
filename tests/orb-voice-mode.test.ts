@@ -57,7 +57,7 @@ test('Orb defaults to hold-to-talk on the input itself; a short Orb tap still sw
   assert.match(component, /className="lucy-orb-input-wrap"[\s\S]*?onPointerDown=\{\(event\) => \{ if \(event\.pointerType === 'mouse'\) beginInputPress\(event\.clientX, event\.clientY\); \}\}[\s\S]*?onPointerUp=\{\(event\) => \{ if \(event\.pointerType === 'mouse'\) endInputPress\(\); \}\}/);
   assert.doesNotMatch(component, /lucy-orb-dock-ptt/);
   assert.match(component, /className=\{`lucy-orb-input-wave /);
-  assert.match(component, /onAudioLevel: \(level\) => setAudioLevel\(level\)/);
+  assert.match(component, /onAudioLevel: \(level\) => \{ audioLevelRef\.current = level; setAudioLevel\(level\); \}/);
   assert.match(liveSession, /onAudioLevel\?: \(level: number\) => void/);
   assert.match(liveSession, /handlers\.onAudioLevel\?\.\(Math\.max\(0, Math\.min\(1,/);
   assert.match(component, /if \(voiceMode === 'hold'\) chooseVoiceMode\('realtime'\)/);

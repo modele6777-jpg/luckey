@@ -1413,22 +1413,6 @@ html.duo-unfolded-mode .lucy-charm { width: min(380px, 70%); }
 }
 @media (prefers-reduced-motion: reduce) { .lucy-orb-stage .lucy-orb-caption { animation: none; } }
 
-/* 🔮 마스터가 도구를 계산하는 동안 보이는 작은 표시 */
-.lucy-orb-stage .lucy-orb-toolbusy {
-  margin: 10px auto 0;
-  width: max-content;
-  max-width: 100%;
-  padding: 5px 12px;
-  border-radius: 999px;
-  background: rgba(255, 214, 140, .16);
-  border: 1px solid rgba(255, 214, 140, .45);
-  color: #ffe7b8;
-  font-size: 12.5px;
-  font-weight: 700;
-  animation: lucy-orb-toolbusy 1.4s ease-in-out infinite;
-}
-@keyframes lucy-orb-toolbusy { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .lucy-orb-stage .lucy-orb-toolbusy { animation: none; } }
 
 /* 🧧 Talisman (shown only after the 복채): a traditional yellow paper talisman, savable as a photo. */
 .lucy-talisman-layer {
@@ -1704,3 +1688,146 @@ html.duo-unfolded-mode .lucy-orb-stage.is-live .lucy-orb-ritual { width: min(62%
 .lucy-cardpick-actions { flex-wrap: wrap; }
 .lucy-cardpick-actions button.lucy-stop-all { border-color: rgba(243, 207, 134, .85); color: #fff1c4; background: rgba(243, 207, 134, .16); }
 @media (max-width: 380px) { .lucy-cardpick-actions button { padding: 8px 12px; font-size: 12.5px; } }
+
+/* 🔮 오브 상태 (data-orb-state): 실제 연결·마이크·도구·목소리에 맞춰 바뀐다.
+   --orb-level(0~1)은 지금 소리 크기 (듣기 = 손님 마이크, 말하기 = 마스터 목소리). */
+.lucy-orb-stage { --orb-level: 0; }
+.lucy-orb-aura,
+.lucy-orb-energy {
+  position: absolute;
+  z-index: 0;
+  left: 50%;
+  top: 0;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 0) scale(1);
+  transition: opacity .45s ease;
+}
+.lucy-orb-aura {
+  background: radial-gradient(circle, rgba(150, 210, 255, .55) 0%, rgba(140, 170, 255, .22) 42%, transparent 70%);
+  filter: blur(6px);
+}
+.lucy-orb-energy {
+  width: 118%;
+  margin-top: -9%;
+  background: conic-gradient(from 0deg, transparent 0 8%, rgba(255, 214, 140, .95) 14%, transparent 24%, transparent 42%, rgba(255, 170, 230, .85) 52%, transparent 62%, transparent 76%, rgba(160, 225, 255, .9) 86%, transparent 96%);
+  mask: radial-gradient(circle, transparent 52%, #000 58%, #000 63%, transparent 69%);
+  -webkit-mask: radial-gradient(circle, transparent 52%, #000 58%, #000 63%, transparent 69%);
+  filter: drop-shadow(0 0 6px rgba(255, 214, 140, .8));
+}
+.lucy-orb-figure > .lucy-orb-body { position: relative; z-index: 1; }
+
+/* 연결 중: 흐리게 천천히 숨 쉰다 */
+.lucy-orb-stage[data-orb-state="connecting"] .lucy-orb-body { filter: saturate(.55) brightness(.8); transition: filter .6s ease; }
+.lucy-orb-stage[data-orb-state="connecting"] .lucy-orb-aura { opacity: .35; animation: lucy-orb-breathe 2.6s ease-in-out infinite; }
+/* 대기: 은은하게 빛난다 */
+.lucy-orb-stage[data-orb-state="idle"] .lucy-orb-aura { opacity: .3; animation: lucy-orb-breathe 4.2s ease-in-out infinite; }
+/* 듣기: 손님 목소리 크기만큼 푸른 빛이 커진다 */
+.lucy-orb-stage[data-orb-state="listening"] .lucy-orb-aura {
+  opacity: calc(.35 + var(--orb-level) * .65);
+  transform: translate(-50%, 0) scale(calc(1 + var(--orb-level) * .32));
+  transition: opacity .12s linear;
+}
+.lucy-orb-stage[data-orb-state="listening"] .lucy-voice-ring { animation-duration: 2.2s; border-color: rgba(150, 215, 255, .8); }
+/* 생각하기: 안쪽 기운이 부드럽게 빨리 돌고, 보랏빛 파동 */
+.lucy-orb-stage[data-orb-state="thinking"] .lucy-orb-swirl { animation-duration: 3.2s; }
+.lucy-orb-stage[data-orb-state="thinking"] .lucy-orb-swirl.is-two { animation-duration: 2.4s; }
+.lucy-orb-stage[data-orb-state="thinking"] .lucy-orb-aura {
+  background: radial-gradient(circle, rgba(200, 160, 255, .5) 0%, rgba(160, 130, 255, .2) 42%, transparent 70%);
+  opacity: .6;
+  animation: lucy-orb-ripple 1.8s ease-in-out infinite;
+}
+/* 도구 실행: 금빛 에너지 고리가 돈다 */
+.lucy-orb-stage[data-orb-state="tool"] .lucy-orb-energy { opacity: 1; animation: lucy-orb-energy 1.6s linear infinite; }
+.lucy-orb-stage[data-orb-state="tool"] .lucy-orb-swirl { animation-duration: 2s; }
+.lucy-orb-stage[data-orb-state="tool"] .lucy-orb-aura {
+  background: radial-gradient(circle, rgba(255, 214, 140, .5) 0%, rgba(255, 170, 120, .2) 42%, transparent 70%);
+  opacity: .55;
+}
+/* 말하기: 마스터 목소리 크기에 맞춰 따뜻한 빛이 맥동한다 */
+.lucy-orb-stage[data-orb-state="speaking"] .lucy-orb-aura {
+  background: radial-gradient(circle, rgba(255, 224, 170, .6) 0%, rgba(255, 180, 210, .24) 42%, transparent 70%);
+  opacity: calc(.3 + var(--orb-level) * .7);
+  transform: translate(-50%, 0) scale(calc(1 + var(--orb-level) * .38));
+  transition: opacity .08s linear;
+}
+.lucy-orb-stage[data-orb-state="speaking"] .lucy-orb-inner { filter: brightness(calc(1 + var(--orb-level) * .55)); }
+/* 오류: 붉게 몰아치지 않고, 차분한 주황빛으로 낮게 */
+.lucy-orb-stage[data-orb-state="error"] .lucy-orb-body { filter: saturate(.4) brightness(.75); transition: filter .6s ease; }
+.lucy-orb-stage[data-orb-state="error"] .lucy-orb-aura {
+  background: radial-gradient(circle, rgba(255, 170, 120, .45) 0%, rgba(255, 140, 110, .16) 42%, transparent 70%);
+  opacity: .5;
+  animation: lucy-orb-breathe 3.4s ease-in-out infinite;
+}
+.lucy-orb-stage[data-orb-state="error"] .lucy-voice-ring { animation: none; opacity: 0; }
+
+@keyframes lucy-orb-breathe { 0%, 100% { transform: translate(-50%, 0) scale(.94); } 50% { transform: translate(-50%, 0) scale(1.06); } }
+@keyframes lucy-orb-ripple { 0%, 100% { transform: translate(-50%, 0) scale(.96); opacity: .45; } 50% { transform: translate(-50%, 0) scale(1.14); opacity: .75; } }
+@keyframes lucy-orb-energy { to { transform: translate(-50%, 0) rotate(360deg); } }
+
+/* 상태 문구와 다시 연결: 탁자 아래 가운데 */
+.lucy-orb-statusbar {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  bottom: -2%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: max-content;
+  max-width: 96%;
+  pointer-events: none;
+}
+.lucy-orb-statusbar > * { pointer-events: auto; }
+.lucy-orb-statusbar .lucy-orb-status {
+  margin: 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(8, 10, 30, .62);
+  border: 1px solid rgba(255, 255, 255, .14);
+  color: #f4f0ff;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+  transition: color .3s ease, border-color .3s ease;
+}
+.lucy-orb-statusbar .lucy-orb-status[data-state="tool"] { color: #ffe0a6; border-color: rgba(255, 214, 140, .5); }
+.lucy-orb-statusbar .lucy-orb-status[data-state="listening"] { color: #bfe6ff; border-color: rgba(150, 215, 255, .5); }
+.lucy-orb-statusbar .lucy-orb-status[data-state="thinking"] { color: #e0ccff; border-color: rgba(200, 160, 255, .45); }
+.lucy-orb-statusbar .lucy-orb-status[data-state="speaking"] { color: #ffe9c8; }
+.lucy-orb-statusbar .lucy-orb-status[data-state="error"] { color: #ffc6a8; border-color: rgba(255, 170, 120, .5); }
+.lucy-orb-reconnect {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 auto;
+  background: rgba(40, 18, 14, .78);
+  padding: 8px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 190, 150, .4);
+  color: #ffe3d2;
+  font-size: 13px;
+}
+.lucy-orb-reconnect button {
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #ffe2a8, #ffc58a);
+  color: #3a2410;
+  font-weight: 800;
+  font-size: 13px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lucy-orb-stage[data-orb-state] .lucy-orb-aura,
+  .lucy-orb-stage[data-orb-state] .lucy-orb-energy { animation: none !important; }
+  .lucy-orb-stage[data-orb-state="speaking"] .lucy-orb-aura,
+  .lucy-orb-stage[data-orb-state="listening"] .lucy-orb-aura { transform: translate(-50%, 0); }
+}

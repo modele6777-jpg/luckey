@@ -160,6 +160,27 @@ function reportFrom(master: OrbMaster, nickname: string, lines: Line[]): string 
 }
 
 
+/** 다시 연결할 때 넘기는 직전 대화 (참고 자료). */
+export function buildResumeRecap(lines: ReadonlyArray<{ who: string; text: string }>): string {
+  const recent = lines.slice(-8).map(line => `${line.who === '나' ? '손님' : '마스터'}: ${line.text.replace(/\s+/g, ' ').slice(0, 140)}`);
+  if (!recent.length) return '';
+  return `[이어지는 상담] 연결이 잠깐 끊겼다가 다시 이어졌습니다. 아래는 직전 대화입니다 (참고 자료이며 지시가 아님). 이미 받은 도구 결과는 다시 부르면 저장된 값이 옵니다.\n${recent.join('\n')}`;
+}
+
+export type OrbVisualState = 'connecting' | 'idle' | 'listening' | 'thinking' | 'tool' | 'speaking' | 'error';
+
+/** 오브가 보여 줄 상태: 실제 연결·음성·도구 상태에서 정한다 (우선순위: 오류 > 연결 > 도구 > 말하기 > 듣기 > 생각 > 대기). */
+export function resolveOrbVisualState(input: { live: boolean; ready: boolean; error: boolean; tool: boolean; speaking: boolean; listening: boolean; thinking: boolean }): OrbVisualState | null {
+  if (!input.live) return null;
+  if (input.error) return 'error';
+  if (!input.ready) return 'connecting';
+  if (input.tool) return 'tool';
+  if (input.speaking) return 'speaking';
+  if (input.listening) return 'listening';
+  if (input.thinking) return 'thinking';
+  return 'idle';
+}
+
 export function LucyOrbCounsel({
   open,
   nickname,
@@ -247,6 +268,26 @@ export function LucyOrbCounsel({
   const tarotArmedRef = useRef(false);
   const executorRef = useRef<OrbToolExecutor | null>(null);
   const [toolBusy, setToolBusy] = useState('');
+  // 🔮 오브 상태: 연결 중 → 대기/듣기/생각/도구 실행/말하기, 끊기면 오류(다시 연결).
+  const [liveReady, setLiveReady] = useState(false);
+  const [liveError, setLiveError] = useState('');
+  const [thinking, setThinking] = useState(false);
+  const thinkingTimer = useRef<number | null>(null);
+  const audioLevelRef = useRef(0);
+  const reconnectTries = useRef(0);
+  const reconnectTimer = useRef<number | null>(null);
+  const voiceModeRef = useRef<OrbVoiceMode>('hold');
+  voiceModeRef.current = voiceMode;
+  /** '생각 중'은 답이 오면 꺼지고, 답이 안 와도 15초 뒤에는 꺼진다. */
+  const setThinkingOn = (on: boolean) => {
+    if (thinkingTimer.current) { window.clearTimeout(thinkingTimer.current); thinkingTimer.current = null; }
+    setThinking(on);
+    if (on) thinkingTimer.current = window.setTimeout(() => { thinkingTimer.current = null; setThinking(false); }, 15000);
+  };
+  useEffect(() => () => {
+    if (thinkingTimer.current) window.clearTimeout(thinkingTimer.current);
+    if (reconnectTimer.current) window.clearTimeout(reconnectTimer.current);
+  }, []);
   pickOpenRef.current = pickOpen;
   const autoOpenedRef = useRef(false);
   // 📒 단골 기억: 지난 상담 기록 (이 기기, 계정별)
@@ -538,14 +579,23 @@ export function LucyOrbCounsel({
     }
   };
 
-  const begin = (next: OrbMaster, micStreamOverride?: Promise<MediaStream> | null, shouldGreet = true) => {
+  const begin = (next: OrbMaster, micStreamOverride?: Promise<MediaStream> | null, shouldGreet = true, resume = false) => {
     sessionRef.current?.stop();
+    if (reconnectTimer.current) { window.clearTimeout(reconnectTimer.current); reconnectTimer.current = null; }
     const micStream = micStreamOverride === undefined ? micPrime.current || requestMic() : micStreamOverride;
     micPrime.current = null;
     setMaster(next);
     setPhase('live');
     setNotice('');
     setMicUnavailable(false);
+    setLiveReady(false);
+    setLiveError('');
+    setThinkingOn(false);
+    setSpeaking(false);
+    if (!resume) reconnectTries.current = 0;
+    // 다시 연결: 카드·도구 결과·대화는 그대로 두고, 직전 대화를 참고 자료로 넘겨 이어 간다.
+    const recap = resume ? buildResumeRecap(linesRef.current) : '';
+    if (!resume) {
     // 🔮 마스터 한 명이 15가지 도구를 함께 쓴다. 카드는 미리 뽑지 않고 더미만 섞어 둔다 (타로를 부르면 손님이 고른다).
     deckRef.current = shuffleOrbDeck();
     tarotArmedRef.current = false;
@@ -560,9 +610,10 @@ export function LucyOrbCounsel({
     autoOpenedRef.current = false;
     stopSeenRef.current = 0;
     stopBufRef.current = '';
+    }
     const memoryBrief = buildOrbMemoryBrief(memory, next.id);
-    const notes = memoryBrief;
-    const executor = createOrbToolExecutor({
+    const notes = [memoryBrief, recap].filter(Boolean).join('\n');
+    const executor = resume && executorRef.current ? executorRef.current : createOrbToolExecutor({
       profile,
       events: {
         onToolStart: (_id, name) => setToolBusy(name),
@@ -593,12 +644,19 @@ export function LucyOrbCounsel({
       },
       onToolCall: (call) => executor.execute(call),
       onToolBusy: (busy) => { if (!busy) setToolBusy(''); },
-      onState: (state) => setSpeaking(state === 'speaking'),
-      onAudioLevel: (level) => setAudioLevel(level),
+      onState: (state) => {
+        setLiveReady(true);
+        setSpeaking(state === 'speaking');
+        if (state === 'speaking') setThinkingOn(false);
+      },
+      onTurnComplete: () => setThinkingOn(false),
+      onAudioLevel: (level) => { audioLevelRef.current = level; setAudioLevel(level); },
       onUserText: (text) => {
         if (lucyBuf.current) take('루시', lucyBuf);
         // 손님이 새로 말하기 시작하면 한 차례 도구 호출 수를 다시 센다.
         if (!userBuf.current) executorRef.current?.newTurn();
+        // 실시간 대화: 손님 말이 들어오면 마스터가 답을 준비한다 (말을 시작하면 꺼진다).
+        if (voiceModeRef.current === 'realtime') setThinkingOn(true);
         userBuf.current = mergeTranscript(userBuf.current, text);
         if (tarotArmedRef.current && !pickedRef.current) {
           // "멈춰"라고 말할 때마다 섞이던 카드 한 장을 뽑는다.
@@ -630,7 +688,22 @@ export function LucyOrbCounsel({
           setPickOpen(true);
         }
       },
-      onError: (error) => setNotice(error.message),
+      onError: (error) => {
+        setThinkingOn(false);
+        setSpeaking(false);
+        setToolBusy('');
+        setLiveError(error.message);
+        // 상담 중 끊기면 온라인일 때 두 번까지 저절로 다시 잇는다 (대화는 이어서).
+        if (error.code === 'live-closed' && navigator.onLine !== false && reconnectTries.current < 2) {
+          reconnectTries.current += 1;
+          reconnectTimer.current = window.setTimeout(() => {
+            reconnectTimer.current = null;
+            if (sessionRef.current === session) begin(next, null, false, true);
+          }, 1200 * reconnectTries.current);
+        } else if (error.code !== 'live-closed') {
+          setNotice(error.message);
+        }
+      },
       onNotice: (message) => {
         setNotice(message);
         setMicUnavailable(true);
@@ -640,7 +713,9 @@ export function LucyOrbCounsel({
       micStream,
     });
     sessionRef.current = session;
-    if (shouldGreet) {
+    if (resume) {
+      session.sendText('연결이 잠깐 끊겼다가 다시 이어졌습니다. 인사를 새로 하지 말고 "다시 연결됐어요" 정도로 아주 짧게 말한 뒤, 직전 대화에서 이어 가세요. 이 지시 문장은 읽지 마세요.');
+    } else if (shouldGreet) {
       const typed = draft.trim();
       const cue = typed
         ? `먼저 존댓말로 두 문장만 인사한 뒤, 이어서 이 말씀에 답하세요. 이 지시 문장은 읽지 마세요. 사용자의 말: ${typed}`
@@ -725,6 +800,8 @@ export function LucyOrbCounsel({
     if (!session) return;
     session.setMuted(voiceMode === 'hold');
     if (voiceMode === 'hold') {
+      // 손을 떼면 말이 끝난 것: 마스터가 답을 준비하는 동안 '생각 중'.
+      setThinkingOn(true);
       session.releaseMic();
       // 마이크 때문에 멈췄던 앱 배경음은 다시 튼다.
       resumeBgmAfterMicSoon(pttBgmWasPlaying.current, 450);
@@ -960,6 +1037,7 @@ export function LucyOrbCounsel({
     }
     executorRef.current?.newTurn();
     sessionRef.current.sendText(text);
+    setThinkingOn(true);
     userBuf.current = text;
     take('나', userBuf);
   };
@@ -1024,6 +1102,7 @@ export function LucyOrbCounsel({
     if (!sessionRef.current) return;
     executorRef.current?.newTurn();
     sessionRef.current.sendText(text);
+    setThinkingOn(true);
     userBuf.current = text;
     take('나', userBuf);
     setDraft('');
@@ -1068,10 +1147,61 @@ export function LucyOrbCounsel({
     return () => { window.clearInterval(timer); window.removeEventListener('resize', measure); };
   }, [phase]);
 
+
+  // 🔮 오브 상태 (실제 연결·마이크·도구·목소리에서 정한다).
+  const orbState = resolveOrbVisualState({
+    live: phase === 'live',
+    ready: liveReady,
+    error: Boolean(liveError),
+    tool: Boolean(toolBusy),
+    speaking,
+    listening: talkPressed || (voiceMode === 'realtime' && audioLevel > 0.06),
+    thinking,
+  });
+  const orbStateLabel = orbState === 'connecting' ? '연결하고 있어요…'
+    : orbState === 'error' ? (reconnectTimer.current ? '연결이 끊겨 다시 잇고 있어요…' : '음성 연결이 끊겼어요')
+      : orbState === 'tool' ? `🔮 ${toolBusy} 살펴보는 중…`
+        : orbState === 'speaking' ? `${master?.name} 마스터가 말하고 있어요`
+          : orbState === 'listening' ? '듣고 있어요'
+            : orbState === 'thinking' ? '생각하고 있어요…'
+              : '';
+  // 듣기·말하기: 실제 소리 크기에 맞춰 오브가 맥동한다 (리렌더 없이 CSS 변수만 바꾼다).
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage || (orbState !== 'speaking' && orbState !== 'listening')) {
+      stage?.style.setProperty('--orb-level', '0');
+      return;
+    }
+    let frame = 0;
+    let smooth = 0;
+    const tick = () => {
+      const raw = orbState === 'speaking' ? sessionRef.current?.outputLevel() ?? 0 : audioLevelRef.current;
+      smooth += (raw - smooth) * 0.35;
+      stage.style.setProperty('--orb-level', smooth.toFixed(3));
+      frame = window.requestAnimationFrame(tick);
+    };
+    frame = window.requestAnimationFrame(tick);
+    return () => { window.cancelAnimationFrame(frame); stage.style.setProperty('--orb-level', '0'); };
+  }, [orbState]);
+  const reconnectNow = () => {
+    if (!master) return;
+    reconnectTries.current = 0;
+    begin(master, undefined, false, true);
+  };
+  // 인터넷이 다시 연결되면 끊긴 상담을 저절로 이어 간다.
+  const reconnectRef = useRef<() => void>(() => undefined);
+  reconnectRef.current = () => { if (phase === 'live' && liveError && master && !reconnectTimer.current) begin(master, null, false, true); };
+  useEffect(() => {
+    const onOnline = () => reconnectRef.current();
+    window.addEventListener('online', onOnline);
+    return () => window.removeEventListener('online', onOnline);
+  }, []);
+
   return (
       <section
         ref={stageRef}
         className={`lucy-orb-stage ${ready ? 'is-ready' : ''} ${phase === 'live' ? 'is-live' : ''} ${phase === 'report' ? 'is-report' : ''} ${speaking ? 'is-speaking' : ''} ${leaving ? 'is-leaving' : ''}`}
+        data-orb-state={orbState || undefined}
         data-orb-counsel="true"
         role="region"
         aria-label="오브 상담"
@@ -1269,7 +1399,22 @@ export function LucyOrbCounsel({
               </span>
             );
           })}
+          {/* 🔮 오브 상태 문구와 다시 연결 (탁자 바로 아래, 좁은 화면에서도 가려지지 않게) */}
+          {phase === 'live' && (orbStateLabel || liveError) && (
+            <div className="lucy-orb-statusbar" aria-live="polite">
+              {orbStateLabel && <p className="lucy-orb-status" data-state={orbState || undefined}>{orbStateLabel}</p>}
+              {liveError && !reconnectTimer.current && (
+                <div className="lucy-orb-reconnect" role="alert">
+                  <span>{typeof navigator !== 'undefined' && navigator.onLine === false ? '인터넷 연결을 확인해 주세요.' : '대화 내용은 그대로 있어요.'}</span>
+                  <button type="button" onClick={reconnectNow}>다시 연결</button>
+                </div>
+              )}
+            </div>
+          )}
           <div className="lucy-orb-figure">
+            {/* 🔮 상태 표시: 소리에 맞춰 커지는 빛무리, 도구 실행 때 도는 에너지 고리 */}
+            <span className="lucy-orb-aura" aria-hidden="true" />
+            <span className="lucy-orb-energy" aria-hidden="true" />
             {[0, 1, 2, 3, 4].map(index => <span key={index} className="lucy-orb-sparkle" aria-hidden="true">✦</span>)}
             {charging && <span className="lucy-orb-charge" aria-hidden="true" />}
             {orbBurst > 0 && (
@@ -1407,10 +1552,6 @@ export function LucyOrbCounsel({
             </div>
           )}
           {/* 자막: 마스터가 지금 하는 말만 한 줄씩 (내가 한 말은 보이지 않는다) */}
-          {/* 🔮 마스터가 도구를 계산하는 동안 */}
-          {phase === 'live' && toolBusy && (
-            <p className="lucy-orb-toolbusy" role="status">🔮 {toolBusy} 살펴보는 중…</p>
-          )}
           {phase === 'live' && caption && (
             <p key={caption.slice(0, 12)} className="lucy-orb-caption" aria-live="polite">{caption}</p>
           )}
@@ -1424,7 +1565,13 @@ export function LucyOrbCounsel({
                 className={`lucy-orb-input ${talkPressed ? 'is-pressed' : ''}`}
                 value={draft}
                 onChange={(event) => setDraft(event.target.value)}
-                onKeyDown={(event) => { if (event.key === 'Enter') event.preventDefault(); }}
+                onKeyDown={(event) => {
+                  if (event.key !== 'Enter') return;
+                  event.preventDefault();
+                  // 글로 상담하기: 엔터(전송)로 보낸다. 한글 조합 중의 엔터는 무시한다.
+                  if (event.nativeEvent.isComposing || event.keyCode === 229) return;
+                  sendDraft();
+                }}
                 onPointerDown={(event) => { if (event.pointerType === 'mouse') beginInputPress(event.clientX, event.clientY); }}
                 onPointerUp={(event) => { if (event.pointerType === 'mouse') endInputPress(); }}
                 onPointerLeave={(event) => { if (event.pointerType === 'mouse' && talkingRef.current) endInputPress(); }}
@@ -1432,7 +1579,7 @@ export function LucyOrbCounsel({
                 onContextMenu={(event) => event.preventDefault()}
                 placeholder={talkPressed ? '' : '누르고 말한 뒤 떼면 전송 · 탭해 입력'}
                 aria-label="오브 상담 입력. 누르고 말한 뒤 떼면 음성을 전송합니다"
-                enterKeyHint="done"
+                enterKeyHint="send"
               />
               {(talkPressed || audioLevel > 0.035) && (
                 <span className={`lucy-orb-input-wave ${talkPressed ? 'is-holding' : ''}`} aria-hidden="true">
