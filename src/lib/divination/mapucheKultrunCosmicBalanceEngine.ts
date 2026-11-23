@@ -10,13 +10,16 @@ export interface KultrunDirection {
 }
 
 export interface MapucheKultrunResult {
-  engineVersion: 'LUCKEY-MAPUCHE-KULTRUN-v2.2.0';
+  engineVersion: 'LUCKEY-MAPUCHE-KULTRUN-v2.3.0';
   calculatedAtKst: string;
+  questionTopic: '시작·호흡' | '순환·활력' | '갈무리·비움' | '휴식·회복' | '쿨트룬 전반';
   questionFocus: string;
   dominantDirection: KultrunDirection;
   counterDirection: KultrunDirection;
+  kultrunCompassAxis: string;
   kumeMongenTheme: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
@@ -71,6 +74,21 @@ function stableHash(input: string): number {
   return hash >>> 0;
 }
 
+const KULTRUN_SHADOWS: Record<string, string> = {
+  'Puelmapu (동방)': '새벽의 시작을 차분히 여는 데 너무 오래 머물면, 정작 몸을 일으켜 첫 실행에 나서야 할 때를 놓칠 수 있습니다.',
+  'Pikunmapu (북방)': '온기와 활력의 순환을 유지하려다가 쉬어야 할 신호마저 바쁜 일정 뒤로 미루지 않도록 살피세요.',
+  'Lafkenmapu (서방)': '지나온 선택을 갈무리하고 비우는 태도가 지금 당장 챙겨야 할 현실적 마무리를 방치하는 체념이 되지 않게 하세요.',
+  'WilliMapu (남방)': '깊은 뿌리를 다지며 멈추는 휴식이 길어지면, 다시 바깥과 호흡을 맞출 작은 시동마저 부담스러워질 수 있습니다.',
+};
+
+function classifyMapucheTopic(q: string): MapucheKultrunResult['questionTopic'] {
+  if (/시작|새벽|호흡|첫/.test(q)) return '시작·호흡';
+  if (/활력|순환|열기|바쁜/.test(q)) return '순환·활력';
+  if (/갈무리|비움|마무리|내려/.test(q)) return '갈무리·비움';
+  if (/휴식|회복|체력|균형|쉼/.test(q)) return '휴식·회복';
+  return '쿨트룬 전반';
+}
+
 export function calculateMapucheKultrunCosmicBalance(params: {
   profile: UserProfile;
   now?: Date;
@@ -78,6 +96,7 @@ export function calculateMapucheKultrunCosmicBalance(params: {
 }): MapucheKultrunResult {
   const now = params.now ?? new Date();
   const questionFocus = (params.question ?? '').trim() || '삶의 네 방위 균형과 호흡';
+  const questionTopic = classifyMapucheTopic(questionFocus);
   const seedBase = `${JSON.stringify(params.profile.fate ?? {})}|${now.toISOString().slice(0, 13)}|${questionFocus}|mapuche-kultrun`;
   const seed = stableHash(seedBase);
 
@@ -86,15 +105,19 @@ export function calculateMapucheKultrunCosmicBalance(params: {
   const counterIdx = (primaryIdx + counterOffset) % KULTRUN_DIRECTIONS.length;
   const dominantDirection = KULTRUN_DIRECTIONS[primaryIdx];
   const counterDirection = KULTRUN_DIRECTIONS[counterIdx];
+  const kultrunCompassAxis = `${dominantDirection.name.split('(')[0].trim()} ↔ ${counterDirection.name.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-MAPUCHE-KULTRUN-v2.2.0',
+    engineVersion: 'LUCKEY-MAPUCHE-KULTRUN-v2.3.0',
     calculatedAtKst: formatKstTimestamp(now),
+    questionTopic,
     questionFocus,
     dominantDirection,
     counterDirection,
+    kultrunCompassAxis,
     kumeMongenTheme: `${dominantDirection.koreanLabel}을 중심에 두고 ${counterDirection.koreanLabel}으로 여백을 맞추는 퀴메 몽겐(Küme Mongen·조화로운 삶) 흐름`,
     ritualAction: dominantDirection.practicalBalance,
+    shadowWarning: KULTRUN_SHADOWS[dominantDirection.name] ?? '중심 방위와 보완 방위 사이의 균형이 한쪽으로 쏠리지 않도록 살피세요.',
     reflectionFocus: `${dominantDirection.name}(${dominantDirection.seasonAspect})의 시선과 '${counterDirection.name}'의 보완 호흡을 함께 엮어 오늘의 과부하와 여백을 살핍니다.`,
     reflectiveQuestion: dominantDirection.reflectiveQuestion,
     interpretiveBoundary:
@@ -106,11 +129,13 @@ export function formatMapucheKultrunPrompt(result: MapucheKultrunResult): string
   return [
     `[마푸체 쿨트룬 우주 원환·땅의 균형 엔진 ${result.engineVersion}]`,
     `- 연산 시각: ${result.calculatedAtKst}`,
+    `- 질문 맥락: ${result.questionTopic} | 쿨트룬 방위 축: ${result.kultrunCompassAxis}`,
     `- 질문 초점: ${result.questionFocus}`,
     `- 중심 방위: ${result.dominantDirection.name} (${result.dominantDirection.koreanLabel}) — ${result.dominantDirection.coreInsight}`,
     `- 보완 방위: ${result.counterDirection.name} (${result.counterDirection.koreanLabel})`,
     `- 조화 주제: ${result.kumeMongenTheme}`,
     `- 실천 제안: ${result.ritualAction}`,
+    `- 과잉 경계: ${result.shadowWarning}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 되묻는 질문: ${result.reflectiveQuestion}`,
     `- 해석 경계: ${result.interpretiveBoundary}`,

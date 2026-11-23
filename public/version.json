@@ -1,10 +1,10 @@
 {
-  "version": "1.8.424",
-  "builtAt": "2026-11-24T07:05:00+09:00",
-  "summary": "몰디브 산호초·몰타 루조·만주 무쿤 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.424)",
+  "version": "1.8.425",
+  "builtAt": "2026-11-24T07:15:00+09:00",
+  "summary": "마푸체 쿨트룬·마라무레슈 문주·마셜 스틱 차트 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.425)",
   "items": [
-    "몰디브 산호초 물길 엔진(v2.3.0): 질문 맥락(questionTopic), 산호초 물길 축(atollCurrentAxis), 과잉 경계(shadowWarning) 추가",
-    "몰타 메갈리스·루조 항구 엔진(v2.3.0): 질문 맥락(questionTopic), 항구 나침반 축(harborCompassAxis), 과잉 경계(shadowWarning) 추가",
-    "만주 무쿤·흰산 검은강 엔진(v2.3.0): 질문 맥락(questionTopic), 백두·흑룡 축(whiteMountainAxis), 과잉 경계(shadowWarning) 추가"
+    "마푸체 쿨트룬 우주 균형 엔진(v2.3.0): 질문 맥락(questionTopic), 쿨트룬 방위 축(kultrunCompassAxis), 과잉 경계(shadowWarning) 추가",
+    "마라무레슈 목조 문주 엔진(v2.3.0): 질문 맥락(questionTopic), 목조 문주 축(woodGateAxis), 과잉 경계(shadowWarning) 추가",
+    "마셜 제도 스틱 차트 엔진(v2.3.0): 질문 맥락(questionTopic), 너울 항법 축(swellChartAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }
