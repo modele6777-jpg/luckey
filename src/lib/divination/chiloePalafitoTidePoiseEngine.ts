@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface ChiloePalafitoResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계·연대' | '일·물때' | '습관·기둥' | '조화 전반';
   chiloeMotif: string;
   companionMotif: string;
+  tidePoiseAxis: string;
   chiloeInsight: string;
   fjordTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const CHILOE_SHADOWS = [
+  '밀물과 썰물을 버텨야 한다는 생각에 지친 기둥을 점검하고 보수할 타이밍을 미루지 마세요.',
+  '작은 습관을 겹치는 데에만 몰두해 정작 큰 방향 전환이 필요한 시점을 놓치지 않도록 살피세요.',
+  '유연한 이음새를 찾다가 꼭 지켜야 할 최소한의 선과 기준까지 흐려지지 않게 주의하세요.',
+  '함께 밧줄을 당기는 연대를 기대하다가 내가 먼저 내디뎌야 할 책임을 미루지 않도록 살피세요.',
+  '모든 것을 한꺼번에 익히려다 지금 당장 식탁에 올려야 할 핵심 과제에 집중을 잃지 마세요.',
+];
+
+function classifyChiloeTopic(q: string): ChiloePalafitoResult['questionTopic'] {
+  if (/관계|연대|이웃|사람|함께|도움/.test(q)) return '관계·연대';
+  if (/일|직장|물때|밀물|썰물|기둥/.test(q)) return '일·물때';
+  if (/습관|루틴|유연|마음|조화/.test(q)) return '습관·기둥';
+  return '조화 전반';
+}
+
 export function calculateChiloePalafitoTidePoise(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): ChiloePalafitoResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyChiloeTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const tidePoiseAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = CHILOE_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-CHILOE-PALAFITO-v2.2.0',
+    engineVersion: 'LUCKEY-CHILOE-PALAFITO-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     chiloeMotif: picked.motif,
     companionMotif: companion.motif,
+    tidePoiseAxis,
     chiloeInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     fjordTone: picked.tone,
     reflectionFocus: `치로에 팔라피토의 '${picked.motif}'와 동반 결 '${companion.motif}'처럼, 밀물과 썰물을 다 품는 기둥 위에서 녹슬지 않는 이음새로 하루를 지켜 보세요.`,
     ritualAction: picked.ritual,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '칠레 치로에 섬의 팔라피토 수상가옥과 밍가 공동체 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatChiloePalafitoPrompt(res: ChiloePalafitoResult): string {
   return [
     `[치로에·팔라피토 물때 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 물때 축: ${res.tidePoiseAxis}`,
     `- 치로에 모티프: ${res.chiloeMotif} (${res.fjordTone})`,
     `- 동반 결: ${res.companionMotif}`,
     `- 중심 통찰: ${res.chiloeInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

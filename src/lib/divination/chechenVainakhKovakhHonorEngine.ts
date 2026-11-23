@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface ChechenVainakhResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계·신의' | '일·기개' | '내면·절제' | '품격 전반';
   vainakhCode: string;
   companionCode: string;
+  honorBalanceAxis: string;
   kovakhInsight: string;
   caucasusTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -70,27 +73,49 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const VAINAKH_SHADOWS = [
+  '기개를 지키려다 혼자서만 버티는 고집으로 흐르지 않게 필요한 연대와 도움을 구분하세요.',
+  '약속의 무게를 지키려다 이미 상황이 바뀐 일까지 무리하게 끌고 가지 않도록 살피세요.',
+  '절제와 관용을 지키려다 정작 내 마음의 한계와 상처까지 삼켜 버리지 않도록 주의하세요.',
+  '중심을 지키며 한 걸음씩 가는 신중함이 결정적인 타이밍의 결단마저 늦추지 않게 살피세요.',
+  '스스로를 다스리는 자유에 집중하다 주변 사람들과의 따뜻한 호흡을 놓치지 않도록 균형을 두세요.',
+];
+
+function classifyVainakhTopic(q: string): ChechenVainakhResult['questionTopic'] {
+  if (/관계|신의|약속|사람|관용|사랑/.test(q)) return '관계·신의';
+  if (/일|직장|진로|기개|책임|버티/.test(q)) return '일·기개';
+  if (/내면|절제|자유|마음|감정|조급/.test(q)) return '내면·절제';
+  return '품격 전반';
+}
+
 export function calculateChechenVainakhKovakhHonor(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): ChechenVainakhResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyVainakhTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % CODES.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (CODES.length - 1));
   const picked = CODES[idx];
   const companion = CODES[(idx + companionOffset) % CODES.length];
+  const honorBalanceAxis = `${picked.code.split('(')[0].trim()} ↔ ${companion.code.split('(')[0].trim()} (${questionTopic})`;
+  const shadowWarning = VAINAKH_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-CHECHEN-VAINAKH-v2.2.0',
+    engineVersion: 'LUCKEY-CHECHEN-VAINAKH-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     vainakhCode: picked.code,
     companionCode: companion.code,
+    honorBalanceAxis,
     kovakhInsight: `${picked.insight} (동반 덕목: ${companion.code})`,
     caucasusTone: picked.tone,
     reflectionFocus: `바이나흐 코카서스 지혜의 '${picked.code}'와 동반 덕목 '${companion.code}'처럼, 바깥의 소란에 휩쓸리지 않고 내 말의 무게와 내면의 절제를 단단히 지켜 보세요.`,
     ritualAction: picked.ritual,
+    shadowWarning,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '코카서스 바이나흐(체첸)의 노흐찰라(Nokhchalla)·야흐(Yah) 절제와 신의 철학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -100,11 +125,13 @@ export function formatChechenVainakhPrompt(res: ChechenVainakhResult): string {
   return [
     `[체첸 바이나흐·카바흐 명예 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 명예 축: ${res.honorBalanceAxis}`,
     `- 바이나흐 덕목: ${res.vainakhCode} (${res.caucasusTone})`,
     `- 동반 덕목: ${res.companionCode}`,
     `- 중심 통찰: ${res.kovakhInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
