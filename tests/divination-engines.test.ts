@@ -13646,14 +13646,15 @@ test('Baltic Romuva Darna Harmony engine: axes, +09:00 KST, and interpretive bou
 
 test('Minoan Labyrinth Labrys engine: stages, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMinoanLabyrinthLabrys({ profile, now: new Date('2026-11-20T06:00:00Z'), question: '복잡한 문제의 핵심을 잡고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MINOAN-LABYRINTH-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-MINOAN-LABYRINTH-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionStage.name !== rep.activeStage.name);
+  assert.ok(rep.labyrinthAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMinoanLabyrinthPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('미노스') && prompt.includes('동반 구간') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('미노스') && prompt.includes('동반 구간') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Toraja Aluk Todolo Tongkonan engine: pillars, +09:00 KST, and interpretive boundary', () => {
@@ -15554,14 +15555,15 @@ test('Serer Baobab Council engine: shade, +09:00 KST, and interpretive boundary'
 
 test('Menominee Forest Balance engine: cycle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMenomineeForestBalance({ profile, now: new Date('2026-11-20T22:35:00Z'), question: '오래 지속할 수 있는 균형을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MENOMINEE-FOREST-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-MENOMINEE-FOREST-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionCycle !== rep.canopyCycle);
+  assert.ok(rep.forestStewardAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMenomineeForestPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('메노미니') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionCycle));
+  assert.ok(prompt.includes('메노미니') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionCycle) && prompt.includes('과잉 경계'));
 });
 
 test('Sangam Tinai Poetics engine: landscape, +09:00 KST, and interpretive boundary', () => {
@@ -15705,12 +15707,13 @@ test('Portuguese Azulejo Tile engine: motif, +09:00 KST, and interpretive bounda
 
 test('Menorca Talayot Stone Balance engine: stance, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMenorcaTalayotStoneBalance({ profile, now: new Date('2026-11-21T01:20:00Z'), question: '억지 없는 자생적 균형을 잡고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MENORCA-TALAYOT-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-MENORCA-TALAYOT-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionStance !== rep.stoneStance);
+  assert.ok(rep.talayotStoneAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMenorcaTalayotPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('메노르카·탈라요트') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionStance));
+  assert.ok(prompt.includes('메노르카·탈라요트') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionStance) && prompt.includes('과잉 경계'));
 });

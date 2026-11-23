@@ -1,10 +1,10 @@
 {
-  "version": "1.8.425",
-  "builtAt": "2026-11-24T07:15:00+09:00",
-  "summary": "마푸체 쿨트룬·마라무레슈 문주·마셜 스틱 차트 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.425)",
+  "version": "1.8.426",
+  "builtAt": "2026-11-24T07:25:00+09:00",
+  "summary": "메노미니 숲지속·메노르카 탈라요트·미노스 미궁 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.426)",
   "items": [
-    "마푸체 쿨트룬 우주 균형 엔진(v2.3.0): 질문 맥락(questionTopic), 쿨트룬 방위 축(kultrunCompassAxis), 과잉 경계(shadowWarning) 추가",
-    "마라무레슈 목조 문주 엔진(v2.3.0): 질문 맥락(questionTopic), 목조 문주 축(woodGateAxis), 과잉 경계(shadowWarning) 추가",
-    "마셜 제도 스틱 차트 엔진(v2.3.0): 질문 맥락(questionTopic), 너울 항법 축(swellChartAxis), 과잉 경계(shadowWarning) 추가"
+    "메노미니 숲지속 목재 균형 엔진(v2.3.0): 질문 맥락(questionTopic), 숲지속 균형 축(forestStewardAxis), 과잉 경계(shadowWarning) 추가",
+    "메노르카 탈라요트 돌탑 균형 엔진(v2.3.0): 질문 맥락(questionTopic), 탈라요트 석축 축(talayotStoneAxis), 과잉 경계(shadowWarning) 추가",
+    "미노스 미궁·라브리스 엔진(v2.3.0): 질문 맥락(questionTopic), 미궁 항로 축(labyrinthAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }

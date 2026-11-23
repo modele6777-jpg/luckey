@@ -9,11 +9,14 @@ export interface MenomineeForestInput {
 export interface MenomineeForestResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '지속·여력' | '절제·정리' | '공존·습관' | '숲지속 전반';
   canopyCycle: string;
   companionCycle: string;
+  forestStewardAxis: string;
   stewardPrinciple: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,23 +68,43 @@ function hashSeed(text: string): number {
   return h >>> 0;
 }
 
+const MENOMINEE_SHADOWS = [
+  '어린 묘목을 위해 햇빛을 양보하는 배려가 지나쳐, 정작 지금 내가 맡아야 할 중심 역할까지 뒤로 물러서지 않도록 살피세요.',
+  '다음 세대의 그늘을 남기는 절제가 오늘 당장 필요한 과감한 실행과 결단까지 계속 미루는 망설임이 되지 않게 하세요.',
+  '계절마다 필요한 만큼만 거두는 신중함이 새로운 기회 앞에서 손을 내미는 용기까지 묶어 두어서는 안 됩니다.',
+  '다양한 수종의 공존을 챙기느라 모든 일에 같은 힘을 쓰려다 보면 정작 가장 중요한 한 그루가 시들 수 있습니다.',
+] as const;
+
+function classifyMenomineeTopic(q: string): MenomineeForestResult['questionTopic'] {
+  if (/지속|미래|여력|오래|체력/.test(q)) return '지속·여력';
+  if (/절제|정리|가지치기|덜어|비워/.test(q)) return '절제·정리';
+  if (/공존|습관|균형|다양/.test(q)) return '공존·습관';
+  return '숲지속 전반';
+}
+
 export function calculateMenomineeForestBalance(input: MenomineeForestInput): MenomineeForestResult {
   const fate = input.profile.fate ?? {};
-  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const q = (input.question ?? '').trim();
+  const questionTopic = classifyMenomineeTopic(q);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${q}`;
   const seed = hashSeed(seedText);
   const cycleIdx = seed % CYCLES.length;
   const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (CYCLES.length - 1));
   const canopyCycle = CYCLES[cycleIdx];
   const companionCycle = CYCLES[(cycleIdx + companionOffset) % CYCLES.length];
+  const forestStewardAxis = `${canopyCycle.slice(0, 14)}… ↔ ${companionCycle.slice(0, 14)}… (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-MENOMINEE-FOREST-v2.2.0',
+    engineVersion: 'LUCKEY-MENOMINEE-FOREST-v2.3.0',
     calculatedAtKst: toKstIso(input.now),
+    questionTopic,
     canopyCycle,
     companionCycle,
+    forestStewardAxis,
     stewardPrinciple: PRINCIPLES[(seed >>> 3) % PRINCIPLES.length],
     reflectionFocus: `위스콘신 메노미니 족이 백여 년 넘게 숲을 보전하며 필요한 만큼만 거두고 다음 세대의 나무를 남기는 지속 가능성처럼 주 순환('${canopyCycle}')과 동반 순환('${companionCycle}')을 함께 짚어 올린 상징적 관점입니다.`,
     ritualAction: ACTIONS[cycleIdx],
+    shadowWarning: MENOMINEE_SHADOWS[cycleIdx],
     reflectiveQuestion: QUESTIONS[cycleIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
@@ -91,11 +114,13 @@ export function formatMenomineeForestPrompt(res: MenomineeForestResult): string 
   return [
     `[메노미니·숲지속 목재 균형 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
+    `질문 맥락: ${res.questionTopic} | 숲지속 균형 축: ${res.forestStewardAxis}`,
     `숲의 순환: ${res.canopyCycle}`,
     `동반 순환: ${res.companionCycle}`,
     `돌봄 원칙: ${res.stewardPrinciple}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
+    `과잉 경계: ${res.shadowWarning}`,
     `성찰 질문: ${res.reflectiveQuestion}`,
     `경계: ${res.interpretiveBoundary}`,
   ].join('\n');
