@@ -43,3 +43,26 @@ test('only the cards for this calculation are attached', () => {
   assert.equal(cards.length, 4);
   assert.deepEqual(buildKnowledgeCards([{ toolId: 'iching', status: 'skipped' }]), []);
 });
+
+test('second-round cards cover every Ziwei main star, mutagen, Kyusei star, Liuren general and Qimen gate', async () => {
+  const more = await import('../src/lib/divination/knowledge/moreCards.ts');
+  assert.equal(more.ZIWEI_STAR_CARDS.length, 14);
+  assert.deepEqual(more.ZIWEI_MUTAGEN_CARDS.map(c => c.key), ['록', '권', '과', '기']);
+  assert.deepEqual(more.KYUSEI_STAR_CARDS.map(c => c.key), ['1', '2', '3', '4', '5', '6', '7', '8', '9']);
+  assert.equal(more.LIUREN_GENERAL_CARDS.length, 12);
+  assert.deepEqual(more.QIMEN_GATE_CARDS.map(c => c.key), ['休門', '生門', '傷門', '杜門', '景門', '死門', '驚門', '開門']);
+});
+
+test('a full Lucy Pro level-3 prompt carries the cards for its own chart', async () => {
+  const { routeAndExecute } = await import('../src/lib/divination/smartAgentRouter.ts');
+  const profile: any = { basic: { birthdate: '1990-05-15', birthtime: '14:30', birthTimeAccuracy: 'exact', gender: 'female', lunarSolar: 'solar', birthCity: '서울' } };
+  const prompt = routeAndExecute({ text: '이직 고민', profile, isMasterRequested: true, divinationMode: { base: 'tarot_saju', depth: 3 } }).promptInjection;
+  // 庚년생 사화: 태양 화록·무곡 화권·태음 화과·천동 화기
+  assert.match(prompt, /생년 化祿: [^—]*태양/);
+  assert.match(prompt, /생년 化權: [^—]*무곡/);
+  assert.match(prompt, /생년 化科: [^—]*태음/);
+  assert.match(prompt, /생년 化忌: [^—]*천동/);
+  assert.match(prompt, /구성학 본명성 一白水星/);
+  assert.match(prompt, /자미두수 명궁 주성 자미/);
+  assert.ok(prompt.length < 60000);
+});

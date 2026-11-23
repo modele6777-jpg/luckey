@@ -5,6 +5,10 @@
 import { findIchingCard, formatIchingCard } from './ichingCards';
 import { findSukuyoTypeCard, formatSukuyoTypeCard, formatSukuyoRelationGuide } from './sukuyoCards';
 import { sukuyoMansionInfoByIndex } from '../sukuyoEngine';
+import {
+  KYUSEI_STAR_CARDS, LIUREN_GENERAL_CARDS, QIMEN_GATE_CARDS, QIMEN_PALACE_DIRECTION, ZIWEI_MUTAGEN_CARDS, ZIWEI_STAR_CARDS,
+  findCard, formatSimpleCard,
+} from './moreCards';
 
 interface ToolLike { toolId: string; status: string; data?: unknown }
 
@@ -29,6 +33,50 @@ export function buildKnowledgeCards(tools: readonly ToolLike[]): string[] {
           cards.push(formatSukuyoRelationGuide());
         }
       } catch { /* 카드 없이 계산값만 쓴다 */ }
+    }
+    if (tool.toolId === 'ziwei' && Array.isArray(data.palaces)) {
+      // 명궁의 주성 + 타고난 사화(록·권·과·기)가 놓인 궁
+      const soul = data.palaces.find((p: any) => p.branch === data.soulPalace);
+      for (const star of soul?.major ?? []) {
+        const c = findCard(ZIWEI_STAR_CARDS, star?.name);
+        if (c) cards.push(formatSimpleCard(`자미두수 명궁 주성 ${c.key}(${c.hanja})`, c));
+      }
+      for (const palace of data.palaces) {
+        for (const star of [...(palace.major ?? []), ...(palace.minor ?? [])]) {
+          const c = findCard(ZIWEI_MUTAGEN_CARDS, star?.mutagen);
+          if (c) cards.push(formatSimpleCard(`자미두수 생년 ${c.hanja}: ${palace.name}궁의 ${star.name}`, c));
+        }
+      }
+    }
+    if (tool.toolId === 'kyusei' && data.honmyosei) {
+      const hon = findCard(KYUSEI_STAR_CARDS, String(data.honmyosei.star));
+      if (hon) cards.push(formatSimpleCard(`구성학 본명성 ${hon.hanja}`, hon));
+      const get = findCard(KYUSEI_STAR_CARDS, String(data.getmyosei?.star ?? ''));
+      if (get && get !== hon) cards.push(formatSimpleCard(`구성학 월명성 ${get.hanja}`, get));
+    }
+    if (tool.toolId === 'liuren') {
+      const names = [data.primaryGeneral?.name, ...((data.threeTransmissions ?? []).map((t: any) => t?.general))]
+        .map((name: unknown) => String(name ?? '').replace(/\(.*$/, '').replace('靑', '青').trim())
+        .filter(Boolean);
+      for (const name of [...new Set(names)].slice(0, 3)) {
+        const c = LIUREN_GENERAL_CARDS.find(card => name.includes(card.key));
+        if (c) cards.push(formatSimpleCard(`육임 천장 ${c.key}(${c.hanja})`, c));
+      }
+    }
+    if (tool.toolId === 'qimen') {
+      const chart = data.chabopPointChart?.chart;
+      if (chart) {
+        const lead = findCard(QIMEN_GATE_CARDS, chart['值使']);
+        const leadDir = QIMEN_PALACE_DIRECTION[chart['值使落宮']] ?? '';
+        if (lead) cards.push(formatSimpleCard(`기문 지금 판의 직사문(值使) ${lead.hanja}(${chart['值使']})${leadDir ? ` · ${leadDir}` : ''}`, lead));
+        const gates: string[] = chart['天門'] ?? [];
+        const palaces: string[] = chart['方位'] ?? [];
+        for (const good of ['生門', '開門']) {
+          const at = gates.indexOf(good);
+          const c = findCard(QIMEN_GATE_CARDS, good);
+          if (at >= 0 && c && good !== chart['值使']) cards.push(formatSimpleCard(`기문 ${c.hanja}(${good}) 방위 ${QIMEN_PALACE_DIRECTION[palaces[at]] ?? palaces[at]}`, c));
+        }
+      }
     }
   }
   return cards;
