@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface ParthianNisaResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '수용·교차로' | '선회·유연' | '쉼터·점검' | '자율·공존' | '이완·탄성' | '니사 전반';
   nisaMotif: string;
   companionMotif: string;
+  nisaBowAxis: string;
   parthianInsight: string;
   steppeTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const PARTHIAN_SHADOWS = [
+  '낯선 관점을 넉넉히 받아들이는 포용이 정작 내 핵심 원칙이나 기준선까지 흐려 놓는 무분별한 타협이 되지 않게 하세요.',
+  '정면충돌을 피해 한 걸음 선회하는 유연함이 꼭 맞서서 정리해야 할 갈등이나 책임 앞에서도 계속 뒤로 빠지는 회피가 되어서는 안 됩니다.',
+  '역참에서 안장을 풀고 숨을 고르는 절제가 이미 충분히 쉬고 나서도 출발을 미루는 안주로 굳지 않도록 재출발 시각을 정하세요.',
+  '각자의 자율성과 리듬을 존중하는 연대가 내가 직접 확인해야 할 품질 기준이나 진행 점검까지 방임하는 무관심이 되지 않게 살피세요.',
+  '활시위에서 힘을 빼는 이완이 막상 과녁을 향해 집중해 쏘아야 할 결정적 순간까지 흐트러지는 느슨함이 되지 않도록 경계를 지키세요.',
+];
+
+function classifyParthianTopic(q: string): ParthianNisaResult['questionTopic'] {
+  if (/관점|포용|낯선|받아/.test(q)) return '수용·교차로';
+  if (/선회|물러|충돌|각도/.test(q)) return '선회·유연';
+  if (/쉼|안장|역참|체력/.test(q)) return '쉼터·점검';
+  if (/자율|맡기|연맹|협력/.test(q)) return '자율·공존';
+  if (/활|힘|이완|탄성/.test(q)) return '이완·탄성';
+  return '니사 전반';
+}
+
 export function calculateParthianNisaArcheryPoise(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): ParthianNisaResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyParthianTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const picked = MOTIFS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const nisaBowAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-PARTHIAN-NISA-v2.2.0',
+    engineVersion: 'LUCKEY-PARTHIAN-NISA-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     nisaMotif: picked.motif,
     companionMotif: companion.motif,
+    nisaBowAxis,
     parthianInsight: picked.insight,
     steppeTone: picked.tone,
     reflectionFocus: `파르티아 니사·기병 화살 조화의 '${picked.motif}'을 중심에 두고 '${companion.motif}'의 결을 곁들여, 정면으로만 밀어붙이지 말고 물러남과 선회의 여유 속에서 진짜 목표를 조준해 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: PARTHIAN_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '고대 파르티아 니사의 교차로 지혜·파르티안 샷의 유연한 균형 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +121,13 @@ export function formatParthianNisaPrompt(res: ParthianNisaResult): string {
   return [
     `[파르티아 니사·기병 화살 조화 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 선회 조준 축: ${res.nisaBowAxis}`,
     `- 니사 모티프: ${res.nisaMotif} (${res.steppeTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.parthianInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

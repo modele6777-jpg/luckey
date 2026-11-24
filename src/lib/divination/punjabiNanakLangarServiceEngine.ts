@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface PunjabiNanakResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '성실·노동' | '나눔·랑가르' | '알아차림·중심' | '활력·기상' | '벗·동행' | '펀자브 전반';
   punjabiPillar: string;
   companionPillar: string;
+  langarServiceAxis: string;
   nanakInsight: string;
   fiveRiversTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const PUNJABI_SHADOWS = [
+  '정직한 땀(Kirat Karo)으로 오늘 일을 끝까지 매듭짓는 성실함이 쉼과 회복이 필요한 몸 상태까지 무시하는 과로가 되지 않게 하세요.',
+  '랑가르처럼 곁의 사람과 나누는 넉넉함이 내 기본 여력과 경계까지 다 소진해 버리는 무리한 희생이 되어서는 안 됩니다.',
+  '멈춰 서서 마음을 살피는 알아차림(Naam Japo)이 행동에 옮겨야 할 순간까지 내면 관찰만 반복하는 관조로 머물지 않게 균형을 잡으세요.',
+  '꺾이지 않는 밝은 기상(Chardi Kala)이 지금 분명히 직시하고 고쳐야 할 현실의 어려움마저 무조건 긍정으로 덮는 태도가 되지 않게 주의하세요.',
+  '좋은 벗들과 마음을 나누는 동행(Sat Sangat)이 혼자 조용히 결정하고 책임져야 할 몫까지 주변 동의로 미루는 의존이 되지 않게 살피세요.',
+];
+
+function classifyPunjabiTopic(q: string): PunjabiNanakResult['questionTopic'] {
+  if (/성실|땀|정직|일/.test(q)) return '성실·노동';
+  if (/나눔|랑가르|호의|넉넉/.test(q)) return '나눔·랑가르';
+  if (/중심|멈춰|알아차|마음/.test(q)) return '알아차림·중심';
+  if (/밝|활력|기상|난관/.test(q)) return '활력·기상';
+  if (/벗|지인|동행|안부/.test(q)) return '벗·동행';
+  return '펀자브 전반';
+}
+
 export function calculatePunjabiNanakLangarService(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): PunjabiNanakResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyPunjabiTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % PILLARS.length;
   const picked = PILLARS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (PILLARS.length - 1));
   const companion = PILLARS[(idx + companionOffset) % PILLARS.length];
+  const langarServiceAxis = `${picked.pillar.split('(')[0].trim()} ↔ ${companion.pillar.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-PUNJABI-NANAK-v2.2.0',
+    engineVersion: 'LUCKEY-PUNJABI-NANAK-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     punjabiPillar: picked.pillar,
     companionPillar: companion.pillar,
+    langarServiceAxis,
     nanakInsight: picked.insight,
     fiveRiversTone: picked.tone,
     reflectionFocus: `펀자브 지혜 전통의 '${picked.pillar}'을 중심에 두고 '${companion.pillar}'의 결을 곁들여, 정직한 성실함과 넉넉한 나눔 속에서 꺾이지 않는 밝은 마음(Chardi Kala)을 길러 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: PUNJABI_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '펀자브(Punjab) 나낙·바바 파리드의 성실·나눔(Langar)·차르디 칼라 철학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +121,13 @@ export function formatPunjabiNanakPrompt(res: PunjabiNanakResult): string {
   return [
     `[펀자브 나낙·랑가르 나눔 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 랑가르 실천 축: ${res.langarServiceAxis}`,
     `- 지혜 기둥: ${res.punjabiPillar} (${res.fiveRiversTone})`,
     `- 동반 기둥: ${res.companionPillar}`,
     `- 중심 통찰: ${res.nanakInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

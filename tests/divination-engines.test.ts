@@ -14169,14 +14169,15 @@ test('Bengali Baul Moner Manush engine: string, +09:00 KST, and interpretive bou
 
 test('Punjabi Nanak Langar Service engine: pillar, +09:00 KST, and interpretive boundary', () => {
   const rep = calculatePunjabiNanakLangarService({ profile, now: new Date('2026-11-20T07:56:00Z'), question: '성실함과 넉넉한 나눔을 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-PUNJABI-NANAK-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-PUNJABI-NANAK-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPillar !== rep.punjabiPillar);
+  assert.ok(rep.langarServiceAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatPunjabiNanakPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('펀자브') && prompt.includes('동반 기둥') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('펀자브') && prompt.includes('동반 기둥') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Chuvash Tura World Tree Balance engine: sign, +09:00 KST, and interpretive boundary', () => {
@@ -14650,14 +14651,15 @@ test('San Kalahari Tracking Stars engine: sign, +09:00 KST, and interpretive bou
 
 test('Phrygian Gordian Knot Clarity engine: symbol, +09:00 KST, and interpretive boundary', () => {
   const rep = calculatePhrygianGordianKnotClarity({ profile, now: new Date('2026-11-20T09:20:00Z'), question: '꼬인 매듭을 단순하게 풀어내고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-PHRYGIAN-GORDIAN-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-PHRYGIAN-GORDIAN-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSymbol !== rep.anatolianSymbol);
+  assert.ok(rep.gordianCutAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatPhrygianGordianPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('프리지아') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('프리지아') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Goryeo Celadon Inlay Clarity engine: craft, +09:00 KST, and interpretive boundary', () => {
@@ -14752,14 +14754,15 @@ test('Baekje Gilt-Bronze Incense Calm engine: motif, +09:00 KST, and interpretiv
 
 test('Parthian Nisa Archery Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateParthianNisaArcheryPoise({ profile, now: new Date('2026-11-20T19:25:00Z'), question: '정면충돌 대신 유연하게 선회하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-PARTHIAN-NISA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-PARTHIAN-NISA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.nisaMotif);
+  assert.ok(rep.nisaBowAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatParthianNisaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('파르티아') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('파르티아') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Nahua Xochitl Cuicatl Flow engine: motif, +09:00 KST, and interpretive boundary', () => {
