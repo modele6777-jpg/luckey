@@ -14000,14 +14000,15 @@ test('Sakha Olonkho Three Worlds engine: pillar, +09:00 KST, and interpretive bo
 
 test('Scythian Golden Stag Steppe engine: emblem, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateScythianGoldenStagSteppe({ profile, now: new Date('2026-11-20T07:22:00Z'), question: '가볍고 기민하게 도약하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SCYTHIAN-STAG-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SCYTHIAN-STAG-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionEmblem !== rep.steppeEmblem);
+  assert.ok(rep.goldenStagAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatScythianGoldenStagPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('스키타이') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('스키타이') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Galician Camino Atlantic Reflection engine: sign, +09:00 KST, and interpretive boundary', () => {
@@ -14602,14 +14603,15 @@ test('Palmyrene Oasis Colonnade engine: pillar, +09:00 KST, and interpretive bou
 
 test('Sicilian Majolica Etna Balance engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSicilianMajolicaEtnaBalance({ profile, now: new Date('2026-11-20T09:14:00Z'), question: '흔들린 자리 위에서도 새로운 싹을 키우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SICILIAN-MAJOLICA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SICILIAN-MAJOLICA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.islandMotif);
+  assert.ok(rep.etnaMajolicaAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSicilianMajolicaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('시칠리아') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('시칠리아') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Somali Gabay Dhow Horizon engine: principle, +09:00 KST, and interpretive boundary', () => {
@@ -15544,14 +15546,15 @@ test('Karen Bamboo Clock engine: cadence, +09:00 KST, and interpretive boundary'
 
 test('Shan Inle Rowing engine: posture, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateShanInleRowing({ profile, now: new Date('2026-11-20T22:25:00Z'), question: '중심을 잃지 않고 시야를 넓히고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SHAN-INLE-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SHAN-INLE-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPosture !== rep.lakePosture);
+  assert.ok(rep.inleOarAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatShanInlePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('샨') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPosture));
+  assert.ok(prompt.includes('샨') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPosture) && prompt.includes('과잉 경계'));
 });
 
 test('Chumash Tomol Canoe engine: signal, +09:00 KST, and interpretive boundary', () => {
