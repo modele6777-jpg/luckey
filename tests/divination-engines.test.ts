@@ -2958,6 +2958,8 @@ test('Spatial Fengshui Engine: 동양 풍수·점성술 공간 길방위 v2.1.0 
 test('Special Stars Matrix Engine: 15대 신살 슈퍼파워 치환 v2.1.0 교차 매트릭스 검증', () => {
   const res = calculateSpecialStarsMatrix({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '타고난 무기' });
   assert.equal(res.engineVersion, SPECIAL_STARS_VERSION);
+  assert.equal(res.questionTopic, 'talent');
+  assert(res.shadowWarning.length > 0);
   assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.reflectiveQuestion?.includes('타고난 무기'));
@@ -2967,6 +2969,7 @@ test('Special Stars Matrix Engine: 15대 신살 슈퍼파워 치환 v2.1.0 교�
   assert(prompt.includes('+09:00 (KST)'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('과잉 경계'));
   assert(prompt.includes('신살 교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
@@ -2974,6 +2977,8 @@ test('Special Stars Matrix Engine: 15대 신살 슈퍼파워 치환 v2.1.0 교�
 test('Shadow Archetype Engine: 융 심리학 그림자 자아 & 골든 섀도우 연금술 검증', () => {
   const res = calculateShadowArchetype({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00') });
   assert.equal(res.engineVersion, SHADOW_ARCHETYPE_VERSION);
+  assert.equal(res.questionTopic, 'general');
+  assert(res.shadowWarning.length > 0);
   assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.shadowSynthesisMatrix?.integratedAction));
@@ -2986,6 +2991,7 @@ test('Shadow Archetype Engine: 융 심리학 그림자 자아 & 골든 섀도우
   assert(prompt.includes('LUCKEY 융 심리학 그림자 자아 & 골든 섀도우 연금술'));
   assert(prompt.includes(res.primaryShadow.archetype));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('과잉 경계'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
 });
@@ -3617,6 +3623,8 @@ test('Saju Twelve Stages & Tomb Unlock Engine: calculates lifecycle vitality and
 test('Tarot Elemental Court Persona Engine: maps 16 court cards and 4 elemental balance', () => {
   const rep = calculateTarotElementalCourt(profile, '커리어 이직과 결단');
   assert.equal(rep.engineVersion, TAROT_ELEMENTAL_COURT_VERSION);
+  assert.equal(rep.questionTopic, 'career');
+  assert(rep.shadowWarning.length > 0);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.courtSynthesisMatrix?.integratedAction));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
@@ -3629,6 +3637,7 @@ test('Tarot Elemental Court Persona Engine: maps 16 court cards and 4 elemental 
   assert(prompt.includes('타로 4대 원소'));
   assert(prompt.includes(rep.activePersonaCourt.nameKo));
   assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('과잉 경계'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
