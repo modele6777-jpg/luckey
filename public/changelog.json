@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.456",
+    "builtAt": "2026-11-25T06:35:00+09:00",
+    "summary": "시킴 레프차·시와 오아시스·소그드 실크로드 3대 엔진 질문 맥락·과잉 경계 심층 강화(v1.8.456)",
+    "items": [
+      "시킴 레프차 숲 관점 엔진(v2.3.0): 질문 맥락(questionTopic), 대나무 다리 탄성 축(bambooBridgeAxis), 과잉 경계(shadowWarning) 추가",
+      "시와 오아시스 소금샘 엔진(v2.3.0): 질문 맥락(questionTopic), 소금 부력 균형 축(saltBuoyancyAxis), 과잉 경계(shadowWarning) 추가",
+      "소그드 실크로드 대상 신뢰 엔진(v2.3.0): 질문 맥락(questionTopic), 대상 신뢰 균형 축(caravanTrustAxis), 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.455",
     "builtAt": "2026-11-25T06:25:00+09:00",
     "summary": "수면 무의식·영혼 타로 여정·전략 협상 레버리지 3대 엔진 질문 맥락·과잉 경계 심층 강화(v1.8.455)",
