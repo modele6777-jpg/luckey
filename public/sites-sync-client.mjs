@@ -104,6 +104,16 @@ export class SitesSyncClient {
   }
 }
 
+export async function readSitesLegacyMemory(client) {
+  const response = await client.request();
+  if (!response.ok) throw new Error('Sites 기억을 불러오지 못했어요.');
+  const result = await response.json();
+  if (client.account && client.account !== result.account) throw new Error('Sites 계정이 변경됐어요.');
+  if (!result.account || !Array.isArray(result.entries)) throw new Error('Sites 기억 응답을 읽지 못했어요.');
+  return new Map(result.entries.filter(entry => syncKey(entry.key) === entry.key && typeof entry.value === 'string')
+    .map(entry => [entry.key, entry.value]));
+}
+
 export function startSitesSync(win) {
   // A same-origin embedded channel shares the parent storage and coordinator.
   try { if (win.parent && win.parent !== win && win.parent.__sitesSyncStarted) return; } catch { /* Cross-origin previews need their own coordinator. */ }
@@ -143,6 +153,9 @@ export function startSitesSync(win) {
     if(changed)notify(key);
   };
   const client = new SitesSyncClient({storage,fetcher:win.fetch.bind(win),capture,apply,status});
+  // Only the current Sites visitor can read the old D1 snapshot. The shared
+  // Firebase backup selects its own exact, account-scoped memory keys.
+  win.luckeyReadLegacyMemory = () => readSitesLegacyMemory(client);
   const schedule = () => {if(!flushTimer)flushTimer=win.setTimeout(()=>{flushTimer=null;void client.flush();},200);};
   if(nativeStorage){
     const set=win.Storage.prototype.setItem,remove=win.Storage.prototype.removeItem;

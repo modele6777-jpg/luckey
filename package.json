@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.8.434",
+  "version": "1.8.435",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -11,6 +11,7 @@
     "dev:full": "node --use-system-ca ./node_modules/tsx/dist/cli.mjs server.ts",
     "build": "vite build && esbuild server.app.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "build:frontend": "vite build",
+    "build:deploy": "npm run build && npm run build:knowledge-research",
     "build:full": "vite build && esbuild server.app.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
     "preview": "vite preview",

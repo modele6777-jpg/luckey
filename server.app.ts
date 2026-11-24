@@ -24,7 +24,7 @@ import { GoogleGenAI } from "@google/genai";
 import { createProxyMiddleware, fixRequestBody } from "http-proxy-middleware";
 import { buildSpecificSedonaDailyOracle } from "./src/lib/dailyTarotOracle";
 import { installAsyncRouteGuard } from "./server/api-lib/routeGuard";
-import { guardRestrictedRoute } from "./server/api-lib/publicAccess";
+import { guardRestrictedRoute, isRestrictedAppRoute, requestPath } from "./server/api-lib/publicAccess";
 import { lucyKnowledgeRouter } from "./server/api-lib/lucyKnowledgeRoute";
 
 const _filename = typeof __filename !== "undefined" ? __filename : "";
@@ -401,13 +401,16 @@ async function startServer() {
   app.use(express.json({ limit: '50mb' }));
 
   // Handle restricted CORS before the general OPTIONS handler.
-  if (process.env.RENDER || process.env.LUCKEY_APP_ORIGINS?.trim()) {
+  const protectAppRoutes = process.env.NODE_ENV === "production" || Boolean(process.env.RENDER || process.env.LUCKEY_APP_ORIGINS?.trim());
+  if (protectAppRoutes) {
     app.use(guardRestrictedRoute(5_000_000));
   }
 
   // CORS, Iframe Permissions & OPTIONS Preflight Handler (for AI Studio & Cloud Run)
   app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    if (!protectAppRoutes || !isRestrictedAppRoute(requestPath(req))) {
+      res.setHeader("Access-Control-Allow-Origin", "*");
+    }
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, x-stainless-sdk-version, x-stainless-os, x-stainless-lang, x-stainless-runtime, x-stainless-runtime-version, x-stainless-helper-method, x-stainless-package-version");
     res.removeHeader("X-Frame-Options");
