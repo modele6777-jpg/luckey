@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.453",
+    "builtAt": "2026-11-25T06:05:00+09:00",
+    "summary": "우즈베크 마할라·베네치아 포르콜라·우다베 게레월 3대 엔진 질문 맥락·과잉 경계 심층 강화(v1.8.453)",
+    "items": [
+      "우즈베크 마할라·리시탄 도기 엔진(v2.3.0): 질문 맥락(questionTopic), 유약 균형 축(rishtanGlazeAxis), 지혜별 과잉 경계(shadowWarning) 추가",
+      "베네치아 라구나 포르콜라 엔진(v2.3.0): 질문 맥락(questionTopic), 조타 균형 축(forcolaPivotAxis), 홈별 과잉 경계(shadowWarning) 추가",
+      "우다베 게레월 사헬 품위 엔진(v2.3.0): 질문 맥락(questionTopic), 무냐 품위 축(munyaPoiseAxis), 만남별 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.452",
     "builtAt": "2026-11-25T05:55:00+09:00",
     "summary": "투아레그 타길무스트·우크라이나 비시반카·위구르 쿠타드구 빌리그 3대 엔진 질문 맥락·과잉 경계 심층 강화(v1.8.452)",

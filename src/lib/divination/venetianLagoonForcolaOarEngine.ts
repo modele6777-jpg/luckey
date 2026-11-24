@@ -9,11 +9,14 @@ export interface VenetianLagoonInput {
 export interface VenetianLagoonResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '전환·유연' | '멈춤·조절' | '수심·관찰' | '균형·중심' | '베네치아 전반';
   forcolaNotch: string;
   companionNotch: string;
   lagoonCurrent: string;
+  forcolaPivotAxis: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -24,6 +27,28 @@ const NOTCHES = [
   '얕은 석호 바닥을 읽어 내는 고요한 노 끝',
   '물결의 흔들림을 반동으로 바꾸는 호두나무 곡선',
 ] as const;
+
+const PIVOT_AXES = [
+  '직선 충돌을 피해 각도를 살짝 트는 유연 전진의 축',
+  '모퉁이 앞에서 속도를 줄여 방향을 되찾는 반전 제동의 축',
+  '얕은 바닥과 조수 높이를 먼저 읽는 수심 감지의 축',
+  '한쪽 노로도 흔들림을 반동으로 바꾸는 중심 조타의 축',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '유연하게 각도를 바꾸는 데 익숙해져 정면으로 돌파해야 할 핵심 구간까지 우회하지 않도록 살피세요.',
+  '멈춤과 회전의 홈에 오래 머물다 출발해야 할 물때를 놓치지 않게 다음 신호를 정해 두세요.',
+  '바닥 수심과 변수만 살피느라 정작 노를 저어 앞으로 나아갈 추진력을 아끼지 마세요.',
+  '혼자 균형을 잡느라 애쓰다 주변의 도움이나 다른 노의 지지를 받을 수 있는 기회를 닫지 않게 하세요.',
+] as const;
+
+function classifyVenetianTopic(q: string): VenetianLagoonResult['questionTopic'] {
+  if (/유연|수로|전환|각도|골목/.test(q)) return '전환·유연';
+  if (/멈춤|속도|조절|모퉁이|회전/.test(q)) return '멈춤·조절';
+  if (/수심|조수|물길|상황|여유/.test(q)) return '수심·관찰';
+  if (/균형|중심|흔들|혼자|노/.test(q)) return '균형·중심';
+  return '베네치아 전반';
+}
 
 const CURRENTS = [
   '직선으로만 밀어붙이지 않고 홈의 각도를 살짝 바꾸면 좁은 골목도 닿지 않고 빠져나갑니다.',
@@ -67,7 +92,9 @@ function hashSeed(text: string): number {
 
 export function calculateVenetianLagoonForcola(input: VenetianLagoonInput): VenetianLagoonResult {
   const fate = input.profile.fate ?? {};
-  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const questionText = (input.question ?? '').trim();
+  const questionTopic = classifyVenetianTopic(questionText);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${questionText}`;
   const seed = hashSeed(seedText);
   const notchIdx = seed % NOTCHES.length;
   const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (NOTCHES.length - 1));
@@ -75,13 +102,16 @@ export function calculateVenetianLagoonForcola(input: VenetianLagoonInput): Vene
   const companionNotch = NOTCHES[(notchIdx + companionOffset) % NOTCHES.length];
 
   return {
-    engineVersion: 'LUCKEY-VENETIAN-FORCOLA-v2.2.0',
+    engineVersion: 'LUCKEY-VENETIAN-FORCOLA-v2.3.0',
     calculatedAtKst: toKstIso(input.now),
+    questionTopic,
     forcolaNotch,
     companionNotch,
     lagoonCurrent: CURRENTS[(seed >>> 3) % CURRENTS.length],
+    forcolaPivotAxis: PIVOT_AXES[notchIdx],
     reflectionFocus: `베네치아 석호의 좁은 수로를 한쪽 노와 여덟 개 홈이 파인 호두나무 노받침(포르콜라)으로 항해하듯, 주 홈('${forcolaNotch}')과 동반 홈('${companionNotch}')을 겹쳐 상황에 맞는 각도와 멈춤을 읽는 상징적 관점입니다.`,
     ritualAction: ACTIONS[notchIdx],
+    shadowWarning: SHADOW_WARNINGS[notchIdx],
     reflectiveQuestion: QUESTIONS[notchIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
@@ -90,12 +120,14 @@ export function calculateVenetianLagoonForcola(input: VenetianLagoonInput): Vene
 export function formatVenetianLagoonPrompt(res: VenetianLagoonResult): string {
   return [
     `[베네치아·라구나 포르콜라 노 젓기 관점 · ${res.engineVersion}]`,
-    `기준 시각: ${res.calculatedAtKst}`,
+    `기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `노받침 홈: ${res.forcolaNotch}`,
+    `조타 균형 축: ${res.forcolaPivotAxis}`,
     `동반 홈: ${res.companionNotch}`,
     `석호 물길: ${res.lagoonCurrent}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
+    `과잉 경계: ${res.shadowWarning}`,
     `성찰 질문: ${res.reflectiveQuestion}`,
     `경계: ${res.interpretiveBoundary}`,
   ].join('\n');
