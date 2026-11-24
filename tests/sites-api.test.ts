@@ -199,3 +199,26 @@ test('health reports the configured AI provider and independent speech provider'
   assert.equal(health.speechProvider, 'gemini');
   assert.ok(!JSON.stringify(health).includes('openai-test-secret'));
 });
+
+test('Sites issues only a single-use Live token through Gemini v1beta', async () => {
+  const response = await handleSitesApi(request('/api/ai/live-token', { orb: true, voice: 'Aoede' }), env, async (url, init) => {
+    assert.equal(String(url), 'https://generativelanguage.googleapis.com/v1beta/auth_tokens');
+    assert.equal(new Headers(init?.headers).get('x-goog-api-key'), env.gemini);
+    const body = JSON.parse(String(init?.body));
+    assert.equal(body.uses, 1);
+    assert.equal(body.bidiGenerateContentSetup.model, 'models/gemini-3.8-live');
+    assert.ok(body.bidiGenerateContentSetup.tools[0].functionDeclarations.length > 0);
+    return Response.json({ name: 'auth_tokens/test-session' });
+  });
+  assert.equal(response?.status, 200);
+  assert.equal(response?.headers.get('Cache-Control'), 'no-store');
+  const body = await response!.json();
+  assert.equal(body.token, 'auth_tokens/test-session');
+  assert.ok(!JSON.stringify(body).includes(env.gemini));
+});
+
+test('Sites reports missing Live credentials without calling Gemini', async () => {
+  const response = await handleSitesApi(request('/api/ai/live-token', {}), {}, async () => assert.fail('unexpected request'));
+  assert.equal(response?.status, 503);
+  assert.equal((await response!.json()).code, 'GEMINI_API_KEY_MISSING');
+});

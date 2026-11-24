@@ -1,4 +1,5 @@
 import { TAROT_READING_VOICE } from '../src/lib/tarotReadingVoice.ts';
+import { issueGeminiLiveToken } from './api-lib/geminiLiveTokenCore.ts';
 import { synthesizeGeminiSpeech } from './api-lib/geminiMedia.ts';
 import { getSitesAIConfig } from '../scripts/sites-ai-provider.mjs';
 import type { handleTTS } from './api-lib/ttsHandler.ts';
@@ -12,7 +13,7 @@ export { handleSitesGeminiChat };
 type Runtime = Record<string, string | undefined>;
 type Fetcher = typeof fetch;
 const routes = new Set([
-  '/api/ai', '/api/ai/image', '/api/ai/tts', '/api/ai/analyze-entry',
+  '/api/ai', '/api/ai/image', '/api/ai/tts', '/api/ai/live-token', '/api/ai/analyze-entry',
   '/api/ai/daily-bgm', '/api/ai/recommend-art', '/api/ai/daily-tarot', '/api/saju/chart',
   '/api/ai/daily-sedona', '/api/ai/secret-blessing', '/api/ai/secret-mood-recommend',
   '/api/muse/docent', '/api/bluebird/docent', '/api/muse/artwork-image',
@@ -191,6 +192,20 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
     let body: any;
     try { body = JSON.parse(raw); } catch { throw new ApiError(400, '올바른 JSON 요청이 필요합니다.'); }
     if (!body || typeof body !== 'object' || Array.isArray(body)) throw new ApiError(400, '요청 내용을 확인해 주세요.');
+    if (route === '/api/ai/live-token') {
+      const input = (name: string, max: number) => text(body[name]).slice(0, max);
+      try {
+        return json(await issueGeminiLiveToken(keyFor(env), input('nickname', 120), {
+          chart: input('chart', 12000), cards: input('cards', 2000), voice: input('voice', 50),
+          focus: input('focus', 400), greet: input('greet', 1000), notes: input('notes', 2000),
+          orb: body.orb === true, persona: input('persona', 400), rules: input('rules', 3000),
+        }, env.ORB_LIVE_USAGE_PRICES_USD, fetchApi));
+      } catch (error) {
+        const failure = error as { status?: number; code?: string; message?: string };
+        if (failure.status && failure.code) throw new ApiError(failure.status, failure.message || '음성 연결을 시작하지 못했습니다.', undefined, failure.code);
+        throw new ApiError(502, '음성 서버에 연결하지 못했습니다. 잠시 후 다시 연결해 주세요.', undefined, 'GEMINI_LIVE_TOKEN_FAILED');
+      }
+    }
     if (route === '/api/saju/chart') {
       try { return json(sajuChartFromInput(body)); }
       catch (error) { throw new ApiError(error instanceof SajuInputError ? error.status : 400, error instanceof Error ? error.message : '사주 계산에 실패했습니다.', undefined, error instanceof SajuInputError ? error.code : undefined); }

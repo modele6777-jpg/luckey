@@ -93,7 +93,7 @@ test('one master: the instruction carries rules and persona, not a pre-computed 
 });
 
 test('server token and client setup both declare the Orb tools', () => {
-  const token = readFileSync(new URL('../server/api-lib/geminiLiveToken.ts', import.meta.url), 'utf8');
+  const token = readFileSync(new URL('../server/api-lib/geminiLiveTokenCore.ts', import.meta.url), 'utf8');
   assert.match(token, /reading\?\.orb \? \{ tools: \[\{ functionDeclarations: orbFunctionDeclarations\(\) \}\] \}/);
   for (const file of ['../server.app.ts', '../api/index.ts']) {
     assert.match(readFileSync(new URL(file, import.meta.url), 'utf8'), /orb, persona, rules/);
