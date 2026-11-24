@@ -42,7 +42,25 @@
 import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate, convertSolarToLunar } from '../lunarCalendar';
 
-export const SUKUYO_ENGINE_VERSION = 'LUCKEY-SY-v2.2.0';
+export const SUKUYO_ENGINE_VERSION = 'LUCKEY-SY-v2.3.0';
+
+export type SukuyoQuestionTopic = 'relation' | 'career' | 'timing' | 'mindset' | 'general';
+
+function classifySukuyoTopic(q: string): SukuyoQuestionTopic {
+  if (/인연|궁합|연애|관계|배우자|사람|갈등/.test(q)) return 'relation';
+  if (/일|직업|사업|계약|협업|파트너/.test(q)) return 'career';
+  if (/시기|언제|타이밍|이동|변화|운/.test(q)) return 'timing';
+  if (/마음|태도|성향|고민|방향/.test(q)) return 'mindset';
+  return 'general';
+}
+
+const SUKUYO_SHADOW_WARNINGS: Record<SukuyoQuestionTopic, string> = {
+  relation: '숙요경의 궁합 라벨을 절대적 우열로 해석하면 상대의 실제 노력을 가릴 수 있으니, 거리와 방향성을 대화의 힌트로만 삼으십시오.',
+  career: '성·괴나 영·쇠 같은 강한 역학 관계일수록 역할과 책임 범위를 문서로 명확히 나누어야 불필요한 소모를 막을 수 있습니다.',
+  timing: '3구 비법의 길흉 흐름에 맞춰 속도를 조절하되, 준비되지 않은 일정을 성급히 밀어붙이지 않도록 점검하십시오.',
+  mindset: '본명숙의 기질에 스스로를 가두지 말고, 약점으로 보이는 숙격의 반대편 덕목을 의식적으로 연습하십시오.',
+  general: '27숙 상징은 관계와 기질의 결을 비추는 거울이지, 인연이나 성패를 단정하는 판결문이 아닙니다.',
+};
 
 export const SUKUYO_METHOD =
   '정통 밀교 숙요경(宿曜經) 27숙 결정론 산법: 월별 기숙표에 한국 음력 생일을 적용한 본명숙(本命宿) 환산, 7대 숙격(安重·和善·毒害·急速·猛惡·輕躁·剛柔) 분류, 4방신(東方靑龍·北方玄武·西方白虎·南方朱雀) 소속 및 칠요 배속, 6대 관계성(命·業胎·榮衰·安危·成壞·友親) 방향별 판정과 3거리(근거리 1~4숙·중거리 5~13숙·원거리 14~26숙) 역학, 양방향 27숙 궁합 매트릭스 결정론 산출 (윤달은 계산 보류 · 일본 구력과 경계일 차이 가능)';
@@ -138,6 +156,8 @@ export interface SukuyoResult {
   engineVersion: string;
   method: string;
   calculatedAtKst?: string;
+  questionTopic?: SukuyoQuestionTopic;
+  shadowWarning?: string;
   solarDateString?: string; // 역법 환산에 쓴 양력 생일 (YYYY-MM-DD)
   lunarDate?: { month: number; day: number; isLeapMonth: boolean };
   mansion?: SukuyoMansionInfo; // 본명숙
@@ -622,6 +642,9 @@ function calculateSanKyuCycle(mansion: SukuyoMansionInfo): SukuyoSanKyuCycle {
     }
   }
 
+  const questionTopic = classifySukuyoTopic(q);
+  const shadowWarning = SUKUYO_SHADOW_WARNINGS[questionTopic];
+
   const sukuyoSynthesisMatrix = {
     dominantTension: `${mansion.fullName} (${shukgukMeta.hanja}) ↔ ${celestialQuadrant.quadrant}`,
     alignmentState: `${planetaryGuard.dominantLuminary} 수호 · ${sanKyuCycle.nineMansionPhase}`,
@@ -641,6 +664,8 @@ function calculateSanKyuCycle(mansion: SukuyoMansionInfo): SukuyoSanKyuCycle {
     engineVersion: SUKUYO_ENGINE_VERSION,
     method: SUKUYO_METHOD,
     calculatedAtKst,
+    questionTopic,
+    shadowWarning,
     solarDateString: `${solarDate.year}-${String(solarDate.month).padStart(2, '0')}-${String(solarDate.day).padStart(2, '0')}`,
     lunarDate: { month: lunar.month, day: lunar.day, isLeapMonth: false },
     mansion,
@@ -731,7 +756,7 @@ export function formatSukuyoPrompt(result: SukuyoResult): string {
     : '- 궁합 상대: 상대방 출생 정보가 없어 양방향 매트릭스는 미산출 (본명숙·숙격 단독 제공)';
 
   return `
-[정통 밀교 숙요경(宿曜經) 27숙 본명숙 & 6대 관계성 3거리 매트릭스 리포트 (${SUKUYO_ENGINE_VERSION})]
+[정통 밀교 숙요경(宿曜經) 27숙 본명숙 & 6대 관계성 3거리 매트릭스 리포트 (${SUKUYO_ENGINE_VERSION}${result.questionTopic ? ` | 질문 맥락: ${result.questionTopic}` : ''})]
 ${mansionLines}
 ${shukgukLine}
 - 종합 역학: ${result.selfDynamics}
@@ -739,7 +764,7 @@ ${deepBlock}
 ${partnerBlock}
 - 6대 관계성 판정 체계: 명(命)=동일 숙의 운명적 거울 · 업·태(業·胎)=영혼의 파트너 · 영·쇠(榮·衰)=번영 vs 소모 · 안·위(安·危)=지지자 vs 긴장 · 성·괴(成·壞)=성취 vs 파괴 · 우·친(友·親)=가장 편안한 유대
 - 3거리 역학: 근거리 1~4숙(즉각적 공명과 마찰) · 중거리 5~13숙(협력과 성장) · 원거리 14~26숙(시공을 넘는 끌림)
-${result.reflectiveQuestion ? `- 성찰 질문: ${result.reflectiveQuestion}\n` : ''}- 해석 경계: ${result.interpretiveBoundary || '본 밀교 숙요경 27숙 리포트는 태음력 기반 전통 27숙 상징과 관계 역학에 따른 정성적 이해 안내이며, 인연의 성패를 단정짓지 않습니다.'}
+${result.reflectiveQuestion ? `- 성찰 질문: ${result.reflectiveQuestion}\n` : ''}${result.shadowWarning ? `- 과잉 경계: ${result.shadowWarning}\n` : ''}- 해석 경계: ${result.interpretiveBoundary || '본 밀교 숙요경 27숙 리포트는 태음력 기반 전통 27숙 상징과 관계 역학에 따른 정성적 이해 안내이며, 인연의 성패를 단정짓지 않습니다.'}
 - [AI 해석 지침]: 본 결과는 구현된 월별 기숙표 규칙에 따른 재현 가능한 계산값이며, 계산 규칙의 정확성이나 인연의 성패를 보장하지 않습니다. 본명숙·관계 라벨은 제공된 결과에 맞추고, 숙격은 원전 대조가 끝나지 않은 상징 참고라는 한계를 지키십시오.
 `.trim();
 }

@@ -898,9 +898,11 @@ function relOf(from: number, to: number): SukuyoRelationDynamic {
 }
 
 test('Sukuyo engine: 본명숙 산출 및 7대 숙격 매핑 정확성', () => {
-  const r = calculateSukuyoAdvanced({ profile: syProfile });
+  const r = calculateSukuyoAdvanced({ profile: syProfile, question: '인연과 성향' });
   assert.equal(r.status, 'calculated');
   assert.equal(r.engineVersion, SUKUYO_ENGINE_VERSION);
+  assert.equal(r.questionTopic, 'relation');
+  assert((r.shadowWarning || '').length > 0);
   assert.equal(r.mansion!.hanja, '奎'); // birthCharts.calculateSukuyo 실측 '奎宿'와 일치
   assert.equal(r.mansion!.index, 13);
   assert.equal(r.mansion!.shukguk, '화선'); // 규(奎)는 화선숙 (宿曜經 七種)
@@ -2896,6 +2898,8 @@ test('Soul Journey Tarot Engine: 영혼 연금술 3단계 및 4원소 균형 검
 test('Transcendental Meditation Engine: 초월 명상 및 마음 안정 안내 검증', () => {
   const res = calculateTranscendentalMeditation({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '마음의 평정' });
   assert.equal(res.engineVersion, TRANSCENDENTAL_MEDITATION_VERSION);
+  assert.equal(res.questionTopic, 'calm');
+  assert(res.shadowWarning.length > 0);
   assert(res.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(res.zenSynthesisMatrix?.integratedAction));
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
@@ -2908,6 +2912,7 @@ test('Transcendental Meditation Engine: 초월 명상 및 마음 안정 안내 �
   assert(prompt.includes('LUCKEY 초월 명상 & 마음 안정 지능'));
   assert(prompt.includes(res.zenEnergyArchetype));
   assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('과잉 경계'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
@@ -3311,6 +3316,8 @@ test('Sacred Vortex Geometry Engine: 황금비 영혼 수비학 & 보텍스 기�
 test('Taoist Neidan Meridian Engine: 도교 내단 양생 & 진기 순환 경락 시계 검증', () => {
   const res = calculateTaoistNeidanMeridian({ profile, targetDate: new Date('2026-11-04T10:00:00+09:00'), question: '기혈 순환' });
   assert.equal(res.engineVersion, TAOIST_NEIDAN_VERSION);
+  assert.equal(res.questionTopic, 'energy');
+  assert(res.shadowWarning.length > 0);
   assert(res.calculatedAtKst.includes('+09:00 (KST)'));
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.neidanSynthesisMatrix?.integratedAction));
@@ -3329,6 +3336,7 @@ test('Taoist Neidan Meridian Engine: 도교 내단 양생 & 진기 순환 경락
   assert(prompt.includes('보조 교차 경락'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('과잉 경계'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
