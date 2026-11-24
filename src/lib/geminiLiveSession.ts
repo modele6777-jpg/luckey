@@ -515,7 +515,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
         attachStream(next);
         return true;
       } catch {
-        if (requestId === micRequestId) setMicCaptureActive(false);
+        if (!stopped && requestId === micRequestId) setMicCaptureActive(false);
         return false;
       }
     },
