@@ -14259,14 +14259,15 @@ test('Tlingit Raven Clan Balance engine: balance, +09:00 KST, and interpretive b
 
 test('Oromo Gadaa Saffuu Harmony engine: cycle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateOromoGadaaSaffuuHarmony({ profile, now: new Date('2026-11-20T08:11:00Z'), question: '지금 내 계절에 맞는 역할을 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-OROMO-GADAA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-OROMO-GADAA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionCycle !== rep.gadaaCycle);
+  assert.ok(rep.gadaaSaffuuAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatOromoGadaaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('오로모') && prompt.includes('동반 원칙') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('오로모') && prompt.includes('동반 원칙') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Karelian Runo Kantele Resonance engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15119,14 +15120,15 @@ test('Ifugao Banaue Rice Terrace engine: motif, +09:00 KST, and interpretive bou
 
 test('Otavalo Andes Loom Balance engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateOtavaloAndesLoomBalance({ profile, now: new Date('2026-11-20T20:39:00Z'), question: '일의 장력을 내 몸에 맞게 조절하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-OTAVALO-LOOM-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-OTAVALO-LOOM-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.otavaloMotif);
+  assert.ok(rep.otavaloWeaveAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatOtavaloLoomPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('오타발로') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('오타발로') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Andalusian Patio Fountain Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15413,14 +15415,15 @@ test('Asturian Horreo Granary engine: motif, +09:00 KST, and interpretive bounda
 
 test('Omo Karo Body Art engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateOmoKaroBodyArt({ profile, now: new Date('2026-11-20T21:55:00Z'), question: '오늘의 생기를 표현하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-OMO-KARO-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-OMO-KARO-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.pigmentMotif);
+  assert.ok(rep.karoPigmentAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatOmoKaroPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('오모') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('오모') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
 });
 
 test('Sumba Ikat Story engine: motif, +09:00 KST, and interpretive boundary', () => {

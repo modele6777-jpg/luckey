@@ -1,8 +1,10 @@
 {
-  "version": "1.8.440",
-  "builtAt": "2026-11-24T12:25:02.557Z",
-  "summary": "LucKey 설치 아이콘 업데이트",
+  "version": "1.8.441",
+  "builtAt": "2026-11-25T04:05:00+09:00",
+  "summary": "오모 카로·오로모 가다·오타발로 안데스 베틀 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.441)",
   "items": [
-    "크롬에서 LucKey를 설치할 때 보라색 배경의 금빛 행운 열쇠가 표시돼요."
+    "오모 카로 진흙 회화 엔진(v2.3.0): 질문 맥락(questionTopic), 안료 회화 축(karoPigmentAxis), 과잉 경계(shadowWarning) 추가",
+    "오로모 가다·사푸 윤리 엔진(v2.3.0): 질문 맥락(questionTopic), 가다·사푸 축(gadaaSaffuuAxis), 과잉 경계(shadowWarning) 추가",
+    "오타발로 안데스 베틀 엔진(v2.3.0): 질문 맥락(questionTopic), 베틀 직조 축(otavaloWeaveAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }

@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface OromoGadaaResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '경계·존중' | '순환·역할' | '평화·대화' | '이양·신뢰' | '감사·전환' | '가다 전반';
   gadaaCycle: string;
   companionCycle: string;
+  gadaaSaffuuAxis: string;
   saffuuInsight: string;
   highlandTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const OROMO_SHADOWS = [
+  '서로의 선을 지키는 사푸(Saffuu)의 균형이 필요한 협력이나 솔직한 도움 요청까지 딱딱하게 막아 두는 벽이 되지 않게 하세요.',
+  '때에 맞춰 몫을 나누는 가다 순환이 지금 내가 마땅히 책임져야 할 자리까지 "때가 아니다"라며 회피하는 구실이 되어서는 안 됩니다.',
+  '먼저 평화의 인사를 건네는 나가야(Nagaya)의 태도가 내 권리나 사실관계를 무조건 양보하고 묻어 두는 침묵으로 흐르지 않게 균형을 잡으세요.',
+  '믿고 맡기는 이양(Baallii)이 진행 상황을 전혀 살피지 않고 손을 떼는 무책임한 방임이 되지 않도록 최소한의 확인선은 남기세요.',
+  '지나온 수고에 감사하며 비우는 이레차(Irreechaa)의 여유가 다음 계절을 준비하는 구체적인 정리와 계획까지 생략하는 방심이 되지 않게 살피세요.',
+];
+
+function classifyOromoTopic(q: string): OromoGadaaResult['questionTopic'] {
+  if (/경계|선|거리|존중/.test(q)) return '경계·존중';
+  if (/계절|역할|순환|몫/.test(q)) return '순환·역할';
+  if (/평화|다툼|대화|입장/.test(q)) return '평화·대화';
+  if (/이양|맡기|신뢰|부담/.test(q)) return '이양·신뢰';
+  if (/감사|비우|전환|수고/.test(q)) return '감사·전환';
+  return '가다 전반';
+}
+
 export function calculateOromoGadaaSaffuuHarmony(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): OromoGadaaResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyOromoTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % CYCLES.length;
   const picked = CYCLES[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (CYCLES.length - 1));
   const companion = CYCLES[(idx + companionOffset) % CYCLES.length];
+  const gadaaSaffuuAxis = `${picked.cycle.split('(')[0].trim()} ↔ ${companion.cycle.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-OROMO-GADAA-v2.2.0',
+    engineVersion: 'LUCKEY-OROMO-GADAA-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     gadaaCycle: picked.cycle,
     companionCycle: companion.cycle,
+    gadaaSaffuuAxis,
     saffuuInsight: picked.insight,
     highlandTone: picked.tone,
     reflectionFocus: `오로모 가다 전통의 '${picked.cycle}'을 중심에 두고 '${companion.cycle}'의 결을 곁들여, 지금 내 계절에 맞는 몫만 성실히 감당하며 관계의 평화(Nagaya)와 존중의 거리를 지켜 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: OROMO_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '동아프리카 오로모(Oromo)의 가다(Gadaa) 순환 질서·사푸(Saffuu) 균형 윤리를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +121,13 @@ export function formatOromoGadaaPrompt(res: OromoGadaaResult): string {
   return [
     `[오로모 가다·사푸 윤리 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 가다·사푸 축: ${res.gadaaSaffuuAxis}`,
     `- 순환 원칙: ${res.gadaaCycle} (${res.highlandTone})`,
     `- 동반 원칙: ${res.companionCycle}`,
     `- 중심 통찰: ${res.saffuuInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
