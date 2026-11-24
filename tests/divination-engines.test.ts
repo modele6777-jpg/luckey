@@ -13680,14 +13680,16 @@ test('Minoan Labyrinth Labrys engine: stages, +09:00 KST, and interpretive bound
 
 test('Toraja Aluk Todolo Tongkonan engine: pillars, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateTorajaAlukTodoloTongkonan({ profile, now: new Date('2026-11-20T06:10:00Z'), question: '삶의 방향과 감사를 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-TORAJA-ALUK-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-TORAJA-ALUK-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPillar.name !== rep.activePillar.name);
+  assert.ok(rep.tongkonanAxis.length > 0 && rep.shadowWarning.length > 0 && rep.questionTopic.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatTorajaAlukPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('토라자') && prompt.includes('동반 기둥') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('과잉 경계') && prompt.includes('질문 맥락'));
 });
 
 test('Sinhala Bali Kohomba Harmony engine: layers, +09:00 KST, and interpretive boundary', () => {
@@ -13826,14 +13828,16 @@ test('Shona Mbira Ancestral Resonance engine: cycle, +09:00 KST, and interpretiv
 
 test('Tongan Kava Circle Tauhi Va engine: practice, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateTonganKavaCircleTauhiVa({ profile, now: new Date('2026-11-20T06:40:00Z'), question: '관계의 거리를 잘 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-TONGAN-KAVA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-TONGAN-KAVA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPractice !== rep.vaPractice);
+  assert.ok(rep.tauhiVaAxis.length > 0 && rep.shadowWarning.length > 0 && rep.questionTopic.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatTonganKavaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('통가') && prompt.includes('동반 원리') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('과잉 경계') && prompt.includes('질문 맥락'));
 });
 
 test('Dogon Amma Nommo Harmony engine: star phase, +09:00 KST, and interpretive boundary', () => {
@@ -14271,14 +14275,16 @@ test('Cherokee Gadugi Harmony engine: principle, +09:00 KST, and interpretive bo
 
 test('Tlingit Raven Clan Balance engine: balance, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateTlingitRavenClanBalance({ profile, now: new Date('2026-11-20T08:11:00Z'), question: '나와 다른 시선을 균형으로 보고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-TLINGIT-RAVEN-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-TLINGIT-RAVEN-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionBalance !== rep.tlingitBalance);
+  assert.ok(rep.clanReciprocityAxis.length > 0 && rep.shadowWarning.length > 0 && rep.questionTopic.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatTlingitRavenPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('틀링깃') && prompt.includes('동반 균형') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('과잉 경계') && prompt.includes('질문 맥락'));
 });
 
 test('Oromo Gadaa Saffuu Harmony engine: cycle, +09:00 KST, and interpretive boundary', () => {
