@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.466",
+    "builtAt": "2026-11-25T08:15:00+09:00",
+    "summary": "천상열차분야지도 28수·야프 라이 돌·예멘 시밤 진흙탑 3대 엔진 심층 강화(v1.8.466)",
+    "items": [
+      "천상열차분야지도 28수 일진·택일 엔진(v2.3.0): 질문 맥락(questionTopic), 테마별 과잉 경계(shadowWarning) 추가",
+      "미크로네시아 야프 라이 돌 신뢰 엔진(v2.3.0): 질문 맥락(questionTopic), 신뢰 축(raiTrustAxis), 과잉 경계(shadowWarning) 추가",
+      "예멘 시밤 진흙 고층탑 엔진(v2.3.0): 질문 맥락(questionTopic), 건축 축(shibamTowerAxis), 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.465",
     "builtAt": "2026-11-25T08:05:00+09:00",
     "summary": "타이노 아레이토·타라후마라 발걸음·타트라 능선 3대 엔진 심층 강화(v1.8.465)",

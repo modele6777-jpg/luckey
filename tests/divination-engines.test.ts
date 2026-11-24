@@ -1180,9 +1180,11 @@ test('28 Mansions: deterministic day-star with weekday-luminary 7-cycle alignmen
 });
 
 test('28 Mansions six-domain scoring: bounds, consistency, 28-day date selection, prompt and engine binding', () => {
-  const r = calculateTwentyEightMansions({ targetDate: new Date('2026-11-02T00:00:00+09:00') });
+  const r = calculateTwentyEightMansions({ targetDate: new Date('2026-11-02T00:00:00+09:00'), question: '오늘 계약 서명 괜찮을까요?' });
   assert.equal(r.status, 'calculated');
   assert.equal(r.engineVersion, TWENTY_EIGHT_MANSIONS_ENGINE_VERSION);
+  assert.equal(r.questionTopic, 'contract');
+  assert.ok(r.shadowWarning.length > 0);
 
   // 6대 영역 스코어링 정합성
   assert.equal(r.domainScores.length, 6);
@@ -1216,7 +1218,7 @@ test('28 Mansions six-domain scoring: bounds, consistency, 28-day date selection
   assert(Boolean(r.ritualAction) && Boolean(r.reflectionFocus));
   assert(prompt.includes('천상열차분야지도') && prompt.includes('28수 직성'));
   assert(prompt.includes('필월오(畢月烏)') && prompt.includes('계약·협상') && prompt.includes('휴식·치유·내실'));
-  assert(prompt.includes('대칭 보조 별자리'));
+  assert(prompt.includes('대칭 보조 별자리') && prompt.includes('과잉 경계'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
@@ -14677,14 +14679,16 @@ test('Chachapoya Cloud Forest Kuelap engine: citadel, +09:00 KST, and interpreti
 
 test('Yapese Rai Stone Trust engine: stone, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateYapeseRaiStoneTrust({ profile, now: new Date('2026-11-20T09:04:00Z'), question: '보이지 않아도 쌓아 둔 신뢰를 믿고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-YAPESE-RAI-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-YAPESE-RAI-v2.3.0');
+  assert.equal(rep.questionTopic, 'trust');
+  assert.ok(rep.raiTrustAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionTrust !== rep.stoneTrust);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatYapeseRaiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('야프') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('야프') && prompt.includes('동반 상징') && prompt.includes('과잉 경계') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Chukchi Bering Tundra Hearth engine: symbol, +09:00 KST, and interpretive boundary', () => {
@@ -15423,14 +15427,16 @@ test('Tatra Shepherd Ridge engine: motif, +09:00 KST, and interpretive boundary'
 
 test('Yemeni Shibam Mud Tower engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateYemeniShibamMudTower({ profile, now: new Date('2026-11-20T21:28:00Z'), question: '한 층씩 천천히 굳혀 가고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-YEMENI-SHIBAM-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-YEMENI-SHIBAM-v2.3.0');
+  assert.equal(rep.questionTopic, 'patience');
+  assert.ok(rep.shibamTowerAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.symbolicMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatYemeniShibamPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('예멘') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('예멘') && prompt.includes('과잉 경계') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Icelandic Saga Hearth engine: motif, +09:00 KST, and interpretive boundary', () => {
