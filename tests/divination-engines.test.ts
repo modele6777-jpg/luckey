@@ -2232,9 +2232,12 @@ test('Iching Master Engine: 64괘 4대 대칭 괘상(본·지·호·착·종) �
   assert(res.palGongSeYing.yingYao >= 1 && res.palGongSeYing.yingYao <= 6);
   assert(res.temporalIchingRhythm.divinationWatchWindow.length > 0);
   assert(res.ichingSynthesisMatrix.coreInsight.length > 0);
+  assert.equal(res.questionTopic, 'decision');
+  assert(res.ichingBalanceAxis.length > 0 && res.shadowWarning.length > 0);
   assert(res.interpretiveBoundary.length > 0);
   const prompt = formatIchingMasterPrompt(res);
   assert(prompt.includes(ICHING_MASTER_ENGINE_VERSION));
+  assert(prompt.includes('주역 균형 축') && prompt.includes('과잉 경계'));
   assert(prompt.includes('KST'));
   assert(prompt.includes('본괘(本卦)'));
   assert(prompt.includes('지괘(之卦/변괘)'));
@@ -2679,6 +2682,8 @@ test('Energetic Prescription Engine: 결핍 오행 바이오 에너지 맞춤 �
   const res = calculateEnergeticPrescription({ profile, currentDate: new Date('2026-11-16T06:00:00+09:00'), question: '활력 회복' });
   assert.equal(res.engineVersion, ENERGETIC_PRESCRIPTION_ENGINE_VERSION);
   assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(res.questionTopic, 'vitality');
+  assert(res.energeticBalanceAxis.length > 0 && res.shadowWarning.length > 0);
   assert(res.reflectiveQuestion?.includes('활력 회복'));
   assert(Boolean(res.energeticSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
@@ -2688,6 +2693,7 @@ test('Energetic Prescription Engine: 결핍 오행 바이오 에너지 맞춤 �
   assert(prompt.includes(ENERGETIC_PRESCRIPTION_ENGINE_VERSION));
   assert(prompt.includes('+09:00 (KST)'));
   assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('에너지 균형 축') && prompt.includes('과잉 경계'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
@@ -2696,6 +2702,8 @@ test('Instant Decision Engine: 매화역수·기문둔갑 즉시 결단 검증',
   const res = calculateInstantDecision({ instant: new Date('2026-11-16T06:00:00+09:00'), questionText: '지금 추진할까요' });
   assert.equal(res.engineVersion, INSTANT_DECISION_ENGINE_VERSION);
   assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
+  assert.equal(res.questionTopic, 'timing');
+  assert(res.chronoDecisionAxis.length > 0 && res.shadowWarning.length > 0);
   assert(res.reflectiveQuestion?.includes('지금 추진할까요'));
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.instantDecisionSynthesisMatrix?.integratedAction));
@@ -2706,6 +2714,7 @@ test('Instant Decision Engine: 매화역수·기문둔갑 즉시 결단 검증',
   assert(prompt.includes('+09:00 (KST)'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
+  assert(prompt.includes('시공간 결단 축') && prompt.includes('과잉 경계'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });

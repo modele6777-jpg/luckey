@@ -32,7 +32,25 @@ import { convertSolarToLunar } from '../lunarCalendar';
 
 import { hexagram, Yao, calculateIching } from './iching';
 
-export const ICHING_MASTER_ENGINE_VERSION = 'LUCKEY-ICHING-v2.2.0';
+export const ICHING_MASTER_ENGINE_VERSION = 'LUCKEY-ICHING-v2.3.0';
+
+export type IchingQuestionTopic = 'decision' | 'relation' | 'work' | 'emotion' | 'general';
+
+function classifyIchingTopic(q: string): IchingQuestionTopic {
+  if (/결정|선택|진행|투자|계약|할까/.test(q)) return 'decision';
+  if (/관계|상대|사람|협업|가족|연애/.test(q)) return 'relation';
+  if (/일|직장|진로|사업|프로젝트/.test(q)) return 'work';
+  if (/마음|감정|불안|지침|흔들/.test(q)) return 'emotion';
+  return 'general';
+}
+
+const ICHING_SHADOW_WARNINGS: Record<IchingQuestionTopic, string> = {
+  decision: '지괘의 결과만 서둘러 당기려다 현재 본괘와 호괘가 요구하는 중간 점검을 건너뛰지 않도록 유의하십시오.',
+  relation: '세효의 입장만 앞세워 종괘가 비추는 상대방의 시선을 놓치면 상응할 수 있는 국면도 어긋날 수 있습니다.',
+  work: '동효의 변화 에너지를 과신해 기초 체력(체괘)과 자원 배분을 소홀히 하면 후반부 탄력이 떨어질 수 있습니다.',
+  emotion: '착괘가 비추는 그림자 리스크를 지나치게 확대 해석해 스스로 위축되지 않도록 균형을 잡으십시오.',
+  general: '괘상은 흐름을 비추는 거울일 뿐이니, 변치 않는 고정 예언처럼 받아들이지 말고 오늘의 작은 한 걸음으로 연결하십시오.',
+};
 
 export const ICHING_MASTER_METHOD =
   '주역(周易) 64괘 정통 이진 비트 수리 산법: 본괘·지괘·호괘·착괘·종괘 4대 대칭 괘상 도출, 체용(體用) 오행 생극제화, 효위(爻位) 6단계 역학, 경방 8궁 세응(世應) 상응도 및 기운 변환 모멘텀 산출';
@@ -118,6 +136,9 @@ export interface IchingMasterResult {
     hexagramNote: string;
     actionStep: string;
   };
+  questionTopic: IchingQuestionTopic;
+  ichingBalanceAxis: string;
+  shadowWarning: string;
   temporalIchingRhythm: {
     kstTimeLabel: string;
     divinationWatchWindow: string;
@@ -547,6 +568,9 @@ export function calculateIchingMaster(
 
   const temporalIchingRhythm = getTemporalIchingRhythm(refNow);
   const q = (question || '').trim();
+  const questionTopic = classifyIchingTopic(q);
+  const ichingBalanceAxis = `본괘 ${primary.name} ↔ 지괘 ${changed.name} (${tiYongRel})`;
+  const shadowWarning = ICHING_SHADOW_WARNINGS[questionTopic];
   const situationalIchingAudit = /결정|선택|진행|투자|계약/.test(q)
     ? {
         focusTheme: `${primary.name} → ${changed.name} 결단 흐름`,
@@ -606,6 +630,9 @@ export function calculateIchingMaster(
     hexagramDynamics,
     palGongSeYing,
     situationalIchingAudit,
+    questionTopic,
+    ichingBalanceAxis,
+    shadowWarning,
     temporalIchingRhythm,
     ichingSynthesisMatrix,
     boundaryNotice,
@@ -658,7 +685,9 @@ export function formatIchingMasterPrompt(res: IchingMasterResult): string {
   • 변환 국면: ${res.hexagramDynamics.phaseShift} (${momentumTone}, 엔트로피: ${res.hexagramDynamics.movingEntropy})
   • 전반기 전략: ${res.hexagramDynamics.strategicWindow.firstHalf}
   • 후반기 전략: ${res.hexagramDynamics.strategicWindow.secondHalf}
-- 질문 맥락 감사 (${res.situationalIchingAudit.focusTheme}): ${res.situationalIchingAudit.hexagramNote} / ${res.situationalIchingAudit.actionStep}
+- 질문 맥락 감사 (${res.questionTopic} · ${res.situationalIchingAudit.focusTheme}): ${res.situationalIchingAudit.hexagramNote} / ${res.situationalIchingAudit.actionStep}
+- 주역 균형 축: ${res.ichingBalanceAxis}
+- 과잉 경계: ${res.shadowWarning}
 - KST 시공간 주역 리듬: ${res.temporalIchingRhythm.divinationWatchWindow} / ${res.temporalIchingRhythm.seasonalIchingTone}
   • 시공간 지침: ${res.temporalIchingRhythm.temporalGuidance}
 - 주역 교차 매트릭스: 핵심(${res.ichingSynthesisMatrix.coreInsight}) | 실행(${res.ichingSynthesisMatrix.recommendedAction}) | 주의(${res.ichingSynthesisMatrix.cautionNotice})

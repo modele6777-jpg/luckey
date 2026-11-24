@@ -1,10 +1,10 @@
 {
-  "version": "1.8.457",
-  "builtAt": "2026-11-25T06:45:00+09:00",
-  "summary": "소말리 가바이·숨바 이카트·스와힐리 우투 3대 엔진 질문 맥락·과잉 경계 심층 강화(v1.8.457)",
+  "version": "1.8.458",
+  "builtAt": "2026-11-25T06:55:00+09:00",
+  "summary": "결핍 오행 바이오 에너지·주역 64괘 마스터·즉시 결단 매화역수 3대 핵심 엔진 심층 강화(v1.8.458)",
   "items": [
-    "소말리 가바이 바다 지평선 엔진(v2.3.0): 질문 맥락(questionTopic), 가바이 지평선 축(gabayHorizonAxis), 과잉 경계(shadowWarning) 추가",
-    "숨바 이카트 염색 베틀 엔진(v2.3.0): 질문 맥락(questionTopic), 이카트 직조 균형 축(ikatLoomAxis), 과잉 경계(shadowWarning) 추가",
-    "스와힐리 우투 다우 계절풍 엔진(v2.3.0): 질문 맥락(questionTopic), 계절풍 항해 균형 축(monsoonVoyageAxis), 과잉 경계(shadowWarning) 추가"
+    "결핍 오행 바이오 에너지 처방 엔진(v2.3.0): 질문 맥락(questionTopic), 에너지 균형 축(energeticBalanceAxis), 과잉 경계(shadowWarning) 추가",
+    "주역 64괘 4대 대칭 마스터 엔진(v2.3.0): 질문 맥락(questionTopic), 주역 균형 축(ichingBalanceAxis), 과잉 경계(shadowWarning) 추가",
+    "즉시 결단 매화역수·기문둔갑 엔진(v2.3.0): 질문 맥락(questionTopic), 시공간 결단 축(chronoDecisionAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }
