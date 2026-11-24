@@ -103,6 +103,10 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   const capture = new AudioContext();
   void playback.resume();
   void capture.resume();
+  // The Orb requests permission inside the tap. Its promise can reject before the
+  // network request returns, so attach a rejection handler immediately.
+  const primedMic = handlers.micStream;
+  void primedMic?.catch(() => undefined);
   let stopped = false;
   let failed = false;
   let muted = handlers.startMuted ?? false;
@@ -137,6 +141,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   const fail = (code: string, message: string) => {
     if (stopped || failed) return;
     failed = true;
+    stop();
     handlers.onError?.({ code, message });
   };
 
@@ -321,6 +326,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     handlers.onAudioLevel?.(0);
     stopPlayback();
     try { processor?.disconnect(); } catch { /* ignore */ }
+    if (!stream) void primedMic?.then(value => value.getTracks().forEach(track => track.stop())).catch(() => undefined);
     try { socket?.close(); } catch { /* ignore */ }
     stream?.getTracks().forEach(track => track.stop());
     void playback.close().catch(() => undefined);
@@ -388,7 +394,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok || !body?.token) {
-        fail(body?.code || 'live-unavailable', '실시간 음성을 열지 못해 기본 마이크로 듣습니다.');
+        fail(body?.code || 'live-unavailable', handlers.orb ? '음성 서버에 연결하지 못했어요. 다시 연결을 눌러 주세요.' : '실시간 음성을 열지 못해 기본 마이크로 듣습니다.');
         return;
       }
       token = String(body.token);
@@ -402,7 +408,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
 
     try {
       setMicCaptureActive(true);
-      stream = await (handlers.micStream || navigator.mediaDevices.getUserMedia({
+      stream = await (primedMic || navigator.mediaDevices.getUserMedia({
         audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
       }));
       stream.getAudioTracks().forEach(track => { track.enabled = !muted; });
@@ -414,7 +420,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
         return;
       }
       // 마이크 없이도 상담은 이어 간다: 글로 보내면 마스터가 목소리로 답한다.
-      handlers.onNotice('마이크를 쓸 수 없어 글로 상담해요. 아이폰 설정 → Safari(홈 화면 앱이면 해당 앱) → 마이크를 허용하면 말로도 할 수 있어요.');
+      handlers.onNotice('마이크를 쓸 수 없어 글로 상담해요. 브라우저의 이 사이트에 대한 마이크 권한과 기기의 브라우저 마이크 권한을 확인해 주세요.');
     }
     if (stopped) {
       stream?.getTracks().forEach(track => track.stop());
@@ -428,7 +434,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       setMicCaptureActive(false);
     }
 
-    const url = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(token)}`;
+    const url = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(token)}`;
     socket = new WebSocket(url);
     const setupTimerId = setTimeout(() => {
       if (!stopped && !ready) fail('live-timeout', '실시간 음성 응답이 없어 기본 마이크로 듣습니다.');
