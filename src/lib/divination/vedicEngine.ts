@@ -46,7 +46,25 @@ import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 import { calculateNatalChart, ZODIAC_SIGNS } from '../astrologyAnalysis';
 
-export const VEDIC_ENGINE_VERSION = 'LUCKEY-VD-v2.2.0';
+export const VEDIC_ENGINE_VERSION = 'LUCKEY-VD-v2.3.0';
+
+export type VedicQuestionTopic = 'dasha' | 'career' | 'wealth' | 'relation' | 'general';
+
+function classifyVedicTopic(q: string): VedicQuestionTopic {
+  if (/다샤|주기|흐름|시기|나크샤트라/.test(q)) return 'dasha';
+  if (/이직|커리어|직장|사업|성취/.test(q)) return 'career';
+  if (/재물|투자|돈|자산|아르타/.test(q)) return 'wealth';
+  if (/관계|연애|결혼|카마|사람/.test(q)) return 'relation';
+  return 'general';
+}
+
+const VEDIC_SHADOW_WARNINGS: Record<VedicQuestionTopic, string> = {
+  dasha: '다샤의 길흉 이름에만 매여 현재 안타르다샤가 요구하는 실제 역량 축적을 미루지 마십시오.',
+  career: '라후나 화성 다샤의 추진력이 강할수록 목표를 좁히지 않고 문어발식으로 벌이면 피로가 누적됩니다.',
+  wealth: '아르타(현실 성취) 기운이 살아날 때 과시적 지출이나 검증 없는 낙관을 경계하십시오.',
+  relation: '감정의 파동이 커지는 시기에는 상대의 의도를 추측하기보다 사실 확인을 먼저 두십시오.',
+  general: '베딕 점성술의 카르마 지도는 숙명이 아니라, 오늘의 선택으로 다듬어 가는 성찰의 나침반입니다.',
+};
 
 function formatVedicKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -635,6 +653,8 @@ export function calculateVedicAdvanced(params: {
   const refNow = params.targetDate || new Date();
   const calculatedAtKst = formatVedicKstTimestamp(refNow);
   const q = (params.question || '').trim();
+  const questionTopic = classifyVedicTopic(q);
+  const shadowWarning = VEDIC_SHADOW_WARNINGS[questionTopic];
   const secondaryAxis = `${surya.name}(수리야·태양) ↔ ${chandra.name}(찬드라·달)`;
   const reflectiveQuestion = q
     ? `‘${q}’ 앞에서 현재 ${currentDasha ? `${currentDasha.mahadasha.lord}-${currentDasha.antardasha.lord}` : nakshatra.name} 다샤 흐름과 ${purusharthaAlignment.primarySpiritualAim}을 어떻게 연결해 실천하시겠습니까?`
@@ -657,6 +677,8 @@ export function calculateVedicAdvanced(params: {
     status: 'calculated',
     engineVersion: VEDIC_ENGINE_VERSION,
     calculatedAtKst,
+    questionTopic,
+    shadowWarning,
     method: VEDIC_METHOD,
     birthInstant: {
       utcISOString: birthInstant.toISOString(),
@@ -749,6 +771,9 @@ export function formatVedicPrompt(result: VedicResult): string {
   const focusLine = result.reflectionFocus
     ? `\n- 성찰 초점: ${result.reflectionFocus}`
     : '';
+  const shadowLine = (result as { shadowWarning?: string }).shadowWarning
+    ? `\n- 과잉 경계: ${(result as { shadowWarning?: string }).shadowWarning}`
+    : '';
   const boundaryLine = result.interpretiveBoundary
     ? `\n- ${result.interpretiveBoundary}`
     : '';
@@ -777,7 +802,7 @@ ${nakshatraLines}
 ${rashiLines}
 ${currentLines}
 ${synergyLine ? synergyLine + '\n' : ''}${kendraLine ? kendraLine + '\n' : ''}${purusharthaLine ? purusharthaLine + '\n' : ''}- 120년 빔쇼타리 다샤 전수 타임라인 (9 마하다샤 × 9 안타르다샤 = ${result.antardashaCount}구간, 태양년 365.25일 환산):
-${timelineLines}${matrixLine}${secondaryLine}${reflectionLine}${ritualLine}${focusLine}${boundaryLine}
+${timelineLines}${matrixLine}${secondaryLine}${reflectionLine}${ritualLine}${focusLine}${shadowLine}${boundaryLine}
 - [AI 해석 지침]: 아래 내용은 입력된 출생 정보와 구현된 항성황도 산법을 적용한 계산 참고값이며, 정확성이나 미래 예측을 보장하지 않습니다. 나크샤트라·파다·다샤 주인과 기간은 제공된 계산 결과에 맞춰 설명하십시오. 아얀암사는 세차 다항식 계산이므로 정밀 천문력과 미세한 차이가 있어 나크샤트라·파다·다샤 경계일 전후 1일 이내의 결과는 단정하지 마십시오.
 `.trim();
 }

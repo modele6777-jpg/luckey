@@ -1,10 +1,10 @@
 {
-  "version": "1.8.461",
-  "builtAt": "2026-11-25T07:25:00+09:00",
-  "summary": "대운 계절·12개월 월운·피타고라스 생애주기 3대 엔진 심층 강화(v1.8.461)",
+  "version": "1.8.462",
+  "builtAt": "2026-11-25T07:35:00+09:00",
+  "summary": "풍수 공간 길방위·베딕 조티시·자미두수 비성 3대 엔진 심층 강화(v1.8.462)",
   "items": [
-    "10년 대운 & 교운기 타이밍 엔진(v2.3.0): 질문 맥락(questionTopic), 테마별 과잉 경계(shadowWarning) 추가",
-    "12개월 월운 & 분기 타이밍 엔진(v2.3.0): 질문 맥락(questionTopic), 테마별 과잉 경계(shadowWarning) 추가",
-    "피타고라스 4대 피너클 & 챌린지 생애주기 엔진(v2.3.0): 질문 맥락(questionTopic), 테마별 과잉 경계(shadowWarning) 추가"
+    "동양 풍수 & 점성술 공간 길방위 엔진(v2.3.0): 질문 맥락(questionTopic), 테마별 과잉 경계(shadowWarning) 추가",
+    "정통 베딕 조티시 나크샤트라·다샤 엔진(v2.3.0): 질문 맥락(questionTopic), 테마별 과잉 경계(shadowWarning) 추가",
+    "자미두수 유년 사화 동적 비성 엔진(v2.3.0): 질문 맥락(questionTopic), 테마별 과잉 경계(shadowWarning) 추가"
   ]
 }

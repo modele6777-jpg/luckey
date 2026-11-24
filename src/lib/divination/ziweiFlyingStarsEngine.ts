@@ -28,7 +28,25 @@ import { calculateZiwei } from './birthCharts';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 
-export const ZIWEI_FLYING_STARS_ENGINE_VERSION = 'LUCKEY-ZFSE-v2.2.0';
+export const ZIWEI_FLYING_STARS_ENGINE_VERSION = 'LUCKEY-ZFSE-v2.3.0';
+
+export type ZiweiFlyingQuestionTopic = 'wealth' | 'career' | 'relation' | 'risk' | 'general';
+
+function classifyZiweiFlyingTopic(q: string): ZiweiFlyingQuestionTopic {
+  if (/재물|돈|투자|수익|화록/.test(q)) return 'wealth';
+  if (/커리어|이직|직장|사업|관록|화권/.test(q)) return 'career';
+  if (/관계|인연|부처|결혼|사람/.test(q)) return 'relation';
+  if (/주의|리스크|화기|스트레스|병목/.test(q)) return 'risk';
+  return 'general';
+}
+
+const ZIWEI_FLYING_SHADOW_WARNINGS: Record<ZiweiFlyingQuestionTopic, string> = {
+  wealth: '화록 궁위의 유입만 보고 화기 궁위의 누수 요인을 방치하면 실속이 반감될 수 있습니다.',
+  career: '화권의 주도력이 강해질수록 독단이나 과속으로 협업 마찰이 생기지 않도록 점검하십시오.',
+  relation: '부처·노복 축의 사화 변동이 클 때는 감정의 즉답을 한 박자 늦추는 여유가 필요합니다.',
+  risk: '화기 자리의 경고를 과도한 공포로 받아들이기보다, 체크리스트로 관리 가능한 리스크로 바꾸십시오.',
+  general: '사화 비성은 한 해의 에너지 배분표일 뿐, 화록은 실행으로 채우고 화기는 절제로 다스릴 때 빛납니다.',
+};
 
 function formatZiweiFlyingKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -431,6 +449,8 @@ export function calculateZiweiFlyingStars(options?: {
   const strategicVerdict = `화록으로 씨를 뿌리고 화권으로 과감히 밀어붙이되, 화기 자리에서는 한 박자 쉬어가는 완급 조절이 올해의 대승을 완성합니다.`;
 
   const q = (options?.question || '').trim();
+  const questionTopic = classifyZiweiFlyingTopic(q);
+  const shadowWarning = ZIWEI_FLYING_SHADOW_WARNINGS[questionTopic];
   const secondaryMutagenAxis = `${quanPlacement.targetPalaceName}(화권 ${quanPlacement.starName}) ↔ ${kePlacement.targetPalaceName}(화과 ${kePlacement.starName})`;
   const reflectiveQuestion = q
     ? `"${q}"에서 ${luPlacement.targetPalaceName}의 화록 기회를 잡는 동시에 ${jiPlacement.targetPalaceName}의 화기 병목을 어떻게 미리 완충할 수 있을까요?`
@@ -450,6 +470,8 @@ export function calculateZiweiFlyingStars(options?: {
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: nowKstIso,
     timestamp: now.getTime(),
+    questionTopic,
+    shadowWarning,
 
     targetYear,
     yearStem: yearStemHanja,
@@ -501,8 +523,8 @@ export function formatZiweiFlyingStarsPrompt(res: ZiweiFlyingStarsResult): strin
   const sf = res.sanFangSiZhengBalance;
   const lj = res.luJiConflictDynamics;
   const matrixLine = res.ziweiFlyingSynthesisMatrix
-    ? `\n6. [자미두수 비성 교차 매트릭스]:\n   - 핵심 긴장: ${res.ziweiFlyingSynthesisMatrix.dominantTension}\n   - 보조 권과 축: ${res.secondaryMutagenAxis}\n   - 조율 상태: ${res.ziweiFlyingSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.ziweiFlyingSynthesisMatrix.integratedAction}\n7. [성찰 질문 & 해석 경계]:\n   - 실천 의례: ${res.ritualAction}\n   - 성찰 초점: ${res.reflectionFocus}\n   - 성찰 질문: ${res.reflectiveQuestion}\n   - ${res.interpretiveBoundary}`
-    : `\n6. [성찰 질문 & 해석 경계]:\n   - 실천 의례: ${res.ritualAction}\n   - 성찰 초점: ${res.reflectionFocus}\n   - 성찰 질문: ${res.reflectiveQuestion}\n   - ${res.interpretiveBoundary}`;
+    ? `\n6. [자미두수 비성 교차 매트릭스]:\n   - 핵심 긴장: ${res.ziweiFlyingSynthesisMatrix.dominantTension}\n   - 보조 권과 축: ${res.secondaryMutagenAxis}\n   - 조율 상태: ${res.ziweiFlyingSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.ziweiFlyingSynthesisMatrix.integratedAction}\n7. [성찰 질문 & 해석 경계]:\n   - 실천 의례: ${res.ritualAction}\n   - 성찰 초점: ${res.reflectionFocus}\n   - 성찰 질문: ${res.reflectiveQuestion}\n   - 과잉 경계: ${(res as { shadowWarning?: string }).shadowWarning || ''}\n   - ${res.interpretiveBoundary}`
+    : `\n6. [성찰 질문 & 해석 경계]:\n   - 실천 의례: ${res.ritualAction}\n   - 성찰 초점: ${res.reflectionFocus}\n   - 성찰 질문: ${res.reflectiveQuestion}\n   - 과잉 경계: ${(res as { shadowWarning?: string }).shadowWarning || ''}\n   - ${res.interpretiveBoundary}`;
 
   return `[🌌 자미두수 유년 사화(四化) 동적 비성 실측 데이터 (Ziwei Flying Stars Core)]
 ======================================================================
