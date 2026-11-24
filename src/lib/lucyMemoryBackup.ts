@@ -17,7 +17,9 @@ function memoryKeys(account: string) {
 
 export function exportLucyMemoryBackup(storage: Storage, account: string, legacy?: ReadonlyMap<string, string>) {
   const entries = Object.fromEntries(memoryKeys(account).flatMap(key => {
-    const value = storage.getItem(key) ?? legacy?.get(key) ?? null;
+    const local = storage.getItem(key);
+    const archived = legacy?.get(key);
+    const value = archived !== undefined && (local === null || isInitialProHistory(key, local)) ? archived : local;
     return value === null ? [] : [[key, value]];
   }));
   return JSON.stringify({ format: FORMAT, account, entries });
@@ -57,7 +59,7 @@ export function restoreLucyMemoryBackup(storage: Storage, account: string, backu
   try {
     for (const [key, value] of entries) {
       const current = storage.getItem(key);
-      if (current !== null && !isInitialProHistory(key, current)) {
+      if (current !== null && current !== '[]' && !isInitialProHistory(key, current)) {
         skipped++;
       } else {
         storage.setItem(key, value);

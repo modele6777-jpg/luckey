@@ -67,7 +67,7 @@ test('two independent Firebase clients retain profiles, learning and verified me
     const transfer = await readLucyCloudBackup(newDb, uid);
     assert.equal(transfer, backup);
 
-    const destination = storage({ [consult]: '{}' });
+    const destination = storage({ [consult]: '{}', [memoryKey]: '[]' });
     assert.deepEqual(restoreLucyMemoryBackup(destination, uid, transfer!), { restored: 1, skipped: 1 });
     assert.equal(destination.getItem(memoryKey), history);
     assert.equal(destination.getItem(consult), '{}');
