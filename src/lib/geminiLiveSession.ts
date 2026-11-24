@@ -50,7 +50,7 @@ type LiveVoiceHandlers = {
   /** 마스터가 부른 함수를 실행하고 결과(JSON)를 돌려준다. */
   onToolCall?: (call: { id?: string; name: string; args?: Record<string, unknown> }) => Promise<Record<string, unknown>>;
   /** 실시간 자막: 마스터 말 조각을 그 목소리가 실제로 들리는 순간에 준다 (글자는 목소리보다 훨씬 먼저 도착한다). */
-  onCaption?: (text: string) => void;
+  onCaption?: (text: string, audioDurationMs: number) => void;
   /** 재생이 끊겨(끼어들기 등) 아직 안 나온 자막을 버렸다. */
   onCaptionReset?: () => void;
   /** 마스터의 한 차례 답이 끝났다 (생각 중 표시를 끈다). */
@@ -144,35 +144,40 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     handlers.onError?.({ code, message });
   };
 
-  // 실시간 자막: 글자 조각마다 재생 시각을 정해 두고 그때 보여 준다.
-  let lastChunkAt = 0;
-  let lastCaptionAt = 0;
-  const captionTimers = new Set<ReturnType<typeof setTimeout>>();
-  const clearCaptions = () => {
-    for (const timer of captionTimers) clearTimeout(timer);
-    captionTimers.clear();
-    lastCaptionAt = 0;
+  // Captions follow the audio output clock, including device buffering and playback pauses.
+  let lastAudio: { start: number; end: number } | null = null;
+  let captionTimer: ReturnType<typeof setTimeout> | null = null;
+  const pendingCaptionText: string[] = [];
+  const captions: { text: string; start: number; durationMs: number }[] = [];
+
+  const pumpCaptions = () => {
+    captionTimer = null;
+    const timestamp = playback.getOutputTimestamp?.();
+    const outputTime = timestamp && timestamp.performanceTime > 0
+      ? timestamp.contextTime
+      : playback.currentTime - (playback.baseLatency || 0) - (playback.outputLatency || 0);
+    while (captions.length && captions[0].start <= outputTime) {
+      const caption = captions.shift()!;
+      handlers.onCaption?.(caption.text, caption.durationMs);
+    }
+    if (captions.length) {
+      const delay = (captions[0].start - outputTime) * 1000;
+      captionTimer = setTimeout(pumpCaptions, Math.max(12, Math.min(250, delay)));
+    }
   };
-  const scheduleCaption = (text: string) => {
-    if (!handlers.onCaption) return;
-    const now = playback.currentTime;
-    // 글자 조각은 자기 목소리 조각 바로 뒤에 도착한다: 가장 최근 목소리 조각이 시작되는 때에 보여 준다.
-    const audioPending = nextAt > now + 0.02;
-    const at = Math.max(now, lastCaptionAt, audioPending ? lastChunkAt : now);
-    lastCaptionAt = at;
-    const delay = Math.max(0, (at - now) * 1000);
-    if (delay < 60) { handlers.onCaption(text); return; }
-    const timer = setTimeout(() => {
-      captionTimers.delete(timer);
-      if (!stopped) handlers.onCaption?.(text);
-    }, delay);
-    captionTimers.add(timer);
+
+  const scheduleCaption = (text: string, audio: { start: number; end: number }) => {
+    captions.push({ text, start: audio.start, durationMs: (audio.end - audio.start) * 1000 });
+    if (captionTimer === null) pumpCaptions();
   };
 
   const stopPlayback = () => {
-    const hadCaptions = captionTimers.size > 0;
-    clearCaptions();
-    if (hadCaptions) handlers.onCaptionReset?.();
+    if (captionTimer !== null) clearTimeout(captionTimer);
+    captionTimer = null;
+    captions.length = 0;
+    pendingCaptionText.length = 0;
+    lastAudio = null;
+    handlers.onCaptionReset?.();
     for (const source of sources) {
       try { source.stop(); } catch { /* already ended */ }
     }
@@ -208,12 +213,12 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     source.connect(analyser || playback.destination);
     const startAt = Math.max(playback.currentTime + 0.02, nextAt);
     source.start(startAt);
-    lastChunkAt = startAt;
     nextAt = startAt + buffer.duration;
     sources.add(source);
     source.onended = () => sources.delete(source);
     handlers.onAudioScheduled?.((startAt - playback.currentTime) * 1000);
     markSpeaking();
+    return { start: startAt, end: nextAt };
   };
 
   let pendingText: { line: string; measureTurn: boolean } | null = null;
@@ -301,15 +306,27 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     const lucyText = content.outputTranscription?.text || content.output_transcription?.text;
     if (userText) handlers.onUserText?.(String(userText));
     const parts = content.modelTurn?.parts || content.model_turn?.parts || [];
+    let messageAudio: typeof lastAudio = null;
     for (const part of parts) {
       const inline = part.inlineData || part.inline_data;
-      if (inline?.data) playPcm(String(inline.data), inline.mimeType || inline.mime_type);
+      if (!inline?.data) continue;
+      const audio = playPcm(String(inline.data), inline.mimeType || inline.mime_type);
+      if (audio) messageAudio = { start: messageAudio?.start ?? audio.start, end: audio.end };
     }
-    if (lucyText) {
-      handlers.onLucyText?.(String(lucyText));
-      scheduleCaption(String(lucyText));
+    if (messageAudio) lastAudio = messageAudio;
+    if (lucyText) handlers.onLucyText?.(String(lucyText));
+    if (handlers.onCaption) {
+      if (messageAudio && pendingCaptionText.length) {
+        scheduleCaption(pendingCaptionText.splice(0).join(''), messageAudio);
+      }
+      if (lucyText) {
+        if (lastAudio) scheduleCaption(String(lucyText), lastAudio);
+        else pendingCaptionText.push(String(lucyText));
+      }
     }
     if (content.turnComplete || content.turn_complete) {
+      lastAudio = null;
+      pendingCaptionText.length = 0;
       handlers.onTurnComplete?.();
       // 아직 재생할 목소리가 남았으면 말하기가 끝날 때(markSpeaking 타이머) 듣기로 바꾼다.
       if (nextAt <= playback.currentTime + 0.05) handlers.onState?.('listening');

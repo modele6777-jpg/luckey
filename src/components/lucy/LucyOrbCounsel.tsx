@@ -670,18 +670,21 @@ export function LucyOrbCounsel({
       },
       onTurnComplete: () => { setThinkingOn(false); metrics.dropPending(); },
       // 실시간 자막: 목소리가 들리는 순간에 맞춰 한 쪽씩 차오른다.
-      onCaption: (text) => {
+      onCaption: (text, audioDurationMs) => {
         const { steps, page } = captionSteps(captionPageRef.current, text);
         captionPageRef.current = page;
         // 한 조각 안에서 쪽이 바뀌면 뒤쪽은 앞 글자를 말하는 동안 기다렸다 보여 준다.
         for (const timer of captionStepTimers.current) window.clearTimeout(timer);
         captionStepTimers.current = [];
+        const charMs = Math.min(CAPTION_CHAR_MS, audioDurationMs / Math.max(1, text.length));
         for (const step of steps) {
           if (!step.afterChars) { setCaption(step.page); continue; }
-          captionStepTimers.current.push(window.setTimeout(() => setCaption(step.page), step.afterChars * CAPTION_CHAR_MS));
+          captionStepTimers.current.push(window.setTimeout(() => setCaption(step.page), step.afterChars * charMs));
         }
       },
       onCaptionReset: () => {
+        captionPageRef.current = '';
+        setCaption('');
         for (const timer of captionStepTimers.current) window.clearTimeout(timer);
         captionStepTimers.current = [];
       },
