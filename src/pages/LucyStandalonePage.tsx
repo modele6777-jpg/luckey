@@ -4973,6 +4973,46 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             : 'bg-slate-950/88 border-white/10 text-white'
         }`}
       >
+        {/* 🔊 실시간 루시 음성 재생 바 (현재 말하는 중일 때 즉시 멈춤 지원) */}
+        <AnimatePresence>
+          {(ttsInfo.isSpeaking || ttsInfo.isLoading) && (
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 6 }}
+              className="lucy-voice-status lucy-tts-caption flex items-center justify-between px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 border border-amber-300/80 dark:border-amber-500/40 rounded-lg sm:rounded-xl text-[10px] sm:text-xs text-amber-950 dark:text-white shadow-xs"
+            >
+              <div className="flex items-center gap-1.5 min-w-0">
+                {ttsInfo.isLoading ? (
+                  <Loader2 size={11} className="animate-spin text-amber-600 dark:text-amber-400 shrink-0" />
+                ) : (
+                  <Volume2 size={11} className="text-amber-600 dark:text-amber-400 animate-pulse shrink-0" />
+                )}
+                <span className={`font-bold text-[10px] sm:text-[11px] shrink-0 ${isLight ? 'text-amber-950' : 'text-white'}`}>
+                  {ttsInfo.isLoading ? '루시 음성 준비 중...' : '루시 음성 안내 중'}
+                </span>
+                {ttsInfo.activeText && ttsInfo.activeText !== '__CONVERSATION__' && (
+                  <span className={`text-[9px] sm:text-[10px] truncate max-w-[170px] sm:max-w-[340px] ${isLight ? 'text-amber-900/70' : 'text-white/85'}`}>
+                    "{ttsInfo.activeText.slice(0, 30)}..."
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  stopTTS();
+                  setPlayingMsgId(null);
+                }}
+                className="flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md font-bold text-[9px] cursor-pointer active:scale-95 transition-all shadow-2xs shrink-0 ml-1.5"
+                title="음성 즉시 중지"
+              >
+                <Square size={8} className="fill-current" />
+                <span>중지</span>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="lucy-input-stack w-full min-w-0 max-w-full flex flex-col gap-1 overflow-x-hidden">
           {/* Image Attachment Preview */}
           {attachedImage && (
@@ -4993,46 +5033,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             <span>{ttsError}</span>
             <button type="button" aria-label="음성 오류 안내 닫기" onClick={() => setTtsError('')}>닫기</button>
           </div>}
-
-          {/* 🔊 실시간 루시 음성 재생 바 (현재 말하는 중일 때 즉시 멈춤 지원) */}
-          <AnimatePresence>
-            {(ttsInfo.isSpeaking || ttsInfo.isLoading) && (
-              <motion.div
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 6 }}
-                className="lucy-voice-status flex items-center justify-between px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 border border-amber-300/80 dark:border-amber-500/40 rounded-lg sm:rounded-xl text-[10px] sm:text-xs text-amber-950 dark:text-white shadow-xs"
-              >
-                <div className="flex items-center gap-1.5 min-w-0">
-                  {ttsInfo.isLoading ? (
-                    <Loader2 size={11} className="animate-spin text-amber-600 dark:text-amber-400 shrink-0" />
-                  ) : (
-                    <Volume2 size={11} className="text-amber-600 dark:text-amber-400 animate-pulse shrink-0" />
-                  )}
-                  <span className={`font-bold text-[10px] sm:text-[11px] shrink-0 ${isLight ? 'text-amber-950' : 'text-white'}`}>
-                    {ttsInfo.isLoading ? '루시 음성 준비 중...' : '루시 음성 안내 중'}
-                  </span>
-                  {ttsInfo.activeText && ttsInfo.activeText !== '__CONVERSATION__' && (
-                    <span className={`text-[9px] sm:text-[10px] truncate max-w-[170px] sm:max-w-[340px] ${isLight ? 'text-amber-900/70' : 'text-white/85'}`}>
-                      "{ttsInfo.activeText.slice(0, 30)}..."
-                    </span>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    stopTTS();
-                    setPlayingMsgId(null);
-                  }}
-                  className="flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md font-bold text-[9px] cursor-pointer active:scale-95 transition-all shadow-2xs shrink-0 ml-1.5"
-                  title="음성 즉시 중지"
-                >
-                  <Square size={8} className="fill-current" />
-                  <span>중지</span>
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
 
           {/* 🎙️ 루시 1:1 전용 실시간 음성 대화 모드 패널 (Voice Mode Active Panel) */}
           <AnimatePresence>
