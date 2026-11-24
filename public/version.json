@@ -1,10 +1,10 @@
 {
-  "version": "1.8.446",
-  "builtAt": "2026-11-25T04:55:00+09:00",
-  "summary": "라파 누이 모아이·사모아 팔레·타밀 상감 티나이 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.446)",
+  "version": "1.8.447",
+  "builtAt": "2026-11-25T05:05:00+09:00",
+  "summary": "스키타이 황금 사슴·샨 인레 호수·시칠리아 마졸리카 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.447)",
   "items": [
-    "라파 누이 마나·모아이 수평선 엔진(v2.3.0): 질문 맥락(questionTopic), 수호 수평선 축(moaiHorizonAxis), 과잉 경계(shadowWarning) 추가",
-    "사모아 팔레 바람 엔진(v2.3.0): 질문 맥락(questionTopic), 팔레 통풍 축(faleBreezeAxis), 과잉 경계(shadowWarning) 추가",
-    "타밀 상감 티나이 엔진(v2.3.0): 질문 맥락(questionTopic), 아캄·푸람 경관 축(tinaiAkamPuramAxis), 과잉 경계(shadowWarning) 추가"
+    "스키타이 황금 사슴 초원 엔진(v2.3.0): 질문 맥락(questionTopic), 초원 도약 축(goldenStagAxis), 과잉 경계(shadowWarning) 추가",
+    "샨 인레 호수 외발 노 젓기 엔진(v2.3.0): 질문 맥락(questionTopic), 외발 균형 축(inleOarAxis), 과잉 경계(shadowWarning) 추가",
+    "시칠리아 마졸리카·에트나 엔진(v2.3.0): 질문 맥락(questionTopic), 섬의 회복 축(etnaMajolicaAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }

@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface ScythianGoldenStagResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '도약·기동' | '원칙·화덕' | '개방·교차' | '절단·명료' | '장기·시야' | '초원 전반';
   steppeEmblem: string;
   companionEmblem: string;
+  goldenStagAxis: string;
   stagInsight: string;
   kurganTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const SCYTHIAN_SHADOWS = [
+  '황금 사슴처럼 가볍고 기민하게 도약하려는 추진력이 정작 끝까지 책임지고 다듬어야 할 자리까지 성급히 떠나는 조급함이 되지 않게 하세요.',
+  '타바티 화덕의 핵심 원칙을 지키는 심지가 상황에 맞게 조정해야 할 규칙이나 새로운 제안까지 막아서는 고집이 되어서는 안 됩니다.',
+  '서로 다른 방식을 받아들이는 스킬레스의 개방성이 내 고유한 방향성이나 기준선까지 흐려 놓는 무분별한 절충이 되지 않게 살피세요.',
+  '아키나케스의 명료한 절단력이 꼭 숙고와 대화가 더 필요한 관계나 문제마저 단칼에 끊어 버리는 성급함이 되지 않게 주의하세요.',
+  '쿠르간 언덕 위에서 긴 세월을 내다보는 시야가 오늘 당장 발밑에서 해결해야 할 구체적 실행을 미루는 관망이 되지 않게 균형을 잡으세요.',
+];
+
+function classifyScythianTopic(q: string): ScythianGoldenStagResult['questionTopic'] {
+  if (/도약|기민|사슴|가볍/.test(q)) return '도약·기동';
+  if (/화덕|원칙|중심|타바티/.test(q)) return '원칙·화덕';
+  if (/관점|개방|편견|연결/.test(q)) return '개방·교차';
+  if (/끊|미련|절단|정리/.test(q)) return '절단·명료';
+  if (/시야|세월|궤적|언덕/.test(q)) return '장기·시야';
+  return '초원 전반';
+}
+
 export function calculateScythianGoldenStagSteppe(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): ScythianGoldenStagResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyScythianTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % EMBLEMS.length;
   const picked = EMBLEMS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (EMBLEMS.length - 1));
   const companion = EMBLEMS[(idx + companionOffset) % EMBLEMS.length];
+  const goldenStagAxis = `${picked.emblem.split('(')[0].trim()} ↔ ${companion.emblem.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-SCYTHIAN-STAG-v2.2.0',
+    engineVersion: 'LUCKEY-SCYTHIAN-STAG-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     steppeEmblem: picked.emblem,
     companionEmblem: companion.emblem,
+    goldenStagAxis,
     stagInsight: picked.insight,
     kurganTone: picked.tone,
     reflectionFocus: `고대 스키타이 유목 지혜의 '${picked.emblem}'을 중심에 두고 '${companion.emblem}'의 결을 곁들여 가볍게 도약할 여백을 만들어 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: SCYTHIAN_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '유라시아 고대 스키타이(Scythian) 황금 사슴·유목 기동성 문화를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +121,13 @@ export function formatScythianGoldenStagPrompt(res: ScythianGoldenStagResult): s
   return [
     `[스키타이 황금 사슴·초원 도약 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 초원 도약 축: ${res.goldenStagAxis}`,
     `- 초원 상징: ${res.steppeEmblem} (${res.kurganTone})`,
     `- 동반 상징: ${res.companionEmblem}`,
     `- 중심 통찰: ${res.stagInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
