@@ -1,6 +1,7 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { BookOpen } from 'lucide-react';
 import { useState } from 'react';
+import { exportLucyMemoryBackup, LUCY_MEMORY_BACKUP_MAX_BYTES, restoreLucyMemoryBackup } from '@/lib/lucyMemoryBackup';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { deleteOrbMemory, orbMemorySettings, setOrbMemoryEnabled } from '@/lib/orbConsult';
 import {
@@ -17,6 +18,7 @@ import {
 export function LucyConsultMemorySettings({ account, mode, onChange, light }: {
   account: string; mode: LucyConsultMode; onChange?: () => void; light?: boolean;
 }) {
+  const [backupMessage, setBackupMessage] = useState('');
   const [open, setOpen] = useState(false);
   const [, setRevision] = useState(0);
   const [confirmAll, setConfirmAll] = useState(false);
@@ -37,6 +39,33 @@ export function LucyConsultMemorySettings({ account, mode, onChange, light }: {
     setConfirmAll(false);
     setEditing(null);
     changed();
+  };
+  const downloadBackup = () => {
+    try {
+      const backup = exportLucyMemoryBackup(window.localStorage, account);
+      const file = new Blob([backup], { type: 'application/json' });
+      if (file.size > LUCY_MEMORY_BACKUP_MAX_BYTES) throw new Error('Backup too large');
+      const url = URL.createObjectURL(file);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'lucy-memory-backup.json';
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setBackupMessage('기억 백업을 내려받았어요. 상담 내용이 담긴 파일이니 개인적으로 보관하세요.');
+    } catch {
+      setBackupMessage('기억 백업을 내려받지 못했어요.');
+    }
+  };
+  const importBackup = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      if (file.size > LUCY_MEMORY_BACKUP_MAX_BYTES) throw new Error('백업 파일이 너무 큽니다.');
+      const result = restoreLucyMemoryBackup(window.localStorage, account, await file.text());
+      setBackupMessage(`복원 ${result.restored}개 · 이 기기에 이미 있어 건너뜀 ${result.skipped}개. 다른 상담 화면은 새로고침 후 확인하세요.`);
+      changed();
+    } catch (error) {
+      setBackupMessage(error instanceof SyntaxError ? '루시 기억 백업 파일을 읽지 못했어요.' : error instanceof Error ? error.message : '기억을 복원하지 못했어요.');
+    }
   };
   return (
     <Dialog.Root modal={false} open={open} onOpenChange={close}>
@@ -70,6 +99,18 @@ export function LucyConsultMemorySettings({ account, mode, onChange, light }: {
               <input type="checkbox" checked={settings.sharing} onChange={event => { setLucyConsultMemorySharing(account, event.target.checked); changed(); }} />
               켜진 모드끼리 기억 공유
             </label>
+            <div className="flex flex-wrap gap-3">
+              <button type="button" onClick={downloadBackup} className="underline">기억 백업</button>
+              <label className="cursor-pointer underline">
+                기억 복원
+                <input type="file" accept=".json,application/json" className="sr-only" onChange={event => {
+                  const file = event.currentTarget.files?.[0];
+                  event.currentTarget.value = '';
+                  void importBackup(file);
+                }} />
+              </label>
+            </div>
+            {backupMessage && <p role="status">{backupMessage}</p>}
             {legacyCount > 0 && <p>이전 오브 기록 {legacyCount}건은 음성모드 기억에 동의하면 가져와요. 전체 삭제로 함께 지울 수 있어요.</p>}
             {settings.entries.length === 0 && <p>저장된 상담 기억이 없어요.</p>}
             <ul className="space-y-2">

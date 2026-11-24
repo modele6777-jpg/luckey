@@ -17,3 +17,20 @@ test('Render deployment trusts only its own https hostname', () => {
     else process.env.RENDER_EXTERNAL_HOSTNAME = saved;
   }
 });
+
+test('custom deployment origins require an exact HTTPS origin', () => {
+  const key = 'LUCKEY_APP_ORIGINS';
+  const previous = process.env[key];
+  process.env[key] = 'https://luckey.example.org, https://preview.example.org:8443';
+  try {
+    assert.equal(isAllowedAppOrigin('https://luckey.example.org'), true);
+    assert.equal(isAllowedAppOrigin('https://preview.example.org:8443'), true);
+    assert.equal(isAllowedAppOrigin('https://preview.example.org'), false);
+    assert.equal(isAllowedAppOrigin('http://luckey.example.org'), false);
+    assert.equal(isAllowedAppOrigin('https://luckey.example.org.evil.test'), false);
+    assert.equal(isAllowedAppOrigin('https://luckey.example.org/not-an-origin'), false);
+  } finally {
+    if (previous === undefined) delete process.env[key];
+    else process.env[key] = previous;
+  }
+});

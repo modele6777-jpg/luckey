@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.8.433",
+  "version": "1.8.434",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -10,8 +10,9 @@
     "dev": "tsx server.ts",
     "dev:full": "node --use-system-ca ./node_modules/tsx/dist/cli.mjs server.ts",
     "build": "vite build && esbuild server.app.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "build:frontend": "vite build",
     "build:full": "vite build && esbuild server.app.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
-    "start": "node server.ts",
+    "start": "node dist/server.cjs",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",

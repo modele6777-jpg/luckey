@@ -4,6 +4,8 @@
 
 # Run and deploy your AI Studio app
 
+운영 환경 설정과 서버 이전은 [DEPLOYMENT.md](DEPLOYMENT.md)를 참고하세요.
+
 ## Sites 배포
 
 `npm run build:sites`는 기존 화면과 리소스를 Sites용 Worker로 묶습니다.

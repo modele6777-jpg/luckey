@@ -97,11 +97,9 @@ function prismVersionPlugin(version: string): Plugin {
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '');
-  if (mode === 'sites') {
-    for (const key of ['GEMINI_API_KEY', 'AI_API_KEY', 'XAI_API_KEY', 'GOOGLE_GENAI_API_KEY', 'VITE_GEMINI_API_KEY', 'VITE_AI_API_KEY']) delete env[key];
-  }
   const releaseEntry = readChangelogEntry(packageJson.version);
   return {
+    envPrefix: 'LUCKEY_PUBLIC_',
     plugins: [
       prismVersionPlugin(packageJson.version),
       react(), 
@@ -207,12 +205,9 @@ export default defineConfig(({mode}) => {
       __APP_RELEASE_NOTES__: JSON.stringify(releaseEntry
         ? { version: packageJson.version, ...releaseEntry }
         : null),
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-      'process.env.AI_API_KEY': JSON.stringify(env.AI_API_KEY),
-      'process.env.XAI_API_KEY': JSON.stringify(env.XAI_API_KEY),
       'process.env.AI_TYPE': JSON.stringify(env.AI_TYPE),
-      'import.meta.env.VITE_GEMINI_API_KEY': JSON.stringify(env.VITE_GEMINI_API_KEY || env.GEMINI_API_KEY || env.GOOGLE_GENAI_API_KEY || ''),
-      'import.meta.env.VITE_AI_API_KEY': JSON.stringify(env.VITE_AI_API_KEY || env.AI_API_KEY || ''),
+      'import.meta.env.VITE_GEMINI_API_KEY': JSON.stringify(''),
+      'import.meta.env.VITE_AI_API_KEY': JSON.stringify(''),
       'import.meta.env.VITE_AI_TYPE': JSON.stringify(env.VITE_AI_TYPE || env.AI_TYPE || 'gemini'),
       'import.meta.env.VITE_GEMINI_MODEL': JSON.stringify(env.VITE_GEMINI_MODEL || env.GEMINI_MODEL || 'gemini-3.1-flash-lite'),
     },
