@@ -1,10 +1,10 @@
 {
-  "version": "1.8.445",
-  "builtAt": "2026-11-25T04:45:00+09:00",
-  "summary": "파르티아 니사·프리지아 고르디온·펀자브 나낙 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.445)",
+  "version": "1.8.446",
+  "builtAt": "2026-11-25T04:55:00+09:00",
+  "summary": "라파 누이 모아이·사모아 팔레·타밀 상감 티나이 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.446)",
   "items": [
-    "파르티아 니사 궁술 조화 엔진(v2.3.0): 질문 맥락(questionTopic), 선회 조준 축(nisaBowAxis), 과잉 경계(shadowWarning) 추가",
-    "프리지아 고르디온 결단 엔진(v2.3.0): 질문 맥락(questionTopic), 매듭 결단 축(gordianCutAxis), 과잉 경계(shadowWarning) 추가",
-    "펀자브 나낙 랑가르 엔진(v2.3.0): 질문 맥락(questionTopic), 랑가르 실천 축(langarServiceAxis), 과잉 경계(shadowWarning) 추가"
+    "라파 누이 마나·모아이 수평선 엔진(v2.3.0): 질문 맥락(questionTopic), 수호 수평선 축(moaiHorizonAxis), 과잉 경계(shadowWarning) 추가",
+    "사모아 팔레 바람 엔진(v2.3.0): 질문 맥락(questionTopic), 팔레 통풍 축(faleBreezeAxis), 과잉 경계(shadowWarning) 추가",
+    "타밀 상감 티나이 엔진(v2.3.0): 질문 맥락(questionTopic), 아캄·푸람 경관 축(tinaiAkamPuramAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }
