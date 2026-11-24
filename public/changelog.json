@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.445",
+    "builtAt": "2026-11-25T04:45:00+09:00",
+    "summary": "파르티아 니사·프리지아 고르디온·펀자브 나낙 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.445)",
+    "items": [
+      "파르티아 니사 궁술 조화 엔진(v2.3.0): 질문 맥락(questionTopic), 선회 조준 축(nisaBowAxis), 과잉 경계(shadowWarning) 추가",
+      "프리지아 고르디온 결단 엔진(v2.3.0): 질문 맥락(questionTopic), 매듭 결단 축(gordianCutAxis), 과잉 경계(shadowWarning) 추가",
+      "펀자브 나낙 랑가르 엔진(v2.3.0): 질문 맥락(questionTopic), 랑가르 실천 축(langarServiceAxis), 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.444",
     "builtAt": "2026-11-25T04:35:00+09:00",
     "summary": "팔라우 바이·파미르 와칸·파라카스 직조 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.444)",
