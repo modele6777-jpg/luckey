@@ -13478,12 +13478,12 @@ test('Akan Adinkra Symbols Wisdom engine: qualitative symbol balance, +09:00 KST
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.equal(rep.questionTopic, 'decision');
   assert.ok(rep.companionSymbol.length > 0 && rep.companionSymbol !== rep.symbolArchetype);
-  assert.ok(rep.adinkraPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.adinkraPhase.length > 0 && rep.adinkraCrossAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('개인 점수·심리 진단·미래 예측이 아닙니다'));
   const prompt = formatAkanAdinkraSymbolsWisdomPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('아딩크라(Adinkra)') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSymbol) && prompt.includes(rep.adinkraPhase) && prompt.includes(rep.shadowWarning));
+  assert.ok(prompt.includes('아딩크라(Adinkra)') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSymbol) && prompt.includes(rep.adinkraPhase) && prompt.includes('교차 조율 축') && prompt.includes(rep.shadowWarning));
 });
 
 test('Ethiopian Zera Yacob Hatata Reason engine: conscience inquiry, +09:00 KST, and interpretive boundary', () => {
@@ -13674,7 +13674,9 @@ test('Etruscan Templum Sky Division engine: sectors, +09:00 KST, and interpretiv
 
 test('Ainu Kamuy Iomante Harmony engine: aspects, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAinuKamuyIomanteHarmony({ profile, now: new Date('2026-11-20T05:50:00Z'), question: '일상의 감사와 순환을 회복하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-AINU-KAMUY-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-AINU-KAMUY-v2.4.0');
+  assert.equal(rep.questionTopic, 'gratitude');
+  assert.ok(rep.kamuyBalanceAxis.length > 0);
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionAspect.name !== rep.primaryAspect.name);
   assert.ok(rep.seasonalBreath.length > 0 && rep.shadowWarning.length > 0);
@@ -13682,7 +13684,7 @@ test('Ainu Kamuy Iomante Harmony engine: aspects, +09:00 KST, and interpretive b
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatAinuKamuyPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('아이누') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.seasonalBreath) && prompt.includes(rep.reflectionFocus));
+  assert.ok(prompt.includes('아이누') && prompt.includes('균형 축') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.seasonalBreath) && prompt.includes(rep.reflectionFocus));
 });
 
 test('Guarani Teko Pora Forest Harmony engine: principles, +09:00 KST, and interpretive boundary', () => {
@@ -14587,7 +14589,9 @@ test('Garifuna Dugu Caribbean Rhythm engine: rhythm, +09:00 KST, and interpretiv
 
 test('Alpine Savoy Col Wisdom engine: principle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAlpineSavoyColWisdom({ profile, now: new Date('2026-11-20T08:46:00Z'), question: '더 부드럽게 건널 수 있는 고개를 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ALPINE-SAVOY-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ALPINE-SAVOY-v2.4.0');
+  assert.equal(rep.questionTopic, 'route');
+  assert.ok(rep.savoyAltitudeAxis.length > 0);
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPrinciple.length > 0 && rep.companionPrinciple !== rep.ridgePrinciple);
   assert.ok(rep.alpineWeather.length > 0 && rep.shadowWarning.length > 0);
@@ -14595,7 +14599,7 @@ test('Alpine Savoy Col Wisdom engine: principle, +09:00 KST, and interpretive bo
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatAlpineSavoyPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('사보이') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.alpineWeather) && prompt.includes(rep.reflectionFocus));
+  assert.ok(prompt.includes('사보이') && prompt.includes('고도·동행 축') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.alpineWeather) && prompt.includes(rep.reflectionFocus));
 });
 
 test('Nabataean Petra Cistern Water engine: conduit, +09:00 KST, and interpretive boundary', () => {

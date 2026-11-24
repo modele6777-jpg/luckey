@@ -1,8 +1,28 @@
 import type { UserProfile } from '../sharedState';
 
+export type SavoyQuestionTopic = 'route' | 'rest' | 'pace' | 'season' | 'general';
+
+function classifySavoyTopic(q: string): SavoyQuestionTopic {
+  if (/고개|우회|길|방향|돌파|방법/.test(q)) return 'route';
+  if (/멈춤|휴식|산장|폭풍|쉼|지침/.test(q)) return 'rest';
+  if (/속도|보폭|함께|동행|리듬/.test(q)) return 'pace';
+  if (/계절|양|조절|변화|내려/.test(q)) return 'season';
+  return 'general';
+}
+
+const SAVOY_TOPIC_WARNINGS: Record<SavoyQuestionTopic, string> = {
+  route: '더 부드러운 우회로를 찾더라도 핵심 목적지 자체를 흐리지 않도록 도착 기준 1가지는 고정하세요.',
+  rest: '산장에서 숨을 고르는 시간이 무기력한 회피로 굳어지지 않도록 재출발 시각을 미리 적어 두세요.',
+  pace: '보폭을 맞추려다 내 본래 호흡까지 잃지 않도록 하루 15분은 온전한 자기 속도로 두세요.',
+  season: '계절의 높이를 조절하되 지금 당장 지켜야 할 기본 약속까지 가볍게 여기지 마세요.',
+  general: '능선을 오를 때는 정상만 보느라 발밑의 돌과 기상 변화를 놓치지 않는 편이 안전합니다.',
+};
+
 export interface AlpineSavoyResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: SavoyQuestionTopic;
+  savoyAltitudeAxis: string;
   ridgePrinciple: string;
   companionPrinciple: string;
   alpineWeather: string;
@@ -93,7 +113,9 @@ export function calculateAlpineSavoyColWisdom(params: {
   question?: string;
 }): AlpineSavoyResult {
   const now = params.now ?? new Date();
-  const baseSeed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifySavoyTopic(q);
+  const baseSeed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(baseSeed) % PRINCIPLES.length;
   const companionOffset = 1 + (stableHash(`${baseSeed}|companion`) % (PRINCIPLES.length - 1));
   const companionIdx = (idx + companionOffset) % PRINCIPLES.length;
@@ -101,11 +123,14 @@ export function calculateAlpineSavoyColWisdom(params: {
   const picked = PRINCIPLES[idx];
   const companion = PRINCIPLES[companionIdx];
   const alpineWeather = ALPINE_WEATHERS[weatherIdx];
-  const shadowWarning = SAVOY_SHADOW_WARNINGS[idx];
+  const shadowWarning = questionTopic === 'general' ? SAVOY_SHADOW_WARNINGS[idx] : SAVOY_TOPIC_WARNINGS[questionTopic];
+  const savoyAltitudeAxis = `${picked.principle.split('(')[0].trim()} ↔ ${companion.principle.split('(')[0].trim()} (${alpineWeather.split('(')[0].trim()})`;
 
   return {
-    engineVersion: 'LUCKEY-ALPINE-SAVOY-v2.3.0',
+    engineVersion: 'LUCKEY-ALPINE-SAVOY-v2.4.0',
     calculatedAtKst: formatKstStandard(now),
+    questionTopic,
+    savoyAltitudeAxis,
     ridgePrinciple: picked.principle,
     companionPrinciple: companion.principle,
     alpineWeather,
@@ -122,7 +147,8 @@ export function calculateAlpineSavoyColWisdom(params: {
 export function formatAlpineSavoyPrompt(res: AlpineSavoyResult): string {
   return [
     `[알프스 사보이·고갯마루 성찰 · ${res.engineVersion}]`,
-    `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
+    `- 고도·동행 축: ${res.savoyAltitudeAxis}`,
     `- 산악 지혜: ${res.ridgePrinciple} (${res.alpineTone})`,
     `- 보조 맥락: ${res.companionPrinciple}`,
     `- 고산 기상 국면: ${res.alpineWeather}`,
