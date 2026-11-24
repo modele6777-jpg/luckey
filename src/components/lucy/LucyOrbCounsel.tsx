@@ -1,3 +1,4 @@
+import { requestLucyMicrophone, lucyMicrophonePermissionMessage } from '@/lib/lucyMicrophone';
 import { OrbSessionMetricsView } from './OrbSessionMetricsView';
 import { createOrbSessionMetrics, type OrbSessionMetrics } from '@/lib/orb/orbSessionMetrics';
 import { LucyConsultMemorySettings } from './LucyConsultMemorySettings';
@@ -520,7 +521,7 @@ export function LucyOrbCounsel({
     // iOS shows no permission prompt (and refuses capture) while the app holds the 'ambient' audio session,
     // so switch to a recording session inside the tap, before asking.
     setMicCaptureActive(true);
-    const request = navigator.mediaDevices.getUserMedia({ audio: true });
+    const request = requestLucyMicrophone({ audio: true });
     request.catch(() => { if (!sessionRef.current) setMicCaptureActive(false); });
     return request.then(stream => {
       // Do not capture audio while the user is only granting permission or choosing a master.
@@ -545,7 +546,7 @@ export function LucyOrbCounsel({
       return `마이크 권한이 차단되어 있어요. 브라우저 주소창의 사이트 설정에서 마이크를 허용한 뒤 다시 눌러 주세요. iPhone에서는 설정 > Safari(홈 화면 앱이면 해당 앱) > 마이크도 확인해 주세요.${errorSuffix}`;
     }
     if (name === 'SecurityError') {
-      return `브라우저나 앱이 이 화면의 마이크 접근을 차단했어요. 사이트 권한과 기기 설정에서 Luckey의 마이크를 허용한 뒤 다시 시도해 주세요.${errorSuffix}`;
+      return lucyMicrophonePermissionMessage(error) + errorSuffix;
     }
     if (name === 'InvalidStateError') {
       return `홈 화면 앱에서 마이크를 초기화하지 못했어요. 권한 거부는 아니므로 설정을 다시 확인할 필요는 없습니다. ${retryAction}${errorSuffix}`;
@@ -568,7 +569,7 @@ export function LucyOrbCounsel({
     micPrime.current = null;
     if (!request) {
       setMicUnavailable(true);
-      setNotice('현재 앱에서 마이크를 사용할 수 없어요.');
+      setNotice('이 화면에서 마이크를 사용할 수 없어요. 브라우저에서 사이트를 직접 열고 다시 눌러 주세요.');
       setMicPermissionBusy(false);
       return;
     }
@@ -776,7 +777,7 @@ export function LucyOrbCounsel({
     micPrime.current = null;
     if (!request) {
       setMicUnavailable(true);
-      setNotice('현재 앱에서 마이크를 사용할 수 없어요.');
+      setNotice('이 화면에서 마이크를 사용할 수 없어요. 브라우저에서 사이트를 직접 열고 다시 눌러 주세요.');
       setMicPermissionBusy(false);
       return;
     }

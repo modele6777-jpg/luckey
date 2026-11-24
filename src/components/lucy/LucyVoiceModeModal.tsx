@@ -1,3 +1,5 @@
+import { createLucySpeechMicrophoneGate, lucyMicrophonePermissionMessage } from '@/lib/lucyMicrophone';
+import { setMicCaptureActive } from '@/lib/audioMixingPolicy';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -63,6 +65,7 @@ export function LucyVoiceModeModal() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const isMutedRef = useRef(false);
 
+  const microphoneGate = useRef(createLucySpeechMicrophoneGate(setMicCaptureActive));
   const recognitionRef = useRef<any>(null);
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isComponentOpenRef = useRef(false);
@@ -98,6 +101,7 @@ export function LucyVoiceModeModal() {
   // 늘 최신 전송 함수를 부르도록 (startListening은 한 번 만든 함수를 계속 쓴다)
   const sendPromptRef = useRef<(text: string) => void>(() => {});
   const stopRecognition = useCallback(() => {
+    microphoneGate.current.cancel();
     speechWatcherRef.current?.dispose();
     speechWatcherRef.current = null;
     if (silenceTimerRef.current) {
@@ -112,7 +116,7 @@ export function LucyVoiceModeModal() {
   }, []);
 
   // 🎙️ SpeechRecognition 초기화 및 경청 시작
-  const startListening = useCallback(() => {
+  const startListening = useCallback(async () => {
     if (typeof window === 'undefined' || !isComponentOpenRef.current || isMutedRef.current) return;
     stopRecognition();
     const SpeechRecognition =
@@ -121,6 +125,14 @@ export function LucyVoiceModeModal() {
     if (!SpeechRecognition) {
       setErrorMessage('현재 브라우저에서 마이크 자동 음성 인식을 지원하지 않습니다.');
       setVoiceState('idle');
+      return;
+    }
+
+    try {
+      if (!await microphoneGate.current.open()) return;
+    } catch (error) {
+      setErrorMessage(lucyMicrophonePermissionMessage(error));
+      setVoiceState('error');
       return;
     }
 
@@ -162,7 +174,8 @@ export function LucyVoiceModeModal() {
       recognition.onerror = (e: any) => {
         if (!isCurrent()) return;
         console.warn('[LucyVoice] STT Error notice:', e.error || e);
-        if (e.error === 'not-allowed') {
+        if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+          microphoneGate.current.invalidate();
           stopRecognition();
           setErrorMessage('마이크 접근 권한이 차단되어 있습니다. 브라우저 설정에서 마이크를 허용해 주세요.');
           setVoiceState('error');

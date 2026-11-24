@@ -19,6 +19,7 @@ export type LiveVoiceSession = {
 };
 
 import { setMicCaptureActive } from './audioMixingPolicy';
+import { lucyMicrophonePermissionMessage, requestLucyMicrophone } from './lucyMicrophone';
 
 const LIVE_MODEL = 'gemini-3.8-live';
 
@@ -103,16 +104,14 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   const capture = new AudioContext();
   void playback.resume();
   void capture.resume();
-  // The Orb requests permission inside the tap. Its promise can reject before the
-  // network request returns, so attach a rejection handler immediately.
   const primedMic = handlers.micStream;
-  void primedMic?.catch(() => undefined);
   let stopped = false;
   let failed = false;
   let muted = handlers.startMuted ?? false;
   let ready = false;
   let socket: WebSocket | null = null;
   let stream: MediaStream | null = null;
+  let micRequestId = 0;
   let processor: { onaudioprocess: ((event: AudioProcessingEvent) => void) | null; connect: (node: AudioNode) => void; disconnect: () => void } | null = null;
   let speakTimer: ReturnType<typeof setTimeout> | null = null;
   let setupTimer: ReturnType<typeof setTimeout> | null = null;
@@ -326,7 +325,6 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     handlers.onAudioLevel?.(0);
     stopPlayback();
     try { processor?.disconnect(); } catch { /* ignore */ }
-    if (!stream) void primedMic?.then(value => value.getTracks().forEach(track => track.stop())).catch(() => undefined);
     try { socket?.close(); } catch { /* ignore */ }
     stream?.getTracks().forEach(track => track.stop());
     void playback.close().catch(() => undefined);
@@ -375,6 +373,33 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   };
 
   const run = async () => {
+    // Ask for permission while still inside the user's action, before waiting
+    // on a provider token. An Orb guest can continue by text after refusal.
+    try {
+      setMicCaptureActive(true);
+      const next = await (primedMic || requestLucyMicrophone());
+      if (stopped) {
+        next.getTracks().forEach(track => track.stop());
+        return;
+      }
+      if (muted && handlers.releaseMicWhileMuted) {
+        next.getTracks().forEach(track => track.stop());
+        setMicCaptureActive(false);
+      } else {
+        stream = next;
+        next.getAudioTracks().forEach(track => { track.enabled = false; });
+      }
+    } catch (error) {
+      if (stopped) return;
+      setMicCaptureActive(false);
+      const message = lucyMicrophonePermissionMessage(error);
+      if (!handlers.onNotice) {
+        fail('mic-denied', message);
+        return;
+      }
+      handlers.onNotice(`${message} 지금은 글로 상담할 수 있어요.`);
+    }
+
     let token = '';
     let model = LIVE_MODEL;
     try {
@@ -394,7 +419,12 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok || !body?.token) {
-        fail(body?.code || 'live-unavailable', handlers.orb ? '음성 서버에 연결하지 못했어요. 다시 연결을 눌러 주세요.' : '실시간 음성을 열지 못해 기본 마이크로 듣습니다.');
+        const code = typeof body?.code === 'string' ? body.code : 'live-unavailable';
+        const needsServerSetup = code === 'GEMINI_API_KEY_INVALID' || code === 'GEMINI_API_KEY_MISSING';
+        const orbMessage = needsServerSetup
+          ? '음성 서버에서 인증을 거부했어요. 음성 서버 설정을 확인해야 합니다.'
+          : '음성 서버에 연결하지 못했어요. 잠시 후 다시 연결해 주세요.';
+        fail(code, handlers.orb ? orbMessage : '실시간 음성을 열지 못해 기본 마이크로 듣습니다.');
         return;
       }
       token = String(body.token);
@@ -406,32 +436,9 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     }
     if (stopped) return;
 
-    try {
-      setMicCaptureActive(true);
-      stream = await (primedMic || navigator.mediaDevices.getUserMedia({
-        audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-      }));
+    if (stream) {
       stream.getAudioTracks().forEach(track => { track.enabled = !muted; });
-    } catch {
-      stream = null;
-      setMicCaptureActive(false);
-      if (!handlers.onNotice) {
-        fail('mic-denied', '마이크 권한이 차단되어 있습니다. 브라우저 설정에서 마이크를 허용해 주세요.');
-        return;
-      }
-      // 마이크 없이도 상담은 이어 간다: 글로 보내면 마스터가 목소리로 답한다.
-      handlers.onNotice('마이크를 쓸 수 없어 글로 상담해요. 브라우저의 이 사이트에 대한 마이크 권한과 기기의 브라우저 마이크 권한을 확인해 주세요.');
-    }
-    if (stopped) {
-      stream?.getTracks().forEach(track => track.stop());
-      return;
-    }
-
-    if (stream) attachStream(stream);
-    // 누르고 말하기 모드는 처음엔 음소거라 권한만 확인하고 마이크를 바로 닫는다 (아이폰 마이크 표시가 켜진 채 남지 않게).
-    if (stream && muted && handlers.releaseMicWhileMuted) {
-      detachStream();
-      setMicCaptureActive(false);
+      attachStream(stream);
     }
 
     const url = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(token)}`;
@@ -495,26 +502,25 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     interrupt: stopPlayback,
     outputLevel,
     releaseMic: () => {
-      if (!stream) return;
-      detachStream();
+      micRequestId += 1;
+      if (stream) detachStream();
       setMicCaptureActive(false);
     },
     acquireMic: async () => {
       if (stopped) return false;
       if (stream) return true;
+      const requestId = ++micRequestId;
       try {
         // iOS는 녹음 가능한 오디오 세션에서만 마이크를 연다.
         setMicCaptureActive(true);
-        const next = await navigator.mediaDevices.getUserMedia({
-          audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-        });
-        if (stopped) { next.getTracks().forEach(track => track.stop()); return false; }
+        const next = await requestLucyMicrophone();
+        if (stopped || requestId !== micRequestId) { next.getTracks().forEach(track => track.stop()); return false; }
         next.getAudioTracks().forEach(track => { track.enabled = !muted; });
         void capture.resume();
         attachStream(next);
         return true;
       } catch {
-        setMicCaptureActive(false);
+        if (!stopped && requestId === micRequestId) setMicCaptureActive(false);
         return false;
       }
     },

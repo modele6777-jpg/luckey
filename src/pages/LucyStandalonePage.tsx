@@ -1,3 +1,5 @@
+import { createLucySpeechMicrophoneGate, lucyMicrophonePermissionMessage } from '@/lib/lucyMicrophone';
+import { setMicCaptureActive } from '@/lib/audioMixingPolicy';
 import { collectSpeechTranscript, createEndOfSpeechWatcher, type EndOfSpeechWatcher } from '@/lib/speechAutoSend';
 import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
 import { LucyModeName } from '@/components/chat/LucyModeName';
@@ -2021,6 +2023,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     isVoiceMutedRef.current = isVoiceMuted;
   }, [isVoiceMuted]);
 
+  const microphoneGate = useRef(createLucySpeechMicrophoneGate(setMicCaptureActive));
   const recognitionRef = useRef<any>(null);
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const speechWatcherRef = useRef<EndOfSpeechWatcher | null>(null);
@@ -2032,6 +2035,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // 🎙️ 음성 인식 중지
   const stopRecognition = useCallback(() => {
+    microphoneGate.current.cancel();
     if (silenceTimerRef.current) {
       clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = null;
@@ -2061,7 +2065,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   });
 
   // 🎙️ 음성 인식 시작 (STT)
-  const startListening = useCallback(() => {
+  const startListening = useCallback(async () => {
     if (liveVoiceRef.current) return;
     if (typeof window === 'undefined' || !isVoiceModeRef.current || isVoiceMutedRef.current) return;
     stopRecognition();
@@ -2070,6 +2074,14 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
     if (!SpeechRecognition) {
       setVoiceError('이 브라우저는 음성 인식을 지원하지 않습니다. Chrome/Safari를 권장합니다.');
+      setVoiceState('error');
+      return;
+    }
+
+    try {
+      if (!await microphoneGate.current.open()) return;
+    } catch (error) {
+      setVoiceError(lucyMicrophonePermissionMessage(error));
       setVoiceState('error');
       return;
     }
@@ -2126,7 +2138,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       recognition.onerror = (e: any) => {
         if (!isCurrent()) return;
         console.warn('[LucyChat] STT error:', e.error || e);
-        if (e.error === 'not-allowed') {
+        if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+          microphoneGate.current.invalidate();
           stopRecognition();
           setVoiceError('마이크 권한이 차단되어 있습니다. 브라우저 설정에서 마이크를 허용해 주세요.');
           setVoiceState('error');

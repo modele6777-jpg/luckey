@@ -124,3 +124,44 @@ test('Gemini Live hold-to-talk session does not send audio until unmuted and mut
     for (const undo of restore.reverse()) undo();
   }
 });
+
+test('Live requests browser permission before the provider, and stopping during the prompt closes the late stream', async () => {
+  let allow!: (stream: MediaStream) => void;
+  const approval = new Promise<MediaStream>(resolve => { allow = resolve; });
+  const events: string[] = [];
+  const track = { enabled: true, stop: () => events.push('stop') };
+  const media = { getAudioTracks: () => [track], getTracks: () => [track] } as unknown as MediaStream;
+  const restore = [
+    replaceGlobal('AudioContext', FakeAudioContext),
+    replaceGlobal('navigator', { mediaDevices: { getUserMedia: () => { events.push('prompt'); return approval; } } }),
+    replaceGlobal('fetch', async () => { events.push('provider'); throw new Error('Unexpected provider request'); }),
+  ];
+  const session = startGeminiLiveVoice({});
+  try {
+    assert.deepEqual(events, ['prompt']);
+    session.stop();
+    allow(media);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert.deepEqual(events, ['prompt', 'stop']);
+  } finally {
+    session.stop();
+    for (const undo of restore.reverse()) undo();
+  }
+});
+
+test('Live starts no provider call after denial without a text alternative', async () => {
+  const events: string[] = [];
+  const restore = [
+    replaceGlobal('AudioContext', FakeAudioContext),
+    replaceGlobal('navigator', { mediaDevices: { getUserMedia: async () => { throw new DOMException('', 'NotAllowedError'); } } }),
+    replaceGlobal('fetch', async () => { events.push('provider'); throw new Error('Unexpected provider request'); }),
+  ];
+  const session = startGeminiLiveVoice({ onError: error => events.push(error.code) });
+  try {
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert.deepEqual(events, ['mic-denied']);
+  } finally {
+    session.stop();
+    for (const undo of restore.reverse()) undo();
+  }
+});
