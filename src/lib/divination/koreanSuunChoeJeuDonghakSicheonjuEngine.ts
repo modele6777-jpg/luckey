@@ -8,12 +8,30 @@
  * 4. 수심정기(守心正氣): 맑은 마음을 오롯이 지키고 바른 기운을 길러 세속의 혼탁함과 두려움을 물리치는 내적 평정심.
  * 5. 후천개벽(後天開闢): 낡은 불평등과 절망의 시대를 넘어서서 새로운 빛과 상생의 새 세상을 여는 과감한 실천적 대전환력.
  *
- * @version LUCKEY-SUUN-CHOE-JEU-DONGHAK-v2.2.0
+ * @version LUCKEY-SUUN-CHOE-JEU-DONGHAK-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_SUUN_CHOE_JEU_VERSION = 'LUCKEY-SUUN-CHOE-JEU-DONGHAK-v2.3.0';
+export const KOREAN_SUUN_CHOE_JEU_VERSION = 'LUCKEY-SUUN-CHOE-JEU-DONGHAK-v2.4.0';
+
+export type DonghakQuestionTopic = 'dignity' | 'relation' | 'work' | 'emotion' | 'general';
+
+function classifyDonghakTopic(q: string): DonghakQuestionTopic {
+  if (/존엄|자존|나|주체|당당/.test(q)) return 'dignity';
+  if (/관계|타인|사람|상생|연대/.test(q)) return 'relation';
+  if (/일|직장|개척|변화|도전/.test(q)) return 'work';
+  if (/마음|감정|불안|흔들|평정/.test(q)) return 'emotion';
+  return 'general';
+}
+
+const DONGHAK_SHADOW_WARNINGS: Record<DonghakQuestionTopic, string> = {
+  dignity: '내 안의 하늘(시천주)을 세우려다 타인의 목소리까지 닫아버리는 독선으로 흐르지 않도록 사인여천을 함께 기억하십시오.',
+  relation: '타인을 하늘처럼 섬기려다 정작 내 안의 시천주 존엄을 스스로 깎아내리는 일방적 양보에 머물지 마십시오.',
+  work: '후천개벽의 새 길을 여는 열정이 현재 삶의 수심정기 질서를 무너뜨리는 조급함으로 번지지 않도록 하십시오.',
+  emotion: '맑은 마음을 지키려다 일상의 자연스러운 슬픔이나 분노까지 무조건 억누르면 오히려 기운이 막힐 수 있습니다.',
+  general: '거창한 개벽의 구호보다 오늘 마주한 한 사람에게 건네는 정중한 인사에서 동학의 도가 시작됩니다.',
+};
 
 export interface DonghakTheme {
   themeKey: string;
@@ -34,6 +52,8 @@ export interface DonghakAphorism {
 export interface SuunChoeJeuDonghakSicheonjuResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: DonghakQuestionTopic;
+  shadowWarning: string;
   // 5대 핵심 동학 영성·개벽 지표 (0~100)
   sicheonjuDignityScore: number;           // 시천주(侍天主) 내면 영성 자존감
   sainyeocheonReverenceQuotient: number;   // 사인여천(事人如天) 타인 공경·연대도
@@ -188,7 +208,9 @@ export function calculateSuunChoeJeuDonghakSicheonju(
   const focalDonghakAphorism = DONGHAK_APHORISMS[aphorismIndex];
   const secondaryDonghakAphorism = DONGHAK_APHORISMS[secondaryAphorismIndex];
 
-  const trimmedQuery = query?.trim();
+  const trimmedQuery = query?.trim() ?? '';
+  const questionTopic = classifyDonghakTopic(trimmedQuery);
+  const shadowWarning = DONGHAK_SHADOW_WARNINGS[questionTopic];
   const ritualAction = `[${activeDonghakTheme.themeTitleHanja.split(' ')[0]}] ${focalDonghakAphorism.actionGuidance}`;
   const reflectiveQuestion = trimmedQuery
     ? `동학의 '${activeDonghakTheme.themeTitleKo}'와 '${secondaryDonghakTheme.themeTitleKo}'를 비추어 볼 때, "${trimmedQuery}"에서 스스로와 타인의 존엄을 함께 세우는 수심정기(守心正氣)의 선택은 무엇인가요?`
@@ -221,6 +243,8 @@ export function calculateSuunChoeJeuDonghakSicheonju(
   return {
     engineVersion: KOREAN_SUUN_CHOE_JEU_VERSION,
     calculatedAtKst,
+    questionTopic,
+    shadowWarning,
     sicheonjuDignityScore,
     sainyeocheonReverenceQuotient,
     osimJeukYeosimEmpathyScore,
@@ -253,7 +277,7 @@ export function formatSuunChoeJeuDonghakSicheonjuPrompt(res: SuunChoeJeuDonghakS
   );
   const lines = [
     `【수운 최제우 《동경대전》 시천주 & 사인여천 영성 존엄 및 후천개벽 지표】`,
-    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion} | 질문 맥락: ${res.questionTopic}`,
     `- 동학 개벽 국면: ${describeDonghakStage(avgScore)}`,
     `- 핵심 동학 테마: ${res.activeDonghakTheme.themeTitleKo} [${res.activeDonghakTheme.themeTitleHanja}]`,
     `- 보조 교차 테마: ${res.secondaryDonghakTheme.themeTitleKo} [${res.secondaryDonghakTheme.themeTitleHanja}]`,
@@ -266,6 +290,7 @@ export function formatSuunChoeJeuDonghakSicheonjuPrompt(res: SuunChoeJeuDonghakS
     `- 실천 의례: ${res.ritualAction}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 영성 권면: ${res.suunComprehensiveGuidance.philosophicalCounsel}`,
   ];

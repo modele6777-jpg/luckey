@@ -12,12 +12,30 @@
  *    - 초발심시변정각(初發心時便正覺) 생사열반상공화(生死涅槃常共和): 처음 깨달음을 향해 발심한 바로 그 자리가 온전한 정각이며, 생사와 열반이 언제나 함께 어우러진다.
  *    - 구래부동명위불(舊來不動名爲佛): 예로부터 본래 움직임 없는 그 참성품을 일러 부처라 한다.
  *
- * @version LUCKEY-UISANG-HWAEOM-BEOPGYE-v2.2.0
+ * @version LUCKEY-UISANG-HWAEOM-BEOPGYE-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const UISANG_HWAEOM_BEOPGYE_VERSION = 'LUCKEY-UISANG-HWAEOM-BEOPGYE-v2.3.0';
+export const UISANG_HWAEOM_BEOPGYE_VERSION = 'LUCKEY-UISANG-HWAEOM-BEOPGYE-v2.4.0';
+
+export type UisangQuestionTopic = 'harmony' | 'relation' | 'work' | 'emotion' | 'general';
+
+function classifyUisangTopic(q: string): UisangQuestionTopic {
+  if (/분별|하나|원융|조화|균형/.test(q)) return 'harmony';
+  if (/관계|사람|연결|상대|소통/.test(q)) return 'relation';
+  if (/일|직장|작은|시작|초심/.test(q)) return 'work';
+  if (/마음|감정|불안|흔들|고요/.test(q)) return 'emotion';
+  return 'general';
+}
+
+const UISANG_SHADOW_WARNINGS: Record<UisangQuestionTopic, string> = {
+  harmony: '분별을 내려놓는 원융함이 현실의 필요한 경계와 책임 구분까지 흐리는 모호함으로 기울지 않게 하십시오.',
+  relation: '인다라망의 연결을 의식하다 타인의 감정과 내 과제를 뒤섞어 버리지 않도록 각자의 자리를 존중하십시오.',
+  work: '초발심의 순수함만 붙잡고 구체적인 실행 순서와 점검을 놓치면 작은 티끌 속 우주가 현실에서 빛을 잃습니다.',
+  emotion: '제법부동의 고요를 좇아 지금 올라오는 감정을 외면하지 말고, 파도 밑바닥의 고요와 함께 감정도 온전히 바라보십시오.',
+  general: '법성게의 원융한 통찰은 멀리 있는 관념이 아니라 지금 눈앞의 한 호흡과 한 걸음에서 증명됩니다.',
+};
 
 export interface BeopgyeSealVerse {
   verseKey: string;
@@ -37,6 +55,8 @@ export interface HwaeomSpiritualGate {
 export interface UisangHwaeomIlseungBeopgyeResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: UisangQuestionTopic;
+  shadowWarning: string;
   // 5대 핵심 지표 (0~100)
   beopseongWonnyungScore: number;                // 법성원융무이상(法性圓融無二相) 본성 원융 조화도
   sangjeukSangipInterpenetrationScore: number;   // 일중일체다중일(一中一切多中一) 상즉상입 연기 통찰력
@@ -174,7 +194,9 @@ export function calculateUisangHwaeomIlseungBeopgye(
   const focalSpiritualGate = HWAEOM_GATES[gateIndex];
   const secondarySpiritualGate = HWAEOM_GATES[secondaryGateIndex];
 
-  const trimmedQuery = query?.trim();
+  const trimmedQuery = query?.trim() ?? '';
+  const questionTopic = classifyUisangTopic(trimmedQuery);
+  const shadowWarning = UISANG_SHADOW_WARNINGS[questionTopic];
   const ritualAction = `[${focalSpiritualGate.gateNameKo.split('(')[0].trim()}] ${focalSpiritualGate.dailyMeditation}`;
   const reflectiveQuestion = trimmedQuery
     ? `의상대사의 《법성게》 '${activeBeopgyeVerse.koreanPronunciation}'와 '${secondaryBeopgyeVerse.koreanPronunciation}'를 비추어 볼 때, "${trimmedQuery}"에서 둘로 나누던 분별을 내려놓고 하나로 꿰어야 할 지점은 어디인가요?`
@@ -207,6 +229,8 @@ export function calculateUisangHwaeomIlseungBeopgye(
   return {
     engineVersion: UISANG_HWAEOM_BEOPGYE_VERSION,
     calculatedAtKst,
+    questionTopic,
+    shadowWarning,
     beopseongWonnyungScore,
     sangjeukSangipInterpenetrationScore,
     microMacroCosmosScore,
@@ -239,7 +263,7 @@ export function formatUisangHwaeomIlseungBeopgyePrompt(res: UisangHwaeomIlseungB
   );
   const lines = [
     `【의상대사 화엄일승법계도 & 법성게 원융무애 지표】`,
-    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion} | 질문 맥락: ${res.questionTopic}`,
     `- 화엄 원융 국면: ${describeUisangStage(avgScore)}`,
     `- 핵심 법성게 구절: ${res.activeBeopgyeVerse.hanjaVerse} [${res.activeBeopgyeVerse.koreanPronunciation}]`,
     `- 보조 교차 구절: ${res.secondaryBeopgyeVerse.hanjaVerse} [${res.secondaryBeopgyeVerse.koreanPronunciation}]`,
@@ -251,6 +275,7 @@ export function formatUisangHwaeomIlseungBeopgyePrompt(res: UisangHwaeomIlseungB
     `- 실천 의례: ${res.ritualAction}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 일상 참구 지침: ${res.uisangHwaeomCounsel.beopgyeGuidance}`,
   ];
