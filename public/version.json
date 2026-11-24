@@ -1,10 +1,10 @@
 {
-  "version": "1.8.463",
-  "builtAt": "2026-11-25T07:45:00+09:00",
-  "summary": "그림자 원형·타로 궁정 페르소나·15대 신살 슈퍼파워 3대 엔진 심층 강화(v1.8.463)",
+  "version": "1.8.464",
+  "builtAt": "2026-11-25T07:55:00+09:00",
+  "summary": "숙요경 27숙·도교 내단 경락·초월 명상 3대 엔진 심층 강화(v1.8.464)",
   "items": [
-    "융 심리학 그림자 자아 & 골든 섀도우 연금술 엔진(v2.3.0): 질문 맥락(questionTopic), 테마별 과잉 경계(shadowWarning) 추가",
-    "타로 4대 원소 & 16대 궁정 카드 페르소나 엔진(v2.3.0): 질문 맥락(questionTopic), 테마별 과잉 경계(shadowWarning) 추가",
-    "15대 신살 위치별 슈퍼파워 치환 매트릭스 엔진(v2.3.0): 질문 맥락(questionTopic), 테마별 과잉 경계(shadowWarning) 추가"
+    "정통 밀교 숙요경 27숙 매트릭스 엔진(v2.3.0): 질문 맥락(questionTopic), 테마별 과잉 경계(shadowWarning) 추가",
+    "도교 내단 양생 & 진기 순환 경락 시계 엔진(v2.3.0): 질문 맥락(questionTopic), 테마별 과잉 경계(shadowWarning) 추가",
+    "초월 명상 & 마음 안정 엔진(v2.3.0): 질문 맥락(questionTopic), 테마별 과잉 경계(shadowWarning) 추가"
   ]
 }

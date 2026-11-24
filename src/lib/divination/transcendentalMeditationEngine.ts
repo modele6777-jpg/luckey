@@ -17,7 +17,25 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const TRANSCENDENTAL_MEDITATION_VERSION = 'LUCKEY-ZEN-v2.2.0';
+export const TRANSCENDENTAL_MEDITATION_VERSION = 'LUCKEY-ZEN-v2.3.0';
+
+export type ZenQuestionTopic = 'calm' | 'focus' | 'relation' | 'sleep' | 'general';
+
+function classifyZenTopic(q: string): ZenQuestionTopic {
+  if (/평정|안정|불안|초조|긴장|감정/.test(q)) return 'calm';
+  if (/집중|결단|선택|일|판단/.test(q)) return 'focus';
+  if (/관계|사람|갈등|상처|소통/.test(q)) return 'relation';
+  if (/잠|수면|피로|휴식|밤/.test(q)) return 'sleep';
+  return 'general';
+}
+
+const ZEN_SHADOW_WARNINGS: Record<ZenQuestionTopic, string> = {
+  calm: '잡념을 없애려고 애쓸수록 생각이 더 선명해지니, 떠오르는 생각을 쫓지 말고 지나가게 두십시오.',
+  focus: '명상 직후 과도한 자기 확신에 빠지지 말고, 고요해진 시선으로 현실의 제약 조건을 한 번 더 점검하십시오.',
+  relation: '내면의 평정심을 타인에 대한 무관심이나 회피로 착각하지 않도록, 차분한 경계와 솔직한 대화를 함께 지키십시오.',
+  sleep: '잠들기 전 억지로 호흡 수를 세느라 긴장하지 말고, 편안한 자세에서 날숨만 부드럽게 길게 내쉬십시오.',
+  general: '명상은 현실 도피가 아니라, 흔들린 중심을 되찾아 오늘의 한 걸음을 명료하게 내딛기 위한 쉼표입니다.',
+};
 
 function formatZenKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -53,6 +71,8 @@ export interface TranscendentalMeditationReport {
   engineVersion: string;
   calculatedAt: string;
   calculatedAtKst: string;
+  questionTopic: ZenQuestionTopic;
+  shadowWarning: string;
   equanimityScore: number;       // 마음의 평정심 지수 (0~100)
   stressReleasePotential: number;// 스트레스 즉각 방출 잠재력 (0~100)
   zenEnergyArchetype: string;    // 명상 페르소나 아키타입
@@ -171,6 +191,8 @@ export function runTranscendentalMeditationEngine(
 
   const calculatedAtKst = formatZenKstTimestamp(targetDate);
   const q = (question || '').trim();
+  const questionTopic = classifyZenTopic(q);
+  const shadowWarning = ZEN_SHADOW_WARNINGS[questionTopic];
   const reflectiveQuestion = q
     ? `"${q}" 앞에서 [${zenEnergyArchetype}]의 중심으로 돌아와 ${intendedMindState}을 회복하려면, 지금 잠시 멈추고 내려놓아야 할 생각은 무엇입니까?`
     : `${primaryStyle}의 호흡을 따라 ${optimalTimeWindow}에 마음을 가다듬을 때, 오늘 가장 고요히 비우고 싶은 긴장은 무엇입니까?`;
@@ -184,7 +206,7 @@ export function runTranscendentalMeditationEngine(
     integratedAction: `${mentalAnchor}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
-  const synthesisPromptGuidance = `[LUCKEY 초월 명상 & 마음 안정 지능 ${TRANSCENDENTAL_MEDITATION_VERSION} | ${calculatedAtKst}]
+  const synthesisPromptGuidance = `[LUCKEY 초월 명상 & 마음 안정 지능 ${TRANSCENDENTAL_MEDITATION_VERSION} | ${calculatedAtKst} | 질문 맥락: ${questionTopic}]
 - 명상 페르소나 아키타입: ${zenEnergyArchetype}
 - 추천 명상 양식: ${primaryStyle}
 - 명상 의도: ${intendedMindState}
@@ -195,12 +217,15 @@ export function runTranscendentalMeditationEngine(
 - 성찰 질문: ${reflectiveQuestion}
 - 실천 의례: ${ritualAction}
 - 성찰 초점: ${reflectionFocus}
+- 과잉 경계: ${shadowWarning}
 - 해석 경계: ${interpretiveBoundary}`;
 
   return {
     engineVersion: TRANSCENDENTAL_MEDITATION_VERSION,
     calculatedAt: targetDate.toISOString(),
     calculatedAtKst,
+    questionTopic,
+    shadowWarning,
     equanimityScore,
     stressReleasePotential,
     zenEnergyArchetype,
