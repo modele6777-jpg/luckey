@@ -9,11 +9,14 @@ export interface WodaabeGerewolInput {
 export interface WodaabeGerewolResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '만남·연결' | '인내·품위' | '중심·태도' | '회복·축하' | '우다베 전반';
   desertGathering: string;
   companionGathering: string;
   innerPoise: string;
+  munyaPoiseAxis: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -24,6 +27,28 @@ const GATHERINGS = [
   '거친 모래바람 속에서도 흩트리지 않는 단정한 몸가짐',
   '서로의 인내와 품위를 겨루며 함께 노래하는 밤의 원',
 ] as const;
+
+const MUNYA_AXES = [
+  '긴 기다림 끝에 계절의 만남을 다시 잇는 사헬 재회의 축',
+  '어려움 앞에서도 눈빛과 자세를 지키는 무냐(Munya) 인내의 축',
+  '외부 바람에 흔들리지 않고 단정한 태도를 세우는 중심 품위의 축',
+  '수고로운 여정 끝에 서로를 격려하고 숨을 고르는 축제 회복의 축',
+] as const;
+
+const SHADOW_WARNINGS = [
+  '사람들과의 만남과 연결을 기다리느라 정작 지금 혼자 걸어야 할 구간의 준비를 미루지 마세요.',
+  '표정과 태도를 단정히 참아 내는 인내(무냐)가 꼭 표현해야 할 정당한 불편함까지 삼키게 하지 않도록 살피세요.',
+  '단정한 몸가짐과 품위를 지키는 데 힘을 쓰다 보면 가까운 사이에서 필요한 솔직한 취약함이 가려질 수 있어요.',
+  '휴식과 작은 축하로 숨을 고른 뒤에는 다시 출발할 작은 실행 한 가지를 이어 붙여 두세요.',
+] as const;
+
+function classifyWodaabeTopic(q: string): WodaabeGerewolResult['questionTopic'] {
+  if (/만남|인연|안부|사람|모이/.test(q)) return '만남·연결';
+  if (/인내|품위|힘든|견디|무냐/.test(q)) return '인내·품위';
+  if (/태도|중심|표정|말투|조급/.test(q)) return '중심·태도';
+  if (/회복|축하|휴식|수고|산책/.test(q)) return '회복·축하';
+  return '우다베 전반';
+}
 
 const POISES = [
   '진정한 매력과 설득력은 요란한 과시가 아니라 힘든 상황에서도 표정과 태도를 잃지 않는 인내(무냐)에서 나옵니다.',
@@ -67,7 +92,9 @@ function hashSeed(text: string): number {
 
 export function calculateWodaabeGerewol(input: WodaabeGerewolInput): WodaabeGerewolResult {
   const fate = input.profile.fate ?? {};
-  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const questionText = (input.question ?? '').trim();
+  const questionTopic = classifyWodaabeTopic(questionText);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${questionText}`;
   const seed = hashSeed(seedText);
   const gatheringIdx = seed % GATHERINGS.length;
   const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (GATHERINGS.length - 1));
@@ -75,13 +102,16 @@ export function calculateWodaabeGerewol(input: WodaabeGerewolInput): WodaabeGere
   const companionGathering = GATHERINGS[(gatheringIdx + companionOffset) % GATHERINGS.length];
 
   return {
-    engineVersion: 'LUCKEY-WODAABE-GEREWOL-v2.2.0',
+    engineVersion: 'LUCKEY-WODAABE-GEREWOL-v2.3.0',
     calculatedAtKst: toKstIso(input.now),
+    questionTopic,
     desertGathering,
     companionGathering,
     innerPoise: POISES[(seed >>> 3) % POISES.length],
+    munyaPoiseAxis: MUNYA_AXES[gatheringIdx],
     reflectionFocus: `사헬 유목민 우다베 족이 긴 건기를 지나 우기에 모여 인내와 품위(무냐)를 나누는 게레월 축제에서 주 만남('${desertGathering}')과 동반 만남('${companionGathering}')을 겹쳐 태도와 회복을 읽는 상징적 관점입니다.`,
     ritualAction: ACTIONS[gatheringIdx],
+    shadowWarning: SHADOW_WARNINGS[gatheringIdx],
     reflectiveQuestion: QUESTIONS[gatheringIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
@@ -90,12 +120,14 @@ export function calculateWodaabeGerewol(input: WodaabeGerewolInput): WodaabeGere
 export function formatWodaabeGerewolPrompt(res: WodaabeGerewolResult): string {
   return [
     `[우다베·게레월 사헬 품위 관점 · ${res.engineVersion}]`,
-    `기준 시각: ${res.calculatedAtKst}`,
+    `기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `만남의 장: ${res.desertGathering}`,
+    `무냐 품위 축: ${res.munyaPoiseAxis}`,
     `동반 장: ${res.companionGathering}`,
     `내면 품위: ${res.innerPoise}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
+    `과잉 경계: ${res.shadowWarning}`,
     `성찰 질문: ${res.reflectiveQuestion}`,
     `경계: ${res.interpretiveBoundary}`,
   ].join('\n');
