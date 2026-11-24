@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.451",
+    "builtAt": "2026-11-25T05:45:00+09:00",
+    "summary": "틀링깃 레이븐 클랜·통가 카바 타우히 바·토라자 알룩 토돌로 3대 엔진 질문 맥락·과잉 경계 심층 강화(v1.8.451)",
+    "items": [
+      "틀링깃 레이븐 클랜 균형 엔진(v2.3.0): 질문 맥락(questionTopic), 클랜 상보 축(clanReciprocityAxis), 균형별 과잉 경계(shadowWarning) 추가",
+      "통가 카바 서클·타우히 바 엔진(v2.3.0): 질문 맥락(questionTopic), 타우히 바 축(tauhiVaAxis), 원리별 과잉 경계(shadowWarning) 추가",
+      "토라자 알룩 토돌로·통코난 엔진(v2.3.0): 질문 맥락(questionTopic), 통코난 균형 축(tongkonanAxis), 기둥별 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.450",
     "builtAt": "2026-11-25T05:35:00+09:00",
     "summary": "시기리야 수로 정원·신라 첨성대 에밀레·싱할라 발리 코훔바 3대 엔진 질문 맥락·과잉 경계 심층 강화(v1.8.450)",
