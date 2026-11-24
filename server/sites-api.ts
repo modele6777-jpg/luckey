@@ -1,4 +1,5 @@
 import { TAROT_READING_VOICE } from '../src/lib/tarotReadingVoice.ts';
+import { parseOrbLivePrices } from "../src/lib/orb/orbSessionMetrics.ts";
 import { issueGeminiLiveToken } from './api-lib/geminiLiveTokenCore.ts';
 import { synthesizeGeminiSpeech } from './api-lib/geminiMedia.ts';
 import { getSitesAIConfig } from '../scripts/sites-ai-provider.mjs';
@@ -194,12 +195,34 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
     if (!body || typeof body !== 'object' || Array.isArray(body)) throw new ApiError(400, '요청 내용을 확인해 주세요.');
     if (route === '/api/ai/live-token') {
       const input = (name: string, max: number) => text(body[name]).slice(0, max);
+      const nickname = input('nickname', 120);
+      const reading = {
+        chart: input('chart', 12000), cards: input('cards', 2000), voice: input('voice', 50),
+        focus: input('focus', 400), greet: input('greet', 1000), notes: input('notes', 2000),
+        orb: body.orb === true, persona: input('persona', 400), rules: input('rules', 3000),
+      };
       try {
-        return json(await issueGeminiLiveToken(keyFor(env), input('nickname', 120), {
-          chart: input('chart', 12000), cards: input('cards', 2000), voice: input('voice', 50),
-          focus: input('focus', 400), greet: input('greet', 1000), notes: input('notes', 2000),
-          orb: body.orb === true, persona: input('persona', 400), rules: input('rules', 3000),
-        }, env.ORB_LIVE_USAGE_PRICES_USD, fetchApi));
+        if (env.LUCKEY_LIVE_API_ORIGIN?.trim()) {
+          const origin = new URL(env.LUCKEY_LIVE_API_ORIGIN.trim());
+          if (origin.protocol !== 'https:' || origin.username || origin.password || origin.origin === new URL(request.url).origin ||
+              origin.pathname !== '/' || origin.search || origin.hash) {
+            throw new ApiError(503, '실시간 음성 서버 주소를 확인해 주세요.', undefined, 'GEMINI_LIVE_UPSTREAM_CONFIG');
+          }
+          const upstream = await fetchApi(new URL('/api/ai/live-token', origin), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nickname, ...reading }),
+            redirect: 'manual',
+            signal: AbortSignal.timeout(12_000),
+          });
+          const payload = upstream.ok ? await upstream.json().catch(() => null) : null;
+          if (typeof payload?.token !== 'string' || !payload.token || typeof payload?.model !== 'string' || !payload.model) {
+            throw new ApiError(502, '지금 실시간 음성 서버에 연결할 수 없어요.', undefined, 'GEMINI_LIVE_UPSTREAM_UNAVAILABLE');
+          }
+          const usagePrices = parseOrbLivePrices(payload.usagePrices);
+          return json({ token: payload.token, model: payload.model, expiresAt: text(payload.expiresAt), ...(usagePrices ? { usagePrices } : {}) });
+        }
+        return json(await issueGeminiLiveToken(keyFor(env), nickname, reading, env.ORB_LIVE_USAGE_PRICES_USD, fetchApi));
       } catch (error) {
         const failure = error as { status?: number; code?: string; message?: string };
         if (failure.status && failure.code) throw new ApiError(failure.status, failure.message || '음성 연결을 시작하지 못했습니다.', undefined, failure.code);

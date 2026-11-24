@@ -222,3 +222,33 @@ test('Sites reports missing Live credentials without calling Gemini', async () =
   assert.equal(response?.status, 503);
   assert.equal((await response!.json()).code, 'GEMINI_API_KEY_MISSING');
 });
+
+test('Sites can use an existing server for Live tokens without forwarding Site credentials', async () => {
+  const input = new Request('https://luckey.site.example/api/ai/live-token', {
+    method: 'POST',
+    body: JSON.stringify({ orb: true, voice: 'Aoede', nickname: '루시', unexpectedField: 'ignore' }),
+    headers: { Cookie: 'internal-cookie', 'OAI-Sites-Authorization': 'internal-session' },
+  });
+  const response = await handleSitesApi(input, { ...env, LUCKEY_LIVE_API_ORIGIN: 'https://voice.example' }, async (url, init) => {
+    assert.equal(String(url), 'https://voice.example/api/ai/live-token');
+    assert.equal(init?.redirect, 'manual');
+    const headers = new Headers(init?.headers);
+    assert.equal(headers.get('Cookie'), null);
+    assert.equal(headers.get('OAI-Sites-Authorization'), null);
+    assert.equal(headers.get('x-goog-api-key'), null);
+    const body = JSON.parse(String(init?.body));
+    assert.equal(body.orb, true);
+    assert.equal(body.nickname, '루시');
+    assert.equal(body.unexpectedField, undefined);
+    return Response.json({ token: 'auth_tokens/short-lived', model: 'gemini-3.8-live', extra: 'not-forwarded' });
+  });
+  assert.equal(response?.status, 200);
+  assert.equal(response?.headers.get('Cache-Control'), 'no-store');
+  assert.deepEqual(await response?.json(), { token: 'auth_tokens/short-lived', model: 'gemini-3.8-live', expiresAt: '' });
+});
+
+test('Sites rejects a Live token route pointed at itself', async () => {
+  const response = await handleSitesApi(request('/api/ai/live-token', {}), { LUCKEY_LIVE_API_ORIGIN: 'https://audit.invalid' }, async () => assert.fail('Unexpected upstream call'));
+  assert.equal(response?.status, 503);
+  assert.equal((await response?.json()).code, 'GEMINI_LIVE_UPSTREAM_CONFIG');
+});
