@@ -48,5 +48,10 @@ jobs:
           docker build -t luckey-ci .
           docker run --detach --rm --name luckey-ci --publish 127.0.0.1:3000:3000 luckey-ci
           trap 'docker stop luckey-ci' EXIT
-          curl --retry 12 --retry-connrefused --retry-delay 1 --fail http://127.0.0.1:3000/api/health
+          healthy=0
+          for attempt in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:3000/api/health; then healthy=1; break; fi
+            sleep 1
+          done
+          if [ "$healthy" = 0 ]; then docker logs luckey-ci; exit 1; fi
           curl --fail http://127.0.0.1:3000/version.json
