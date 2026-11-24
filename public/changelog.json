@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.452",
+    "builtAt": "2026-11-25T05:55:00+09:00",
+    "summary": "투아레그 타길무스트·우크라이나 비시반카·위구르 쿠타드구 빌리그 3대 엔진 질문 맥락·과잉 경계 심층 강화(v1.8.452)",
+    "items": [
+      "투아레그 타길무스트·사하라 별자리 엔진(v2.3.0): 질문 맥락(questionTopic), 사하라 균형 축(saharaCompassAxis), 나침반별 과잉 경계(shadowWarning) 추가",
+      "우크라이나 비시반카·해바라기 엔진(v2.3.0): 질문 맥락(questionTopic), 자수 균형 축(steppeStitchAxis), 상징별 과잉 경계(shadowWarning) 추가",
+      "위구르 쿠타드구 빌리그 지혜 엔진(v2.3.0): 질문 맥락(questionTopic), 덕목 균형 축(kutadguVirtueAxis), 기둥별 과잉 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.451",
     "builtAt": "2026-11-25T05:45:00+09:00",
     "summary": "틀링깃 레이븐 클랜·통가 카바 타우히 바·토라자 알룩 토돌로 3대 엔진 질문 맥락·과잉 경계 심층 강화(v1.8.451)",
