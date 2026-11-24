@@ -9,12 +9,12 @@
  * 4. 백년대계 건국 설계력(Architectural Foresight Index): 눈앞의 이익에 매몰되지 않고 백 년, 천 년을 내다보며 한양 도성과 제도의 기틀을 닦는 거시적 비전.
  * 5. 불굴의 실천 지조 지수(Indomitable Reform Tenacity Score): 유배와 시련 속에서도 백성의 땀방울을 가슴에 품고 마침내 새로운 시대를 열어젖힌 불굴의 기개.
  *
- * @version LUCKEY-JEONG-DO-JEON-MINBON-v2.2.0
+ * @version LUCKEY-JEONG-DO-JEON-MINBON-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_JEONG_DO_JEON_VERSION = 'LUCKEY-JEONG-DO-JEON-MINBON-v2.3.0';
+export const KOREAN_JEONG_DO_JEON_VERSION = 'LUCKEY-JEONG-DO-JEON-MINBON-v2.4.0';
 
 export interface SambongTheme {
   themeKey: string;
@@ -35,6 +35,7 @@ export interface SambongAphorism {
 export interface KoreanSambongJeongDoJeonMinbonReformResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '민본·신뢰' | '제도·규칙' | '청렴·책임' | '장기·설계' | '역경·돌파' | '정도 전반';
   // 5대 핵심 삼봉 정도전 민본개혁 지표 (0~100)
   minbonPeopleServingScore: number;          // 민본 섬김 및 위민 지수 (Minbon People Serving)
   jeongdoInstitutionalReformScore: number;   // 정도 제도개혁 추진력 (Jeongdo Institutional Reform)
@@ -48,6 +49,7 @@ export interface KoreanSambongJeongDoJeonMinbonReformResult {
   secondarySambongAphorism: SambongAphorism;
   ritualAction: string;
   reflectionFocus: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   sambongComprehensiveGuidance: {
@@ -160,6 +162,23 @@ export const SAMBONG_APHORISMS: SambongAphorism[] = [
   },
 ];
 
+const SAMBONG_SHADOWS: Record<string, string> = {
+  minbonWeimin: '함께하는 이들의 편의를 최우선으로 섬기는 민본 정신이 정작 원칙과 기준선을 지키는 단호함까지 무너뜨리는 영합이 되지 않게 살피세요.',
+  jeongdoGyeongguk: '낡은 틀을 고치고 새로운 규칙을 세우는 개혁 추진력이 현장의 적응 속도와 사람들의 피로감을 건너뛰는 조급한 밀어붙이기가 되지 않게 하세요.',
+  gyeongjemungam: '사사로운 정을 끊고 엄정한 공정을 세우는 태도가 곁에 있는 사람들을 차갑게 몰아세우는 경직으로 굳어지지 않게 온기를 함께 지키세요.',
+  baeknyeonDaege: '백 년을 내다보는 거시적 설계가 오늘 당장 눈앞에서 해결해야 할 작고 구체적인 실행 과제를 미루는 관념론이 되지 않게 균형을 잡으세요.',
+  bulguryeokgyeong: '고난을 딛고 나아가는 불굴의 기개가 지금 잠시 멈춰 전략을 수정해야 할 신호마저 무시하고 정면 돌파만 고집하는 무모함이 되지 않게 주의하세요.',
+};
+
+function classifySambongTopic(q: string): KoreanSambongJeongDoJeonMinbonReformResult['questionTopic'] {
+  if (/백성|사람|신뢰|민본|마음/.test(q)) return '민본·신뢰';
+  if (/규칙|제도|법|시스템|개혁/.test(q)) return '제도·규칙';
+  if (/청렴|공정|책임|사욕|원칙/.test(q)) return '청렴·책임';
+  if (/설계|백년|미래|기틀|비전/.test(q)) return '장기·설계';
+  if (/역경|시련|고난|돌파|유배/.test(q)) return '역경·돌파';
+  return '정도 전반';
+}
+
 export function calculateKoreanSambongJeongDoJeonMinbonReform(
   profile?: UserProfile,
   query?: string,
@@ -171,7 +190,9 @@ export function calculateKoreanSambongJeongDoJeonMinbonReform(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `SAMBONG-JEONG-DO-JEON-MINBON:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const cleanQuery = (query ?? '').trim();
+  const questionTopic = classifySambongTopic(cleanQuery);
+  const seedString = `SAMBONG-JEONG-DO-JEON-MINBON:${name}:${birthDate}:${birthTime}:${gender}:${cleanQuery}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -196,8 +217,8 @@ export function calculateKoreanSambongJeongDoJeonMinbonReform(
   const focalSambongAphorism = SAMBONG_APHORISMS[aphorismIndex];
   const secondarySambongAphorism = SAMBONG_APHORISMS[secondaryAphorismIndex];
 
-  const cleanQuery = query?.trim();
   const ritualAction = `[${activeSambongTheme.themeTitleHanja}] ${focalSambongAphorism.actionGuidance}`;
+  const shadowWarning = SAMBONG_SHADOWS[activeSambongTheme.themeKey] ?? SAMBONG_SHADOWS.minbonWeimin;
   const reflectiveQuestion = cleanQuery
     ? `"${cleanQuery}"을(를) 설계할 때, 낡은 관행을 넘어 사람에게 실질적 이로움을 주는 정도(正道)는 무엇인가?`
     : `지금 내가 세우려는 기준과 질서는 사사로운 편의를 넘어 함께하는 이들에게 실질적 유익을 주고 있는가?`;
@@ -229,6 +250,7 @@ export function calculateKoreanSambongJeongDoJeonMinbonReform(
   return {
     engineVersion: KOREAN_JEONG_DO_JEON_VERSION,
     calculatedAtKst,
+    questionTopic,
     minbonPeopleServingScore,
     jeongdoInstitutionalReformScore,
     cleanGovernanceIntegrityIndex,
@@ -240,6 +262,7 @@ export function calculateKoreanSambongJeongDoJeonMinbonReform(
     secondarySambongAphorism,
     ritualAction,
     reflectionFocus,
+    shadowWarning,
     reflectiveQuestion,
     interpretiveBoundary,
     sambongComprehensiveGuidance: {
@@ -264,7 +287,7 @@ export function formatKoreanSambongJeongDoJeonMinbonReformPrompt(
   const lines = [
     `【삼봉 정도전 《조선경국전·경제문감》 민본사상 & 정도(正道) 개혁 실천 지표】`,
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
-    `- 민본 개혁 국면: ${describeSambongStage(avgScore)}`,
+    `- 질문 맥락: ${res.questionTopic} | 민본 개혁 국면: ${describeSambongStage(avgScore)}`,
     `- 핵심 민본 테마: ${res.activeSambongTheme.themeTitleKo} [${res.activeSambongTheme.themeTitleHanja}]`,
     `- 보조 교차 테마: ${res.secondarySambongTheme.themeTitleKo} [${res.secondarySambongTheme.themeTitleHanja}]`,
     `- 실존적 통찰: ${res.activeSambongTheme.existentialInsight}`,
@@ -274,6 +297,7 @@ export function formatKoreanSambongJeongDoJeonMinbonReformPrompt(
     `- 원전 출처: [${res.focalSambongAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalSambongAphorism.actionGuidance}`,
     `- 실천 의례: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
