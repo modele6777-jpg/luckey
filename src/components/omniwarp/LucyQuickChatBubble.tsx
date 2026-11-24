@@ -1,3 +1,5 @@
+import { createLucySpeechMicrophoneGate, lucyMicrophonePermissionMessage } from '@/lib/lucyMicrophone';
+import { setMicCaptureActive } from '@/lib/audioMixingPolicy';
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -383,6 +385,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
   const [voiceError, setVoiceError] = useState<string | null>(null);
   const [isGlobalTtsSpeaking, setIsGlobalTtsSpeaking] = useState<boolean>(false);
 
+  const microphoneGate = useRef(createLucySpeechMicrophoneGate(setMicCaptureActive));
   const recognitionRef = useRef<any>(null);
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isVoiceModeRef = useRef<boolean>(isVoiceMode);
@@ -640,6 +643,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
   // 🎙️ 음성 인식 중지
   const speechWatcherRef = useRef<EndOfSpeechWatcher | null>(null);
   const stopRecognition = useCallback(() => {
+    microphoneGate.current.cancel();
     speechWatcherRef.current?.dispose();
     speechWatcherRef.current = null;
     if (silenceTimerRef.current) {
@@ -839,7 +843,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
   handleSendRef.current = handleSend;
 
   // 🎙️ 음성 인식 시작 (STT)
-  const startListening = useCallback(() => {
+  const startListening = useCallback(async () => {
     if (typeof window === 'undefined' || !isVoiceModeRef.current || isMutedRef.current) return;
     stopRecognition();
     const SpeechRecognition =
@@ -847,6 +851,14 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
 
     if (!SpeechRecognition) {
       setVoiceError('이 브라우저는 음성 인식을 지원하지 않습니다.');
+      setVoiceState('error');
+      return;
+    }
+
+    try {
+      if (!await microphoneGate.current.open()) return;
+    } catch (error) {
+      setVoiceError(lucyMicrophonePermissionMessage(error));
       setVoiceState('error');
       return;
     }
@@ -895,7 +907,8 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
       recognition.onerror = (e: any) => {
         if (!isCurrent()) return;
         console.warn('[LucyQuickChatBubble] STT error:', e.error || e);
-        if (e.error === 'not-allowed') {
+        if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+          microphoneGate.current.invalidate();
           stopRecognition();
           setVoiceError('마이크 권한이 차단되어 있습니다.');
           setVoiceState('error');

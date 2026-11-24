@@ -6,12 +6,12 @@ const source = readFileSync(new URL('../src/components/lucy/LucyOrbCounsel.tsx',
 
 test('Orb offers a direct microphone permission request from a user tap', () => {
   assert.match(source, /onClick=\{\(\) => void requestMicPermission\(\)\}/);
-  assert.match(source, /navigator\.mediaDevices\.getUserMedia/);
+  assert.match(source, /requestLucyMicrophone\(/);
   assert.match(source, /마이크 권한이 허용됐어요/);
 });
 
 test('Orb keeps the permission-granted microphone stream muted and reuses it for the session', () => {
-  assert.match(source, /getUserMedia\(\{ audio: true \}\)/);
+  assert.match(source, /requestLucyMicrophone\(\{ audio: true \}\)/);
   assert.match(source, /stream\.getAudioTracks\(\)\.forEach\(track => \{ track\.enabled = false; \}\)/);
   assert.match(source, /micPrime\.current = Promise\.resolve\(stream\)/);
   assert.match(source, /if \(!micPrime\.current\) micPrime\.current = requestMic\(\)/);

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { setMicCaptureActive } from '@/lib/audioMixingPolicy';
+import { lucyMicrophonePermissionMessage, requestLucyMicrophone } from '@/lib/lucyMicrophone';
 import { collectSpeechTranscript } from '@/lib/speechAutoSend';
 import { rememberBgmBeforeMic, resumeBgmAfterMicSoon } from '@/lib/micBgmResume';
 
@@ -113,13 +114,10 @@ export function useHoldToTalk(
     try { recognition.start(); } catch { /* already started */ }
   };
 
-  const startMeter = async () => {
+  const startMeter = (stream: MediaStream) => {
     const s = session.current;
-    if (!s || !navigator.mediaDevices?.getUserMedia) return;
+    if (!s) return;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      if (session.current !== s || !s.active) { stream.getTracks().forEach(track => track.stop()); return; }
-      s.stream = stream;
       const context = new AudioContext();
       s.context = context;
       const analyser = context.createAnalyser();
@@ -141,16 +139,32 @@ export function useHoldToTalk(
     }
   };
 
-  const begin = () => {
+  const begin = async () => {
     if (session.current) return;
-    session.current = { recognition: null, stream: null, context: null, frame: 0, committed: '', current: '', active: true, finishing: false, bgmWasPlaying: rememberBgmBeforeMic() };
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      showError('이 브라우저는 음성 인식을 지원하지 않아요.');
+      return;
+    }
+    const current = session.current = { recognition: null, stream: null, context: null, frame: 0, committed: '', current: '', active: true, finishing: false, bgmWasPlaying: rememberBgmBeforeMic() };
     setTranscript('');
-    setHolding(true);
-    optionsRef.current.onStart?.();
-    // iOS는 재생 전용(ambient) 세션에서는 마이크를 열지 않는다: 누른 순간 녹음 가능한 세션으로 바꾼다.
     setMicCaptureActive(true);
-    startRecognition();
-    void startMeter();
+    try {
+      const stream = await requestLucyMicrophone({ audio: true });
+      if (session.current !== current || !current.active) {
+        stream.getTracks().forEach(track => track.stop());
+        return;
+      }
+      session.current.stream = stream;
+      setHolding(true);
+      optionsRef.current.onStart?.();
+      startRecognition();
+      startMeter(stream);
+    } catch (error) {
+      if (session.current !== current || !current.active) return;
+      showError(lucyMicrophonePermissionMessage(error));
+      finish();
+    }
   };
 
   // 인식기를 확실히 끈다: 아이폰은 stop() 뒤에도 계속 듣는 경우가 있어 abort()로 마이크를 놓게 한다.
@@ -165,10 +179,10 @@ export function useHoldToTalk(
   const finish = () => {
     const s = session.current;
     if (!s) return;
-    session.current = null;
     killRecognition(s.recognition);
     s.recognition = null;
     releaseAudio();
+    session.current = null;
     setHolding(false);
     const text = `${s.committed} ${s.current}`.replace(/\s+/g, ' ').trim();
     setTranscript('');
@@ -186,7 +200,8 @@ export function useHoldToTalk(
     // 손을 떼면 소리 파동용 마이크는 바로 닫는다.
     releaseAudio();
     // 마지막 말을 확정할 시간을 조금(0.6초) 준다. 인식이 끝나면(onend) 바로 보내고, 안 끝나면 강제로 끈 뒤 보낸다.
-    try { s.recognition?.stop(); } catch { /* not started */ }
+    if (!s.recognition) { finish(); return; }
+    try { s.recognition.stop(); } catch { /* not started */ }
     window.setTimeout(() => { if (session.current === s) finish(); }, 600);
   };
 
@@ -209,7 +224,7 @@ export function useHoldToTalk(
       pressTimer.current = window.setTimeout(() => {
         pressTimer.current = null;
         talking.current = true;
-        begin();
+        void begin();
       }, HOLD_MS);
     };
     const onMove = (event: TouchEvent) => {
@@ -262,6 +277,7 @@ export function useHoldToTalk(
 
   useEffect(() => () => {
     if (errorTimer.current) window.clearTimeout(errorTimer.current);
+    cancelPress();
     const s = session.current;
     if (s) {
       session.current = null;
