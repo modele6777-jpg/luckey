@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface OtavaloLoomResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '제약·무늬' | '장력·조절' | '추진·수용' | '조화·광장' | '정돈·새출발' | '오타발로 전반';
   otavaloMotif: string;
   companionMotif: string;
+  otavaloWeaveAxis: string;
   otavaloInsight: string;
   andesTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const OTAVALO_SHADOWS = [
+  '제약 속에서 고유한 무늬를 찾는 긍정이 불필요하게 나를 옭아매는 낡은 조건까지 "좋은 뜻이 있겠지"라며 참고 견디는 태도가 되지 않게 하세요.',
+  '내 몸의 거리로 실의 장력을 조절하는 유연함이 해야 할 일의 기준선까지 너무 느슨하게 풀어 버리는 나태함으로 흘러서는 안 됩니다.',
+  '추진력과 수용력을 나란히 세우는 균형이 정작 집중해서 밀어붙여야 할 순간에도 에너지를 반씩 쪼개어 미적거리는 망설임이 되지 않게 하세요.',
+  '다른 빛깔과 나란히 어우러지는 포용이 내 고유한 무늬와 핵심 원칙까지 희석시키는 무색무취의 타협이 되지 않도록 중심을 지키세요.',
+  '새 장면을 열기 전 지난 먼지를 헹구는 정돈이 정작 본 작업은 시작도 못 하고 준비와 청소만 반복하는 미루기가 되지 않게 시간을 정하세요.',
+];
+
+function classifyOtavaloTopic(q: string): OtavaloLoomResult['questionTopic'] {
+  if (/제약|묶|무늬|장점/.test(q)) return '제약·무늬';
+  if (/장력|속도|조절|팽팽/.test(q)) return '장력·조절';
+  if (/추진|목표|수용|고요/.test(q)) return '추진·수용';
+  if (/색깔|조화|취향|방식/.test(q)) return '조화·광장';
+  if (/씻|정돈|새|시작/.test(q)) return '정돈·새출발';
+  return '오타발로 전반';
+}
+
 export function calculateOtavaloAndesLoomBalance(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): OtavaloLoomResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyOtavaloTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const picked = MOTIFS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const otavaloWeaveAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-OTAVALO-LOOM-v2.2.0',
+    engineVersion: 'LUCKEY-OTAVALO-LOOM-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     otavaloMotif: picked.motif,
     companionMotif: companion.motif,
+    otavaloWeaveAxis,
     otavaloInsight: picked.insight,
     andesTone: picked.tone,
     reflectionFocus: `오타발로 허리 베틀의 '${picked.motif}'을 중심에 두고 '${companion.motif}'의 결을 곁들여, 내 몸의 거리로 일의 장력을 조절하고 고유한 무늬를 엮어 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: OTAVALO_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '에콰도르 안데스 오타발로의 허리 베틀 직조와 이카트 염색 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +121,13 @@ export function formatOtavaloLoomPrompt(res: OtavaloLoomResult): string {
   return [
     `[오타발로·안데스 베틀 균형 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 베틀 직조 축: ${res.otavaloWeaveAxis}`,
     `- 오타발로 모티프: ${res.otavaloMotif} (${res.andesTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.otavaloInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
