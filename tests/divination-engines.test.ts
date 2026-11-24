@@ -2407,6 +2407,8 @@ test('Twelve Spirits Cycle Engine: 사주 12신살 완전 순환 궤도 및 일�
 test('Pythagorean Lifecycle Engine: 피타고라스 4대 피너클 & 챌린지 생애 주기 검증', () => {
   const res = calculatePythagoreanLifecycle({ profile, targetDate: new Date('2026-11-02T19:00:00+09:00'), question: '인생 전환기' });
   assert.equal(res.engineVersion, PYTHAGOREAN_LIFECYCLE_VERSION);
+  assert.equal(res.questionTopic, 'transition');
+  assert(res.shadowWarning.length > 0);
   assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(res.pythagoreanSynthesisMatrix?.integratedAction));
   assert.equal(res.pinnacles.length, 4);
@@ -2425,6 +2427,7 @@ test('Pythagorean Lifecycle Engine: 피타고라스 4대 피너클 & 챌린지 �
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('과잉 경계'));
   assert(prompt.includes('해석 경계'));
 });
 
@@ -2474,6 +2477,8 @@ test('Life Season Timing Engine: 10년 대운 및 교운기 타이밍 검증', (
   const res = calculateLifeSeasonTiming({ profile, targetYear: 2026, question: '올해의 계절' });
   assert(res !== null);
   assert.equal(res.engineVersion, LIFE_SEASON_ENGINE_VERSION);
+  assert.equal(res.questionTopic, 'season');
+  assert(res.shadowWarning.length > 0);
   assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(res.ritualAction.length > 0);
   assert(res.reflectionFocus.length > 0);
@@ -2486,6 +2491,7 @@ test('Life Season Timing Engine: 10년 대운 및 교운기 타이밍 검증', (
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('과잉 경계'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('%'));
   assert(!prompt.includes('/100'));
@@ -2596,6 +2602,8 @@ test('Noble Network Engine: 4대 귀인 및 인연 네트워크 시너지 검증
 test('Monthly Flow Engine: 12개월 월운 및 분기 타이밍 검증', () => {
   const res = calculateMonthlyFlow({ profile, targetYear: 2026, question: '이직 적기' });
   assert.equal(res.engineVersion, MONTHLY_FLOW_ENGINE_VERSION);
+  assert.equal(res.questionTopic, 'career');
+  assert(res.shadowWarning.length > 0);
   assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(res.reflectiveQuestion?.includes('이직 적기'));
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
@@ -2607,6 +2615,7 @@ test('Monthly Flow Engine: 12개월 월운 및 분기 타이밍 검증', () => {
   assert(prompt.includes('+09:00 (KST)'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
+  assert(prompt.includes('과잉 경계'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
