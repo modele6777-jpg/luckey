@@ -1,17 +1,38 @@
 import type { UserProfile } from '../sharedState';
 
+export type SwahiliQuestionTopic = 'relation' | 'work' | 'emotion' | 'decision' | 'general';
+
 export interface SwahiliUtuDhowResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: SwahiliQuestionTopic;
   monsoonWind: string;
   companionWind: string;
   utuGuidance: string;
   voyageTone: string;
+  monsoonVoyageAxis: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+function classifySwahiliTopic(q: string): SwahiliQuestionTopic {
+  if (/관계|사람|친절|존중|동료/.test(q)) return 'relation';
+  if (/일|직장|진로|일정|항해/.test(q)) return 'work';
+  if (/마음|감정|불안|지침|휴식/.test(q)) return 'emotion';
+  if (/선택|결정|멈추|나아갈|물때/.test(q)) return 'decision';
+  return 'general';
+}
+
+const SWAHILI_SHADOW_WARNINGS: Record<SwahiliQuestionTopic, string> = {
+  relation: '우투(Utu)의 배려가 자기희생으로 기울어 정작 내 선체의 균열을 돌보지 못하는 일이 없도록 하세요.',
+  work: '순풍을 타고 속도를 내는 날일수록 얕은 암초와 물때 확인을 건너뛰기 쉬우니 기본 점검을 남기세요.',
+  emotion: '항구에서 닻을 내리고 쉬는 동안에도 다음 출항 걱정으로 마음을 볶으면 라하(Raha)의 쉼이 되지 않습니다.',
+  decision: '바람과 별자리를 읽는 신중함이 영원한 정박으로 굳지 않도록, 닻을 올릴 최소 기준 하나를 정해 두세요.',
+  general: '흐름에 맞추는 유연함이 방향 상실로 이어지지 않도록 목적지 항구 이름만은 또렷이 기억하세요.',
+};
 
 const WINDS = [
   {
@@ -71,20 +92,26 @@ export function calculateSwahiliUtuDhowMonsoon(params: {
   question?: string;
 }): SwahiliUtuDhowResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifySwahiliTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % WINDS.length;
   const picked = WINDS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (WINDS.length - 1));
   const companion = WINDS[(idx + companionOffset) % WINDS.length];
+  const monsoonVoyageAxis = `${picked.wind} ↔ ${companion.wind}`;
 
   return {
-    engineVersion: 'LUCKEY-SWAHILI-UTU-DHOW-v2.2.0',
+    engineVersion: 'LUCKEY-SWAHILI-UTU-DHOW-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     monsoonWind: picked.wind,
     companionWind: companion.wind,
     utuGuidance: picked.guidance,
     voyageTone: picked.tone,
-    reflectionFocus: `계절풍을 기다리는 다우 범선처럼 '${picked.wind}'을 중심에 두고 '${companion.wind}'의 결을 곁들여 힘주기와 멈추기를 조절해 보세요.`,
+    monsoonVoyageAxis,
+    shadowWarning: SWAHILI_SHADOW_WARNINGS[questionTopic],
+    reflectionFocus: `계절풍을 기다리는 다우 범선(${questionTopic})처럼 '${picked.wind}'을 중심에 두고 '${companion.wind}'의 결을 곁들여 힘주기와 멈추기를 조절해 보세요.`,
     ritualAction: picked.action,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '동아프리카 스와힐리 우투(Utu) 정신과 다우 범선 계절풍 항해 지혜를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
@@ -93,12 +120,14 @@ export function calculateSwahiliUtuDhowMonsoon(params: {
 
 export function formatSwahiliUtuDhowPrompt(res: SwahiliUtuDhowResult): string {
   return [
-    `[스와힐리 우투·다우 계절풍 항해 성찰 · ${res.engineVersion}]`,
+    `[스와힐리 우투·다우 계절풍 항해 성찰 · ${res.engineVersion} | 질문 맥락: ${res.questionTopic}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 항해 바람: ${res.monsoonWind} (${res.voyageTone})`,
     `- 동반 바람: ${res.companionWind}`,
+    `- 계절풍 항해 균형 축: ${res.monsoonVoyageAxis}`,
     `- 중심 통찰: ${res.utuGuidance}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,

@@ -13757,14 +13757,16 @@ test('Haudenosaunee Seven Generations engine: council principle, +09:00 KST, and
 
 test('Swahili Utu Dhow Monsoon engine: wind, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSwahiliUtuDhowMonsoon({ profile, now: new Date('2026-11-20T06:20:00Z'), question: '언제 멈추고 언제 나아갈지 궁금해요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SWAHILI-UTU-DHOW-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SWAHILI-UTU-DHOW-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.equal(rep.questionTopic, 'decision');
   assert.ok(rep.companionWind !== rep.monsoonWind);
+  assert.ok(rep.monsoonVoyageAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSwahiliUtuDhowPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('스와힐리') && prompt.includes('동반 바람') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('스와힐리') && prompt.includes('동반 바람') && prompt.includes('과잉 경계') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Khmer Angkor Baray Water Balance engine: state, +09:00 KST, and interpretive boundary', () => {
@@ -14662,14 +14664,16 @@ test('Sicilian Majolica Etna Balance engine: motif, +09:00 KST, and interpretive
 
 test('Somali Gabay Dhow Horizon engine: principle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSomaliGabayDhowHorizon({ profile, now: new Date('2026-11-20T09:14:00Z'), question: '정갈한 한 마디와 계절풍의 때를 기다리고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SOMALI-GABAY-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SOMALI-GABAY-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.equal(rep.questionTopic, 'decision');
   assert.ok(rep.companionPrinciple !== rep.poetryPrinciple);
+  assert.ok(rep.gabayHorizonAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSomaliGabayPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('소말리') && prompt.includes('동반 원리') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('소말리') && prompt.includes('동반 원리') && prompt.includes('과잉 경계') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Bohemian Crystal Glass Light engine: facet, +09:00 KST, and interpretive boundary', () => {
@@ -15499,14 +15503,16 @@ test('Omo Karo Body Art engine: motif, +09:00 KST, and interpretive boundary', (
 
 test('Sumba Ikat Story engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSumbaIkatStory({ profile, now: new Date('2026-11-20T21:55:00Z'), question: '여백을 지키며 서사를 짜고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SUMBA-IKAT-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SUMBA-IKAT-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
+  assert.equal(rep.questionTopic, 'emotion');
   assert.ok(rep.companionMotif !== rep.ikatMotif);
+  assert.ok(rep.ikatLoomAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSumbaIkatPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('숨바') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('숨바') && prompt.includes('과잉 경계') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Batak Toba Sopo Roof engine: motif, +09:00 KST, and interpretive boundary', () => {
