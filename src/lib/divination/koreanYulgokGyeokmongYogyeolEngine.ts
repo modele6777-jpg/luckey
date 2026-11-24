@@ -10,12 +10,30 @@
  * 4. 독서(讀書): 이치를 궁구하여 일상에서 실천하는 실학적 성찰.
  * 5. 사친(事親)·접인(接人)·처세(處世): 가족을 공경하고 사람을 대함에 정성을 다하는 실천궁행.
  *
- * @version LUCKEY-YULGOK-GYEOKMONG-v2.2.0
+ * @version LUCKEY-YULGOK-GYEOKMONG-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const YULGOK_GYEOKMONG_VERSION = 'LUCKEY-YULGOK-GYEOKMONG-v2.3.0';
+export const YULGOK_GYEOKMONG_VERSION = 'LUCKEY-YULGOK-GYEOKMONG-v2.4.0';
+
+export type YulgokQuestionTopic = 'habit' | 'relation' | 'work' | 'emotion' | 'general';
+
+function classifyYulgokTopic(q: string): YulgokQuestionTopic {
+  if (/습관|미루|뜻|입지|혁구습/.test(q)) return 'habit';
+  if (/관계|사람|예절|소통|가족/.test(q)) return 'relation';
+  if (/일|공부|독서|직장|실천/.test(q)) return 'work';
+  if (/마음|감정|불안|화|조급/.test(q)) return 'emotion';
+  return 'general';
+}
+
+const YULGOK_SHADOW_WARNINGS: Record<YulgokQuestionTopic, string> = {
+  habit: '혁구습의 결단이 하루 만에 모든 것을 바꾸려는 조급함으로 변하면 작은 실패에도 쉽게 무너질 수 있습니다.',
+  relation: '구용구사의 단정함이 타인의 허물을 재단하는 깐깐함으로 흐르지 않도록 화순접인의 온기를 유지하십시오.',
+  work: '독서궁리의 완벽한 이해를 기다리느라 오늘 해야 할 작은 실천궁행을 미루지 마십시오.',
+  emotion: '감정을 다잡으려 스스로를 너무 거세게 몰아세우면 성의정심 대신 내면의 피로가 쌓입니다.',
+  general: '입지는 거창한 선언이 아니라 오늘 미루던 작은 일 하나를 제때 마치는 데서 단단해집니다.',
+};
 
 export interface YulgokStage {
   stageLevel: number;
@@ -28,6 +46,8 @@ export interface YulgokStage {
 export interface YulgokGyeokmongResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: YulgokQuestionTopic;
+  shadowWarning: string;
   // 5대 핵심 지표 (0~100)
   ipjiNobleAspirationIndex: number; // 입지 큰 뜻을 세우는 지향도
   hyeokguseupOldHabitReformForce: number; // 혁구습 묵은 습관 단절력
@@ -144,7 +164,9 @@ export function calculateYulgokGyeokmong(
   const epiphanyIdx = (seed >> 6) % GYEOKMONG_EPIPHANIES.length;
   const gyeokmongMasteryEpiphany = GYEOKMONG_EPIPHANIES[epiphanyIdx];
 
-  const trimmedQuery = query?.trim();
+  const trimmedQuery = query?.trim() ?? '';
+  const questionTopic = classifyYulgokTopic(trimmedQuery);
+  const shadowWarning = YULGOK_SHADOW_WARNINGS[questionTopic];
   const reflectiveQuestion = trimmedQuery
     ? `율곡 이이의 《격몽요결》 '${primaryYulgokPrecept.preceptTitleKo}'와 '${secondaryYulgokPrecept.preceptTitleKo}'를 비추어 볼 때, "${trimmedQuery}"에서 미루던 옛 습관을 끊고 바로 세워야 할 뜻은 무엇인가요?`
     : `지금 삶의 방향을 다잡는 자리에서, '${activeScholarStage.stageNameKo}'의 중심과 '${secondaryScholarStage.stageNameKo}'의 실천을 함께 열기 위해 오늘 끊어낼 습관은 무엇일까요?`;
@@ -171,6 +193,8 @@ export function calculateYulgokGyeokmong(
   return {
     engineVersion: YULGOK_GYEOKMONG_VERSION,
     calculatedAtKst: getKstDateString(now),
+    questionTopic,
+    shadowWarning,
     ipjiNobleAspirationIndex,
     hyeokguseupOldHabitReformForce,
     guyongGusaComposureMindfulness,
@@ -200,7 +224,7 @@ export function formatYulgokGyeokmongPrompt(result: YulgokGyeokmongResult): stri
   );
   const lines = [
     `[📖 조선 율곡 이이(栗谷 李珥) 《격몽요결(擊蒙要訣)》 입지·구용구사 수신 리포트]`,
-    `- 연산 시각: ${result.calculatedAtKst} | 엔진: ${result.engineVersion}`,
+    `- 연산 시각: ${result.calculatedAtKst} | 엔진: ${result.engineVersion} | 질문 맥락: ${result.questionTopic}`,
     `- 수양 국면: ${describeYulgokStage(avgScore)}`,
     `- 현행 수양적 품계: **[${result.activeScholarStage.stageNameKo} (${result.activeScholarStage.stageNameHanja})]**`,
     `- 보조 교차 품계: **[${result.secondaryScholarStage.stageNameKo} (${result.secondaryScholarStage.stageNameHanja})]**`,
@@ -215,6 +239,7 @@ export function formatYulgokGyeokmongPrompt(result: YulgokGyeokmongResult): stri
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 실천 의례: ${result.ritualAction}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
+    `- 과잉 경계: ${result.shadowWarning}`,
     `- 해석 경계: ${result.interpretiveBoundary}`,
   ];
   if (result.yulgokSynthesisMatrix) {
