@@ -20,13 +20,16 @@ export interface SamiNoaidiDrumJoikResult {
   engineName: string;
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '중심·온기' | '휴식·비축' | '이동·순환' | '직관·여명' | '회복·내면' | '사미 전반';
   activeDrumZone: SamiDrumZone;
   companionDrumZone: SamiDrumZone;
+  drumResonanceAxis: string;
   joikResonanceMode: string;
   seasonalRhythm: string;
   qualitativeSynthesis: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   isSymbolicFramework: true;
@@ -102,6 +105,23 @@ function stableHash(input: string): number {
   return h >>> 0;
 }
 
+const SAMI_SHADOWS: Record<SamiDrumZoneId, string> = {
+  sun_center_beaivi: '자신의 중심 온기에 시선을 모으는 태도가 바깥의 급한 신호나 타인의 요청까지 외면하는 자기중심성으로 좁아지지 않게 살피세요.',
+  north_winter_rest: '겨울 설원처럼 에너지를 아끼며 멈추는 지혜가 꼭 건너야 할 대화나 책임을 무한정 미루는 회피가 되지 않도록 기한을 두세요.',
+  south_warmth_movement: '계절의 물길을 따라 가볍게 움직이는 유연함이 한 자리에 뿌리내려야 할 약속까지 쉽게 옮겨 다니는 산만함이 되어서는 안 됩니다.',
+  east_dawn_clarity: '여명의 빛줄기 같은 첫 직감을 신뢰하되, 충분한 사실 확인이나 상대방의 사정을 살피는 과정을 건너뛰는 성급함은 경계하세요.',
+  west_ancestral_echo: '내면의 고요한 호수(Sáiva)로 물러나는 회복이 현실의 관계와 일상을 마주하기 싫어 숨는 고립으로 이어지지 않게 하세요.',
+};
+
+function classifySamiTopic(q: string): SamiNoaidiDrumJoikResult['questionTopic'] {
+  if (/중심|온기|태양|모아/.test(q)) return '중심·온기';
+  if (/휴식|쉼|겨울|비축/.test(q)) return '휴식·비축';
+  if (/이동|순환|흐름|움직/.test(q)) return '이동·순환';
+  if (/직관|결단|방향|여명/.test(q)) return '직관·여명';
+  if (/회복|호수|지친|내면/.test(q)) return '회복·내면';
+  return '사미 전반';
+}
+
 export function calculateSamiNoaidiDrumJoik(params: {
   profile: UserProfile;
   now?: Date;
@@ -109,6 +129,7 @@ export function calculateSamiNoaidiDrumJoik(params: {
 }): SamiNoaidiDrumJoikResult {
   const now = params.now ?? new Date();
   const query = (params.question ?? '').trim();
+  const questionTopic = classifySamiTopic(query);
 
   const seedStr = [
     params.profile.basic?.name ?? '',
@@ -123,6 +144,7 @@ export function calculateSamiNoaidiDrumJoik(params: {
   const companionDrumZone = SAMI_DRUM_ZONES[(activeIndex + companionOffset) % SAMI_DRUM_ZONES.length];
   const joikResonanceMode = JOIK_MODES[(seed >> 3) % JOIK_MODES.length];
   const seasonalRhythm = SAMI_EIGHT_SEASONS[(seed >> 5) % SAMI_EIGHT_SEASONS.length];
+  const drumResonanceAxis = `${activeDrumZone.koreanLabel} ↔ ${companionDrumZone.koreanLabel} (${questionTopic})`;
 
   const qualitativeSynthesis =
     `북유럽 사미(Sámi) 전통의 노아이디 드럼과 요이쿠 상징으로 살펴보면, 현재 마음의 진동은 ` +
@@ -134,6 +156,7 @@ export function calculateSamiNoaidiDrumJoik(params: {
     `${activeDrumZone.koreanLabel}의 리듬 위에서 ${companionDrumZone.koreanLabel}의 균형을 곁들여 불필요한 긴장을 내려놓고 고유한 호흡을 회복하는 시점`;
 
   const ritualAction = activeDrumZone.groundingPractice;
+  const shadowWarning = SAMI_SHADOWS[activeDrumZone.id];
 
   const reflectiveQuestion = query
     ? `‘${query.slice(0, 36)}’의 한가운데에서, ${activeDrumZone.koreanLabel}과 ${companionDrumZone.koreanLabel}의 감각을 되찾기 위해 지금 당장 멈추거나 놓아주어도 되는 긴장은 무엇인가요?`
@@ -141,15 +164,18 @@ export function calculateSamiNoaidiDrumJoik(params: {
 
   return {
     engineName: '사미(Sámi) 노아이디 드럼·요이쿠 리듬 (Noaidi Drum & Joik)',
-    engineVersion: 'LUCKEY-SAMI-NOAIDI-JOIK-v2.2.0',
+    engineVersion: 'LUCKEY-SAMI-NOAIDI-JOIK-v2.3.0',
     calculatedAtKst: formatSamiKstTimestamp(now),
+    questionTopic,
     activeDrumZone,
     companionDrumZone,
+    drumResonanceAxis,
     joikResonanceMode,
     seasonalRhythm,
     qualitativeSynthesis,
     reflectionFocus,
     ritualAction,
+    shadowWarning,
     reflectiveQuestion,
     interpretiveBoundary:
       '본 결과는 북유럽 사미(Sámi) 문화의 드럼 상징과 요이쿠(Joik) 성찰 철학을 바탕으로 한 비유적 자기 점검 프레임워크이며, 의학적·심리적 진단이나 미래 예측 수치가 아닙니다.',
@@ -161,6 +187,7 @@ export function formatSamiNoaidiDrumJoikPrompt(res: SamiNoaidiDrumJoikResult): s
   return [
     `[보조 상징 관점 — ${res.engineName}]`,
     `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 드럼 공명 축: ${res.drumResonanceAxis}`,
     `- 드럼 공명 영역: ${res.activeDrumZone.samiTerm} · ${res.activeDrumZone.koreanLabel} (${res.activeDrumZone.symbolicImage})`,
     `- 동반 공명 영역: ${res.companionDrumZone.samiTerm} · ${res.companionDrumZone.koreanLabel}`,
     `- 요이쿠 공명 방식: ${res.joikResonanceMode}`,
@@ -168,6 +195,7 @@ export function formatSamiNoaidiDrumJoikPrompt(res: SamiNoaidiDrumJoikResult): s
     `- 성찰 해석: ${res.qualitativeSynthesis}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 실천 의례: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
