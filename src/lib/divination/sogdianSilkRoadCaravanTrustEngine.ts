@@ -1,17 +1,38 @@
 import type { UserProfile } from '../sharedState';
 
+export type SogdianQuestionTopic = 'relation' | 'work' | 'emotion' | 'decision' | 'general';
+
 export interface SogdianSilkRoadResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: SogdianQuestionTopic;
   caravanStage: string;
   companionStage: string;
   merchantInsight: string;
   oasisTone: string;
+  caravanTrustAxis: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+function classifySogdianTopic(q: string): SogdianQuestionTopic {
+  if (/관계|사람|약속|신뢰|중재|동료/.test(q)) return 'relation';
+  if (/일|계약|협상|사업|여정|일정/.test(q)) return 'work';
+  if (/마음|감정|불안|지침|피곤/.test(q)) return 'emotion';
+  if (/선택|결정|방향|균형|판단/.test(q)) return 'decision';
+  return 'general';
+}
+
+const SOGDIAN_SHADOW_WARNINGS: Record<SogdianQuestionTopic, string> = {
+  relation: '약속과 문서를 지나치게 따지다 보면 상대의 선의와 여백까지 메마르게 만들 수 있으니 따뜻한 어조를 함께 두세요.',
+  work: '완벽한 균형과 조건을 맞추려다 출발 시각 자체를 놓치지 않도록, 최소 합의선만 긋고 길을 나서세요.',
+  emotion: '긴 여정을 버텨야 한다는 의무감에 지친 마음을 억누르면 낙타의 무릎이 먼저 꺾입니다. 오아시스에서 물부터 마시세요.',
+  decision: '고갯길의 별자리만 오래 바라보다 발밑의 돌부리를 놓칠 수 있습니다. 방향 확인 뒤엔 한 걸음 실행이 필요합니다.',
+  general: '신중함과 계산이 과해지면 모닥불 앞의 진솔한 대화를 놓칠 수 있습니다.',
+};
 
 const STAGES = [
   {
@@ -71,20 +92,26 @@ export function calculateSogdianSilkRoadCaravanTrust(params: {
   question?: string;
 }): SogdianSilkRoadResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifySogdianTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % STAGES.length;
   const picked = STAGES[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (STAGES.length - 1));
   const companion = STAGES[(idx + companionOffset) % STAGES.length];
+  const caravanTrustAxis = `${picked.stage} ↔ ${companion.stage}`;
 
   return {
-    engineVersion: 'LUCKEY-SOGDIAN-CARAVAN-v2.2.0',
+    engineVersion: 'LUCKEY-SOGDIAN-CARAVAN-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     caravanStage: picked.stage,
     companionStage: companion.stage,
     merchantInsight: picked.insight,
     oasisTone: picked.tone,
-    reflectionFocus: `실크로드 소그드 대상의 '${picked.stage}'을 중심에 두고 '${companion.stage}'의 결을 곁들여 긴 여정을 완주할 균형과 신뢰를 먼저 챙겨 보세요.`,
+    caravanTrustAxis,
+    shadowWarning: SOGDIAN_SHADOW_WARNINGS[questionTopic],
+    reflectionFocus: `실크로드 소그드 대상의 '${picked.stage}'(${questionTopic})을 중심에 두고 '${companion.stage}'의 결을 곁들여 긴 여정을 완주할 균형과 신뢰를 먼저 챙겨 보세요.`,
     ritualAction: picked.action,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '중앙아시아 고대 소그드 실크로드 대상들의 신뢰와 교류 문화를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
@@ -93,12 +120,14 @@ export function calculateSogdianSilkRoadCaravanTrust(params: {
 
 export function formatSogdianSilkRoadPrompt(res: SogdianSilkRoadResult): string {
   return [
-    `[소그드 실크로드 대상 신뢰 성찰 · ${res.engineVersion}]`,
+    `[소그드 실크로드 대상 신뢰 성찰 · ${res.engineVersion} | 질문 맥락: ${res.questionTopic}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 여정 단계: ${res.caravanStage} (${res.oasisTone})`,
     `- 동반 단계: ${res.companionStage}`,
+    `- 대상 신뢰 균형 축: ${res.caravanTrustAxis}`,
     `- 중심 통찰: ${res.merchantInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
