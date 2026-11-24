@@ -1,10 +1,10 @@
 {
-  "version": "1.8.454",
-  "builtAt": "2026-11-25T06:15:00+09:00",
-  "summary": "월로프 테랑가·사포텍 피예·종여내단 3대 엔진 질문 맥락·과잉 경계 심층 강화(v1.8.454)",
+  "version": "1.8.455",
+  "builtAt": "2026-11-25T06:25:00+09:00",
+  "summary": "수면 무의식·영혼 타로 여정·전략 협상 레버리지 3대 엔진 질문 맥락·과잉 경계 심층 강화(v1.8.455)",
   "items": [
-    "월로프 테랑가·바오밥 온기 엔진(v2.3.0): 질문 맥락(questionTopic), 바오밥 그늘 축(baobabShadeAxis), 모티프별 과잉 경계(shadowWarning) 추가",
-    "사포텍 피예·구름 지혜 엔진(v2.3.0): 질문 맥락(questionTopic), 구름 지평 축(cloudHorizonAxis), 상징별 과잉 경계(shadowWarning) 추가",
-    "도교 종여내단 3품 선도 엔진(v2.3.0): 질문 맥락별 과잉 경계(shadowWarning) 추가 및 수화기제 해석 깊이 보강"
+    "수면 회복·무의식 직관 엔진(v2.3.0): 질문 맥락(questionTopic), 야간 리듬 축(sleepRhythmAxis), 수면 강박 과잉 경계(shadowWarning) 추가",
+    "영혼의 타로 여정·4원소 연금술 엔진(v2.3.0): 질문 맥락(questionTopic), 연금술 균형 축(alchemyAxis), 원형·원소 과잉 경계(shadowWarning) 추가",
+    "전략 협상·손자병법 기문 레버리지 엔진(v2.3.0): 질문 맥락(questionTopic), 레버리지 조타 축(leverageAxis), 협상 과잉 경계(shadowWarning) 추가"
   ]
 }

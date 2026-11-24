@@ -16,7 +16,14 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const STRATEGIC_LEVERAGE_VERSION = 'LUCKEY-LEVERAGE-v2.2.0';
+export const STRATEGIC_LEVERAGE_VERSION = 'LUCKEY-LEVERAGE-v2.3.0';
+
+function classifyLeverageTopic(q: string): '계약·조건' | '갈등·방어' | '타이밍·주도' | '협상 전반' {
+  if (/계약|조건|단가|연봉|협상/.test(q)) return '계약·조건';
+  if (/갈등|반대|압박|방어|대응/.test(q)) return '갈등·방어';
+  if (/타이밍|주도|선제|시점|기회/.test(q)) return '타이밍·주도';
+  return '협상 전반';
+}
 
 function formatLeverageKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -46,11 +53,13 @@ export interface StrategicLeverageReport {
   engineVersion: string;
   calculatedAt: string;
   calculatedAtKst: string;
+  questionTopic: '계약·조건' | '갈등·방어' | '타이밍·주도' | '협상 전반';
   leverageScore: number;            // 보이지 않는 주도권 지수 (0~100)
   pokerFaceResilience: number;      // 포커페이스 & 멘탈 방어력 (0~100)
   activeQimenDoor: QimenDoorTactics;
   sunTzuTactic: SunTzuStrategyDetail;
   powerDynamicRole: '프레임 지배자 (Frame Dominator)' | '실리 수확자 (Value Harvester)' | '체스 마스터 (Patience Tactician)' | '판세 흔들기 승부사 (Game Changer)';
+  leverageAxis: string;
   strategicActionPlan: {
     openingMove: string;            // 협상 초반 전략
     counterStrategy: string;        // 상대방 압박 시 카운터 대처
@@ -60,6 +69,7 @@ export interface StrategicLeverageReport {
   synthesisPromptGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  shadowWarning: string;
   reflectiveQuestion?: string;
   leverageSynthesisMatrix?: {
     dominantTension: string;
@@ -148,6 +158,9 @@ export function runStrategicLeverageEngine(
 
   const calculatedAtKst = formatLeverageKstTimestamp(targetDate);
   const q = (question || '').trim();
+  const questionTopic = classifyLeverageTopic(q);
+  const leverageAxis = `${activeQimenDoor.split(':')[0]}의 흐름과 ${sunTzuTactic.chapter.split('-')[0].trim()} 전략을 결합해 보이지 않는 주도권을 세우는 협상 조타 축`;
+  const shadowWarning = `전략적 우위와 프레임 장악에 지나치게 치우쳐 장기적 신뢰나 상대방이 수용할 수 있는 최소한의 명분을 깎아내리지 않도록 경계하세요. (${strategicActionPlan.criticalTaboo})`;
   const leverageSynthesisMatrix = {
     dominantTension: `${activeQimenDoor} ↔ ${sunTacticSummary(sunTzuTactic)}`,
     alignmentState: `협상 페르소나: ${powerDynamicRole} · 오행: ${element}`,
@@ -165,15 +178,17 @@ export function runStrategicLeverageEngine(
     ? `"${q}" 협상 테이블에서 성급한 양보(${strategicActionPlan.criticalTaboo})를 피하고, 상대의 진짜 기준을 끌어낼 첫 질문은 무엇으로 잡을까요?`
     : `오늘 마주한 대화나 조율에서 ${powerDynamicRole}의 시선으로 먼저 던져 보고 싶은 기준 질문 하나는 무엇인가요?`;
 
-  const synthesisPromptGuidance = `[LUCKEY 전략 협상 & 손자병법 기문 레버리지 ${STRATEGIC_LEVERAGE_VERSION} | ${calculatedAtKst}]
+  const synthesisPromptGuidance = `[LUCKEY 전략 협상 & 손자병법 기문 레버리지 ${STRATEGIC_LEVERAGE_VERSION} | ${calculatedAtKst} | 질문 맥락: ${questionTopic}]
 - 기문둔갑 작전 모드: ${activeQimenDoor}
 - 협상 페르소나 롤: ${powerDynamicRole}
+- 레버리지 조타 축: ${leverageAxis}
 - 손자병법 실전 전술: [${sunTzuTactic.chapter}] "${sunTzuTactic.coreMaxim}"
   * 실전 지침: ${sunTzuTactic.negotiationTactic}
   * 심리 레버리지: ${sunTzuTactic.psychologicalLeverage}
 - 실전 액션 플랜: [초반] ${strategicActionPlan.openingMove} | [카운터] ${strategicActionPlan.counterStrategy} | [금기사항] ${strategicActionPlan.criticalTaboo}
 - 실천 의례: ${ritualAction}
 - 성찰 초점: ${reflectionFocus}
+- 과잉 경계: ${shadowWarning}
 - 교차 매트릭스: [핵심 긴장: ${leverageSynthesisMatrix.dominantTension} | 조율 상태: ${leverageSynthesisMatrix.alignmentState}]
   * 통합 실천: ${leverageSynthesisMatrix.integratedAction}
 - 성찰 질문: ${reflectiveQuestion}
@@ -183,15 +198,18 @@ export function runStrategicLeverageEngine(
     engineVersion: STRATEGIC_LEVERAGE_VERSION,
     calculatedAt: targetDate.toISOString(),
     calculatedAtKst,
+    questionTopic,
     leverageScore,
     pokerFaceResilience,
     activeQimenDoor,
     sunTzuTactic,
     powerDynamicRole,
+    leverageAxis,
     strategicActionPlan,
     synthesisPromptGuidance,
     ritualAction,
     reflectionFocus,
+    shadowWarning,
     reflectiveQuestion,
     leverageSynthesisMatrix,
     interpretiveBoundary,
