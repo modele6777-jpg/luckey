@@ -8,12 +8,30 @@
  * 4. 거경궁리(居敬窮理): 안으로는 마음을 경건히 보존하고(居敬), 밖으로는 사물의 이치를 끝까지 탐구함(窮理).
  * 5. 심통성정(心統性情): 마음은 타고난 본성(性)과 밖으로 드러나는 감정(情)을 통솔하는 주재자.
  *
- * @version LUCKEY-TOEGYE-SEONGHAK-SIPDO-v2.2.0
+ * @version LUCKEY-TOEGYE-SEONGHAK-SIPDO-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const TOEGYE_SEONGHAK_SIPDO_VERSION = 'LUCKEY-TOEGYE-SEONGHAK-SIPDO-v2.3.0';
+export const TOEGYE_SEONGHAK_SIPDO_VERSION = 'LUCKEY-TOEGYE-SEONGHAK-SIPDO-v2.4.0';
+
+export type ToegyeQuestionTopic = 'focus' | 'relation' | 'work' | 'emotion' | 'general';
+
+function classifyToegyeTopic(q: string): ToegyeQuestionTopic {
+  if (/마음|집중|경|주일|산만/.test(q)) return 'focus';
+  if (/관계|사람|예절|소통|가족/.test(q)) return 'relation';
+  if (/일|공부|탐구|이치|직장/.test(q)) return 'work';
+  if (/감정|불안|흔들|화|슬픔/.test(q)) return 'emotion';
+  return 'general';
+}
+
+const TOEGYE_SHADOW_WARNINGS: Record<ToegyeQuestionTopic, string> = {
+  focus: '경(敬)을 유지하려 너무 몸과 마음을 경직시키면 주일무적의 맑은 집중이 아니라 피로한 긴장으로 바뀔 수 있습니다.',
+  relation: '정제엄숙의 단정함이 타인에 대한 엄격한 잣대로 변하지 않도록 서명도(西銘圖)의 온기를 함께 두십시오.',
+  work: '격물궁리에 몰두해 끝없이 사유만 이어가다 정작 지금 실행해야 할 작은 실천(하학이상달)을 미루지 마십시오.',
+  emotion: '감정을 다스리려 스스로를 지나치게 다그치면 성정(性情)의 조화 대신 내면의 억압이 쌓일 수 있습니다.',
+  general: '성학의 첫걸음은 거창한 도학이 아니라 지금 책상 앞 호흡과 자세를 가다듬는 소학의 작은 예에서 시작됩니다.',
+};
 
 export interface SeonghakDiagram {
   diagramNumber: number;
@@ -33,6 +51,8 @@ export interface GyeongPractice {
 export interface ToegyeSeonghakSipdoResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: ToegyeQuestionTopic;
+  shadowWarning: string;
   // 5대 핵심 지표 (0~100)
   gyeongMindfulnessFocusScore: number;       // 경(敬) 내면집중 주일무적도
   geogyeongGungriPrecisionScore: number;     // 거경궁리 사유이치 정밀도
@@ -197,7 +217,9 @@ export function calculateToegyeSeonghakSipdo(
   const focalGyeongPractice = GYEONG_PRACTICES[practiceIndex];
   const secondaryGyeongPractice = GYEONG_PRACTICES[secondaryPracticeIndex];
 
-  const trimmedQuery = query?.trim();
+  const trimmedQuery = query?.trim() ?? '';
+  const questionTopic = classifyToegyeTopic(trimmedQuery);
+  const shadowWarning = TOEGYE_SHADOW_WARNINGS[questionTopic];
   const ritualAction = `[${focalGyeongPractice.practiceHanja.split(' ')[0]}] ${focalGyeongPractice.dailyApplication}`;
   const reflectiveQuestion = trimmedQuery
     ? `퇴계 이황의 《${activeSeonghakDiagram.diagramTitleHanja}》와 《${secondarySeonghakDiagram.diagramTitleHanja}》를 비추어 볼 때, "${trimmedQuery}"에서 흩어진 마음을 하나로 모으는 경(敬)의 태도는 무엇인가요?`
@@ -229,6 +251,8 @@ export function calculateToegyeSeonghakSipdo(
   return {
     engineVersion: TOEGYE_SEONGHAK_SIPDO_VERSION,
     calculatedAtKst,
+    questionTopic,
+    shadowWarning,
     gyeongMindfulnessFocusScore,
     geogyeongGungriPrecisionScore,
     sangseongseongAwakeningScore,
@@ -261,7 +285,7 @@ export function formatToegyeSeonghakSipdoPrompt(res: ToegyeSeonghakSipdoResult):
   );
   const lines = [
     `【한국 조선 성리학 퇴계 이황 성학십도 경(敬) 심법 지표】`,
-    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion} | 질문 맥락: ${res.questionTopic}`,
     `- 경(敬) 수양 국면: ${describeToegyeStage(avgScore)}`,
     `- 성학십도 도상: ${res.activeSeonghakDiagram.diagramTitleHanja} (${res.activeSeonghakDiagram.diagramTitleKo})`,
     `- 보조 교차 도상: ${res.secondarySeonghakDiagram.diagramTitleHanja} (${res.secondarySeonghakDiagram.diagramTitleKo})`,
@@ -273,6 +297,7 @@ export function formatToegyeSeonghakSipdoPrompt(res: ToegyeSeonghakSipdoResult):
     `- 실천 의례: ${res.ritualAction}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 철학적 처방: ${res.toegyePhilosophicalCounsel.philosophicalGuidance}`,
   ];
