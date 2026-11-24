@@ -1,8 +1,37 @@
 import type { UserProfile } from '../sharedState';
 
+export type TainoQuestionTopic = 'rhythm' | 'emotion' | 'clarity' | 'relation' | 'general';
+
+function classifyTainoTopic(q: string): TainoQuestionTopic {
+  if (/호흡|리듬|박자|속도|균형/.test(q)) return 'rhythm';
+  if (/감정|마음|불안|파도|평정/.test(q)) return 'emotion';
+  if (/정리|선택|시야|결단|복잡/.test(q)) return 'clarity';
+  if (/관계|사람|소통|연결|대화/.test(q)) return 'relation';
+  return 'general';
+}
+
+const TAINO_AXIS_BY_INDEX = [
+  '아레이토 원형 호흡 축(혼자의 박자를 공동체 리듬과 맞추는 순환)',
+  '아타베이 심해 평정 축(거친 표면 아래 깊은 바닥을 지키는 고요)',
+  '코호바 정화 시야 축(결정을 늦추고 번잡함을 먼저 비우는 맑음)',
+  '카누 해협 연결 축(멀어진 거리 사이에 작은 노를 젓는 실행)',
+  '바테이 광장 개방 축(닫힌 울타리를 열어 새 바람을 들이는 포용)',
+] as const;
+
+const TAINO_SHADOW_WARNINGS: Record<TainoQuestionTopic, string> = {
+  rhythm: '남의 박자에 맞추느라 내 숨이 가빠지지 않도록, 쉼표의 길이도 스스로 정해 두십시오.',
+  emotion: '평정을 지키려 감정을 무조건 가라앉히기만 하면 신호를 놓칠 수 있으니, 올라오는 마음의 이유도 함께 살피십시오.',
+  clarity: '비우기와 정리에만 머물러 정작 필요한 첫 선택을 계속 미루지 않도록 작은 기준 하나를 남기십시오.',
+  relation: '광장을 여는 호의가 무분별한 양보로 흐르지 않게 내 시간과 에너지의 선을 분명히 하십시오.',
+  general: '리듬과 조화는 억지로 맞출 때보다 잠시 멈춰 숨을 고를 때 더 자연스럽게 돌아옵니다.',
+};
+
 export interface TainoZemiAreitoResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: TainoQuestionTopic;
+  areitoHarmonyAxis: string;
+  shadowWarning: string;
   zemiEmblem: string;
   companionEmblem: string;
   areitoInsight: string;
@@ -71,15 +100,22 @@ export function calculateTainoZemiAreitoHarmony(params: {
   question?: string;
 }): TainoZemiAreitoResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyTainoTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % EMBLEMS.length;
   const picked = EMBLEMS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (EMBLEMS.length - 1));
   const companion = EMBLEMS[(idx + companionOffset) % EMBLEMS.length];
+  const areitoHarmonyAxis = TAINO_AXIS_BY_INDEX[idx];
+  const shadowWarning = TAINO_SHADOW_WARNINGS[questionTopic];
 
   return {
-    engineVersion: 'LUCKEY-TAINO-ZEMI-AREITO-v2.2.0',
+    engineVersion: 'LUCKEY-TAINO-ZEMI-AREITO-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
+    areitoHarmonyAxis,
+    shadowWarning,
     zemiEmblem: picked.emblem,
     companionEmblem: companion.emblem,
     areitoInsight: picked.insight,
@@ -94,13 +130,15 @@ export function calculateTainoZemiAreitoHarmony(params: {
 export function formatTainoZemiAreitoPrompt(res: TainoZemiAreitoResult): string {
   return [
     `[타이노 세미·아레이토 조화 성찰 · ${res.engineVersion}]`,
-    `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `- 세미 상징: ${res.zemiEmblem} (${res.islandTone})`,
     `- 동반 상징: ${res.companionEmblem}`,
+    `- 조화 축: ${res.areitoHarmonyAxis}`,
     `- 중심 통찰: ${res.areitoInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

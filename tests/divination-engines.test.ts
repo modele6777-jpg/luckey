@@ -13993,14 +13993,16 @@ test('Sogdian Silk Road Caravan Trust engine: stage, +09:00 KST, and interpretiv
 
 test('Taino Zemi Areito Harmony engine: emblem, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateTainoZemiAreitoHarmony({ profile, now: new Date('2026-11-20T07:12:00Z'), question: '호흡과 리듬을 맞추고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-TAINO-ZEMI-AREITO-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-TAINO-ZEMI-AREITO-v2.3.0');
+  assert.equal(rep.questionTopic, 'rhythm');
+  assert.ok(rep.areitoHarmonyAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionEmblem !== rep.zemiEmblem);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatTainoZemiAreitoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('타이노') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('타이노') && prompt.includes('동반 상징') && prompt.includes('과잉 경계') && prompt.includes('+09:00 (KST)'));
 });
 
 test('Basotho Botho Mountain Wisdom engine: sign, +09:00 KST, and interpretive boundary', () => {
@@ -15407,14 +15409,16 @@ test('Maldivian Coral Atoll engine: motif, +09:00 KST, and interpretive boundary
 
 test('Tatra Shepherd Ridge engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateTatraShepherdRidge({ profile, now: new Date('2026-11-20T21:16:00Z'), question: '발끝의 능선부터 차분히 짚고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-TATRA-RIDGE-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-TATRA-RIDGE-v2.3.0');
+  assert.equal(rep.questionTopic, 'grounding');
+  assert.ok(rep.tatraRidgeAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.symbolicMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatTatraRidgePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('타트라') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('타트라') && prompt.includes('과잉 경계') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Yemeni Shibam Mud Tower engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15593,14 +15597,16 @@ test('Batak Toba Sopo Roof engine: motif, +09:00 KST, and interpretive boundary'
 
 test('Tarahumara Raramuri Stride engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateTarahumaraStride({ profile, now: new Date('2026-11-20T22:05:00Z'), question: '멀리 갈 수 있는 호흡을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-TARAHUMARA-STRIDE-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-TARAHUMARA-STRIDE-v2.3.0');
+  assert.equal(rep.questionTopic, 'pace');
+  assert.ok(rep.raramuriStrideAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.strideMotif);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatTarahumaraStridePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('타라후마라') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('타라후마라') && prompt.includes('과잉 경계') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
 });
 
 test('Orkney Skara Brae Hearth engine: motif, +09:00 KST, and interpretive boundary', () => {

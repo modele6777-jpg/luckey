@@ -1,10 +1,10 @@
 {
-  "version": "1.8.464",
-  "builtAt": "2026-11-25T07:55:00+09:00",
-  "summary": "숙요경 27숙·도교 내단 경락·초월 명상 3대 엔진 심층 강화(v1.8.464)",
+  "version": "1.8.465",
+  "builtAt": "2026-11-25T08:05:00+09:00",
+  "summary": "타이노 아레이토·타라후마라 발걸음·타트라 능선 3대 엔진 심층 강화(v1.8.465)",
   "items": [
-    "정통 밀교 숙요경 27숙 매트릭스 엔진(v2.3.0): 질문 맥락(questionTopic), 테마별 과잉 경계(shadowWarning) 추가",
-    "도교 내단 양생 & 진기 순환 경락 시계 엔진(v2.3.0): 질문 맥락(questionTopic), 테마별 과잉 경계(shadowWarning) 추가",
-    "초월 명상 & 마음 안정 엔진(v2.3.0): 질문 맥락(questionTopic), 테마별 과잉 경계(shadowWarning) 추가"
+    "카리브 타이노 세미·아레이토 조화 엔진(v2.3.0): 질문 맥락(questionTopic), 조화 축(areitoHarmonyAxis), 과잉 경계(shadowWarning) 추가",
+    "타라후마라 라라무리 발걸음 엔진(v2.3.0): 질문 맥락(questionTopic), 보폭 축(raramuriStrideAxis), 과잉 경계(shadowWarning) 추가",
+    "카르파티아 타트라 목동 능선 엔진(v2.3.0): 질문 맥락(questionTopic), 능선 축(tatraRidgeAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }
