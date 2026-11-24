@@ -10,12 +10,12 @@
  * 4. 사리사욕 초월 애국위민(愛國爲民): 모함과 난국 속에서도 흔들림 없이 백성의 굶주림과 고통을 보살피고 공공의 안녕을 위해 목숨을 바쳐 헌신한 청렴과 지조.
  * 5. 현장 중심 실무 위기관리력: 훈련도감(訓鍊都監) 설치, 속오법(束伍法) 편성, 양곡 확보와 작전 조율 등 허장성세를 버리고 실질적 결과를 만들어내는 실사구시적 위기 해결력.
  *
- * @version LUCKEY-RYU-SEONGRYONG-JINGBIROK-v2.2.0
+ * @version LUCKEY-RYU-SEONGRYONG-JINGBIROK-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_RYU_SEONGRYONG_VERSION = 'LUCKEY-RYU-SEONGRYONG-JINGBIROK-v2.3.0';
+export const KOREAN_RYU_SEONGRYONG_VERSION = 'LUCKEY-RYU-SEONGRYONG-JINGBIROK-v2.4.0';
 
 export interface JingbirokTheme {
   themeKey: string;
@@ -36,6 +36,7 @@ export interface JingbirokAphorism {
 export interface RyuSeongryongJingbirokResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '과오·복기' | '선제·방비' | '인재·연대' | '공심·청렴' | '실사구시' | '징비 전반';
   // 5대 핵심 징비·위기극복 지표 (0~100)
   jingjeonBihuPastReflectionScore: number;          // 징전비후(懲前毖後) 과거 과오 직시 및 재발 방지 성찰도
   yubimuhwanPreemptivePreparednessScore: number;    // 유비무환(有備無患) 거안사위 선제적 위기 방비력
@@ -49,6 +50,7 @@ export interface RyuSeongryongJingbirokResult {
   secondaryJingbirokAphorism: JingbirokAphorism;
   ritualAction: string;
   reflectionFocus: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   seongryongComprehensiveGuidance: {
@@ -154,6 +156,23 @@ export const JINGBIROK_APHORISMS: JingbirokAphorism[] = [
   },
 ];
 
+const JINGBIROK_SHADOWS: Record<string, string> = {
+  jing_jeon_bi_hu: '과거의 잘못을 철저히 복기하는 태도가 스스로를 자책의 늪에 가두어 다음 발걸음을 주저하게 만드는 자괴로 흐르지 않게 경계하세요.',
+  geo_an_sa_wi: '편안할 때 위태로움을 살피는 거안사위가 일어나지도 않은 최악의 시나리오를 과도하게 걱정하며 현재의 실행을 마비시키는 불안이 되지 않게 하세요.',
+  geo_hyeon_yang_neung: '적임자를 믿고 맡기는 대승적 연대가 정작 핵심 책임과 원칙의 점검까지 방임으로 넘겨버리는 무책임이 되지 않게 균형을 잡으세요.',
+  gong_sim_ae_min: '사리사욕을 비우고 공공선을 앞세우는 공심이 정작 자기 자신의 회복과 지속 가능한 한계선마저 돌보지 않는 소진으로 이어지지 않게 살피세요.',
+  sil_sa_gu_si_wi_gi: '현장과 실질에 집중하는 실사구시가 지금 당장의 단기 성과에만 매달려 장기적 원칙과 큰 방향성을 놓치는 근시가 되지 않게 주의하세요.',
+};
+
+function classifyJingbirokTopic(q: string): RyuSeongryongJingbirokResult['questionTopic'] {
+  if (/과거|실수|실패|과오|복기/.test(q)) return '과오·복기';
+  if (/비상|방비|대비|미리|평온|유비무환/.test(q)) return '선제·방비';
+  if (/인재|동료|협력|연대|신뢰/.test(q)) return '인재·연대';
+  if (/공심|청렴|사심|공공|원칙/.test(q)) return '공심·청렴';
+  if (/실질|현장|실행|대책|실사구시/.test(q)) return '실사구시';
+  return '징비 전반';
+}
+
 export function calculateRyuSeongryongJingbirok(
   profile: UserProfile,
   query?: string,
@@ -165,7 +184,9 @@ export function calculateRyuSeongryongJingbirok(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `RYU-SEONGRYONG-JINGBIROK:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const cleanQuery = (query ?? '').trim();
+  const questionTopic = classifyJingbirokTopic(cleanQuery);
+  const seedString = `RYU-SEONGRYONG-JINGBIROK:${name}:${birthDate}:${birthTime}:${gender}:${cleanQuery}`;
 
   let hash = 0;
   for (let i = 0; i < seedString.length; i++) {
@@ -190,8 +211,8 @@ export function calculateRyuSeongryongJingbirok(
   const focalJingbirokAphorism = JINGBIROK_APHORISMS[aphorismIndex];
   const secondaryJingbirokAphorism = JINGBIROK_APHORISMS[secondaryAphorismIndex];
 
-  const cleanQuery = query?.trim();
   const ritualAction = `[${activeJingbirokTheme.themeTitleHanja}] ${focalJingbirokAphorism.actionGuidance}`;
+  const shadowWarning = JINGBIROK_SHADOWS[activeJingbirokTheme.themeKey] ?? JINGBIROK_SHADOWS.jing_jeon_bi_hu;
   const reflectiveQuestion = cleanQuery
     ? `"${cleanQuery}"에서 과거의 교훈(징전비후)을 비추어 지금 미리 대비해야 할 허점은 무엇인가?`
     : `지금 평온해 보이는 상황 속에서, 훗날의 환난을 막기 위해 미리 점검해야 할 대비책은 무엇인가?`;
@@ -223,6 +244,7 @@ export function calculateRyuSeongryongJingbirok(
   return {
     engineVersion: KOREAN_RYU_SEONGRYONG_VERSION,
     calculatedAtKst,
+    questionTopic,
     jingjeonBihuPastReflectionScore,
     yubimuhwanPreemptivePreparednessScore,
     daeseungTalentIntegrationScore,
@@ -234,6 +256,7 @@ export function calculateRyuSeongryongJingbirok(
     secondaryJingbirokAphorism,
     ritualAction,
     reflectionFocus,
+    shadowWarning,
     reflectiveQuestion,
     interpretiveBoundary,
     seongryongComprehensiveGuidance: {
@@ -256,7 +279,7 @@ export function formatRyuSeongryongJingbirokPrompt(res: RyuSeongryongJingbirokRe
   const lines = [
     `【서애 류성룡 《징비록》 징전비후 성찰 & 유비무환 위기대응 지표】`,
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
-    `- 위기대비 국면: ${describeJingbirokStage(avgScore)}`,
+    `- 질문 맥락: ${res.questionTopic} | 위기대비 국면: ${describeJingbirokStage(avgScore)}`,
     `- 핵심 징비 테마: ${res.activeJingbirokTheme.themeTitleKo} [${res.activeJingbirokTheme.themeTitleHanja}]`,
     `- 보조 교차 테마: ${res.secondaryJingbirokTheme.themeTitleKo} [${res.secondaryJingbirokTheme.themeTitleHanja}]`,
     `- 역사적·철학적 통찰: ${res.activeJingbirokTheme.historicalInsight}`,
@@ -266,6 +289,7 @@ export function formatRyuSeongryongJingbirokPrompt(res: RyuSeongryongJingbirokRe
     `- 한자 원문: "${res.focalJingbirokAphorism.aphorismHanja}" [${res.focalJingbirokAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalJingbirokAphorism.actionGuidance}`,
     `- 실천 의례: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
