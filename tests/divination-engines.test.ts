@@ -13793,14 +13793,15 @@ test('Kyrgyz Manas Oral Epic Courage engine: chapter, +09:00 KST, and interpreti
 
 test('Shona Mbira Ancestral Resonance engine: cycle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateShonaMbiraAncestralResonance({ profile, now: new Date('2026-11-20T06:40:00Z'), question: '마음의 리듬을 되찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SHONA-MBIRA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SHONA-MBIRA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionCycle !== rep.mbiraCycle);
+  assert.ok(rep.mbiraResonanceAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatShonaMbiraPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('쇼나') && prompt.includes('동반 순환') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('쇼나') && prompt.includes('동반 순환') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Tongan Kava Circle Tauhi Va engine: practice, +09:00 KST, and interpretive boundary', () => {
@@ -14636,14 +14637,15 @@ test('Bohemian Crystal Glass Light engine: facet, +09:00 KST, and interpretive b
 
 test('San Kalahari Tracking Stars engine: sign, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSanKalahariTrackingStars({ profile, now: new Date('2026-11-20T09:20:00Z'), question: '작은 징후를 먼저 읽어 방향을 잡고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SAN-KALAHARI-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SAN-KALAHARI-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSign !== rep.desertSign);
+  assert.ok(rep.kalahariTrackAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSanKalahariPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('칼라하리') && prompt.includes('동반 징후') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('칼라하리') && prompt.includes('동반 징후') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Phrygian Gordian Knot Clarity engine: symbol, +09:00 KST, and interpretive boundary', () => {
@@ -15314,14 +15316,15 @@ test('Icelandic Saga Hearth engine: motif, +09:00 KST, and interpretive boundary
 
 test('Sepik River Carving engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSepikRiverCarving({ profile, now: new Date('2026-11-20T21:28:00Z'), question: '거친 결을 살려 쓰고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SEPIK-CARVING-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SEPIK-CARVING-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.symbolicMotif);
+  assert.ok(rep.sepikGrainAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSepikCarvingPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('세픽') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('세픽') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
 });
 
 test('Moldovan Orhei Limestone engine: motif, +09:00 KST, and interpretive boundary', () => {

@@ -3,10 +3,13 @@ import type { UserProfile } from '../sharedState';
 export interface SepikCarvingResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '결·옹이' | '흐름·곡선' | '선명·기준' | '유연·높이' | '관찰·기다림' | '세픽 전반';
   reflectionFocus: string;
   symbolicMotif: string;
   companionMotif: string;
+  sepikGrainAxis: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -54,13 +57,32 @@ const SEPIK_QUESTIONS = [
   '서둘러 깎아 내기 전에 그 안에 이미 들어 있는 형상이 드러날 때까지 기다려 줄 일은 무엇인가요?'
 ];
 
+const SEPIK_SHADOWS = [
+  '나무의 옹이와 거친 결을 그대로 살리는 수용이 분명히 다듬고 고쳐야 할 습관이나 실수까지 "원래 내 결"이라며 합리화하는 태도가 되지 않게 하세요.',
+  '물살의 곡선을 따라 노를 젓는 유연함이 꼭 세워야 할 직선의 마감선과 약속 시간까지 흐리게 만드는 무계획함이 되어서는 안 됩니다.',
+  '황토·석회·숯 세 가지 색처럼 기준을 압축하는 선명함이 맥락과 세밀한 사정을 살피지 않는 거친 단순화로 흐르지 않게 주의하세요.',
+  '수위에 맞춰 마루 높이를 조절하는 적응력이 내 중심 가치까지 주변 환경에 따라 수시로 바꾸는 무원칙함이 되지 않도록 기준선을 지키세요.',
+  '조각칼을 들기 전 나무를 오래 바라보는 신중함이 막상 첫 칼을 대어야 할 때조차 망설이며 실행을 미루는 핑계가 되지 않게 하세요.',
+];
+
+function classifySepikTopic(q: string): SepikCarvingResult['questionTopic'] {
+  if (/결|옹이|거친|살려/.test(q)) return '결·옹이';
+  if (/곡선|물살|흐름|카누/.test(q)) return '흐름·곡선';
+  if (/기준|세 가지|선명|덜어/.test(q)) return '선명·기준';
+  if (/높이|유연|변화|수위/.test(q)) return '유연·높이';
+  if (/기다|바라|칼|드려/.test(q)) return '관찰·기다림';
+  return '세픽 전반';
+}
+
 export function calculateSepikRiverCarving(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): SepikCarvingResult {
   const { profile, now = new Date(), question = '' } = params;
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${question.trim()}|${now.toISOString().slice(0, 13)}`;
+  const q = question.trim();
+  const questionTopic = classifySepikTopic(q);
+  const seed = `${JSON.stringify(profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const hash = stableHash(seed);
   const idx = hash % SEPIK_MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (SEPIK_MOTIFS.length - 1));
@@ -68,17 +90,22 @@ export function calculateSepikRiverCarving(params: {
   const motif = SEPIK_MOTIFS[idx];
   const companionMotif = SEPIK_MOTIFS[(idx + companionOffset) % SEPIK_MOTIFS.length];
   const ritualAction = SEPIK_ACTIONS[idx];
+  const shadowWarning = SEPIK_SHADOWS[idx];
   const reflectiveQuestion = SEPIK_QUESTIONS[idx];
+  const sepikGrainAxis = `${motif.slice(0, 14).trim()} ↔ ${companionMotif.slice(0, 14).trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-SEPIK-CARVING-v2.2.0',
+    engineVersion: 'LUCKEY-SEPIK-CARVING-v2.3.0',
     calculatedAtKst: getKstTimeString(now),
-    reflectionFocus: question.trim()
-      ? `질문 "${question.trim()}" 속에서 나무의 옹이와 강물의 곡선을 있는 그대로 살리는 세픽 강 조각 관점 (동반 결: ${companionMotif.slice(0, 24)}…)`
+    questionTopic,
+    reflectionFocus: q
+      ? `질문 "${q}" 속에서 나무의 옹이와 강물의 곡선을 있는 그대로 살리는 세픽 강 조각 관점 (동반 결: ${companionMotif.slice(0, 24)}…)`
       : '거친 결을 깎아 버리지 않고 형태를 꺼내는 파푸아뉴기니 세픽 강 조각 관점',
     symbolicMotif: motif,
     companionMotif,
+    sepikGrainAxis,
     ritualAction,
+    shadowWarning,
     reflectiveQuestion,
     interpretiveBoundary:
       '파푸아뉴기니 세픽 강 목조 예술 전통의 상징적 비유로, 개인 점수·성격 진단·미래 예측이 아닙니다.'
@@ -89,10 +116,12 @@ export function formatSepikCarvingPrompt(result: SepikCarvingResult): string {
   return [
     `[세픽 강·영혼 조각 관점 (${result.engineVersion})]`,
     `- 기준 시각: ${result.calculatedAtKst}`,
+    `- 질문 맥락: ${result.questionTopic} | 목조 결 축: ${result.sepikGrainAxis}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 상징 모티프: ${result.symbolicMotif}`,
     `- 동반 모티프: ${result.companionMotif}`,
     `- 제안 의식: ${result.ritualAction}`,
+    `- 과잉 경계: ${result.shadowWarning}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 경계: ${result.interpretiveBoundary}`
   ].join('\n');

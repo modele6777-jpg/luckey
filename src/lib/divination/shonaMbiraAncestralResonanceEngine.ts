@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface ShonaMbiraResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '첫선율·실행' | '화답·대화' | '정적·휴식' | '리듬·순환' | '엇박·전환' | '음비라 전반';
   mbiraCycle: string;
   companionCycle: string;
+  mbiraResonanceAxis: string;
   resonanceInsight: string;
   stoneTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const SHONA_SHADOWS = [
+  '마음이 끌리는 첫 선율(Kushaura)부터 여는 솔직함이 순서를 지켜 처리해야 할 기본 의무까지 건너뛰는 즉흥성으로 흘러서는 안 됩니다.',
+  '상대의 말에 화답(Kutsinhira)하며 겹쳐 가는 여유가 내 본래 핵심 메시지까지 흐리게 만드는 눈치 보기가 되지 않게 균형을 잡으세요.',
+  '잠깐의 침묵과 정적(Nyamamusasa)을 지키는 태도가 꼭 꺼내야 할 솔직한 피드백이나 거절의 말까지 삼켜 버리는 회피가 되지 않게 살피세요.',
+  '반복되는 고민을 닦아 내는 밤샘 순환(Bira)이 똑같은 생각을 제자리에서 맴돌며 실행을 미루는 반추로 고이지 않도록 한 줄 결론을 남기세요.',
+  '어긋난 틈에서 새 길을 여는 엇박자(Chamavara)의 재치가 애써 세운 기존 계획과 약속을 가볍게 뒤집는 산만함이 되지 않게 주의하세요.',
+];
+
+function classifyShonaTopic(q: string): ShonaMbiraResult['questionTopic'] {
+  if (/첫|선율|실행|마음/.test(q)) return '첫선율·실행';
+  if (/화답|대화|상대|사람/.test(q)) return '화답·대화';
+  if (/정적|침묵|힘|휴식/.test(q)) return '정적·휴식';
+  if (/리듬|박자|순환|고민/.test(q)) return '리듬·순환';
+  if (/어긋|엇박|대안|전환/.test(q)) return '엇박·전환';
+  return '음비라 전반';
+}
+
 export function calculateShonaMbiraAncestralResonance(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): ShonaMbiraResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyShonaTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % CYCLES.length;
   const picked = CYCLES[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (CYCLES.length - 1));
   const companion = CYCLES[(idx + companionOffset) % CYCLES.length];
+  const mbiraResonanceAxis = `${picked.cycle.split('(')[0].trim()} ↔ ${companion.cycle.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-SHONA-MBIRA-v2.2.0',
+    engineVersion: 'LUCKEY-SHONA-MBIRA-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     mbiraCycle: picked.cycle,
     companionCycle: companion.cycle,
+    mbiraResonanceAxis,
     resonanceInsight: picked.insight,
     stoneTone: picked.tone,
     reflectionFocus: `음비라의 '${picked.cycle}' 선율을 중심에 두고 '${companion.cycle}'의 울림을 곁들여, 어긋난 마음을 억지로 고치려 하기보다 내 호흡의 리듬부터 다시 맞추어 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: SHONA_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '짐바브웨 쇼나 음비라(Mbira) 공명과 순환 미학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +121,13 @@ export function formatShonaMbiraPrompt(res: ShonaMbiraResult): string {
   return [
     `[쇼나 음비라 공명 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 공명 순환 축: ${res.mbiraResonanceAxis}`,
     `- 선율 순환: ${res.mbiraCycle} (${res.stoneTone})`,
     `- 동반 순환: ${res.companionCycle}`,
     `- 중심 통찰: ${res.resonanceInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
