@@ -419,7 +419,12 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok || !body?.token) {
-        fail(body?.code || 'live-unavailable', handlers.orb ? '음성 서버에 연결하지 못했어요. 다시 연결을 눌러 주세요.' : '실시간 음성을 열지 못해 기본 마이크로 듣습니다.');
+        const code = typeof body?.code === 'string' ? body.code : 'live-unavailable';
+        const needsServerSetup = code === 'GEMINI_API_KEY_INVALID' || code === 'GEMINI_API_KEY_MISSING';
+        const orbMessage = needsServerSetup
+          ? '음성 서버에서 인증을 거부했어요. 음성 서버 설정을 확인해야 합니다.'
+          : '음성 서버에 연결하지 못했어요. 잠시 후 다시 연결해 주세요.';
+        fail(code, handlers.orb ? orbMessage : '실시간 음성을 열지 못해 기본 마이크로 듣습니다.');
         return;
       }
       token = String(body.token);
