@@ -57,7 +57,7 @@ export async function issueGeminiLiveToken(
     outputAudioTranscription: {},
   };
   const headers = { 'content-type': 'application/json', 'x-goog-api-key': key };
-  const url = 'https://generativelanguage.googleapis.com/v1alpha/auth_tokens';
+  const url = 'https://generativelanguage.googleapis.com/v1beta/auth_tokens';
   const signal = AbortSignal.timeout(10_000);
   let response = await fetchApi(url, {
     method: 'POST',

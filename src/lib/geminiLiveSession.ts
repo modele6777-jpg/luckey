@@ -434,7 +434,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       setMicCaptureActive(false);
     }
 
-    const url = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(token)}`;
+    const url = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(token)}`;
     socket = new WebSocket(url);
     const setupTimerId = setTimeout(() => {
       if (!stopped && !ready) fail('live-timeout', '실시간 음성 응답이 없어 기본 마이크로 듣습니다.');

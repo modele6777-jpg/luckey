@@ -200,9 +200,9 @@ test('health reports the configured AI provider and independent speech provider'
   assert.ok(!JSON.stringify(health).includes('openai-test-secret'));
 });
 
-test('Sites issues only a single-use Live token through Gemini v1alpha', async () => {
+test('Sites issues only a single-use Live token through Gemini v1beta', async () => {
   const response = await handleSitesApi(request('/api/ai/live-token', { orb: true, voice: 'Aoede' }), env, async (url, init) => {
-    assert.equal(String(url), 'https://generativelanguage.googleapis.com/v1alpha/auth_tokens');
+    assert.equal(String(url), 'https://generativelanguage.googleapis.com/v1beta/auth_tokens');
     assert.equal(new Headers(init?.headers).get('x-goog-api-key'), env.gemini);
     const body = JSON.parse(String(init?.body));
     assert.equal(body.uses, 1);
