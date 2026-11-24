@@ -13439,14 +13439,15 @@ test('Ojibwe Seven Grandfather Teachings engine: virtues, +09:00 KST, and interp
 
 test('Sami Noaidi Drum & Joik engine: drum zone, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSamiNoaidiDrumJoik({ profile, now: new Date('2026-11-20T04:40:00Z'), question: '지친 마음을 회복하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SAMI-NOAIDI-JOIK-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SAMI-NOAIDI-JOIK-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionDrumZone.id !== rep.activeDrumZone.id);
+  assert.ok(rep.drumResonanceAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측 수치가 아닙니다'));
   const prompt = formatSamiNoaidiDrumJoikPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('사미') && prompt.includes('동반 공명 영역') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('사미') && prompt.includes('동반 공명 영역') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Georgian Rustaveli Knight in the Panther’s Skin engine: virtues, +09:00 KST, and interpretive boundary', () => {
@@ -14585,14 +14586,15 @@ test('Chukchi Bering Tundra Hearth engine: symbol, +09:00 KST, and interpretive 
 
 test('Palmyrene Oasis Colonnade engine: pillar, +09:00 KST, and interpretive boundary', () => {
   const rep = calculatePalmyreneOasisColonnade({ profile, now: new Date('2026-11-20T09:04:00Z'), question: '사막 한가운데서도 단정한 질서를 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-PALMYRENE-OASIS-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-PALMYRENE-OASIS-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPillar !== rep.oasisPillar);
+  assert.ok(rep.colonnadeAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatPalmyreneOasisPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('팔미라') && prompt.includes('동반 기둥') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('팔미라') && prompt.includes('동반 기둥') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Sicilian Majolica Etna Balance engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15713,14 +15715,15 @@ test('Fez Cobalt Pottery engine: glaze, +09:00 KST, and interpretive boundary', 
 
 test('Portuguese Azulejo Tile engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculatePortugueseAzulejoTile({ profile, now: new Date('2026-11-21T01:20:00Z'), question: '작은 조각부터 차분히 붙이고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-PORTUGUESE-AZULEJO-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-PORTUGUESE-AZULEJO-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.tileMotif);
+  assert.ok(rep.azulejoPatternAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatPortugueseAzulejoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('포르투갈·아줄레주') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('포르투갈·아줄레주') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
 });
 
 test('Menorca Talayot Stone Balance engine: stance, +09:00 KST, and interpretive boundary', () => {

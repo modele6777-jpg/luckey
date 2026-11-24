@@ -9,11 +9,14 @@ export interface PortugueseAzulejoInput {
 export interface PortugueseAzulejoResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '단위·조각' | '여백·줄눈' | '선명·안료' | '온도·균형' | '아줄레주 전반';
   tileMotif: string;
   companionMotif: string;
+  azulejoPatternAxis: string;
   facadePoise: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,23 +68,44 @@ function hashSeed(text: string): number {
   return h >>> 0;
 }
 
+const AZULEJO_SHADOWS = [
+  '서늘한 유약 타일로 감정을 식히는 차분함이 필요한 열정이나 솔직한 표현까지 지나치게 식혀 버리는 냉담함이 되지 않게 하세요.',
+  '작은 정사각형 조각으로 쪼개어 붙이는 치밀함이 전체 그림과 방향을 잃어버린 채 자잘한 세부만 만지작거리는 소모가 되지 않게 살피세요.',
+  '코발트 블루와 흰 바탕의 또렷한 대비가 애매한 여지를 모두 잘라내며 상대나 나 자신에게 너무 흑백논리로 몰아가는 엄격함이 되지 않게 하세요.',
+  '비바람을 견디는 단단한 외벽의 광택이 속마음의 피로나 도움을 청해야 할 신호마저 겉으로 감추는 무리한 방어가 되어서는 안 됩니다.',
+] as const;
+
+function classifyAzulejoTopic(q: string): PortugueseAzulejoResult['questionTopic'] {
+  if (/조각|작은|단위|붙이/.test(q)) return '단위·조각';
+  if (/여백|줄눈|사이|숨/.test(q)) return '여백·줄눈';
+  if (/색|선|바탕|안료/.test(q)) return '선명·안료';
+  if (/온도|서늘|재촉|균형/.test(q)) return '온도·균형';
+  return '아줄레주 전반';
+}
+
 export function calculatePortugueseAzulejoTile(input: PortugueseAzulejoInput): PortugueseAzulejoResult {
   const fate = input.profile.fate ?? {};
-  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const q = (input.question ?? '').trim();
+  const questionTopic = classifyAzulejoTopic(q);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${q}`;
   const seed = hashSeed(seedText);
   const motifIdx = seed % TILE_MOTIFS.length;
   const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (TILE_MOTIFS.length - 1));
   const tileMotif = TILE_MOTIFS[motifIdx];
   const companionMotif = TILE_MOTIFS[(motifIdx + companionOffset) % TILE_MOTIFS.length];
+  const azulejoPatternAxis = `${tileMotif.slice(0, 14).trim()} ↔ ${companionMotif.slice(0, 14).trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-PORTUGUESE-AZULEJO-v2.2.0',
+    engineVersion: 'LUCKEY-PORTUGUESE-AZULEJO-v2.3.0',
     calculatedAtKst: toKstIso(input.now),
+    questionTopic,
     tileMotif,
     companionMotif,
+    azulejoPatternAxis,
     facadePoise: POISE_INSIGHTS[(seed >>> 3) % POISE_INSIGHTS.length],
     reflectionFocus: `포르투갈 리스본과 포르투의 외벽을 채우는 아줄레주 푸른 타일이 작은 조각들의 이어짐과 서늘한 유약의 광택으로 건물의 온도를 지키듯, 주 모티프('${tileMotif}')와 동반 모티프('${companionMotif}')를 나란히 놓아 작은 단위와 여백의 리듬을 살피는 상징적 관점입니다.`,
     ritualAction: ACTIONS[motifIdx],
+    shadowWarning: AZULEJO_SHADOWS[motifIdx],
     reflectiveQuestion: QUESTIONS[motifIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
@@ -91,11 +115,13 @@ export function formatPortugueseAzulejoPrompt(res: PortugueseAzulejoResult): str
   return [
     `[포르투갈·아줄레주 푸른 타일 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
+    `질문 맥락: ${res.questionTopic} | 타일 배열 축: ${res.azulejoPatternAxis}`,
     `타일 모티프: ${res.tileMotif}`,
     `동반 모티프: ${res.companionMotif}`,
     `외벽 균형: ${res.facadePoise}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
+    `과잉 경계: ${res.shadowWarning}`,
     `성찰 질문: ${res.reflectiveQuestion}`,
     `경계: ${res.interpretiveBoundary}`,
   ].join('\n');

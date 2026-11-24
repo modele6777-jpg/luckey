@@ -1,10 +1,10 @@
 {
-  "version": "1.8.441",
-  "builtAt": "2026-11-25T04:05:00+09:00",
-  "summary": "오모 카로·오로모 가다·오타발로 안데스 베틀 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.441)",
+  "version": "1.8.442",
+  "builtAt": "2026-11-25T04:15:00+09:00",
+  "summary": "팔미라 오아시스·포르투갈 아줄레주·사미 노아이디 드럼 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.442)",
   "items": [
-    "오모 카로 진흙 회화 엔진(v2.3.0): 질문 맥락(questionTopic), 안료 회화 축(karoPigmentAxis), 과잉 경계(shadowWarning) 추가",
-    "오로모 가다·사푸 윤리 엔진(v2.3.0): 질문 맥락(questionTopic), 가다·사푸 축(gadaaSaffuuAxis), 과잉 경계(shadowWarning) 추가",
-    "오타발로 안데스 베틀 엔진(v2.3.0): 질문 맥락(questionTopic), 베틀 직조 축(otavaloWeaveAxis), 과잉 경계(shadowWarning) 추가"
+    "팔미라 오아시스 대열주랑 엔진(v2.3.0): 질문 맥락(questionTopic), 대열주랑 축(colonnadeAxis), 과잉 경계(shadowWarning) 추가",
+    "포르투갈 아줄레주 타일 엔진(v2.3.0): 질문 맥락(questionTopic), 타일 배열 축(azulejoPatternAxis), 과잉 경계(shadowWarning) 추가",
+    "사미 노아이디 드럼·요이쿠 엔진(v2.3.0): 질문 맥락(questionTopic), 드럼 공명 축(drumResonanceAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }
