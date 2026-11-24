@@ -460,13 +460,15 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       const raw = typeof event.data === 'string' ? event.data : await event.data.text();
       handleMessage(raw);
     };
-    socket.onerror = () => fail('live-failed', '실시간 음성 연결이 끊겼습니다. 기본 마이크로 듣습니다.');
-    socket.onclose = () => {
+    const handleDisconnect = () => {
       if (stopped) return;
       if (!ready) fail('live-failed', '실시간 음성 연결이 끊겼습니다. 기본 마이크로 듣습니다.');
       // 상담 도중 끊김(네트워크, 연결 시간 만료): 화면이 다시 연결할 수 있게 알린다.
       else fail('live-closed', '음성 연결이 끊겼어요.');
     };
+    // A transport error can arrive before close. Use the same recovery for both.
+    socket.onerror = handleDisconnect;
+    socket.onclose = handleDisconnect;
   };
 
   void run();
