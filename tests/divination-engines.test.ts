@@ -4229,12 +4229,14 @@ test('Zhong-Lu Inner Alchemy & Three Immortals Engine: calculates stages, tier a
   assert(rep.practiceGuidance.length > 0);
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
+  assert(rep.shadowWarning.length > 0);
   assert(rep.boundaryNotice.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatZhongLuInnerAlchemyPrompt(rep);
   assert(prompt.includes('도교 종려권·여동빈 종여내단(鍾呂內丹) 3품 선도 & 환원 엔진'));
   assert(prompt.includes(rep.immortalityTier.koreanTitle));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('과잉 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('조화도:'));
 });
@@ -13997,14 +13999,16 @@ test('Occitan Troubadour Paratge engine: virtue, +09:00 KST, and interpretive bo
 
 test('Zapotec Piye Cloud Wisdom engine: glyph, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateZapotecPiyeCloudWisdom({ profile, now: new Date('2026-11-20T07:22:00Z'), question: '높은 곳에서 전체 흐름을 보고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ZAPOTEC-PIYE-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ZAPOTEC-PIYE-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionGlyph !== rep.piyeGlyph);
+  assert.ok(rep.cloudHorizonAxis.length > 0 && rep.shadowWarning.length > 0 && rep.questionTopic.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatZapotecPiyePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('사포텍') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('과잉 경계') && prompt.includes('질문 맥락'));
 });
 
 test('Sakha Olonkho Three Worlds engine: pillar, +09:00 KST, and interpretive boundary', () => {
@@ -15042,14 +15046,16 @@ test('Mossi Earth Mural Harmony engine: motif, +09:00 KST, and interpretive boun
 
 test('Wolof Teranga Baobab Warmth engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateWolofTerangaBaobabWarmth({ profile, now: new Date('2026-11-20T20:13:00Z'), question: '여백을 남기고 좋은 인연을 맞고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-WOLOF-TERANGA-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-WOLOF-TERANGA-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.terangaMotif);
+  assert.ok(rep.baobabShadeAxis.length > 0 && rep.shadowWarning.length > 0 && rep.questionTopic.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatWolofTerangaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('월로프') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('과잉 경계') && prompt.includes('질문 맥락'));
 });
 
 test('Palauan Bai Rafter Balance engine: motif, +09:00 KST, and interpretive boundary', () => {

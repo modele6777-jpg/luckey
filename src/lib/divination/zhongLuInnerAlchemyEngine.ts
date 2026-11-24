@@ -11,7 +11,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ZHONG_LU_INNER_ALCHEMY_VERSION = 'LUCKEY-ZHONG-LU-ALCHEMY-v2.2.0';
+export const ZHONG_LU_INNER_ALCHEMY_VERSION = 'LUCKEY-ZHONG-LU-ALCHEMY-v2.3.0';
 
 function formatZhongLuKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -61,6 +61,7 @@ export interface ZhongLuAlchemyReport {
   ritualAction: string;
   reflectionFocus: string;
   counselNote: string;
+  shadowWarning: string;
   boundaryNotice: string;
   zhongLuSynthesisMatrix?: {
     dominantTension: string;
@@ -123,30 +124,35 @@ function buildZhongLuQualitativeFields(
     ritual: string;
     reflection: string;
     counsel: string;
+    shadow: string;
   }> = {
     relationship: {
       practice: `${tier.koreanTitle}의 관점에서는 상대를 바꾸려 열을 올리기보다 내 마음의 불기를 먼저 가라앉히는 것이 우선입니다. ${dominantStage}의 호흡으로 한 박자 늦춰 응대하세요.`,
       ritual: '오늘 대화가 무거워지기 전에 아랫배까지 천천히 들이쉬고 내쉬는 3번의 복식 호흡으로 목과 어깨의 열기를 내려보세요.',
       reflection: '상대의 말에 즉각 반응하게 만드는 내 안의 들뜬 불씨는 무엇이며, 그 아래에 숨은 진짜 바람은 무엇인가요?',
       counsel: `종여내단은 관계의 조화 역시 내 안의 수화(水火) 균형에서 시작된다고 보며, 먼저 내면의 온도를 고르게 맞출 것을 권합니다.`,
+      shadow: '감정의 열기를 가라앉히는 데만 힘쓰다 꼭 전달해야 할 분명한 경계와 거절의 말까지 삼키지 않도록 유의하세요.',
     },
     decision: {
       practice: `지금의 결정은 속도를 내어 밀어붙일 때보다 ${kanLiPosture}에 맞춰 판의 익힘을 살필 때 선명해집니다. ${tier.livingPrescription}`,
       ritual: '중요한 선택 앞에서 머리가 뜨거워질 때, 차가운 물 한 잔을 마시고 10분간 화면을 떠나 산책한 뒤 다시 판단해 보세요.',
       reflection: '억지로 결과를 당겨오려는 조급함을 덜어내고 나면, 자연스럽게 남는 가장 무리 없는 길은 어디인가요?',
       counsel: `종려전도집의 무위자연은 방관이 아니라, 기운이 무르익는 시점을 정확히 기다릴 줄 아는 능동적 절제입니다.`,
+      shadow: '때가 무르익기를 기다리는 무위(無爲)의 태도가 명백한 마감이나 실행 시점을 놓치는 우유부단함으로 흐르지 않게 하세요.',
     },
     healing: {
       practice: `몸과 마음이 소진될수록 거창한 해법보다 ${tier.livingPrescription} 특히 오늘 밤은 생각의 불을 끄고 하단전의 온기를 지키는 휴식이 필요합니다.`,
       ritual: '잠들기 전 양손을 비벼 따뜻하게 만든 뒤 아랫배 위에 얹고, 오늘 하루 수고한 호흡을 조용히 느껴보세요.',
       reflection: '지금 내 몸이 가장 먼저 비워내고 싶어 하는 피로와 군더더기 걱정은 무엇인가요?',
       counsel: `${dominantStage} 국면은 외부를 향하던 에너지를 안으로 거두어 생명력을 다시 채우는 치유의 문턱입니다.`,
+      shadow: '안으로 기운을 거두어 쉬는 동안, 치료나 현실적 도움을 받아야 할 몸의 신호까지 혼자 참아 넘기지는 마세요.',
     },
     reflection: {
       practice: `현재 흐름은 ${dominantStage}에 머물며 ${tier.attainmentFocus}을 요청하고 있습니다. ${tier.livingPrescription}`,
       ritual: '오늘 하루 중 가장 고요한 5분을 정해, 아무 판단도 하지 않고 들숨과 날숨의 간격만 바라보는 시간을 가져보세요.',
       reflection: '지금 내 삶에서 불필요하게 열을 내고 있는 일과, 맑은 물처럼 꾸준히 흘려보내야 할 일은 무엇인가요?',
       counsel: `종여내단의 수화기제는 높고 거창한 경지가 아니라, 오늘의 식사·수면·마음가짐을 고르게 돌보는 일상에서 완성됩니다.`,
+      shadow: '내면의 균형과 관조에 머무는 시간이 일상의 구체적 약속이나 작은 실천을 미루는 구실이 되지 않도록 살피세요.',
     },
   };
   return map[theme];
@@ -225,6 +231,7 @@ export function calculateZhongLuInnerAlchemy(
     ritualAction: qualitative.ritual,
     reflectionFocus: qualitative.reflection,
     counselNote: qualitative.counsel,
+    shadowWarning: qualitative.shadow,
     boundaryNotice: '종여내단 3품 선도와 수화기제 상징은 우열 점수가 아니라 심신 균형과 일상의 리듬을 살피기 위한 정성적 양생 프레임입니다.',
     zhongLuSynthesisMatrix,
     reflectiveQuestion,
@@ -249,5 +256,6 @@ export function formatZhongLuInnerAlchemyPrompt(report: ZhongLuAlchemyReport): s
 - **성찰 질문**: ${report.reflectionFocus}
 - **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
 - **조언 요약**: ${report.counselNote}
+- **과잉 경계**: ${report.shadowWarning}
 - **해석 경계**: ${report.boundaryNotice}${matrixLine}`;
 }
