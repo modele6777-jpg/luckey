@@ -1,10 +1,10 @@
 {
-  "version": "1.8.443",
-  "builtAt": "2026-11-25T04:25:00+09:00",
-  "summary": "칼라하리 산·세픽 강·쇼나 음비라 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.443)",
+  "version": "1.8.444",
+  "builtAt": "2026-11-25T04:35:00+09:00",
+  "summary": "팔라우 바이·파미르 와칸·파라카스 직조 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.444)",
   "items": [
-    "칼라하리 산 별과 추적 엔진(v2.3.0): 질문 맥락(questionTopic), 추적·별빛 축(kalahariTrackAxis), 과잉 경계(shadowWarning) 추가",
-    "세픽 강 영혼 조각 엔진(v2.3.0): 질문 맥락(questionTopic), 목조 결 축(sepikGrainAxis), 과잉 경계(shadowWarning) 추가",
-    "쇼나 음비라 공명 엔진(v2.3.0): 질문 맥락(questionTopic), 공명 순환 축(mbiraResonanceAxis), 과잉 경계(shadowWarning) 추가"
+    "팔라우 바이 공회당 서까래 엔진(v2.3.0): 질문 맥락(questionTopic), 서까래 균형 축(baiRafterAxis), 과잉 경계(shadowWarning) 추가",
+    "파미르 와칸 회랑 별빛 엔진(v2.3.0): 질문 맥락(questionTopic), 회랑 별빛 축(wakhanSkyAxis), 과잉 경계(shadowWarning) 추가",
+    "파라카스 직조 매듭 조화 엔진(v2.3.0): 질문 맥락(questionTopic), 직조 베틀 축(paracasLoomAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }
