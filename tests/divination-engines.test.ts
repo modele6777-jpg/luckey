@@ -2749,6 +2749,7 @@ test('Sleep Subconscious Engine: 수면 사운드 안내 및 3단계 나이트 �
   assert.equal(res.engineVersion, SLEEP_SUBCONSCIOUS_VERSION);
   assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
+  assert(res.sleepRhythmAxis.length > 0 && res.shadowWarning.length > 0 && res.questionTopic.length > 0);
   assert(Boolean(res.sleepSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.sleepRecoveryScore >= 0 && res.sleepRecoveryScore <= 100);
@@ -2760,6 +2761,7 @@ test('Sleep Subconscious Engine: 수면 사운드 안내 및 3단계 나이트 �
   assert(prompt.includes('수면 회복 잠재력'));
   assert(prompt.includes('나이트 리셋 리추얼'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
+  assert(prompt.includes('과잉 경계') && prompt.includes('야간 리듬 축'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|델타파|세타파|뇌파|주파수/i);
@@ -2852,6 +2854,7 @@ test('Soul Journey Tarot Engine: 영혼 연금술 3단계 및 4원소 균형 검
   assert.equal(res.engineVersion, SOUL_JOURNEY_TAROT_VERSION);
   assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
+  assert(res.alchemyAxis.length > 0 && res.shadowWarning.length > 0 && res.questionTopic.length > 0);
   assert(Boolean(res.soulJourneySynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.currentArchetype.number >= 0 && res.currentArchetype.number <= 21);
@@ -2861,6 +2864,7 @@ test('Soul Journey Tarot Engine: 영혼 연금술 3단계 및 4원소 균형 검
   assert(prompt.includes('LUCKEY 영혼 타로 여정 지능'));
   assert(prompt.includes(res.currentArchetype.nameKo));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
+  assert(prompt.includes('과잉 경계') && prompt.includes('연금술 균형 축'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('%'));
 });
@@ -2893,6 +2897,7 @@ test('Strategic Leverage Engine: 전략 협상 및 손자병법 기문 레버리
   assert.equal(res.engineVersion, STRATEGIC_LEVERAGE_VERSION);
   assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
+  assert(res.leverageAxis.length > 0 && res.shadowWarning.length > 0 && res.questionTopic.length > 0);
   assert(Boolean(res.leverageSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.leverageScore >= 0 && res.leverageScore <= 100);
@@ -2901,6 +2906,7 @@ test('Strategic Leverage Engine: 전략 협상 및 손자병법 기문 레버리
   const prompt = formatStrategicLeveragePrompt(res);
   assert(prompt.includes('LUCKEY 전략 협상 & 손자병법 기문 레버리지'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
+  assert(prompt.includes('과잉 경계') && prompt.includes('레버리지 조타 축'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
