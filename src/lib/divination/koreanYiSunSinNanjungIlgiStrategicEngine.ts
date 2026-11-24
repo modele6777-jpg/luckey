@@ -12,12 +12,30 @@
  *    - 장졸들과의 동고동락(Soldier-General Solidarity): 땀과 눈물을 함께 흘리며 쌓아 올린 절대적 신뢰.
  * 3. 7대 전술적 품계 및 난중일기 친필 성찰 조언 산출
  *
- * @version LUCKEY-YISUNSIN-NANJUNG-ILGI-v2.2.0
+ * @version LUCKEY-YISUNSIN-NANJUNG-ILGI-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const YISUNSIN_NANJUNG_ILGI_VERSION = 'LUCKEY-YISUNSIN-NANJUNG-ILGI-v2.3.0';
+export const YISUNSIN_NANJUNG_ILGI_VERSION = 'LUCKEY-YISUNSIN-NANJUNG-ILGI-v2.4.0';
+
+export type YiSunSinQuestionTopic = 'strategy' | 'relation' | 'work' | 'emotion' | 'general';
+
+function classifyYiSunSinTopic(q: string): YiSunSinQuestionTopic {
+  if (/길목|전략|대비|위기|판세/.test(q)) return 'strategy';
+  if (/사람|동료|장졸|신뢰|관계/.test(q)) return 'relation';
+  if (/일|직장|진행|결단|돌파/.test(q)) return 'work';
+  if (/마음|고독|불안|흔들|평정/.test(q)) return 'emotion';
+  return 'general';
+}
+
+const YISUNSIN_SHADOW_WARNINGS: Record<YiSunSinQuestionTopic, string> = {
+  strategy: '필사즉생의 각오가 척후와 조류 계산 없이 무모하게 돌진하는 혈기로 흐르지 않도록 냉정한 준비를 앞세우십시오.',
+  relation: '전진동고의 책임을 혼자 다 짊어지려다 동료와 나눌 수 있는 짐마저 놓치지 않도록 신뢰를 나누십시오.',
+  work: '거북선 돌파의 속도를 내다가 작은 누수나 보급선 점검 같은 기본기를 소홀히 하지 마십시오.',
+  emotion: '한산섬의 고독을 견디는 침착함이 스스로를 고립시키는 침묵으로 굳어지지 않게 하십시오.',
+  general: '큰 해전의 승리는 거창한 맹세가 아니라 오늘 밤 활시위와 일기를 정직하게 점검하는 기본에서 시작됩니다.',
+};
 
 export interface YiSunSinStrategicStage {
   stageLevel: number;
@@ -30,6 +48,8 @@ export interface YiSunSinStrategicStage {
 export interface YiSunSinNanjungIlgiResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: YiSunSinQuestionTopic;
+  shadowWarning: string;
   // 5대 핵심 지표 (0~100)
   pilsaJeuksaengResolutionForce: number; // 필사즉생(必死則生) 사즉생 각오 및 결단력
   ilbuDanggyeongNarrowChokepointPower: number; // 일부당경(一夫當逕) 길목 선점 지략
@@ -146,7 +166,9 @@ export function calculateYiSunSinNanjungIlgi(
   const reflectionIdx = (seed >> 6) % NANJUNG_REFLECTIONS.length;
   const nanjungIlgiReflection = NANJUNG_REFLECTIONS[reflectionIdx];
 
-  const trimmedQuery = query?.trim();
+  const trimmedQuery = query?.trim() ?? '';
+  const questionTopic = classifyYiSunSinTopic(trimmedQuery);
+  const shadowWarning = YISUNSIN_SHADOW_WARNINGS[questionTopic];
   const reflectiveQuestion = trimmedQuery
     ? `충무공의 《난중일기》 '${primaryChungmuVirtue.hanjaMotto}'와 '${secondaryChungmuVirtue.hanjaMotto}'를 비추어 볼 때, "${trimmedQuery}"에서 힘을 분산시키지 않고 반드시 먼저 지켜야 할 좁은 길목은 어디인가요?`
     : `지금 맞선 국면에서, '${activeStrategicStage.stageNameKo}'의 침착함과 '${secondaryStrategicStage.stageNameKo}'의 돌파력을 함께 살리려면 무엇을 먼저 정찰하고 대비해야 할까요?`;
@@ -173,6 +195,8 @@ export function calculateYiSunSinNanjungIlgi(
   return {
     engineVersion: YISUNSIN_NANJUNG_ILGI_VERSION,
     calculatedAtKst: getKstDateString(now),
+    questionTopic,
+    shadowWarning,
     pilsaJeuksaengResolutionForce,
     ilbuDanggyeongNarrowChokepointPower,
     hansandoMoonlitComposureScore,
@@ -202,7 +226,7 @@ export function formatYiSunSinNanjungIlgiPrompt(result: YiSunSinNanjungIlgiResul
   );
   const lines = [
     `[⚔️ 충무공 이순신 장군 친필 《난중일기(亂中日記)》 필사즉생(必死則生) 전략 리포트]`,
-    `- 연산 시각: ${result.calculatedAtKst} | 엔진: ${result.engineVersion}`,
+    `- 연산 시각: ${result.calculatedAtKst} | 엔진: ${result.engineVersion} | 질문 맥락: ${result.questionTopic}`,
     `- 해전 전략 국면: ${describeYiSunSinStage(avgScore)}`,
     `- 현행 전술적 품계: **[${result.activeStrategicStage.stageNameKo} (${result.activeStrategicStage.stageNameHanja})]**`,
     `- 보조 교차 품계: **[${result.secondaryStrategicStage.stageNameKo} (${result.secondaryStrategicStage.stageNameHanja})]**`,
@@ -217,6 +241,7 @@ export function formatYiSunSinNanjungIlgiPrompt(result: YiSunSinNanjungIlgiResul
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 실천 의례: ${result.ritualAction}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
+    `- 과잉 경계: ${result.shadowWarning}`,
     `- 해석 경계: ${result.interpretiveBoundary}`,
   ];
   if (result.yiSunSinSynthesisMatrix) {
