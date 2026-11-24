@@ -116,8 +116,9 @@ test('speaking lasts until the scheduled voice ends, and a drop after setup repo
     await new Promise(resolve => setTimeout(resolve, 700));
     assert.deepEqual(states, ['speaking'], 'still speaking 0.7s later (2s of voice)');
     assert.equal(typeof session.outputLevel(), 'number');
+    socket.onerror?.();
     socket.onclose?.();
-    assert.deepEqual(errors, ['live-closed']);
+    assert.deepEqual(errors, ['live-closed'], 'error followed by close requests recovery exactly once');
   } finally {
     session.stop();
     for (const undo of restore.reverse()) undo();
