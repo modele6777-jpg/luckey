@@ -11,6 +11,8 @@ export function isAllowedAppOrigin(origin: string | undefined): boolean {
   if (host === 'localhost' || host === '127.0.0.1' || host === '[::1]' || host === '::1') return true;
   if (host === 'luckey-six.vercel.app') return true;
   if (host.endsWith('.vercel.app') && (host.startsWith('luckey-six') || host.startsWith('luckey-'))) return true;
+  const configuredOrigins = (process.env.LUCKEY_APP_ORIGINS || '').split(',').map(value => value.trim());
+  if (url.protocol === 'https:' && origin === url.origin && configuredOrigins.includes(origin)) return true;
   // Render sets its own public hostname (e.g. luckey.onrender.com). Only that exact host is trusted.
   const renderHost = (process.env.RENDER_EXTERNAL_HOSTNAME || '').trim().toLowerCase();
   if (renderHost && host === renderHost && url.protocol === 'https:') return true;

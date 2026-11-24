@@ -7,7 +7,7 @@ services:
     plan: free
     # 빌드 도구(vite, esbuild)는 devDependencies에 있으므로 함께 설치합니다.
     buildCommand: npm ci --include=dev && npm run build
-    startCommand: node dist/server.cjs
+    startCommand: npm start
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:

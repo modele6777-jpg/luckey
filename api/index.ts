@@ -4,6 +4,7 @@ import "dotenv/config";
 import express from "express";
 import { readFileSync } from "node:fs";
 import { describeGeminiError, getGeminiApiKey } from "../server/geminiKey.ts";
+import { lucyKnowledgeRouter } from "../server/api-lib/lucyKnowledgeRoute.ts";
 import { installAsyncRouteGuard } from "../server/api-lib/routeGuard.ts";
 import { handleDailyTarotPost } from "../server/api-lib/dailyTarotRoute.ts";
 import {
@@ -65,6 +66,8 @@ app.use((req, _res, next) => {
   }
   next();
 });
+
+app.use('/api/lucy-knowledge', lucyKnowledgeRouter);
 
 // MCP routes are also needed in the Vercel entrypoint (not only server.app.ts).
 app.get(["/api/mcp", "/api/mcp/sse"], async (req, res) => {

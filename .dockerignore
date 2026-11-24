@@ -11,3 +11,8 @@ coverage/
 !.env.example
 .vercel
 .grok/
+
+**/*.pem
+**/*.key
+**/*service-account*.json
+**/*credentials*.json

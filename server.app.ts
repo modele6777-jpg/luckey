@@ -3,7 +3,7 @@ import { isMasterTierModel, modelCandidates, LUCY_MASTER_FALLBACK_MODELS, getLuc
 import { isRevokedGeminiKey } from './server/geminiKey.ts';
 import dotenv from "dotenv";
 dotenv.config();
-dotenv.config({ path: ".env.local", override: true });
+if (process.env.NODE_ENV !== "production") dotenv.config({ path: ".env.local", override: true });
 
 if (isRevokedGeminiKey(process.env.GEMINI_API_KEY)) delete process.env.GEMINI_API_KEY;
 if (isRevokedGeminiKey(process.env.GOOGLE_GENAI_API_KEY)) delete process.env.GOOGLE_GENAI_API_KEY;
@@ -400,6 +400,11 @@ async function startServer() {
 
   app.use(express.json({ limit: '50mb' }));
 
+  // Handle restricted CORS before the general OPTIONS handler.
+  if (process.env.RENDER || process.env.LUCKEY_APP_ORIGINS?.trim()) {
+    app.use(guardRestrictedRoute(5_000_000));
+  }
+
   // CORS, Iframe Permissions & OPTIONS Preflight Handler (for AI Studio & Cloud Run)
   app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -411,12 +416,6 @@ async function startServer() {
     }
     next();
   });
-
-  // Render exposes this Express server publicly. Apply the same origin guard as the
-  // Vercel functions so other sites cannot spend the app's AI keys. Other hosts are unchanged.
-  if (process.env.RENDER) {
-    app.use(guardRestrictedRoute(5_000_000));
-  }
 
   app.use('/api/lucy-knowledge', lucyKnowledgeRouter);
 
@@ -1825,6 +1824,7 @@ self.addEventListener('activate', (e) => {
       }
     });
   } else {
+    app.get(['/server.cjs', '/server.cjs.map', '/lucy-scheduled-research.cjs'], (_req, res) => res.sendStatus(404));
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
       if (req.path.startsWith('/chat')) {

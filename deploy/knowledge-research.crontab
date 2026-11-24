@@ -1,0 +1,6 @@
+# Install as a user crontab on a scheduler that evaluates schedules in UTC.
+# Every day at 09:00 Asia/Seoul. LUCKEY_IMAGE should be a reviewed immutable image digest.
+# Configure the image reference and protected environment-file path outside Git.
+SHELL=/bin/sh
+PATH=/usr/local/bin:/usr/bin:/bin
+0 0 * * * /usr/bin/flock -n /var/lock/luckey-research.lock /usr/bin/docker run --rm --env-file /etc/luckey/research.env --pull=missing "$(cat /etc/luckey/research-image)" npm run start:knowledge-research
