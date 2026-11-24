@@ -14313,14 +14313,15 @@ test('Uzbek Mahalla Rishtan Craft engine: virtue, +09:00 KST, and interpretive b
 
 test('Rapa Nui Mana Moai Horizon engine: focus, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateRapaNuiManaMoaiHorizon({ profile, now: new Date('2026-11-20T08:15:00Z'), question: '지금 내 자리를 지키는 중심을 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-RAPANUI-MOAI-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-RAPANUI-MOAI-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionFocus !== rep.moaiFocus);
+  assert.ok(rep.moaiHorizonAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatRapaNuiMoaiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('라파 누이') && prompt.includes('동반 시선') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('라파 누이') && prompt.includes('동반 시선') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Chechen Vainakh Kovakh Honor engine: code, +09:00 KST, and interpretive boundary', () => {
@@ -15091,14 +15092,15 @@ test('Kuba Raffia Geometry Order engine: motif, +09:00 KST, and interpretive bou
 
 test('Samoan Fale Tapa Breeze engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSamoanFaleTapaBreeze({ profile, now: new Date('2026-11-20T20:24:00Z'), question: '마음에 시원한 바람을 쐬어 주고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SAMOAN-FALE-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SAMOAN-FALE-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.samoanMotif);
+  assert.ok(rep.faleBreezeAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSamoanFalePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('사모아') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('사모아') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Cappadocian Tuff Cave Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15597,14 +15599,15 @@ test('Menominee Forest Balance engine: cycle, +09:00 KST, and interpretive bound
 
 test('Sangam Tinai Poetics engine: landscape, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSangamTinaiPoetics({ profile, now: new Date('2026-11-20T22:35:00Z'), question: '내면과 바깥 일의 결을 맞추고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SANGAM-TINAI-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SANGAM-TINAI-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionLandscape !== rep.tinaiLandscape);
+  assert.ok(rep.tinaiAkamPuramAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSangamTinaiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('타밀 상감') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLandscape));
+  assert.ok(prompt.includes('타밀 상감') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLandscape) && prompt.includes('과잉 경계'));
 });
 
 test('Batammariba Takienta engine: tower, +09:00 KST, and interpretive boundary', () => {

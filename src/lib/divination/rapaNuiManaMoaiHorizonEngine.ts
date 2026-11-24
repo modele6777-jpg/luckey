@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface RapaNuiMoaiResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '수호·터전' | '내면·마나' | '절제·타푸' | '기억·롱고롱고' | '공존·절약' | '모아이 전반';
   moaiFocus: string;
   companionFocus: string;
+  moaiHorizonAxis: string;
   manaInsight: string;
   pacificHorizonTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const RAPA_NUI_SHADOWS = [
+  '아후의 시선으로 내 터전과 가까운 사람을 돌보는 마음이 바깥세상의 새로운 기회나 배움까지 닫아 버리는 폐쇄성이 되지 않게 하세요.',
+  '요란한 과시 없이 묵묵히 중심을 지키는 마나(Mana)의 무게감이 꼭 필요한 소통이나 자기표현마저 생략하는 과묵함으로 굳어져서는 안 됩니다.',
+  '소중한 것을 지키기 위해 선을 긋는 타푸(Tapu)의 절제가 유연한 협력을 막는 지나친 경계심이나 배타성으로 흐르지 않게 살피세요.',
+  '오래 남길 가치의 결을 정리하는 롱고롱고의 성찰이 이미 지나간 과거의 기록에 매여 오늘의 새 시도를 미루는 집착이 되지 않게 주의하세요.',
+  '한정된 자원을 아껴 쓰는 공존의 지혜가 꼭 투자해야 할 순간에조차 몸을 사리는 인색함이 되지 않도록 균형을 잡으세요.',
+];
+
+function classifyRapaNuiTopic(q: string): RapaNuiMoaiResult['questionTopic'] {
+  if (/터전|자리|가까운|지키/.test(q)) return '수호·터전';
+  if (/마나|내면|무게|신뢰/.test(q)) return '내면·마나';
+  if (/타푸|경계|거절|선/.test(q)) return '절제·타푸';
+  if (/기억|기록|문장|가치/.test(q)) return '기억·롱고롱고';
+  if (/아껴|자원|공존|여건/.test(q)) return '공존·절약';
+  return '모아이 전반';
+}
+
 export function calculateRapaNuiManaMoaiHorizon(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): RapaNuiMoaiResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyRapaNuiTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % FOCUSES.length;
   const picked = FOCUSES[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (FOCUSES.length - 1));
   const companion = FOCUSES[(idx + companionOffset) % FOCUSES.length];
+  const moaiHorizonAxis = `${picked.focus.split('(')[0].trim()} ↔ ${companion.focus.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-RAPANUI-MOAI-v2.2.0',
+    engineVersion: 'LUCKEY-RAPANUI-MOAI-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     moaiFocus: picked.focus,
     companionFocus: companion.focus,
+    moaiHorizonAxis,
     manaInsight: picked.insight,
     pacificHorizonTone: picked.tone,
     reflectionFocus: `라파 누이 지혜의 '${picked.focus}'을 중심에 두고 '${companion.focus}'의 결을 곁들여, 바깥의 시선을 쫓기보다 지금 내 자리와 소중한 이들을 지키는 묵직한 중심을 세워 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: RAPA_NUI_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '남태평양 라파 누이(이스터 섬)의 모아이 보호 시선·마나(Mana)·타푸(Tapu) 철학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +121,13 @@ export function formatRapaNuiMoaiPrompt(res: RapaNuiMoaiResult): string {
   return [
     `[라파 누이 마나·모아이 수평선 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 수호 수평선 축: ${res.moaiHorizonAxis}`,
     `- 수호 시선: ${res.moaiFocus} (${res.pacificHorizonTone})`,
     `- 동반 시선: ${res.companionFocus}`,
     `- 중심 통찰: ${res.manaInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

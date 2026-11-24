@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface SamoanFaleResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '개방·통풍' | '유연·결속' | '다듬기·타파' | '배려·나눔' | '평온·라군' | '사모아 전반';
   samoanMotif: string;
   companionMotif: string;
+  faleBreezeAxis: string;
   samoanInsight: string;
   faleTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const SAMOAN_SHADOWS = [
+  '팔레 지붕처럼 사방을 열어 두는 개방성이 꼭 지켜야 할 사생활이나 내 에너지의 최소 경계까지 무방비로 드러내는 노출이 되지 않게 하세요.',
+  '코코넛 밧줄처럼 유연하게 엮는 탄력이 정작 명확한 마감이나 핵심 원칙을 지키는 데 필요한 단단함까지 느슨하게 만들어서는 안 됩니다.',
+  '시아포 천을 두드려 펴듯 서툴고 거친 것을 다듬는 정성이 이미 충분한 단계에서도 끝없이 손질만 반복하는 완벽주의가 되지 않게 살피세요.',
+  '파아 사모아의 존중과 배려가 내 진짜 의사나 필요한 요구조차 말하지 못하고 상대 체면만 살피는 자기 억압이 되지 않게 균형을 잡으세요.',
+  '라군 너머 파도를 바라보며 현재의 평온을 지키는 여유가 실제로 다가오는 변화나 대비해야 할 신호까지 외면하는 안이함이 되지 않게 주의하세요.',
+];
+
+function classifySamoanTopic(q: string): SamoanFaleResult['questionTopic'] {
+  if (/바람|열어|벽|소통/.test(q)) return '개방·통풍';
+  if (/매듭|밧줄|유연|일정/.test(q)) return '유연·결속';
+  if (/다듬|타파|서툴|두드/.test(q)) return '다듬기·타파';
+  if (/배려|나눔|이웃|안부/.test(q)) return '배려·나눔';
+  if (/파도|걱정|라군|평온/.test(q)) return '평온·라군';
+  return '사모아 전반';
+}
+
 export function calculateSamoanFaleTapaBreeze(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): SamoanFaleResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifySamoanTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const picked = MOTIFS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const faleBreezeAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-SAMOAN-FALE-v2.2.0',
+    engineVersion: 'LUCKEY-SAMOAN-FALE-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     samoanMotif: picked.motif,
     companionMotif: companion.motif,
+    faleBreezeAxis,
     samoanInsight: picked.insight,
     faleTone: picked.tone,
     reflectionFocus: `사모아 팔레 지붕의 '${picked.motif}'을 중심에 두고 '${companion.motif}'의 결을 곁들여, 불필요한 벽을 세우기보다 시원한 바람이 통하도록 마음을 열어 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: SAMOAN_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '남태평양 사모아의 팔레(Fale) 개방형 지붕과 파아 사모아 공동체 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +121,13 @@ export function formatSamoanFalePrompt(res: SamoanFaleResult): string {
   return [
     `[사모아·팔레 바람 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 팔레 통풍 축: ${res.faleBreezeAxis}`,
     `- 사모아 모티프: ${res.samoanMotif} (${res.faleTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.samoanInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
