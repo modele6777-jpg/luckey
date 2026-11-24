@@ -41,3 +41,20 @@ Node 운영 서버는 기본 3000 포트를 사용합니다. 배포처에서 `PO
 ## 자동 검증
 
 GitHub Actions의 Deployment portability 검사가 현재 Firestore 규칙으로 로컬 에뮬레이터를 실행합니다. 독립 클라이언트 간 프로필·대화·승인 지식·일부가 D1에만 있던 루시 기억을 비교하고, 다른 계정의 접근을 거부하는지 확인합니다. 같은 검사에서 Sites 어댑터와 Node Docker 이미지 기동을 검증합니다. 이 검증에는 운영 계정이나 키가 필요하지 않습니다.
+
+## Google Cloud Run
+
+Cloud Run은 같은 Dockerfile과 Firebase 프로젝트 설정으로 LucKey 전체 앱을 실행합니다. 실행용 Google 서비스 계정에 기존 Gemini Secret Manager 항목의 조회 권한을 부여합니다. Google Cloud CLI는 기존 서비스가 있는 프로젝트와 리전에 배포할 권한이 있는 계정으로 인증합니다.
+
+```bash
+export GOOGLE_CLOUD_PROJECT=lucyuniverse-fc423
+export CLOUD_RUN_REGION=<기존-서비스-리전>
+export CLOUD_RUN_SERVICE=luckey
+export CLOUD_RUN_SERVICE_ACCOUNT=<Cloud-Run-실행-계정-이메일>
+export CLOUD_RUN_GEMINI_SECRET=<기존-Secret-Manager-항목-이름>
+bash deploy/cloud-run.sh
+```
+
+이 명령은 소스에서 컨테이너를 빌드하고 기존 Secret Manager 값을 런타임에 연결합니다. Git이나 브라우저 빌드에 비밀 값을 넣지 않습니다. 공개 정책은 기존 설정을 따릅니다. 신규 독립 웹 앱에 공개 접속이 필요한 경우에만 배포자의 결정에 따라 `CLOUD_RUN_PUBLIC=true`를 지정합니다. Cloud Run 실행 계정과 별도로 빌드·배포에 필요한 Google Cloud IAM 권한이 있어야 합니다.
+
+출력된 서비스 주소에서 위 전환 점검을 진행합니다. Sites에서 Cloud Run의 음성 API만 쓰려면 운영 인증과 공개 정책이 맞는지 확인한 뒤 Sites에 `LUCKEY_LIVE_API_ORIGIN`으로 검증한 Cloud Run 주소를 설정합니다. Google Cloud 크레딧의 적용 대상은 결제 계정과 상품 조건에서 확인합니다. Cloud Run으로 앱 호스트를 바꾸는 설정과 Gemini 호출을 Vertex AI로 전환하는 설정은 각각 별도입니다.
