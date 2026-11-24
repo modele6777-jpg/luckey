@@ -1,10 +1,10 @@
 {
-  "version": "1.8.449",
-  "builtAt": "2026-11-25T05:25:00+09:00",
-  "summary": "서포 김만중 구운몽·서산대사 선가귀감·신사임당 초충도 3대 엔진 질문 맥락·과잉 경계 심층 강화(v1.8.449)",
+  "version": "1.8.450",
+  "builtAt": "2026-11-25T05:35:00+09:00",
+  "summary": "시기리야 수로 정원·신라 첨성대 에밀레·싱할라 발리 코훔바 3대 엔진 질문 맥락·과잉 경계 심층 강화(v1.8.450)",
   "items": [
-    "서포 김만중 구운몽 각성 엔진(v2.4.0): 질문 맥락(questionTopic), 테마별 과잉 경계(shadowWarning) 추가 및 버전 표기 일원화",
-    "서산대사 선가귀감 엔진(v2.4.0): 질문 맥락(questionTopic), 테마별 과잉 경계(shadowWarning) 추가 및 버전 표기 일원화",
-    "신사임당 초충도 예술·덕성 엔진(v2.4.0): 질문 맥락(questionTopic), 테마별 과잉 경계(shadowWarning) 추가 및 버전 표기 일원화"
+    "시기리야 바위 수로 정원 엔진(v2.3.0): 질문 맥락(questionTopic), 수로 정원 축(hydraulicGardenAxis), 모티프별 과잉 경계(shadowWarning) 추가",
+    "신라 첨성대·에밀레 여명 엔진(v2.3.0): 질문 맥락(questionTopic), 경주 여명 축(gyeongjuResonanceAxis), 모티프별 과잉 경계(shadowWarning) 추가",
+    "싱할라 발리·코훔바 조화 엔진(v2.3.0): 질문 맥락(questionTopic), 조화 회복 축(kohombaHarmonyAxis), 층위별 과잉 경계(shadowWarning) 추가"
   ]
 }
