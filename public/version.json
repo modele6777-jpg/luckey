@@ -1,10 +1,10 @@
 {
-  "version": "1.8.442",
-  "builtAt": "2026-11-25T04:15:00+09:00",
-  "summary": "팔미라 오아시스·포르투갈 아줄레주·사미 노아이디 드럼 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.442)",
+  "version": "1.8.443",
+  "builtAt": "2026-11-25T04:25:00+09:00",
+  "summary": "칼라하리 산·세픽 강·쇼나 음비라 3대 엔진 질문 맥락·균형 축·과잉 경계 심층 강화(v1.8.443)",
   "items": [
-    "팔미라 오아시스 대열주랑 엔진(v2.3.0): 질문 맥락(questionTopic), 대열주랑 축(colonnadeAxis), 과잉 경계(shadowWarning) 추가",
-    "포르투갈 아줄레주 타일 엔진(v2.3.0): 질문 맥락(questionTopic), 타일 배열 축(azulejoPatternAxis), 과잉 경계(shadowWarning) 추가",
-    "사미 노아이디 드럼·요이쿠 엔진(v2.3.0): 질문 맥락(questionTopic), 드럼 공명 축(drumResonanceAxis), 과잉 경계(shadowWarning) 추가"
+    "칼라하리 산 별과 추적 엔진(v2.3.0): 질문 맥락(questionTopic), 추적·별빛 축(kalahariTrackAxis), 과잉 경계(shadowWarning) 추가",
+    "세픽 강 영혼 조각 엔진(v2.3.0): 질문 맥락(questionTopic), 목조 결 축(sepikGrainAxis), 과잉 경계(shadowWarning) 추가",
+    "쇼나 음비라 공명 엔진(v2.3.0): 질문 맥락(questionTopic), 공명 순환 축(mbiraResonanceAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }

@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface SanKalahariResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '징후·발자국' | '내면·뿌리' | '연대·불씨' | '기다림·타이밍' | '기준·은하수' | '칼라하리 전반';
   desertSign: string;
   companionSign: string;
+  kalahariTrackAxis: string;
   sanInsight: string;
   kalahariTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const SAN_SHADOWS = [
+  '모래 위의 작은 발자국을 읽어 내는 민감함이 사소한 변화에도 과도하게 의미를 부여하며 불안해하는 과잉 해석이 되지 않게 하세요.',
+  '땅속 멜론 뿌리처럼 묵묵히 내면을 채우는 인내가 필요한 대화나 바깥의 실질적인 시도까지 미루는 고립이 되어서는 안 됩니다.',
+  '함께 리듬을 나누며 짐을 녹이는 연대가 내 문제의 핵심 정리까지 타인에게 넘기고 기대는 의존으로 흐르지 않게 중심을 잡으세요.',
+  '가장 정확한 때를 기다리며 시위를 당기지 않는 신중함이 이미 뻔히 보이는 결정마저 끝없이 유보하는 망설임이 되지 않도록 기한을 두세요.',
+  '어두운 밤하늘에 띄운 나만의 북극성 기준이 상황 변화에 맞춰 조정해야 할 유연한 선택지까지 가리는 독단이 되지 않게 살피세요.',
+];
+
+function classifySanTopic(q: string): SanKalahariResult['questionTopic'] {
+  if (/징후|발자국|신호|방향/.test(q)) return '징후·발자국';
+  if (/뿌리|기초|체력|수분/.test(q)) return '내면·뿌리';
+  if (/사람|대화|함께|불씨/.test(q)) return '연대·불씨';
+  if (/기다|때|타이밍|보류/.test(q)) return '기다림·타이밍';
+  if (/기준|별|은하수|어두/.test(q)) return '기준·은하수';
+  return '칼라하리 전반';
+}
+
 export function calculateSanKalahariTrackingStars(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): SanKalahariResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifySanTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % SIGNS.length;
   const picked = SIGNS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (SIGNS.length - 1));
   const companion = SIGNS[(idx + companionOffset) % SIGNS.length];
+  const kalahariTrackAxis = `${picked.sign.split('(')[0].trim()} ↔ ${companion.sign.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-SAN-KALAHARI-v2.2.0',
+    engineVersion: 'LUCKEY-SAN-KALAHARI-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     desertSign: picked.sign,
     companionSign: companion.sign,
+    kalahariTrackAxis,
     sanInsight: picked.insight,
     kalahariTone: picked.tone,
     reflectionFocus: `칼라하리 산(San) 지혜의 '${picked.sign}'을 중심에 두고 '${companion.sign}'의 결을 곁들여, 큰 소음이 아니라 모래 위의 작은 발자국과 내면의 조용한 신호를 먼저 읽어 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: SAN_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '남아프리카 칼라하리 산(San) 전통의 발자국 추적 직관·은하수 길잡이 지혜를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +121,13 @@ export function formatSanKalahariPrompt(res: SanKalahariResult): string {
   return [
     `[칼라하리 산·별과 추적 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 추적·별빛 축: ${res.kalahariTrackAxis}`,
     `- 사막의 징후: ${res.desertSign} (${res.kalahariTone})`,
     `- 동반 징후: ${res.companionSign}`,
     `- 중심 통찰: ${res.sanInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
