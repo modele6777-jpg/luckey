@@ -1,6 +1,8 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { BookOpen } from 'lucide-react';
 import { useState } from 'react';
+import { auth, db } from '@/lib/firebase';
+import { deleteLucyCloudBackup, readLucyCloudBackup, writeLucyCloudBackup } from '@/lib/lucyMemoryCloudBackup';
 import { exportLucyMemoryBackup, LUCY_MEMORY_BACKUP_MAX_BYTES, restoreLucyMemoryBackup } from '@/lib/lucyMemoryBackup';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { deleteOrbMemory, orbMemorySettings, setOrbMemoryEnabled } from '@/lib/orbConsult';
@@ -19,14 +21,17 @@ export function LucyConsultMemorySettings({ account, mode, onChange, light }: {
   account: string; mode: LucyConsultMode; onChange?: () => void; light?: boolean;
 }) {
   const [backupMessage, setBackupMessage] = useState('');
+  const [backupBusy, setBackupBusy] = useState(false);
+  const [confirmCloudDelete, setConfirmCloudDelete] = useState(false);
   const [open, setOpen] = useState(false);
   const [, setRevision] = useState(0);
   const [confirmAll, setConfirmAll] = useState(false);
   const [editing, setEditing] = useState<LucyConsultMemory | null>(null);
+  const canUseAccountBackup = auth.currentUser?.uid === account;
   const settings = open ? readLucyConsultMemorySettings(account) : null;
   const legacyCount = open ? orbMemorySettings(account).legacyCount : 0;
   const changed = () => { setRevision(value => value + 1); onChange?.(); };
-  const close = (next: boolean) => { setOpen(next); setConfirmAll(false); setEditing(null); };
+  const close = (next: boolean) => { setOpen(next); setConfirmAll(false); setConfirmCloudDelete(false); setEditing(null); };
   const toggle = (source: LucyConsultMode, enabled: boolean) => {
     if (source === 'voice') setOrbMemoryEnabled(account, enabled);
     else setLucyConsultMemoryEnabled(account, source, enabled);
@@ -65,6 +70,41 @@ export function LucyConsultMemorySettings({ account, mode, onChange, light }: {
       changed();
     } catch (error) {
       setBackupMessage(error instanceof SyntaxError ? '루시 기억 백업 파일을 읽지 못했어요.' : error instanceof Error ? error.message : '기억을 복원하지 못했어요.');
+    }
+  };
+  const runAccountBackup = async (action: 'save' | 'restore' | 'delete') => {
+    if (!canUseAccountBackup || backupBusy) return;
+    setBackupBusy(true);
+    setBackupMessage('');
+    const currentUser = () => {
+      if (auth.currentUser?.uid !== account) throw new Error('로그인 계정이 바뀌었어요.');
+    };
+    try {
+      currentUser();
+      if (action === 'save') {
+        const source = window as Window & { luckeyReadLegacyMemory?: () => Promise<ReadonlyMap<string, string>> };
+        const legacy = await source.luckeyReadLegacyMemory?.();
+        currentUser();
+        const backup = exportLucyMemoryBackup(window.localStorage, account, legacy);
+        if (!Object.keys(JSON.parse(backup).entries).length) throw new Error('백업할 기억이 없습니다.');
+        await writeLucyCloudBackup(db, account, backup);
+        setBackupMessage('이 계정에 기억을 저장했어요. 새 주소에서 같은 계정으로 로그인해 복원할 수 있어요.');
+      } else if (action === 'restore') {
+        const backup = await readLucyCloudBackup(db, account);
+        currentUser();
+        if (!backup) throw new Error('이 계정에 저장된 기억 백업이 없어요.');
+        const { restored, skipped } = restoreLucyMemoryBackup(window.localStorage, account, backup);
+        changed();
+        setBackupMessage(`기억 항목 ${restored}개를 복원했어요. 기존 항목 ${skipped}개는 건너뛰었어요. 다른 상담 화면은 새로고침 후 확인하세요.`);
+      } else {
+        await deleteLucyCloudBackup(db, account);
+        setConfirmCloudDelete(false);
+        setBackupMessage('Firebase에 저장한 기억 백업을 삭제했어요.');
+      }
+    } catch (error) {
+      setBackupMessage(error instanceof Error ? error.message : '계정 기억 백업을 처리하지 못했어요.');
+    } finally {
+      setBackupBusy(false);
     }
   };
   return (
@@ -110,6 +150,23 @@ export function LucyConsultMemorySettings({ account, mode, onChange, light }: {
                 }} />
               </label>
             </div>
+            {canUseAccountBackup && (
+              <fieldset className="space-y-2 rounded-lg border border-current/30 p-2" disabled={backupBusy}>
+                <legend className="font-semibold">Firebase 계정 백업</legend>
+                <p>이 주소의 루시 기억을 같은 계정에서 복원할 수 있어요. 저장하면 이 계정의 이전 백업을 갱신해요.</p>
+                <div className="flex flex-wrap gap-3">
+                  <button type="button" className="underline" onClick={() => void runAccountBackup('save')}>계정에 백업</button>
+                  <button type="button" className="underline" onClick={() => void runAccountBackup('restore')}>계정에서 복원</button>
+                  {confirmCloudDelete ? (
+                    <>
+                      <button type="button" className="underline" onClick={() => void runAccountBackup('delete')}>계정 백업 삭제 확인</button>
+                      <button type="button" onClick={() => setConfirmCloudDelete(false)}>취소</button>
+                    </>
+                  ) : <button type="button" className="underline" onClick={() => setConfirmCloudDelete(true)}>계정 백업 삭제</button>}
+                </div>
+                {backupBusy && <p role="status">계정 백업을 처리하고 있어요…</p>}
+              </fieldset>
+            )}
             {backupMessage && <p role="status">{backupMessage}</p>}
             {legacyCount > 0 && <p>이전 오브 기록 {legacyCount}건은 음성모드 기억에 동의하면 가져와요. 전체 삭제로 함께 지울 수 있어요.</p>}
             {settings.entries.length === 0 && <p>저장된 상담 기억이 없어요.</p>}

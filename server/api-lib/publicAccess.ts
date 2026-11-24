@@ -3,12 +3,13 @@ import type { NextFunction, Request, Response } from 'express';
 const WINDOW_MS = 60_000;
 const hits = new Map<string, number[]>();
 
-export function isAllowedAppOrigin(origin: string | undefined): boolean {
+export function isAllowedAppOrigin(origin: string | undefined, requestHost?: string): boolean {
   if (!origin) return true;
   let url: URL;
   try { url = new URL(origin); } catch { return false; }
   const host = url.hostname.toLowerCase();
   if (host === 'localhost' || host === '127.0.0.1' || host === '[::1]' || host === '::1') return true;
+  if (url.protocol === 'https:' && origin === url.origin && url.host === requestHost?.toLowerCase()) return true;
   if (host === 'luckey-six.vercel.app') return true;
   if (host.endsWith('.vercel.app') && (host.startsWith('luckey-six') || host.startsWith('luckey-'))) return true;
   const configuredOrigins = (process.env.LUCKEY_APP_ORIGINS || '').split(',').map(value => value.trim());
@@ -35,7 +36,7 @@ export function isRestrictedAppRoute(pathname: string): boolean {
 
 export function applyRestrictedCors(req: Request, res: Response): void {
   const origin = typeof req.headers.origin === 'string' ? req.headers.origin : '';
-  if (origin && isAllowedAppOrigin(origin)) {
+  if (origin && isAllowedAppOrigin(origin, req.headers.host)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Vary', 'Origin');
   }
@@ -45,7 +46,7 @@ export function applyRestrictedCors(req: Request, res: Response): void {
 
 export function rejectDisallowedOrigin(req: Request, res: Response): boolean {
   const origin = typeof req.headers.origin === 'string' ? req.headers.origin : undefined;
-  if (isAllowedAppOrigin(origin)) return false;
+  if (isAllowedAppOrigin(origin, req.headers.host)) return false;
   res.status(403).json({ error: '이 출처에서는 요청할 수 없습니다.', code: 'ORIGIN_NOT_ALLOWED' });
   return true;
 }

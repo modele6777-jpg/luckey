@@ -34,3 +34,9 @@ test('custom deployment origins require an exact HTTPS origin', () => {
     else process.env[key] = previous;
   }
 });
+
+test('a new HTTPS host serves its same-origin app without a platform-specific environment variable', () => {
+  assert.equal(isAllowedAppOrigin('https://new.luckey.example', 'new.luckey.example'), true);
+  assert.equal(isAllowedAppOrigin('https://different.luckey.example', 'new.luckey.example'), false);
+  assert.equal(isAllowedAppOrigin('http://new.luckey.example', 'new.luckey.example'), false);
+});

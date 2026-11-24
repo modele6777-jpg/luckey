@@ -1,0 +1,57 @@
+name: Deployment portability
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/deployment-portability.yml'
+      - 'Dockerfile'
+      - 'deploy/**'
+      - 'firestore.rules'
+      - 'firebase*.json'
+      - 'public/sites-sync-*.mjs'
+      - 'scripts/build-sites.mjs'
+      - 'scripts/sites/**'
+      - 'scripts/test-portable-firebase.sh'
+      - 'src/lib/lucyMemory*'
+      - 'tests/lucy-portable-cloud.test.ts'
+      - 'tests/sites-runtime.test.mjs'
+      - 'package*.json'
+      - 'render.yaml'
+      - 'vercel.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci --include=dev
+      - name: Firestore continuity under current rules
+        run: |
+          curl -fsSL https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v1.19.8.jar -o "$RUNNER_TEMP/firestore.jar"
+          printf '%s  %s\n' 9d43599ed6151199e8d604dc87fac51218e49e5f3a48519b1ae560bbe5e3382d "$RUNNER_TEMP/firestore.jar" | sha256sum -c -
+          bash scripts/test-portable-firebase.sh "$RUNNER_TEMP/firestore.jar"
+      - run: node --test tests/sites-runtime.test.mjs
+      - name: Build and boot the portable image
+        run: |
+          docker build -t luckey-ci .
+          docker run --detach --rm --name luckey-ci --publish 127.0.0.1:3000:3000 luckey-ci
+          trap 'docker stop luckey-ci' EXIT
+          healthy=0
+          for attempt in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:3000/api/health; then healthy=1; break; fi
+            sleep 1
+          done
+          if [ "$healthy" = 0 ]; then docker logs luckey-ci; exit 1; fi
+          curl --fail http://127.0.0.1:3000/version.json
