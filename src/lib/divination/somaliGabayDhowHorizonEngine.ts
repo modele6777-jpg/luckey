@@ -1,17 +1,38 @@
 import type { UserProfile } from '../sharedState';
 
+export type SomaliQuestionTopic = 'relation' | 'work' | 'emotion' | 'decision' | 'general';
+
 export interface SomaliGabayResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: SomaliQuestionTopic;
   poetryPrinciple: string;
   companionPrinciple: string;
   somaliInsight: string;
   hornOfAfricaTone: string;
+  gabayHorizonAxis: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+function classifySomaliTopic(q: string): SomaliQuestionTopic {
+  if (/관계|사람|예의|약속|대화|소통/.test(q)) return 'relation';
+  if (/일|직장|진로|사업|공부/.test(q)) return 'work';
+  if (/마음|감정|불안|지침|상처/.test(q)) return 'emotion';
+  if (/선택|결정|기다|계절풍|때/.test(q)) return 'decision';
+  return 'general';
+}
+
+const SOMALI_SHADOW_WARNINGS: Record<SomaliQuestionTopic, string> = {
+  relation: '말을 아끼고 한 연으로 압축하려다 꼭 필요한 따뜻한 설명까지 생략하면 상대가 거리를 느낄 수 있습니다.',
+  work: '계절풍을 기다린다는 명분으로 준비 점검까지 미루면 막상 바람이 불 때 돛을 못 올릴 수 있습니다.',
+  emotion: '고된 시간을 향기로 말리려다 현재의 아픔을 너무 빨리 성숙한 이야기로 덮지 마세요.',
+  decision: '모두의 말을 끝까지 듣는 시르(Shir)가 결정을 회피하는 핑계가 되지 않도록 마감 시각을 정해 두세요.',
+  general: '정갈한 절제가 무관심이나 냉담함으로 비치지 않도록 작은 안부 하나는 곁들여 두세요.',
+};
 
 const PRINCIPLES = [
   {
@@ -71,20 +92,26 @@ export function calculateSomaliGabayDhowHorizon(params: {
   question?: string;
 }): SomaliGabayResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifySomaliTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % PRINCIPLES.length;
   const picked = PRINCIPLES[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (PRINCIPLES.length - 1));
   const companion = PRINCIPLES[(idx + companionOffset) % PRINCIPLES.length];
+  const gabayHorizonAxis = `${picked.principle.split('(')[0].trim()} ↔ ${companion.principle.split('(')[0].trim()}`;
 
   return {
-    engineVersion: 'LUCKEY-SOMALI-GABAY-v2.2.0',
+    engineVersion: 'LUCKEY-SOMALI-GABAY-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     poetryPrinciple: picked.principle,
     companionPrinciple: companion.principle,
     somaliInsight: picked.insight,
     hornOfAfricaTone: picked.tone,
-    reflectionFocus: `소말리 가바이·해양 지혜의 '${picked.principle}'을 중심에 두고 '${companion.principle}'의 결을 곁들여 정갈한 한 마디와 계절풍의 때를 기다려 보세요.`,
+    gabayHorizonAxis,
+    shadowWarning: SOMALI_SHADOW_WARNINGS[questionTopic],
+    reflectionFocus: `소말리 가바이·해양 지혜(${questionTopic})의 '${picked.principle}'을 중심에 두고 '${companion.principle}'의 결을 곁들여 정갈한 한 마디와 계절풍의 때를 기다려 보세요.`,
     ritualAction: picked.action,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '소말리아 가바이(Gabay) 구전 시학·헤르(Xeer) 신의·다우 항해 지혜를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
@@ -93,12 +120,14 @@ export function calculateSomaliGabayDhowHorizon(params: {
 
 export function formatSomaliGabayPrompt(res: SomaliGabayResult): string {
   return [
-    `[소말리 가바이·바다 지평선 성찰 · ${res.engineVersion}]`,
+    `[소말리 가바이·바다 지평선 성찰 · ${res.engineVersion} | 질문 맥락: ${res.questionTopic}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 시학 원리: ${res.poetryPrinciple} (${res.hornOfAfricaTone})`,
     `- 동반 원리: ${res.companionPrinciple}`,
+    `- 가바이 지평선 축: ${res.gabayHorizonAxis}`,
     `- 중심 통찰: ${res.somaliInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,

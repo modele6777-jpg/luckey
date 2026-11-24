@@ -1,10 +1,10 @@
 {
-  "version": "1.8.456",
-  "builtAt": "2026-11-25T06:35:00+09:00",
-  "summary": "시킴 레프차·시와 오아시스·소그드 실크로드 3대 엔진 질문 맥락·과잉 경계 심층 강화(v1.8.456)",
+  "version": "1.8.457",
+  "builtAt": "2026-11-25T06:45:00+09:00",
+  "summary": "소말리 가바이·숨바 이카트·스와힐리 우투 3대 엔진 질문 맥락·과잉 경계 심층 강화(v1.8.457)",
   "items": [
-    "시킴 레프차 숲 관점 엔진(v2.3.0): 질문 맥락(questionTopic), 대나무 다리 탄성 축(bambooBridgeAxis), 과잉 경계(shadowWarning) 추가",
-    "시와 오아시스 소금샘 엔진(v2.3.0): 질문 맥락(questionTopic), 소금 부력 균형 축(saltBuoyancyAxis), 과잉 경계(shadowWarning) 추가",
-    "소그드 실크로드 대상 신뢰 엔진(v2.3.0): 질문 맥락(questionTopic), 대상 신뢰 균형 축(caravanTrustAxis), 과잉 경계(shadowWarning) 추가"
+    "소말리 가바이 바다 지평선 엔진(v2.3.0): 질문 맥락(questionTopic), 가바이 지평선 축(gabayHorizonAxis), 과잉 경계(shadowWarning) 추가",
+    "숨바 이카트 염색 베틀 엔진(v2.3.0): 질문 맥락(questionTopic), 이카트 직조 균형 축(ikatLoomAxis), 과잉 경계(shadowWarning) 추가",
+    "스와힐리 우투 다우 계절풍 엔진(v2.3.0): 질문 맥락(questionTopic), 계절풍 항해 균형 축(monsoonVoyageAxis), 과잉 경계(shadowWarning) 추가"
   ]
 }
