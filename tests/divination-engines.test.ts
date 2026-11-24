@@ -1422,6 +1422,8 @@ test('Vedic current dasha: 1995-03-25 birth at 2026-11-02 falls in Rahu-Sukra an
   assert(r.calculatedAtKst?.endsWith('+09:00 (KST)'));
   assert(Boolean(r.secondaryAxis));
   assert(r.reflectiveQuestion?.includes('다샤 흐름'));
+  assert((r as { questionTopic?: string }).questionTopic === 'dasha');
+  assert(Boolean((r as { shadowWarning?: string }).shadowWarning));
   assert(r.interpretiveBoundary?.includes('해석 경계'));
   assert(Boolean(r.vedicSynthesisMatrix?.integratedAction));
   assert(Boolean(r.ritualAction) && Boolean(r.reflectionFocus));
@@ -1430,6 +1432,7 @@ test('Vedic current dasha: 1995-03-25 birth at 2026-11-02 falls in Rahu-Sukra an
   assert(vPrompt.includes('보조 교차 축'));
   assert(vPrompt.includes('성찰 질문'));
   assert(vPrompt.includes('실천 의례') && vPrompt.includes('성찰 초점'));
+  assert(vPrompt.includes('과잉 경계'));
   assert(vPrompt.includes('해석 경계'));
   assert(!vPrompt.includes('/100'));
   assert(!vPrompt.includes('%'));
@@ -2288,6 +2291,8 @@ test('Ziwei Flying Stars Engine: 유년 사화 동적 비성 및 삼방사정 �
   assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(res.secondaryMutagenAxis));
   assert(res.reflectiveQuestion.includes('올해 재물과 커리어 방향'));
+  assert((res as { questionTopic?: string }).questionTopic === 'wealth');
+  assert(Boolean((res as { shadowWarning?: string }).shadowWarning));
   assert(res.interpretiveBoundary.includes('해석 경계'));
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.ziweiFlyingSynthesisMatrix?.integratedAction));
@@ -2313,6 +2318,7 @@ test('Ziwei Flying Stars Engine: 유년 사화 동적 비성 및 삼방사정 �
   assert(prompt.includes('보조 권과 축'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('과잉 경계'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -2932,6 +2938,8 @@ test('Strategic Leverage Engine: 전략 협상 및 손자병법 기문 레버리
 test('Spatial Fengshui Engine: 동양 풍수·점성술 공간 길방위 v2.1.0 교차 매트릭스 검증', () => {
   const res = calculateSpatialFengshui({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '작업실 방향' });
   assert.equal(res.engineVersion, SPATIAL_FENGSHUI_VERSION);
+  assert.equal(res.questionTopic, 'workspace');
+  assert(res.shadowWarning.length > 0);
   assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.reflectiveQuestion?.includes('작업실 방향'));
@@ -2942,6 +2950,7 @@ test('Spatial Fengshui Engine: 동양 풍수·점성술 공간 길방위 v2.1.0 
   assert(prompt.includes('+09:00 (KST)'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
+  assert(prompt.includes('과잉 경계'));
   assert(prompt.includes('공간 교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });

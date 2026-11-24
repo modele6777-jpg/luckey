@@ -23,7 +23,25 @@
 import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, type SajuAnalysisResult } from '../sajuAnalysis';
 
-export const SPATIAL_FENGSHUI_VERSION = 'LUCKEY-SFSE-v2.2.0';
+export const SPATIAL_FENGSHUI_VERSION = 'LUCKEY-SFSE-v2.3.0';
+
+export type SpatialQuestionTopic = 'workspace' | 'wealth' | 'relation' | 'rest' | 'general';
+
+function classifySpatialTopic(q: string): SpatialQuestionTopic {
+  if (/작업실|책상|사무실|코딩|공부|집중|카페/.test(q)) return 'workspace';
+  if (/계약|투자|재물|이사|매매|사업/.test(q)) return 'wealth';
+  if (/데이트|만남|관계|소개팅|연애/.test(q)) return 'relation';
+  if (/휴식|침실|수면|명상|힐링/.test(q)) return 'rest';
+  return 'general';
+}
+
+const SPATIAL_SHADOW_WARNINGS: Record<SpatialQuestionTopic, string> = {
+  workspace: '길방위만 맞추고 채광·환기·의자 높이 같은 물리적 인체공학을 놓치면 집중력이 오래가지 않습니다.',
+  wealth: '방위 기운에만 의존해 계약서 조항이나 상권·실거주 조건 검증을 건너뛰지 마십시오.',
+  relation: '방향이 주는 첫인상 이전에 상대가 편안히 대화할 수 있는 소음도와 동선을 먼저 살피십시오.',
+  rest: '잠자리 방향을 바꾸더라도 취침 전 화면 노출과 조도를 줄이지 않으면 깊은 회복이 어렵습니다.',
+  general: '방위는 공간의 순풍을 빌리는 도구일 뿐, 머무는 사람의 정돈과 꾸준한 루틴이 명당을 완성합니다.',
+};
 
 function formatSpatialKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -63,6 +81,8 @@ export interface SpatialFengshuiResult {
   calculatedAtUtc: string;
   calculatedAtKst: string;
   timestamp: number;
+  questionTopic: SpatialQuestionTopic;
+  shadowWarning: string;
 
   userProfileDigest: {
     birthdate: string;
@@ -315,6 +335,8 @@ export function calculateSpatialFengshui(options?: {
   };
 
   const q = (options?.question || '').trim();
+  const questionTopic = classifySpatialTopic(q);
+  const shadowWarning = SPATIAL_SHADOW_WARNINGS[questionTopic];
   const spatialSynthesisMatrix = {
     dominantTension: `${topGolden.direction}(${topGolden.qimenGate}) ↔ ${hazardousDirections.map(h => `${h.direction}(${h.hazardName})`).join(' · ')}`,
     alignmentState: `용신 오행: ${yongsinEl} · 결핍 보완: ${lackingElement} · 행성 라인: ${topGolden.astroPlanetLine}`,
@@ -330,6 +352,8 @@ export function calculateSpatialFengshui(options?: {
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: nowKst,
     timestamp: now.getTime(),
+    questionTopic,
+    shadowWarning,
 
     userProfileDigest: {
       birthdate: saju.birthdate,
@@ -374,12 +398,12 @@ export function formatSpatialFengshuiPrompt(res: SpatialFengshuiResult): string 
   ).join('\n');
 
   const matrixLine = res.spatialSynthesisMatrix
-    ? `\n4. [공간 교차 매트릭스]:\n   - 실천 의례: ${res.ritualAction}\n   - 성찰 초점: ${res.reflectionFocus}\n   - 핵심 긴장: ${res.spatialSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.spatialSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.spatialSynthesisMatrix.integratedAction}${res.reflectiveQuestion ? `\n   - 성찰 질문: ${res.reflectiveQuestion}` : ''}\n   - 해석 경계: ${res.interpretiveBoundary}\n`
+    ? `\n4. [공간 교차 매트릭스]:\n   - 실천 의례: ${res.ritualAction}\n   - 성찰 초점: ${res.reflectionFocus}\n   - 핵심 긴장: ${res.spatialSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.spatialSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.spatialSynthesisMatrix.integratedAction}${res.reflectiveQuestion ? `\n   - 성찰 질문: ${res.reflectiveQuestion}` : ''}\n   - 과잉 경계: ${res.shadowWarning}\n   - 해석 경계: ${res.interpretiveBoundary}\n`
     : `\n4. [해석 경계]: ${res.interpretiveBoundary}\n`;
 
   return `[🧭 동양 풍수 & 서양 점성술 공간 길방위 실측 데이터 (Astro-FengShui Spatial Core)]
 ======================================================================
-엔진 버전: ${res.engineVersion} | 기준 일시: ${res.calculatedAtKst}
+엔진 버전: ${res.engineVersion} | 기준 일시: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}
 일간: ${res.userProfileDigest.dayMaster} (결핍 오행: ${res.userProfileDigest.lackingElement})
 최고의 황금 방위: ${res.todayTopGoldenDirection.headline}
 요약: "${res.todayTopGoldenDirection.summary}"
