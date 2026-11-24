@@ -24,7 +24,25 @@ import {
   type SajuAnalysisResult,
 } from '../sajuAnalysis';
 
-export const SPECIAL_STARS_VERSION = 'LUCKEY-SSME-v2.2.0';
+export const SPECIAL_STARS_VERSION = 'LUCKEY-SSME-v2.3.0';
+
+export type SpecialStarsQuestionTopic = 'talent' | 'career' | 'wealth' | 'relation' | 'general';
+
+function classifySpecialStarsTopic(q: string): SpecialStarsQuestionTopic {
+  if (/무기|재능|강점|슈퍼파워|적성/.test(q)) return 'talent';
+  if (/직업|커리어|이직|사업|역할/.test(q)) return 'career';
+  if (/재물|돈|투자|수익|금여|암록/.test(q)) return 'wealth';
+  if (/인연|매력|도화|관계|귀인/.test(q)) return 'relation';
+  return 'general';
+}
+
+const SPECIAL_STARS_SHADOW_WARNINGS: Record<SpecialStarsQuestionTopic, string> = {
+  talent: '강한 신살의 잠재력만 믿고 기초 훈련과 반복 연습을 소홀히 하면 재능이 거칠게 소모될 수 있습니다.',
+  career: '카리스마·돌파 성향이 강한 명식일수록 협업 과정에서 속도 차이를 배려하지 않으면 불필요한 마찰이 생깁니다.',
+  wealth: '재물성 신살이 있더라도 현금 흐름 관리와 리스크 분산 없이는 기복이 커질 수 있습니다.',
+  relation: '매력·귀인 성향이 살아날수록 경계 없는 호의나 과도한 기대가 오해를 부르지 않도록 선을 분명히 하십시오.',
+  general: '신살은 타고난 엔진의 성격일 뿐, 방향과 브레이크는 오늘의 절제와 선택이 결정합니다.',
+};
 
 function formatSpecialStarsKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -58,6 +76,8 @@ export interface SpecialStarsResult {
   calculatedAtUtc: string;
   calculatedAtKst: string;
   timestamp: number;
+  questionTopic: SpecialStarsQuestionTopic;
+  shadowWarning: string;
 
   profileSummary: {
     birthdate: string;
@@ -478,6 +498,8 @@ export function calculateSpecialStarsMatrix(options?: {
     : '기운이 과하게 쏠리지 않고 담백하여, 특정 흉살의 부침 없이 안정적이고 꾸준한 성장을 이루는 청아한 명식입니다.';
 
   const q = (options?.question || '').trim();
+  const questionTopic = classifySpecialStarsTopic(q);
+  const shadowWarning = SPECIAL_STARS_SHADOW_WARNINGS[questionTopic];
   const leadStar = topSuperpowers[0];
   const specialStarsSynthesisMatrix = {
     dominantTension: leadStar
@@ -500,6 +522,8 @@ export function calculateSpecialStarsMatrix(options?: {
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: nowKst,
     timestamp: now.getTime(),
+    questionTopic,
+    shadowWarning,
 
     profileSummary: {
       birthdate: saju.birthdate,
@@ -538,12 +562,12 @@ export function formatSpecialStarsPrompt(res: SpecialStarsResult): string {
   ).join('\n');
 
   const matrixLine = res.specialStarsSynthesisMatrix
-    ? `\n4. [신살 교차 매트릭스]:\n   - 실천 의례: ${res.ritualAction}\n   - 성찰 초점: ${res.reflectionFocus}\n   - 핵심 긴장: ${res.specialStarsSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.specialStarsSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.specialStarsSynthesisMatrix.integratedAction}${res.reflectiveQuestion ? `\n   - 성찰 질문: ${res.reflectiveQuestion}` : ''}\n   - 해석 경계: ${res.interpretiveBoundary}\n`
+    ? `\n4. [신살 교차 매트릭스]:\n   - 실천 의례: ${res.ritualAction}\n   - 성찰 초점: ${res.reflectionFocus}\n   - 핵심 긴장: ${res.specialStarsSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.specialStarsSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.specialStarsSynthesisMatrix.integratedAction}${res.reflectiveQuestion ? `\n   - 성찰 질문: ${res.reflectiveQuestion}` : ''}\n   - 과잉 경계: ${res.shadowWarning}\n   - 해석 경계: ${res.interpretiveBoundary}\n`
     : `\n4. [해석 경계]: ${res.interpretiveBoundary}\n`;
 
   return `[⭐ 15대 신살 위치별 슈퍼파워 치환 실측 데이터 (Special Stars Matrix Core)]
 ======================================================================
-엔진 버전: ${res.engineVersion} | 기준 시각: ${res.calculatedAtKst} | 기준 명식: ${res.profileSummary.fourPillarsText}
+엔진 버전: ${res.engineVersion} | 기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic} | 기준 명식: ${res.profileSummary.fourPillarsText}
 총 감지된 특수 신살: ${res.totalStarsFound}개 | 일간: ${res.profileSummary.dayMaster}
 종합 분석: ${res.overallSynthesis}
 ======================================================================

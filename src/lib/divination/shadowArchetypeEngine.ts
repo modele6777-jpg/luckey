@@ -16,7 +16,25 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SHADOW_ARCHETYPE_VERSION = 'LUCKEY-SHADOW-v2.2.0';
+export const SHADOW_ARCHETYPE_VERSION = 'LUCKEY-SHADOW-v2.3.0';
+
+export type ShadowQuestionTopic = 'emotion' | 'career' | 'relation' | 'growth' | 'general';
+
+function classifyShadowTopic(q: string): ShadowQuestionTopic {
+  if (/감정|불안|분노|우울|상처|스트레스/.test(q)) return 'emotion';
+  if (/일|직장|커리어|성공|성과|경쟁/.test(q)) return 'career';
+  if (/관계|사람|가족|연애|갈등/.test(q)) return 'relation';
+  if (/성장|치유|통합|내면|변화/.test(q)) return 'growth';
+  return 'general';
+}
+
+const SHADOW_WARNINGS: Record<ShadowQuestionTopic, string> = {
+  emotion: '그림자 감정이 올라올 때 억지로 지우려 하면 반발이 커지니, 먼저 몸의 긴장을 풀고 사실과 감정을 분리해 보십시오.',
+  career: '경쟁심이나 인정 욕구가 과열될수록 단기 성과에 매몰되어 핵심 원칙을 놓치기 쉽습니다.',
+  relation: '상대에게 강하게 거슬리는 지점은 내 안의 미해결 과제를 비추는 거울일 수 있으니 즉각 반박을 한 박자 늦추십시오.',
+  growth: '내면 통합은 하루아침에 완성되지 않으므로, 완벽한 변화를 강박하기보다 오늘의 작은 선택 하나를 바꾸는 데 집중하십시오.',
+  general: '그림자는 없애야 할 적이 아니라 아직 길들여지지 않은 에너지입니다. 파괴가 아닌 창작과 책임으로 방향을 돌리십시오.',
+};
 
 export type ShadowArchetypeName = 
   | '파괴적 검투사 (The Fierce Gladiator · 편관형)'
@@ -42,6 +60,8 @@ export interface ShadowArchetypeReport {
   engineVersion: string;
   calculatedAt: string;
   calculatedAtKst: string;
+  questionTopic: ShadowQuestionTopic;
+  shadowWarning: string;
   primaryShadow: ShadowArchetypeDetail;
   goldenShadow: GoldenShadowDetail;
   shadowIntegrationScore: number;  // 그림자 통합 성숙도 (0 ~ 100)
@@ -168,11 +188,13 @@ export function runShadowArchetypeEngine(
   const ritualAction = `[${primaryShadow.dominantTenGod}] ${transmutationRitual.mindsetShield}`;
   const reflectionFocus = `골든 섀도우 연금술(${primaryShadow.archetype}) — ${goldenShadow.goldenGift}`;
   const qHint = (question || '').trim();
+  const questionTopic = classifyShadowTopic(qHint);
+  const shadowWarning = SHADOW_WARNINGS[questionTopic];
   const reflectiveQuestion = qHint
     ? `지금 "${qHint.slice(0, 36)}" 앞에서 올라오는 불편함이나 방어심 이면에, 내가 아직 인정하지 않은 [${goldenShadow.goldenGift}]의 어떤 힘이 숨어 있을까요?`
     : transmutationRitual.dailyPrompt;
 
-  const synthesisPromptGuidance = `[LUCKEY 융 심리학 그림자 자아 & 골든 섀도우 연금술 v2.2.0 | 연산 시각: ${calculatedAtKst}]
+  const synthesisPromptGuidance = `[LUCKEY 융 심리학 그림자 자아 & 골든 섀도우 연금술 v2.3.0 | 연산 시각: ${calculatedAtKst} | 질문 맥락: ${questionTopic}]
 - 그림자 원형: [${primaryShadow.archetype}] (지배 십신: ${primaryShadow.dominantTenGod})
 - 내면 근원 상처: ${primaryShadow.coreWound}
 - 무의식 폭발 트리거: ${primaryShadow.shadowTrigger}
@@ -185,12 +207,15 @@ export function runShadowArchetypeEngine(
 - 실천 의례: ${ritualAction}
 - 성찰 초점: ${reflectionFocus}
 - 성찰 질문: ${reflectiveQuestion}
+- 과잉 경계: ${shadowWarning}
 - 해석 경계: ${interpretiveBoundary}`;
 
   return {
     engineVersion: SHADOW_ARCHETYPE_VERSION,
     calculatedAt: targetDate.toISOString(),
     calculatedAtKst,
+    questionTopic,
+    shadowWarning,
     primaryShadow,
     goldenShadow,
     shadowIntegrationScore,
