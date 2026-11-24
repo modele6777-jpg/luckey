@@ -14829,14 +14829,15 @@ test('Numidian Cirta Horizon Poise engine: motif, +09:00 KST, and interpretive b
 
 test('Paracas Weave Textile Harmony engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateParacasWeaveTextileHarmony({ profile, now: new Date('2026-11-20T19:45:00Z'), question: '긴장과 쉼의 균형을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-PARACAS-WEAVE-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-PARACAS-WEAVE-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.paracasMotif);
+  assert.ok(rep.paracasLoomAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatParacasWeavePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('파라카스') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('파라카스') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Dayak Longhouse Hornbill Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15009,14 +15010,15 @@ test('Wolof Teranga Baobab Warmth engine: motif, +09:00 KST, and interpretive bo
 
 test('Palauan Bai Rafter Balance engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculatePalauanBaiRafterBalance({ profile, now: new Date('2026-11-20T20:13:00Z'), question: '내 안의 고요한 라군을 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-PALAU-BAI-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-PALAU-BAI-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.palauanMotif);
+  assert.ok(rep.baiRafterAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatPalauanBaiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('팔라우') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('팔라우') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Zimbabwe Great Stone Wall engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15163,14 +15165,15 @@ test('Lozi Kuomboka Flood Path engine: motif, +09:00 KST, and interpretive bound
 
 test('Pamir Wakhan Corridor Stars engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculatePamirWakhanCorridorStars({ profile, now: new Date('2026-11-20T20:49:00Z'), question: '높은 고갯길에서 호흡을 고르고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-PAMIR-WAKHAN-v2.2.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-PAMIR-WAKHAN-v2.3.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.pamirMotif);
+  assert.ok(rep.wakhanSkyAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatPamirWakhanPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('파미르') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('파미르') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Hebridean Tartan Loom Calm engine: motif, +09:00 KST, and interpretive boundary', () => {

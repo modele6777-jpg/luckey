@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface PamirWakhanResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '시선·천창' | '지지·기둥' | '호흡·고산' | '경계·안부' | '기준·별빛' | '와칸 전반';
   pamirMotif: string;
   companionMotif: string;
+  wakhanSkyAxis: string;
   pamirInsight: string;
   wakhanTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const PAMIR_SHADOWS = [
+  '차르호나 천창처럼 작은 시선의 틈을 여는 유연함이 한 가지 방향을 끝까지 파고들어야 할 집중력까지 분산시키는 산만함이 되지 않게 하세요.',
+  '다섯 기둥에 무게를 나누는 분산이 당장 제일 약해진 한 기둥을 먼저 보수해야 할 시급함까지 가리지 않도록 우선순위를 살피세요.',
+  '고산 야크처럼 숨을 고르며 천천히 걷는 호흡이 평지 구간에서도 불필요하게 속도를 늦추는 관성으로 굳지 않게 구분하세요.',
+  '강 건너편과 안부를 나누는 부드러움이 내 경계선 안쪽으로 들어오는 무리한 요구까지 거절하지 못하는 무름이 되어서는 안 됩니다.',
+  '변하지 않는 밤하늘 별자리를 보는 고집이 당장 발밑의 바위와 길 상태에 맞춰 발을 딛어야 하는 현실 감각을 가리지 않게 하세요.',
+];
+
+function classifyPamirTopic(q: string): PamirWakhanResult['questionTopic'] {
+  if (/천창|창|시선|빛/.test(q)) return '시선·천창';
+  if (/기둥|지지|건강|일상/.test(q)) return '지지·기둥';
+  if (/호흡|고개|고산|속도/.test(q)) return '호흡·고산';
+  if (/경계|강|안부|인사/.test(q)) return '경계·안부';
+  if (/별|기준|밤하늘|방향/.test(q)) return '기준·별빛';
+  return '와칸 전반';
+}
+
 export function calculatePamirWakhanCorridorStars(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): PamirWakhanResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyPamirTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const picked = MOTIFS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const wakhanSkyAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-PAMIR-WAKHAN-v2.2.0',
+    engineVersion: 'LUCKEY-PAMIR-WAKHAN-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     pamirMotif: picked.motif,
     companionMotif: companion.motif,
+    wakhanSkyAxis,
     pamirInsight: picked.insight,
     wakhanTone: picked.tone,
     reflectionFocus: `파미르 와칸의 '${picked.motif}'을 중심에 두고 '${companion.motif}'의 결을 곁들여, 높은 고개일수록 숨을 고르며 한 걸음씩 오르고 하늘을 향한 작은 창을 열어 두세요.`,
     ritualAction: picked.action,
+    shadowWarning: PAMIR_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '중앙아시아 파미르 고원 와칸 회랑의 차르호나 천창과 고산 호흡 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +121,13 @@ export function formatPamirWakhanPrompt(res: PamirWakhanResult): string {
   return [
     `[파미르·와칸 회랑 별빛 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 회랑 별빛 축: ${res.wakhanSkyAxis}`,
     `- 파미르 모티프: ${res.pamirMotif} (${res.wakhanTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.pamirInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
