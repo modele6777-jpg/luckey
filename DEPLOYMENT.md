@@ -51,10 +51,10 @@ export GOOGLE_CLOUD_PROJECT=lucyuniverse-fc423
 export CLOUD_RUN_REGION=<기존-서비스-리전>
 export CLOUD_RUN_SERVICE=luckey
 export CLOUD_RUN_SERVICE_ACCOUNT=<Cloud-Run-실행-계정-이메일>
-export CLOUD_RUN_GEMINI_SECRET=<기존-Secret-Manager-항목-이름>
+export CLOUD_RUN_GEMINI_SECRET=<필요한-경우-기존-Secret-Manager-항목-이름>
 bash deploy/cloud-run.sh
 ```
 
-이 명령은 소스에서 컨테이너를 빌드하고 기존 Secret Manager 값을 런타임에 연결합니다. Git이나 브라우저 빌드에 비밀 값을 넣지 않습니다. 공개 정책은 기존 설정을 따릅니다. 신규 독립 웹 앱에 공개 접속이 필요한 경우에만 배포자의 결정에 따라 `CLOUD_RUN_PUBLIC=true`를 지정합니다. Cloud Run 실행 계정과 별도로 빌드·배포에 필요한 Google Cloud IAM 권한이 있어야 합니다.
+이 명령은 현재 Git 커밋에서 컨테이너를 빌드합니다. 기존 Cloud Run 서비스의 Gemini 환경변수를 이어 쓰거나, 지정한 Secret Manager 값을 런타임에 연결합니다. Git이나 브라우저 빌드에 비밀 값을 넣지 않습니다. 공개 정책은 기존 설정을 따릅니다. 신규 독립 웹 앱에 공개 접속이 필요한 경우에만 배포자의 결정에 따라 `CLOUD_RUN_PUBLIC=true`를 지정합니다. Cloud Run 실행 계정과 별도로 빌드·배포에 필요한 Google Cloud IAM 권한이 있어야 합니다.
 
 출력된 서비스 주소에서 위 전환 점검을 진행합니다. Sites에서 Cloud Run의 음성 API만 쓰려면 운영 인증과 공개 정책이 맞는지 확인한 뒤 Sites에 `LUCKEY_LIVE_API_ORIGIN`으로 검증한 Cloud Run 주소를 설정합니다. Google Cloud 크레딧의 적용 대상은 결제 계정과 상품 조건에서 확인합니다. Cloud Run으로 앱 호스트를 바꾸는 설정과 Gemini 호출을 Vertex AI로 전환하는 설정은 각각 별도입니다.
