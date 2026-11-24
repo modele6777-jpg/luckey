@@ -1,10 +1,10 @@
 import { createPublicKey, randomUUID, verify as verifySignature } from 'node:crypto';
-import { CONTROL_DOCUMENT, decodedFields, fieldValue, firestoreDocumentUrl, firestoreGet, firestorePatch, typedValue } from './lucyKnowledgeFirestore.js';
-import { searchKnowledgeMetadata } from './lucyKnowledgeSources.js';
+import { CONTROL_DOCUMENT, decodedFields, fieldValue, firestoreDocumentUrl, firestoreGet, firestorePatch, typedValue } from './lucyKnowledgeFirestore.ts';
+import { searchKnowledgeMetadata } from './lucyKnowledgeSources.ts';
 import express, { type Request, type Response } from 'express';
 import { GoogleGenAI } from '@google/genai';
-import firebaseConfig from '../../firebase-applet-config.json';
-import { hasVerifiedFullTextSource, validateKnowledgeCard, type KnowledgeSource } from '../../src/lib/divination/knowledge/governance.js';
+import firebaseConfig from '../../firebase-applet-config.json' with { type: 'json' };
+import { hasVerifiedFullTextSource, validateKnowledgeCard, type KnowledgeSource } from '../../src/lib/divination/knowledge/governance.ts';
 import type { DivinationToolId } from '../../src/lib/lucyToolRegistry.js';
 
 const CERT_URL = 'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com';
