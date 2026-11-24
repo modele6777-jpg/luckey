@@ -27,13 +27,13 @@ test('Sites adapter handles its D1 route and serves shared routes without an ups
 
 test('legacy adapter rejects a Sites account switch and ignores deleted or non-data keys', async () => {
   const request = () => Response.json({ account: 'sites-owner', entries: [
-    { key: 'lucy_long_term_memory_v1:firebase-owner', value: '[{"id":"from-d1"}]' },
-    { key: 'lucy_soul_memories_archive:firebase-owner', value: null },
+    { key: 'lucy_long_term_memory_v1:account-1', value: '[{"id":"from-d1"}]' },
+    { key: 'lucy_soul_memories_archive:account-1', value: null },
     { key: 'prism_auth_token', value: 'never-copy' },
   ] });
   const client = { account: 'sites-owner', request };
   assert.deepEqual([...await readSitesLegacyMemory(client)], [
-    ['lucy_long_term_memory_v1:firebase-owner', '[{"id":"from-d1"}]'],
+    ['lucy_long_term_memory_v1:account-1', '[{"id":"from-d1"}]'],
   ]);
   await assert.rejects(readSitesLegacyMemory({ account: 'old-owner', request }));
 });
