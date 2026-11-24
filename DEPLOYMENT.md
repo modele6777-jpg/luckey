@@ -14,6 +14,8 @@ GitHub `main`이 코드·잠금 파일·Firebase 연결 정보·보안 규칙·�
 
 Node 운영 서버는 기본 3000 포트를 사용합니다. 배포처에서 `PORT`를 제공하면 그 값을 사용합니다. 웹 앱 공개 주소는 `LUCKEY_APP_ORIGINS`에 정확한 HTTPS 출처를 쉼표로 구분해 지정합니다. 예를 들어 `https://luckey.example.com`처럼 경로나 끝 슬래시 없이 입력합니다. API 요청은 브라우저에서 같은 주소의 `/api`로 보냅니다.
 
+사설 CA가 필요한 환경에서는 Docker 빌드에 `--secret id=npm_registry_ca,src=/path/to/trusted-ca.pem`을 전달할 수 있습니다. 인증서는 최종 이미지에 복사되지 않습니다.
+
 ## 연구 작업
 
 일정의 기준은 [deploy/knowledge-research.crontab](deploy/knowledge-research.crontab)의 UTC `0 0 * * *`입니다. 한국 시간으로 매일 오전 9시입니다. Render에서도 이 표현식을 사용합니다. Vercel로 웹 앱을 옮겨도 기존 연구 스케줄러는 계속 사용할 수 있습니다.
