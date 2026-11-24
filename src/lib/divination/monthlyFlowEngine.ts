@@ -29,7 +29,25 @@ import {
   type FiveElement,
 } from '../sajuAnalysis';
 
-export const MONTHLY_FLOW_ENGINE_VERSION = 'LUCKEY-MFE-v2.2.0';
+export const MONTHLY_FLOW_ENGINE_VERSION = 'LUCKEY-MFE-v2.3.0';
+
+export type MonthlyFlowQuestionTopic = 'career' | 'wealth' | 'rest' | 'relation' | 'general';
+
+function classifyMonthlyFlowTopic(q: string): MonthlyFlowQuestionTopic {
+  if (/이직|커리어|승진|직장|사업/.test(q)) return 'career';
+  if (/계약|투자|재물|돈|수익/.test(q)) return 'wealth';
+  if (/휴식|힐링|건강|충전|번아웃/.test(q)) return 'rest';
+  if (/관계|구설|마찰|사람|연애/.test(q)) return 'relation';
+  return 'general';
+}
+
+const MONTHLY_FLOW_SHADOW_WARNINGS: Record<MonthlyFlowQuestionTopic, string> = {
+  career: '최적월이라 해도 사전 준비나 이력 점검 없이 감으로만 움직이면 오히려 좋은 기회의 밀도가 떨어질 수 있습니다.',
+  wealth: '재물운이 강한 달일수록 지출과 충동 투자의 유혹도 함께 커지므로 계약 조건을 한 번 더 교차 확인하십시오.',
+  rest: '회복의 달에 죄책감을 느끼며 억지로 일정을 채우면 다음 도약월의 집중력이 먼저 고갈됩니다.',
+  relation: '충·원진 주의월에 작은 오해를 키우지 않도록 감정적인 즉답을 하루만 미루어 보십시오.',
+  general: '월운의 점수는 기회의 크기이지 행동의 대용물이 아니므로, 좋은 달에는 실행을, 주의할 달에는 정비를 선택하십시오.',
+};
 
 function formatMonthlyFlowKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -83,6 +101,8 @@ export interface MonthlyFlowResult {
   calculatedAtUtc: string;
   calculatedAtKst: string;
   timestamp: number;
+  questionTopic: MonthlyFlowQuestionTopic;
+  shadowWarning: string;
 
   targetYear: number;
   yearGanZhiKr: string;
@@ -380,6 +400,8 @@ export function calculateMonthlyFlow(options?: {
 
   const topQuarter = quarterlyStrategies.reduce((prev, cur) => cur.quarterScore > prev.quarterScore ? cur : prev);
   const q = (options?.question || '').trim();
+  const questionTopic = classifyMonthlyFlowTopic(q);
+  const shadowWarning = MONTHLY_FLOW_SHADOW_WARNINGS[questionTopic];
   const monthlyFlowSynthesisMatrix = {
     dominantTension: `${topMonth.monthOrder}월(${topMonth.ganZhi}) ↔ ${cautionMonths[0] || '안정 분기'}`,
     alignmentState: `${yearGanZhiKr} · ${topQuarter.quarterName}`,
@@ -391,6 +413,8 @@ export function calculateMonthlyFlow(options?: {
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: nowKstIso,
     timestamp: now.getTime(),
+    questionTopic,
+    shadowWarning,
 
     targetYear,
     yearGanZhiKr,
@@ -433,7 +457,7 @@ export function formatMonthlyFlowPrompt(res: MonthlyFlowResult): string {
 
   return `[📅 12개월 월운(月運) & 분기 타이밍 실측 데이터 (Monthly Flow Matrix Core)]
 ======================================================================
-엔진 버전: ${res.engineVersion} | 기준 시각: ${res.calculatedAtKst} | 기준 세운: ★ ${res.yearGanZhiKr} | 일간: ${res.dayMasterText}
+엔진 버전: ${res.engineVersion} | 기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic} | 기준 세운: ★ ${res.yearGanZhiKr} | 일간: ${res.dayMasterText}
 연간 총평: "${res.yearOverallFlowSummary}"
 ======================================================================
 1. [라이프 의사결정 골든 먼스(Golden Month) 타임라인]:
@@ -450,6 +474,7 @@ ${monthLines}
 ${res.monthlyFlowSynthesisMatrix ? `\n4. [교차 매트릭스]:\n   - 핵심 긴장: ${res.monthlyFlowSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.monthlyFlowSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.monthlyFlowSynthesisMatrix.integratedAction}` : ''}
 ${res.reflectiveQuestion ? `   - 성찰 질문: ${res.reflectiveQuestion}\n` : ''}   - 실천 의례: ${res.ritualAction}
    - 성찰 초점: ${res.reflectionFocus}
+   - 과잉 경계: ${res.shadowWarning}
 5. [해석 경계]: ${res.interpretiveBoundary}
 ======================================================================
 [★ 루시 월운 상담 지침]:
