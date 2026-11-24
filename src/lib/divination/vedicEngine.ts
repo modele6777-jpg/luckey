@@ -163,6 +163,8 @@ export interface VedicResult {
   status: 'calculated' | 'skipped' | 'error';
   engineVersion: string;
   calculatedAtKst?: string;
+  questionTopic?: VedicQuestionTopic;
+  shadowWarning?: string;
   method: string;
   birthInstant?: { utcISOString: string; kstISOString: string; assumedNoon: boolean };
   ayanamsa?: number;

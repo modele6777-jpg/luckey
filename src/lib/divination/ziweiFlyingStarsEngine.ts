@@ -103,6 +103,8 @@ export interface ZiweiFlyingStarsResult {
   calculatedAtUtc: string;
   calculatedAtKst: string;
   timestamp: number;
+  questionTopic: ZiweiFlyingQuestionTopic;
+  shadowWarning: string;
 
   targetYear: number;
   yearStem: string; // 천간 (예: 丙)
