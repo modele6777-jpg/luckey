@@ -16,9 +16,28 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const ELEMENTAL_RESONANCE_VERSION = 'LUCKEY-RESON-v2.3.0';
+export const ELEMENTAL_RESONANCE_VERSION = 'LUCKEY-RESON-v2.4.0';
 
 export type ElementName = '목' | '화' | '토' | '금' | '수';
+export type ElementalQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
+
+function classifyElementalTopic(q: string): ElementalQuestionTopic {
+  if (/일|사업|직장|커리어|집중|업무|프로젝트/.test(q)) return 'career';
+  if (/관계|연애|사람|갈등|가족|친구|소통/.test(q)) return 'relationship';
+  if (/돈|재물|투자|재정|계약|수입|지출/.test(q)) return 'wealth';
+  if (/건강|휴식|피곤|수면|회복|컨디션|몸/.test(q)) return 'health';
+  if (/결정|선택|진로|방향|고민|시작/.test(q)) return 'decision';
+  return 'general';
+}
+
+const ELEMENTAL_TOPIC_WARNINGS: Record<ElementalQuestionTopic, string> = {
+  career: '성과를 밀어붙이는 한 오행만 과도하게 쓰다 상생 고리의 다음 오행(휴식·정돈)이 마르지 않도록 살피십시오.',
+  relationship: '감정과 표현(화·수)이 한쪽으로 치우쳐 상대의 리듬과 어긋나지 않도록 중재 오행(토)의 여유를 두십시오.',
+  wealth: '재물과 결과(금·토)만 재촉하지 말고 아이디어를 틔우고 흐름을 잇는 생장 오행(목·수)을 함께 돌보십시오.',
+  health: '부족한 오행을 한 번에 채우려 무리하지 말고 색·식재료·호흡 같은 1분 단위의 가벼운 조율부터 시작하십시오.',
+  decision: '결단(금)이나 추진(목) 한쪽에만 치우치지 않도록 충분한 숙고(수)와 실행(화)의 균형을 함께 확인하십시오.',
+  general: '오행의 다과(多寡)를 좋고 나쁨으로 나누지 말고, 막힌 순환 고리를 열어 주는 일상 조율 신호로 활용하십시오.',
+};
 
 export interface ElementStateDetail {
   element: ElementName;
@@ -49,6 +68,9 @@ export interface ElementalResonanceResult {
   engineVersion: string;
   calculatedAtIso: string;
   calculatedAtKst: string;
+  questionTopic: ElementalQuestionTopic;
+  elementalCrossAxis: string;
+  elementalShadowWarning: string;
 
   // 오행별 상태 상세
   elements: Record<ElementName, ElementStateDetail>;
@@ -267,6 +289,9 @@ export function calculateElementalResonance(params?: {
   else resonanceGrade = '생기 재충전 조율기 (Resonance Tuning)';
 
   const temporalElementalRhythm = getTemporalElementalRhythm(now);
+  const questionTopic = classifyElementalTopic(question);
+  const elementalCrossAxis = `${questionTopic} · ${primeElement}(${ELEMENT_HANJA[primeElement]}) 보강 × ${temporalElementalRhythm.cycleWatchWindow.split('—')[0].trim()}`;
+  const elementalShadowWarning = ELEMENTAL_TOPIC_WARNINGS[questionTopic];
   const situationalResonanceAudit = /일|사업|결정|진로|집중/.test(question)
     ? {
         focusTheme: `${primeElement}(${ELEMENT_HANJA[primeElement]}) 보강을 통한 실행 순환 복원`,
@@ -305,6 +330,9 @@ export function calculateElementalResonance(params?: {
     engineVersion: ELEMENTAL_RESONANCE_VERSION,
     calculatedAtIso: now.toISOString(),
     calculatedAtKst: temporalElementalRhythm.kstTimeLabel,
+    questionTopic,
+    elementalCrossAxis,
+    elementalShadowWarning,
     elements: elementsState,
     loopAnalysis: {
       isLoopComplete,
@@ -338,9 +366,11 @@ export function formatElementalResonancePrompt(res: ElementalResonanceResult): s
 - 상생 순환 상태: **${res.resonanceGrade}** (${res.loopAnalysis.isLoopComplete ? '5행 완전 순환형' : '특정 오행 집중형'})
   • 활성 상생 고리: ${res.loopAnalysis.flowingPairs.join(' ➔ ')}
   • 순환 조율 지점: ${res.loopAnalysis.stagnantPair}
-- 질문 맥락 감사 (${res.situationalResonanceAudit.focusTheme}): ${res.situationalResonanceAudit.circulationNote} / 실천: ${res.situationalResonanceAudit.dailyPractice}
+- 질문 맥락 감사 (${res.situationalResonanceAudit.focusTheme} · ${res.questionTopic}): ${res.situationalResonanceAudit.circulationNote} / 실천: ${res.situationalResonanceAudit.dailyPractice}
 - KST 시공간 오행 리듬: ${res.temporalElementalRhythm.cycleWatchWindow} / ${res.temporalElementalRhythm.seasonalElementTone}
   • 시공간 지침: ${res.temporalElementalRhythm.temporalGuidance}
+- 오행 교차 축: ${res.elementalCrossAxis}
+- 과잉·편향 경계: ${res.elementalShadowWarning}
 - 오행 교차 매트릭스: 핵심(${res.elementalSynthesisMatrix.coreInsight}) | 실행(${res.elementalSynthesisMatrix.recommendedAction}) | 주의(${res.elementalSynthesisMatrix.cautionNotice})
 - 1순위 에너지 공명 증폭기: **${res.amplifier.primeElement}기운 증폭**
   • 공명 컬러: ${res.amplifier.amplifierColor}

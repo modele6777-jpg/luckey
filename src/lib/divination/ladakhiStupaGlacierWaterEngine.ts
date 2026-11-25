@@ -11,6 +11,7 @@ export interface LadakhiChortenResult {
   chortenInsight: string;
   transHimalayanTone: string;
   glacierFlowCycle: string;
+  ladakhiCrossAxis: string;
   shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -66,6 +67,15 @@ function classifyLadakhiTopic(question?: string): LadakhiQuestionTopic {
   return 'general';
 }
 
+const LADAKHI_TOPIC_WARNINGS: Record<LadakhiQuestionTopic, string> = {
+  career: '고갯길을 넘는 성실함에 몰두하다 중간 초르텐 앞에서 숨을 고르고 방향을 재확인할 시간까지 생략하지 마십시오.',
+  relationship: '담백한 배려와 거리를 지키려다 꼭 필요한 고마움의 인사(줄레이)까지 아껴 버리지 않도록 살피십시오.',
+  wealth: '비축과 절약(아이스 스투파)에 집중하느라 지금 마주한 공정한 나눔과 순환(추르폰)의 흐름을 막지 마십시오.',
+  health: '혹독한 추위를 견디는 인내심에만 기대지 말고 파슈미나처럼 스스로를 감싸는 부드러운 휴식을 허용하십시오.',
+  decision: '자원과 에너지를 아끼려다 필요한 나눔과 숨 고르기, 그리고 정작 움직여야 할 봄날의 결단까지 미루지 마십시오.',
+  general: '자원과 에너지를 아끼려다 필요한 나눔과 숨 고르기까지 미루지 않도록 살피십시오.',
+};
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -98,10 +108,11 @@ export function calculateLadakhiStupaGlacierWater(params: {
   const companion = WISDOMS[(idx + companionOffset) % WISDOMS.length];
   const questionTopic = classifyLadakhiTopic(params.question);
   const glacierFlowCycle = `${picked.wisdom.split('(')[0].trim()} ↔ ${companion.wisdom.split('(')[0].trim()} 고원 순환`;
-  const shadowWarning = `[${picked.wisdom.split('(')[0].trim()} 과잉 경계] 자원과 에너지를 아끼려다 필요한 나눔과 숨 고르기까지 미루지 않도록 살피십시오.`;
+  const ladakhiCrossAxis = `${questionTopic} · ${picked.wisdom.split('(')[0].trim()} × ${companion.wisdom.split('(')[0].trim()}`;
+  const shadowWarning = `[${picked.wisdom.split('(')[0].trim()} 과잉 경계] ${LADAKHI_TOPIC_WARNINGS[questionTopic]}`;
 
   return {
-    engineVersion: 'LUCKEY-LADAKHI-CHORTEN-v2.3.0',
+    engineVersion: 'LUCKEY-LADAKHI-CHORTEN-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     glacierWisdom: picked.wisdom,
@@ -109,6 +120,7 @@ export function calculateLadakhiStupaGlacierWater(params: {
     chortenInsight: `${picked.insight} (동반 지혜: ${companion.wisdom})`,
     transHimalayanTone: picked.tone,
     glacierFlowCycle,
+    ladakhiCrossAxis,
     shadowWarning,
     reflectionFocus: `라다크 고원 지혜의 '${picked.wisdom}'와 동반 지혜 '${companion.wisdom}'처럼, 지금 내게 주어진 자원과 시간을 알뜰히 아껴 쓰며 필요한 때를 위해 고요히 모아 두세요.`,
     ritualAction: picked.ritual,
@@ -124,6 +136,7 @@ export function formatLadakhiChortenPrompt(res: LadakhiChortenResult): string {
     `- 고원 지혜: ${res.glacierWisdom} (${res.transHimalayanTone})`,
     `- 동반 지혜: ${res.companionWisdom}`,
     `- 고원 순환 축: ${res.glacierFlowCycle}`,
+    `- 맥락 교차 축: ${res.ladakhiCrossAxis}`,
     `- 중심 통찰: ${res.chortenInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,

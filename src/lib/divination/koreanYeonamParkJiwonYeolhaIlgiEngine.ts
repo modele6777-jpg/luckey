@@ -8,12 +8,12 @@
  * 4. 북학개방 문물 수용 혜안(北學開放 視野 慧眼): 좁은 소중화 명분론의 우물 안 개구리를 벗어나, 천하의 뛰어난 문물과 제도를 편견 없이 관찰하고 배움으로써 시대를 혁신하는 광활한 안목.
  * 5. 위선 타파 해학·풍자 여유도(諧謔的 餘裕度): <호질(虎叱)>, <허생전(許生傳)> 등에서 번뜩이는 사대부의 가식과 허위의식을 단칼에 무너뜨리는 호탕한 유머와 통쾌한 해학적 여유.
  *
- * @version LUCKEY-YEONAM-PARK-JIWON-YEOLHA-ILGI-v2.3.0
+ * @version LUCKEY-YEONAM-PARK-JIWON-YEOLHA-ILGI-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_YEONAM_PARK_JIWON_VERSION = 'LUCKEY-YEONAM-PARK-JIWON-YEOLHA-ILGI-v2.3.0';
+export const KOREAN_YEONAM_PARK_JIWON_VERSION = 'LUCKEY-YEONAM-PARK-JIWON-YEOLHA-ILGI-v2.4.0';
 
 export type YeonamQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -43,6 +43,7 @@ export interface YeonamParkJiwonYeolhaIlgiResult {
   engineVersion: string;
   calculatedAtKst: string;
   questionTopic: YeonamQuestionTopic;
+  yeonamCrossAxis: string;
   silhakPhase: string;
   shadowWarning: string;
   temporalYeonamRhythm: YeonamTemporalRhythm;
@@ -89,11 +90,12 @@ const YEONAM_SILHAK_PHASES = [
   '이용후생(거창한 명분보다 지금 삶을 실제로 넉넉히 할 작은 쓰임을 실현하는 시기)',
 ] as const;
 
-const YEONAM_SHADOW_WARNINGS = [
-  '새로운 문물과 변화를 좇느라 지금 내가 이미 가진 단단한 기본기와 약속을 가볍게 여기지 않도록 살피세요.',
-  '위선과 가식을 꼬집는 해학과 직언이 가까운 사람에게 불필요한 상처로 남지 않도록 온기를 함께 챙기세요.',
-  '실질적 쓰임을 따지느라 수치로 환산되지 않는 마음의 여유와 인간적 정까지 덜어내지 않도록 유의하세요.',
-] as const;
+const YEONAM_TOPIC_SHADOW_WARNINGS: Record<YeonamQuestionTopic, string> = {
+  relationship: '위선과 가식을 꼬집는 해학과 직언이 가까운 사람에게 불필요한 상처로 남지 않도록 온기를 함께 챙기세요.',
+  decision: '새로운 문물과 변화를 좇느라 지금 내가 이미 가진 단단한 기본기와 약속을 가볍게 여기지 않도록 살피세요.',
+  healing: '실질적 쓰임을 따지느라 수치로 환산되지 않는 마음의 여유와 인간적 정까지 덜어내지 않도록 유의하세요.',
+  reflection: '우물 밖의 지혜를 찾으면서도 오늘 내 발밑의 일상(이용후생)을 돌보는 작은 실천을 놓치지 마세요.',
+};
 
 export const YEONAM_THEMES: YeonamTheme[] = [
   {
@@ -261,7 +263,8 @@ export function calculateYeonamParkJiwonYeolhaIlgi(
   const companionYeonamTheme = YEONAM_THEMES[(themeIndex + companionOffset) % YEONAM_THEMES.length];
   const focalYeonamAphorism = YEONAM_APHORISMS[aphorismIndex];
   const silhakPhase = YEONAM_SILHAK_PHASES[(absHash >> 10) % YEONAM_SILHAK_PHASES.length];
-  const shadowWarning = YEONAM_SHADOW_WARNINGS[(absHash >> 13) % YEONAM_SHADOW_WARNINGS.length];
+  const shadowWarning = YEONAM_TOPIC_SHADOW_WARNINGS[questionTopic];
+  const yeonamCrossAxis = `${questionTopic} · ${activeYeonamTheme.themeKey} × ${companionYeonamTheme.themeKey} · ${temporalYeonamRhythm.phaseLabel}`;
 
   const ritualByTopic: Record<YeonamQuestionTopic, string> = {
     relationship: '상대의 체면이나 직함 대신 오늘 나눈 진심 어린 말 한마디를 떠올리고, 무거운 긴장을 푸는 가벼운 유머로 거리를 좁히십시오.',
@@ -306,6 +309,7 @@ export function calculateYeonamParkJiwonYeolhaIlgi(
     engineVersion: KOREAN_YEONAM_PARK_JIWON_VERSION,
     calculatedAtKst,
     questionTopic,
+    yeonamCrossAxis,
     silhakPhase,
     shadowWarning,
     temporalYeonamRhythm,
@@ -335,6 +339,7 @@ export function formatYeonamParkJiwonYeolhaIlgiPrompt(res: YeonamParkJiwonYeolha
     `【연암 박지원 《열하일기》 일야구도 & 이용후생·법고창신 실학 지표 (정성 성찰)】`,
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
     `- 질문 맥락 및 시공간 리듬: [${res.questionTopic}] · ${res.temporalYeonamRhythm.kstSlot} (${res.temporalYeonamRhythm.phaseLabel})`,
+    `- 연암 교차 축: ${res.yeonamCrossAxis}`,
     `- 실학·일야구도 국면: ${res.silhakPhase}`,
     `- 시공간 지침: ${res.temporalYeonamRhythm.rhythmDirective}`,
     `- 일야구도 심령 평정(一夜九渡): ${describeYeonamStage(res.nightCrossingRiverSerenityScore, '격류 속에서도 고요한 중심을 지키는 담대한 평정', '외부 소음을 가라앉히고 중심을 잡는 안정기', '불안의 물소리를 인식하며 마음을 정돈하는 시기')}`,
