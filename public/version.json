@@ -1,10 +1,10 @@
 {
-  "version": "1.8.485",
-  "builtAt": "2026-11-26T05:25:00+09:00",
-  "summary": "칼 융 동시성 오멘·사주 12신살·퀀텀 점프 타이밍 3대 핵심 엔진 심층 고도화(v1.8.485)",
+  "version": "1.8.486",
+  "builtAt": "2026-11-26T05:35:00+09:00",
+  "summary": "천을귀인·바이오리듬 피크·점성술 데칸·사비안 3대 핵심 엔진 심층 고도화(v1.8.486)",
   "items": [
-    "칼 융 동시성 오멘 매트릭스 엔진(v2.4.0): 질문 맥락 분류기(questionTopic)·동시성 교차 축(synchronicityCrossAxis)·아포페니아 과잉 경계(synchronicityShadowWarning) 추가",
-    "사주 12신살 순환 엔진(v2.4.0): 내면·대외 12신살 교차 축(spiritsCrossAxis) 추가",
-    "퀀텀 점프 모멘텀 타이밍 엔진(v2.4.0): 모멘텀·국면 교차 축(quantumLeapCrossAxis) 추가"
+    "천을귀인·길신 매트릭스 엔진(v2.4.0): 질문 맥락 분류기(questionTopic)·귀인 교차 축(auspiciousCrossAxis)·과잉·편향 경계(shadowWarning) 추가",
+    "3대 생체 바이오리듬 피크 엔진(v2.4.0): 질문 맥락 분류기(questionTopic)·바이오 교차 축(biorhythmCrossAxis)·과잉·편향 경계(shadowWarning) 추가",
+    "점성술 36 데칸 & 사비안 심볼 엔진(v2.4.0): 질문 맥락 분류기(questionTopic)·데칸-사비안 교차 축(decanSabianCrossAxis)·과잉·편향 경계(shadowWarning) 추가"
   ]
 }
