@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MAYAN_TZOLKIN_VERSION = 'LUCKEY-MAYAN-TZOLKIN-v2.3.0';
+export const MAYAN_TZOLKIN_VERSION = 'LUCKEY-MAYAN-TZOLKIN-v2.4.0';
 
 export interface SolarSealInfo {
   index: number;            // 0 ~ 19
@@ -62,6 +62,9 @@ export interface MayanTzolkinReport {
   reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  questionTopic: 'relationship' | 'career' | 'healing' | 'decision' | 'general';
+  tzolkinCrossAxis: string;
+  tzolkinShadowWarning: string;
   tzolkinSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -200,6 +203,17 @@ export function calculateMayanTzolkinSacredCalendar(params: {
 
   const calculatedAtKst = formatTzolkinKstTimestamp(now);
   const trimmedQuery = params.query?.trim();
+  const questionTopic: MayanTzolkinReport['questionTopic'] = !trimmedQuery
+    ? 'general'
+    : /사랑|연애|관계|결혼|가족|친구|갈등/.test(trimmedQuery)
+      ? 'relationship'
+      : /일|직장|사업|커리어|이직|시험|재물|돈/.test(trimmedQuery)
+        ? 'career'
+        : /치유|회복|마음|휴식|수면|건강|불안/.test(trimmedQuery)
+          ? 'healing'
+          : 'decision';
+  const tzolkinCrossAxis = `${questionTopic} · ${birthKin.seal.directionColor.split(' ')[0]} × ${todayKin.tone.toneNameKo.split(' ')[0]}`;
+  const tzolkinShadowWarning = `과잉·편향 경계: 오늘의 나왈 [${todayKin.seal.koreanName}]이 지닌 '${todayKin.seal.shadowChallenge}' 그림자가 과도해지면 ${todayKin.tone.creativePower} 흐름이 흐려질 수 있으니 ${todayKin.seal.sacredKeywords}로 중심을 잡으십시오.`;
   const reflectiveQuestion = trimmedQuery
     ? `본명 킨(${birthKin.seal.koreanName})과 오늘의 킨(${todayKin.seal.koreanName})이 맞물린 촐킨의 날에, "${trimmedQuery}"에서 ${todayKin.tone.toneNameKo}의 원리로 가장 먼저 세워야 할 의도는 무엇인가요?`
     : `오늘의 ${todayKin.seal.directionColor} 기운과 내 본명 킨 '${birthKin.seal.sacredKeywords}'가 만나는 자리에서, 지금 바로 실천할 작은 정렬은 무엇일까요?`;
@@ -223,6 +237,9 @@ export function calculateMayanTzolkinSacredCalendar(params: {
     reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
+    questionTopic,
+    tzolkinCrossAxis,
+    tzolkinShadowWarning,
     tzolkinSynthesisMatrix,
   };
 }
@@ -242,6 +259,8 @@ export function formatMayanTzolkinSacredCalendarPrompt(report: MayanTzolkinRepor
     `- **실천 의례**: ${report.ritualAction}`,
     `- **성찰 초점**: ${report.reflectionFocus}`,
     `- **성찰 질문**: ${report.reflectiveQuestion}`,
+    `- **질문 맥락**: ${report.questionTopic} | **촐킨 교차 축**: ${report.tzolkinCrossAxis}`,
+    `- **${report.tzolkinShadowWarning}**`,
     `- **해석 경계**: ${report.interpretiveBoundary}`,
   ];
   if (report.tzolkinSynthesisMatrix) {

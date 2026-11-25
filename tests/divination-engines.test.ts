@@ -3154,10 +3154,12 @@ test('Enneagram Soul Integration Engine: 에니어그램 영혼 성격 통합 �
   assert(res.temporalEnneagramRhythm.centerWatchWindow.length > 0);
   assert(res.enneagramSynthesisMatrix.coreInsight.length > 0);
   assert(res.interpretiveBoundary.length > 0);
+  assert(res.enneagramCrossAxis.length > 0 && res.enneagramShadowWarning.includes('에니어그램 교차 경계'));
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatEnneagramSoulIntegrationPrompt(res);
   assert(prompt.includes('LUCKEY 에니어그램 영혼 성격 통합 & 의식 진화'));
   assert(prompt.includes(res.soulType.koreanTitle));
+  assert(prompt.includes('에니어그램 교차 축') && prompt.includes('에니어그램 교차 경계'));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
@@ -3420,11 +3422,12 @@ test('Tarot Tree of Life Shadow Engine: 타로 카발라 생명나무 22경로 &
   assert(res.shadowMirror.transmutedSuperpower.length > 0);
   assert(res.questionTopic.length > 0);
   assert(res.kabbalahPhase.titleKo.length > 0);
+  assert(res.kabbalahCrossAxis.length > 0);
   assert(res.shadowWarning.includes('과잉 경계'));
   const prompt = formatTarotTreeOfLifeShadowPrompt(res);
   assert(prompt.includes('LUCKEY 타로 카발라 생명나무 & 섀도우 미러 심층'));
   assert(prompt.includes('+09:00 (KST)'));
-  assert(prompt.includes('카발라 국면'));
+  assert(prompt.includes('카발라 국면') && prompt.includes('교차 축'));
   assert(prompt.includes('과잉 경계'));
   assert(prompt.includes('보조 교차 경로'));
   assert(prompt.includes('성찰 질문'));
@@ -3897,6 +3900,7 @@ test('Mayan Tzolkin Sacred Calendar Engine: calculates 260 Kin and galactic reso
   assert(rep.reflectionFocus.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
+  assert(rep.questionTopic.length > 0 && rep.tzolkinCrossAxis.length > 0 && rep.tzolkinShadowWarning.includes('과잉·편향 경계'));
   assert(Boolean(rep.tzolkinSynthesisMatrix?.integratedAction));
   const repQ = calculateMayanTzolkinSacredCalendar({ profile, query: '가장 먼저 세워야 할 의도' });
   assert(repQ.reflectiveQuestion.includes('세워야 할 의도'));
@@ -3906,6 +3910,7 @@ test('Mayan Tzolkin Sacred Calendar Engine: calculates 260 Kin and galactic reso
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes(repQ.reflectionFocus));
+  assert(prompt.includes('촐킨 교차 축') && prompt.includes('과잉·편향 경계'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
