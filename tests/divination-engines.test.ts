@@ -2397,6 +2397,7 @@ test('Twelve Spirits Cycle Engine: 사주 12신살 완전 순환 궤도 및 일�
   assert(res.todayStrategy.recommendedPersona.length > 0);
   assert(res.todayStrategy.superpowerToUse.length > 0);
   assert(res.questionTopic.length > 0);
+  assert(res.spiritsCrossAxis.length > 0);
   assert(res.spiritPhase.titleKo.length > 0);
   assert(res.shadowWarning.includes('과잉 경계'));
   const prompt = formatTwelveSpiritsPrompt(res);
@@ -2404,7 +2405,7 @@ test('Twelve Spirits Cycle Engine: 사주 12신살 완전 순환 궤도 및 일�
   assert(prompt.includes('+09:00 (KST)'));
   assert(prompt.includes('오늘 일진'));
   assert(prompt.includes('추천 페르소나'));
-  assert(prompt.includes('순환 국면'));
+  assert(prompt.includes('순환 국면') && prompt.includes('교차 축'));
   assert(prompt.includes('과잉 경계'));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes('성찰 질문'));
@@ -2806,12 +2807,13 @@ test('Quantum Leap Timing Engine: 퀀텀 점프 준비도 및 골든 모멘텀 �
   assert(res.currentPhase.titleKo.length > 0);
   assert(res.goldenWindow.bestTimingDesc.length > 0);
   assert(res.questionTopic.length > 0);
+  assert(res.quantumLeapCrossAxis.length > 0);
   assert(res.momentumPhase.titleKo.length > 0);
   assert(res.shadowWarning.includes('과잉 경계'));
   const prompt = formatQuantumLeapPrompt(res);
   assert(prompt.includes(QUANTUM_LEAP_VERSION));
   assert(prompt.includes('퀀텀 점프 준비 상태'));
-  assert(prompt.includes('모멘텀 국면'));
+  assert(prompt.includes('모멘텀 국면') && prompt.includes('교차 축'));
   assert(prompt.includes('과잉 경계'));
   assert(prompt.includes('골든 모멘텀'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
@@ -3355,6 +3357,7 @@ test('Synchronicity Omen Engine: 칼 융 동시성 징조 해독 & 오멘 매트
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.synchronicitySynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
+  assert(res.questionTopic.length > 0 && res.synchronicityCrossAxis.length > 0 && res.synchronicityShadowWarning.includes('과잉·편향 경계'));
   assert(res.dominantOmenTheme.length > 0);
   assert(res.synchronicityChannel.primaryChannelName.length > 0);
   assert(['GREEN_ACCELERATE', 'AMBER_PAUSE_OBSERVE', 'GOLDEN_QUANTUM_LEAP'].includes(res.synchronicityChannel.manifestationSignal));
@@ -3363,6 +3366,7 @@ test('Synchronicity Omen Engine: 칼 융 동시성 징조 해독 & 오멘 매트
   const prompt = formatSynchronicityOmenPrompt(res);
   assert(prompt.includes('LUCKEY 칼 융 동시성 징조 해독 & 오멘 매트릭스'));
   assert(prompt.includes(res.dominantOmenTheme));
+  assert(prompt.includes('동시성 교차 축') && prompt.includes('과잉·편향 경계'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));

@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.485",
+    "builtAt": "2026-11-26T05:25:00+09:00",
+    "summary": "칼 융 동시성 오멘·사주 12신살·퀀텀 점프 타이밍 3대 핵심 엔진 심층 고도화(v1.8.485)",
+    "items": [
+      "칼 융 동시성 오멘 매트릭스 엔진(v2.4.0): 질문 맥락 분류기(questionTopic)·동시성 교차 축(synchronicityCrossAxis)·아포페니아 과잉 경계(synchronicityShadowWarning) 추가",
+      "사주 12신살 순환 엔진(v2.4.0): 내면·대외 12신살 교차 축(spiritsCrossAxis) 추가",
+      "퀀텀 점프 모멘텀 타이밍 엔진(v2.4.0): 모멘텀·국면 교차 축(quantumLeapCrossAxis) 추가"
+    ]
+  },
+  {
     "version": "1.8.484",
     "builtAt": "2026-11-26T05:15:00+09:00",
     "summary": "카발라 섀도우 타로·에니어그램·마야 촐킨 3대 핵심 엔진 심층 고도화(v1.8.484)",
