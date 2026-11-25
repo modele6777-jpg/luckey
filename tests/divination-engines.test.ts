@@ -7912,6 +7912,7 @@ test('Hannah Arendt Vita Activa Engine: provides qualitative Natality guidance, 
   assert.equal(rep.engineVersion, AMERICAN_GERMAN_HANNAH_ARENDT_VERSION);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.equal(rep.questionTopic, 'relationship');
+  assert(rep.vitaActivaCrossAxis.length > 0 && rep.arendtShadowWarning.length > 0);
   assert(rep.practiceGuidance.length > 0);
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
@@ -7921,6 +7922,7 @@ test('Hannah Arendt Vita Activa Engine: provides qualitative Natality guidance, 
   const prompt = formatHannahArendtVitaActivaPrompt(rep);
   assert(prompt.includes('한나 아렌트 《인간의 조건》 활동적 삶 & 탄생성 지표'));
   assert(prompt.includes(rep.activeArendtTheme.themeTitleKo));
+  assert(prompt.includes('교차 조율 축') && prompt.includes('과잉·무사유 경계'));
   assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -7953,6 +7955,7 @@ test('Henry David Thoreau Walden Engine: provides qualitative Simplicity guidanc
   assert.equal(rep.engineVersion, AMERICAN_HENRY_DAVID_THOREAU_VERSION);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.equal(rep.questionTopic, 'healing');
+  assert(rep.waldenCrossAxis.length > 0 && rep.thoreauShadowWarning.length > 0);
   assert(rep.practiceGuidance.length > 0);
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
@@ -7962,6 +7965,7 @@ test('Henry David Thoreau Walden Engine: provides qualitative Simplicity guidanc
   const prompt = formatHenryDavidThoreauWaldenPrompt(rep);
   assert(prompt.includes('헨리 데이비드 소로 《월든》 단순함 & 양심 지표'));
   assert(prompt.includes(rep.activeThoreauTheme.themeTitleKo));
+  assert(prompt.includes('교차 조율 축') && prompt.includes('과잉·고립 경계'));
   assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -13607,7 +13611,9 @@ test('Kazakh Abai Book of Words engine: pillars, +09:00 KST, and interpretive bo
 
 test('Amazigh Desert Star Oasis engine: waypoints, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAmazighDesertStarOasis({ profile, now: new Date('2026-11-20T05:30:00Z'), question: '지치지 않고 멀리 가고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-AMAZIGH-DESERT-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-AMAZIGH-DESERT-v2.4.0');
+  assert.equal(rep.questionTopic, 'endurance');
+  assert.ok(rep.caravanCompassAxis.length > 0);
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.supportWaypoint.id !== rep.primaryWaypoint.id);
   assert.ok(rep.desertPhase.length > 0 && rep.shadowWarning.length > 0);
@@ -13615,7 +13621,7 @@ test('Amazigh Desert Star Oasis engine: waypoints, +09:00 KST, and interpretive 
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatAmazighDesertPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('아마지그') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.desertPhase) && prompt.includes(rep.reflectionFocus));
+  assert.ok(prompt.includes('아마지그') && prompt.includes('사막 나침반 축') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.desertPhase) && prompt.includes(rep.reflectionFocus));
 });
 
 test('Hittite Telepinu Harmony Renewal engine: phases, +09:00 KST, and interpretive boundary', () => {
