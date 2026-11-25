@@ -15,10 +15,30 @@ export interface AmazighWaypoint {
   reflectiveQuestion: string;
 }
 
+export type AmazighQuestionTopic = 'direction' | 'endurance' | 'boundary' | 'trust' | 'general';
+
+function classifyAmazighTopic(q: string): AmazighQuestionTopic {
+  if (/방향|목표|길|별|흔들|결정/.test(q)) return 'direction';
+  if (/지치|체력|멀리|물|아끼|속도|페이스/.test(q)) return 'endurance';
+  if (/경계|소음|비교|피곤|거리|차단/.test(q)) return 'boundary';
+  if (/동행|신뢰|혼자|도움|함께|사람/.test(q)) return 'trust';
+  return 'general';
+}
+
+const AMAZIGH_TOPIC_WARNINGS: Record<AmazighQuestionTopic, string> = {
+  direction: '멀리 있는 북극성만 바라보다가 지금 당장 건너야 할 발밑의 현실 조건을 놓치지 않도록 살피세요.',
+  endurance: '힘을 아끼는 데만 치중하다 정작 오아시스를 떠나 걸어야 할 출발 시점까지 미루지 않도록 균형을 잡으세요.',
+  boundary: '소음을 막는 두건을 너무 단단히 두르다 꼭 필요한 협력 신호까지 차단하지 않도록 창 하나는 열어 두세요.',
+  trust: '동행에게 기대기 전에 내가 감당할 몫의 짐과 기준을 먼저 분명히 정돈해 두세요.',
+  general: '사막을 건널 때는 속도와 휴식 어느 한쪽에 치우치지 않도록 오늘의 물과 보폭을 함께 점검하세요.',
+};
+
 export interface AmazighDesertResult {
   engineName: string;
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: AmazighQuestionTopic;
+  caravanCompassAxis: string;
   primaryWaypoint: AmazighWaypoint;
   supportWaypoint: AmazighWaypoint;
   desertPhase: string;
@@ -106,6 +126,7 @@ export function calculateAmazighDesertStarOasis(params: {
 }): AmazighDesertResult {
   const now = params.now ?? new Date();
   const query = (params.question ?? '').trim();
+  const questionTopic = classifyAmazighTopic(query);
 
   const seedRaw = [
     params.profile.basic?.name ?? '',
@@ -124,7 +145,10 @@ export function calculateAmazighDesertStarOasis(params: {
   const primaryWaypoint = AMAZIGH_WAYPOINTS[primaryIdx];
   const supportWaypoint = AMAZIGH_WAYPOINTS[supportIdx];
   const desertPhase = DESERT_PHASES[phaseSeed % DESERT_PHASES.length];
-  const shadowWarning = AMAZIGH_SHADOW_WARNINGS[primaryWaypoint.id];
+  const shadowWarning = questionTopic === 'general'
+    ? AMAZIGH_SHADOW_WARNINGS[primaryWaypoint.id]
+    : AMAZIGH_TOPIC_WARNINGS[questionTopic];
+  const caravanCompassAxis = `${primaryWaypoint.koreanLabel} ↔ ${supportWaypoint.koreanLabel} (${desertPhase.split('(')[0].trim()})`;
 
   const qualitativeSynthesis =
     `북아프리카 아마지그(베르베르) 사막 유목의 지혜로 바라보면, '${desertPhase}' 국면에서 ` +
@@ -143,8 +167,10 @@ export function calculateAmazighDesertStarOasis(params: {
 
   return {
     engineName: '아마지그 사막 별·오아시스 길잡이 (Amazigh Desert Compass)',
-    engineVersion: 'LUCKEY-AMAZIGH-DESERT-v2.3.0',
+    engineVersion: 'LUCKEY-AMAZIGH-DESERT-v2.4.0',
     calculatedAtKst: formatAmazighKstTimestamp(now),
+    questionTopic,
+    caravanCompassAxis,
     primaryWaypoint,
     supportWaypoint,
     desertPhase,
@@ -162,7 +188,8 @@ export function calculateAmazighDesertStarOasis(params: {
 export function formatAmazighDesertPrompt(res: AmazighDesertResult): string {
   return [
     `[보조 상징 관점 — ${res.engineName}]`,
-    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
+    `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
+    `- 사막 나침반 축: ${res.caravanCompassAxis}`,
     `- 주된 길잡이: ${res.primaryWaypoint.amazighTerm} · ${res.primaryWaypoint.koreanLabel}`,
     `- 보조 길잡이: ${res.supportWaypoint.amazighTerm} · ${res.supportWaypoint.koreanLabel}`,
     `- 사막 여정 국면: ${res.desertPhase}`,

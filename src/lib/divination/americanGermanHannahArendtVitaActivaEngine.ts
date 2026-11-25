@@ -3,12 +3,12 @@
  *
  * 20세기 정치철학자 한나 아렌트(Hannah Arendt, 1906~1975)의 주저 《인간의 조건(The Human Condition, 1958)》, 《예루살렘의 아이히만》, 《정신의 삶》 원전 기반의 정성적 성찰 엔진.
  *
- * @version LUCKEY-HANNAH-ARENDT-VITA-ACTIVA-v2.1.0
+ * @version LUCKEY-HANNAH-ARENDT-VITA-ACTIVA-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_GERMAN_HANNAH_ARENDT_VERSION = 'LUCKEY-HANNAH-ARENDT-VITA-ACTIVA-v2.3.0';
+export const AMERICAN_GERMAN_HANNAH_ARENDT_VERSION = 'LUCKEY-HANNAH-ARENDT-VITA-ACTIVA-v2.4.0';
 
 export type ArendtQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -47,6 +47,8 @@ export interface HannahArendtVitaActivaResult {
   engineVersion: string;
   calculatedAtKst: string;
   questionTopic: ArendtQuestionTopic;
+  vitaActivaCrossAxis: string;
+  arendtShadowWarning: string;
   // 내부 호환용 수치 (프롬프트 비노출)
   natalityRenewalCapacityScore: number;
   vitaActivaBalanceScore: number;
@@ -166,31 +168,35 @@ function formatKstTimestamp(now: Date): string {
 
 const ARENDT_TOPIC_GUIDANCE: Record<
   ArendtQuestionTopic,
-  { practice: string; ritual: string; reflection: string; counsel: string }
+  { practice: string; ritual: string; reflection: string; counsel: string; shadowWarning: string }
 > = {
   relationship: {
     practice: '상대의 다름(다원성)을 내 기준으로 재단하지 말고, 대등한 자리에서 진솔한 말과 경청으로 관계를 여십시오.',
     ritual: '상대에게 하고 싶은 말 한 문장을 고치기 전에, 상대의 입장에서 그 문장이 어떻게 들릴지 한 번만 소리 없이 되뇌어 보십시오.',
     reflection: '이 관계에서 내가 지키고 싶은 약속은 무엇이며, 이미 지나간 일 중 놓아주어야 할 매듭은 무엇인가요?',
     counsel: '아렌트의 세계는 혼자 완성되지 않습니다. 서로 다른 두 사람이 용기와 약속으로 건너갈 때 비로소 신뢰가 자리 잡습니다.',
+    shadowWarning: '다원성과 배려를 지키려다 정작 내 양심이 허용하지 않는 침묵이나 모호함까지 타협하지 않도록 선을 분명히 두십시오.',
   },
   decision: {
     practice: '관행이나 남들의 기준에 맹목적으로 기대지 말고, 나 자신의 사유와 책임으로 감당할 수 있는 새로운 시작을 선택하십시오.',
     ritual: '지금 고민 중인 선택을 "남들이 기대하는 길"과 "내가 새롭게 시작하고 싶은 길"로 나누어 종이에 적어 보십시오.',
     reflection: '이 결정을 내린 뒤, 나는 그 선택을 내 이름과 말로 당당히 설명할 수 있나요?',
     counsel: '탄생성은 완벽한 보장이 없을 때도 첫 발을 내딛는 용기에서 드러납니다.',
+    shadowWarning: '새로운 시작(탄생성)에 취해 현실의 조건과 타인에게 미칠 파장을 살피는 판단력(Judgment)까지 건너뛰지 않도록 점검하십시오.',
   },
   healing: {
     practice: '지나간 실수나 후회에 스스로를 묶어 두지 말고, 오늘을 다시 시작할 수 있도록 자신에게 먼저 용서를 허락하십시오.',
     ritual: '오늘 하루는 평가나 성과 대신, 몸을 돌보는 단순한 활동과 고요한 호흡으로 내면의 대화를 회복하십시오.',
     reflection: '내가 아직도 놓지 못하고 스스로를 몰아세우고 있는 과거의 한 장면은 무엇인가요?',
     counsel: '과거를 되돌릴 수는 없지만, 그 과거가 오늘의 행동을 영원히 가두지 못하게 하는 힘은 지금 내 안에 있습니다.',
+    shadowWarning: '자기 용서가 현실의 책임을 회피하는 변명으로 흐르지 않도록, 오늘 감당할 작은 약속 1가지는 손에 남겨 두십시오.',
   },
   reflection: {
     practice: '바쁜 노동과 작업의 리듬 속에서 잠시 멈춰, 내가 지금 누구와 어떤 세계를 만들어 가고 있는지 사유해 보십시오.',
     ritual: '하루 중 10분간 외부 정보를 끄고 "나는 요즘 무엇을 새롭게 시작하고 있는가?"를 자신에게 물어보십시오.',
     reflection: '지금 내 일상은 생존의 반복에 머물러 있나요, 아니면 내 뜻을 드러내는 행위로 이어지고 있나요?',
     counsel: '스스로와의 조용한 대화(Thinking)가 살아 있을 때, 일상의 크고 작은 선택도 중심을 잃지 않습니다.',
+    shadowWarning: '나 자신과의 사유에만 오래 머물다가 정작 타인들 앞에서 말하고 행동해야 할 공적 타이밍을 놓치지 않도록 유의하십시오.',
   },
 };
 
@@ -300,6 +306,8 @@ export function calculateHannahArendtVitaActiva(
     ? `‘${trimmedQ}’라는 물음 앞에서 관성의 대답을 내려놓고, 내가 지금 여기서 새롭게 시작(탄생성)하고 싶은 첫 행위는 무엇인가요?`
     : reflectionFocus;
   const counselNote = topicGuide.counsel;
+  const arendtShadowWarning = topicGuide.shadowWarning;
+  const vitaActivaCrossAxis = `${questionTopic} · ${temporalVitaActivaRhythm.vitaActivaFocus} · ${activeArendtTheme.themeKey}`;
   const boundaryNotice = '한나 아렌트의 사유 체계는 인간 실존과 공적 행위의 태도를 성찰하기 위한 철학적 렌즈이며, 현실의 사실 판단이나 미래 예측을 대신하지 않습니다.';
 
   const guidanceTitle = `한나 아렌트 탄생성과 활동적 삶 지혜: ${activeArendtTheme.themeTitleKo}`;
@@ -311,6 +319,8 @@ export function calculateHannahArendtVitaActiva(
     engineVersion: AMERICAN_GERMAN_HANNAH_ARENDT_VERSION,
     calculatedAtKst: formatKstTimestamp(now),
     questionTopic,
+    vitaActivaCrossAxis,
+    arendtShadowWarning,
     natalityRenewalCapacityScore,
     vitaActivaBalanceScore,
     banalityOfEvilOvercomingThinkingScore,
@@ -353,6 +363,8 @@ export function formatHannahArendtVitaActivaPrompt(res: HannahArendtVitaActivaRe
     `- 핵심 원전 경구: "${res.focalArendtAphorism.aphorismKo}"`,
     `- 원전 출처: "${res.focalArendtAphorism.aphorismEn}" [${res.focalArendtAphorism.sourceContext}]`,
     `- KST 활동적 삶 리듬: ${res.temporalVitaActivaRhythm.kstWindow} (${res.temporalVitaActivaRhythm.vitaActivaFocus}, 흐름 ${describeArendtStage(res.temporalVitaActivaRhythm.natalityClarityIndex)}) — ${res.temporalVitaActivaRhythm.rhythmDirective}`,
+    `- 교차 조율 축: ${res.vitaActivaCrossAxis}`,
+    `- 과잉·무사유 경계: ${res.arendtShadowWarning}`,
     `- 아렌트 매트릭스: 탄생성 착수(${describeArendtStage(res.arendtSynthesisMatrix.natalityInitiation)}) · 사유 양심(${describeArendtStage(res.arendtSynthesisMatrix.reflectiveConscience)}) · 다원성 연대(${describeArendtStage(res.arendtSynthesisMatrix.pluralitySolidarity)}) — 종합 결(${describeArendtStage(res.arendtSynthesisMatrix.overallSynthesis)})`,
     `- 조언 요약: ${res.counselNote}`,
     `- 해석 경계: ${res.boundaryNotice}`,

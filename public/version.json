@@ -1,8 +1,10 @@
 {
-  "version": "1.8.476",
-  "builtAt": "2026-11-25T11:48:13.338Z",
-  "summary": "루시 점술 추천 질문 복원",
+  "version": "1.8.477",
+  "builtAt": "2026-11-26T04:05:00+09:00",
+  "summary": "아마지그 사막·한나 아렌트·헨리 데이비드 소로 3대 엔진 심층 고도화(v1.8.477)",
   "items": [
-    "점술 모드에서 루시의 선택지가 떠 있어도 추천 질문 목록과 전체 보기를 사용할 수 있어요."
+    "아마지그 사막 별·오아시스 엔진(v2.4.0): 질문 맥락 분류(questionTopic), 사막 나침반 축(caravanCompassAxis), 주제별 과잉·결핍 경계 정밀화",
+    "한나 아렌트 탄생성·활동적 삶 엔진(v2.4.0): KST 창·테마 교차 조율 축(vitaActivaCrossAxis) 및 주제별 과잉·무사유 경계(arendtShadowWarning) 추가",
+    "헨리 데이비드 소로 월든 엔진(v2.4.0): KST 창·테마 교차 조율 축(waldenCrossAxis) 및 주제별 과잉·고립 경계(thoreauShadowWarning) 추가"
   ]
 }

@@ -3,12 +3,12 @@
  *
  * 미국 초월주의와 생태주의 사상가 헨리 데이비드 소로(Henry David Thoreau, 1817~1862)의 《월든(Walden, 1854)》과 《시민 불복종(Civil Disobedience, 1849)》 원전 기반의 정성적 성찰 엔진.
  *
- * @version LUCKEY-HENRY-DAVID-THOREAU-WALDEN-v2.1.0
+ * @version LUCKEY-HENRY-DAVID-THOREAU-WALDEN-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_HENRY_DAVID_THOREAU_VERSION = 'LUCKEY-HENRY-DAVID-THOREAU-WALDEN-v2.3.0';
+export const AMERICAN_HENRY_DAVID_THOREAU_VERSION = 'LUCKEY-HENRY-DAVID-THOREAU-WALDEN-v2.4.0';
 
 export type ThoreauQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -47,6 +47,8 @@ export interface HenryDavidThoreauWaldenResult {
   engineVersion: string;
   calculatedAtKst: string;
   questionTopic: ThoreauQuestionTopic;
+  waldenCrossAxis: string;
+  thoreauShadowWarning: string;
   // 내부 호환용 수치 (프롬프트 비노출)
   simplicityEssentialLifeScore: number;
   natureCommunionHarmoniaScore: number;
@@ -166,31 +168,35 @@ function formatKstTimestamp(now: Date): string {
 
 const THOREAU_TOPIC_GUIDANCE: Record<
   ThoreauQuestionTopic,
-  { practice: string; ritual: string; reflection: string; counsel: string }
+  { practice: string; ritual: string; reflection: string; counsel: string; shadowWarning: string }
 > = {
   relationship: {
     practice: '관계에서 겉치레와 눈치를 덜어내고, 서로의 고유한 보폭(다른 북소리)을 존중하는 솔직한 거리를 찾으십시오.',
     ritual: '오늘 누군가와의 대화에서 과장이나 변명 없이, 진심에 가장 가까운 짧은 문장 하나만 건네 보십시오.',
     reflection: '이 관계에서 내가 체면 때문에 억지로 맞추고 있는 부분은 무엇인가요?',
     counsel: '소로의 단순함은 관계에도 적용됩니다. 꾸밈을 걷어낼수록 진정한 마음이 선명히 남습니다.',
+    shadowWarning: '나만의 북소리를 지킨다는 이유로 상대의 진심 어린 조언이나 현실적 약속까지 무작정 끊어내지 않도록 살피십시오.',
   },
   decision: {
     practice: '세상의 기준이 정한 속도가 아니라, 내 양심과 삶의 본질에 부합하는 선택을 고요히 고르십시오.',
     ritual: '지금 고민하는 선택지 중, "남의 시선"을 지웠을 때도 여전히 하고 싶은 쪽이 어느 쪽인지 적어 보십시오.',
     reflection: '이 선택은 내 삶을 더 단순하고 명징하게 만드나요, 아니면 불필요한 짐을 더 얹나요?',
     counsel: '다른 북소리를 듣는 사람은 남들과 보폭이 달라도 흔들리지 않습니다.',
+    shadowWarning: '단순함과 원칙에 집중하다가 현실의 세부 일정이나 생계·계약 조건까지 소홀히 보지 않도록 균형을 맞추십시오.',
   },
   healing: {
     practice: '복잡한 생각과 화면의 소음을 잠시 비우고, 자연의 고요함과 소박한 일상으로 마음을 쉬게 하십시오.',
     ritual: '오늘 15분만이라도 이어폰 없이 바깥 공기를 느끼며 천천히 걸어 보십시오.',
     reflection: '지금 내 마음을 가장 무겁게 짓누르는 것은 실제 현실인가요, 아니면 비워내도 될 욕심인가요?',
     counsel: '월든 호수의 고요처럼, 덜어냄 자체가 이미 가장 깊은 회복의 시작입니다.',
+    shadowWarning: '숲의 고요로 물러나는 쉼이 장기적인 고립이나 무기력한 도피로 이어지지 않도록 돌아올 시간도 함께 정해 두십시오.',
   },
   reflection: {
     practice: '하루의 일과를 백 가지가 아닌 두세 가지 핵심으로 줄여, 깨어 있는 의식으로 오늘을 살아 보십시오.',
     ritual: '오늘 해야 할 목록에서 당장 중요하지 않은 일 세 가지를 과감히 지워 보십시오.',
     reflection: '요즘 내 하루에서 가장 본질적이고 나를 살아있게 만드는 시간은 언제인가요?',
     counsel: '단순하게 살수록 삶의 알맹이는 더욱 선명해집니다.',
+    shadowWarning: '일정을 줄여 단순화할 때도 지금 당장 끝내야 할 작은 책임 한 가지는 미루지 말고 바로 처리하십시오.',
   },
 };
 
@@ -300,6 +306,8 @@ export function calculateHenryDavidThoreauWalden(
     ? `‘${trimmedQ}’라는 물음을 두고 남의 시선과 체면을 지운다면, 내 안의 다른 북소리가 조용히 가리키는 단순한 진실은 무엇인가요?`
     : reflectionFocus;
   const counselNote = topicGuide.counsel;
+  const thoreauShadowWarning = topicGuide.shadowWarning;
+  const waldenCrossAxis = `${questionTopic} · ${temporalWaldenRhythm.waldenFocus} · ${activeThoreauTheme.themeKey}`;
   const boundaryNotice = '헨리 데이비드 소로의 월든 관점은 삶의 본질과 내적 자립을 비추는 철학적 성찰 도구이며, 구체적인 사실 판단이나 미래 예언을 대신하지 않습니다.';
 
   const guidanceTitle = `헨리 데이비드 소로 월든 단순함과 양심 지혜: ${activeThoreauTheme.themeTitleKo}`;
@@ -311,6 +319,8 @@ export function calculateHenryDavidThoreauWalden(
     engineVersion: AMERICAN_HENRY_DAVID_THOREAU_VERSION,
     calculatedAtKst: formatKstTimestamp(now),
     questionTopic,
+    waldenCrossAxis,
+    thoreauShadowWarning,
     simplicityEssentialLifeScore,
     natureCommunionHarmoniaScore,
     awakenedConsciousnessIndex,
@@ -353,6 +363,8 @@ export function formatHenryDavidThoreauWaldenPrompt(res: HenryDavidThoreauWalden
     `- 핵심 원전 경구: "${res.focalThoreauAphorism.aphorismKo}"`,
     `- 원전 출처: "${res.focalThoreauAphorism.aphorismEn}" [${res.focalThoreauAphorism.sourceContext}]`,
     `- KST 월든 리듬: ${res.temporalWaldenRhythm.kstWindow} (${res.temporalWaldenRhythm.waldenFocus}, 흐름 ${describeThoreauStage(res.temporalWaldenRhythm.waldenClarityIndex)}) — ${res.temporalWaldenRhythm.rhythmDirective}`,
+    `- 교차 조율 축: ${res.waldenCrossAxis}`,
+    `- 과잉·고립 경계: ${res.thoreauShadowWarning}`,
     `- 월든 매트릭스: 본질 단순성(${describeThoreauStage(res.thoreauSynthesisMatrix.essentialSimplicity)}) · 깨어난 자립(${describeThoreauStage(res.thoreauSynthesisMatrix.awakenedAutonomy)}) · 자연 회복력(${describeThoreauStage(res.thoreauSynthesisMatrix.natureResilience)}) — 종합 결(${describeThoreauStage(res.thoreauSynthesisMatrix.overallSynthesis)})`,
     `- 조언 요약: ${res.counselNote}`,
     `- 해석 경계: ${res.boundaryNotice}`,
