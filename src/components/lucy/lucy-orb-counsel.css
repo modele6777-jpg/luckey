@@ -1066,12 +1066,24 @@ html.duo-unfolded-mode .lucy-orb-copy { width: min(720px, 92%); }
 .lucy-orb-dock.lucy-orb-composer { flex-direction: column; gap: 6px; }
 .lucy-orb-composer-row { display: flex; align-items: stretch; gap: 8px; min-width: 0; }
 .lucy-orb-lucy-questions {
-  display: flex;
-  gap: 6px;
+  min-width: 0;
   overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: none;
+  scroll-behavior: auto;
+  overscroll-behavior-x: none;
+  touch-action: pan-x;
+  user-select: none;
   padding: 2px 0;
 }
+.lucy-orb-lucy-questions::-webkit-scrollbar { display: none; }
+.lucy-orb-questions-track, .lucy-orb-questions-set { display: flex; width: max-content; }
+.lucy-orb-questions-set { flex: none; gap: 6px; padding-right: 6px; }
+.lucy-orb-lucy-questions:not([data-looping="true"]) .lucy-orb-questions-set[aria-hidden="true"] { display: none; }
+.lucy-orb-lucy-questions[data-looping="true"],
+.lucy-orb-lucy-questions[data-looping="true"] button { cursor: grab; }
+.lucy-orb-lucy-questions[data-dragging],
+.lucy-orb-lucy-questions[data-dragging] button { cursor: grabbing; }
 .lucy-orb-dock .lucy-orb-lucy-questions button {
   flex: 0 0 auto;
   padding: 5px 10px;

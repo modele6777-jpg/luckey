@@ -1,3 +1,4 @@
+import { OrbQuestionMarquee } from './OrbQuestionMarquee';
 import { readLucySuggestedQuestions } from '@/lib/lucySuggestedQuestions';
 import { LucyResponseRecommendation } from "@/components/LucyResponseRecommendation";
 import { setLucyMasterMode } from "@/lib/lucyMasterMode";
@@ -1645,11 +1646,7 @@ export function LucyOrbCounsel({
         {phase === 'live' && (
           <div className="lucy-orb-dock lucy-orb-composer">
             {!talkPressed && (
-              <div className="lucy-orb-lucy-questions" role="group" aria-label="루시 추천 질문">
-                {lucyQuestions.map(question => (
-                  <button key={question} type="button" onClick={() => setDraft(question)}>{question}</button>
-                ))}
-              </div>
+              <OrbQuestionMarquee questions={lucyQuestions} onSelect={setDraft} />
             )}
             <div className="lucy-orb-composer-row">
             <div className="lucy-orb-input-wrap">
