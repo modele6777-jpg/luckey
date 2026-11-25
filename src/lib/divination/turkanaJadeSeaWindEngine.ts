@@ -10,6 +10,7 @@ export interface TurkanaWindResult {
   symbolicMotif: string;
   companionMotif: string;
   riftWindAxis: string;
+  topicBalanceHint: string;
   shadowWarning: string;
   ritualAction: string;
   reflectiveQuestion: string;
@@ -69,6 +70,15 @@ function classifyTurkanaTopic(question?: string): TurkanaQuestionTopic {
   return 'general';
 }
 
+const TOPIC_BALANCE_HINTS: Record<TurkanaQuestionTopic, string> = {
+  career: '일·커리어에서는 거센 바람과 힘겨루기하기보다, 바람의 방향에 맞춰 계획의 각도와 우선순위를 가볍게 조정하세요.',
+  relationship: '관계에서는 내가 가진 작은 자원이나 경험이 상대의 필요와 만나는 연결 지점부터 부드럽게 열어 두세요.',
+  wealth: '재정·계약에서는 겉으로 말라 보이는 조건에서도 숨은 물길과 실질적인 대안을 한 번 더 확인하는 편이 유리합니다.',
+  health: '건강·회복에서는 먼 수평선만 보며 무리하지 말고 지금 당장 발밑의 컨디션과 호흡부터 챙기세요.',
+  decision: '결정의 순간에는 한 자리에 못 박히기보다, 이동식 천막처럼 가볍게 방향을 바꿀 수 있는 여지를 남겨 두세요.',
+  general: '오늘의 흐름에서는 상징 모티프와 동반 모티프를 함께 살피며 기동성과 끈기의 균형을 유지하세요.',
+};
+
 export function calculateTurkanaJadeSeaWind(params: {
   profile: UserProfile;
   now?: Date;
@@ -89,7 +99,7 @@ export function calculateTurkanaJadeSeaWind(params: {
   const shadowWarning = '[리프트 바람 과잉 경계] 바람을 피해 잦은 이동만 반복하거나 한 자리에 지나치게 버티다 유연한 균형을 잃지 않도록 살피십시오.';
 
   return {
-    engineVersion: 'LUCKEY-TURKANA-WIND-v2.3.0',
+    engineVersion: 'LUCKEY-TURKANA-WIND-v2.4.0',
     calculatedAtKst: getKstTimeString(now),
     questionTopic,
     reflectionFocus: question.trim()
@@ -98,6 +108,7 @@ export function calculateTurkanaJadeSeaWind(params: {
     symbolicMotif: motif,
     companionMotif,
     riftWindAxis,
+    topicBalanceHint: TOPIC_BALANCE_HINTS[questionTopic],
     shadowWarning,
     ritualAction,
     reflectiveQuestion,
@@ -114,6 +125,7 @@ export function formatTurkanaWindPrompt(result: TurkanaWindResult): string {
     `- 상징 모티프: ${result.symbolicMotif}`,
     `- 동반 모티프: ${result.companionMotif}`,
     `- 리프트 바람 축: ${result.riftWindAxis}`,
+    `- 주제별 균형 조언: ${result.topicBalanceHint}`,
     `- 제안 의식: ${result.ritualAction}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 과잉 경계: ${result.shadowWarning}`,

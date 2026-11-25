@@ -11,6 +11,7 @@ export interface PortugueseSagresResult {
   sagresInsight: string;
   atlanticTone: string;
   caravelHeadingAxis: string;
+  topicBalanceHint: string;
   shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -66,6 +67,15 @@ function classifyPortugueseTopic(question?: string): PortugueseQuestionTopic {
   return 'general';
 }
 
+const TOPIC_BALANCE_HINTS: Record<PortugueseQuestionTopic, string> = {
+  career: '일·커리어에서는 역풍을 정면으로만 밀어붙이지 말고, 카라벨 삼각돛처럼 각도를 조금 틀어 돌파구를 찾아보세요.',
+  relationship: '관계에서는 지나간 서운함을 사우다데의 온기로 데워 오늘 건넬 다정한 말 한마디로 바꾸어 보세요.',
+  wealth: '재정·계약에서는 큰 그림을 한 번에 완성하려 들지 말고 아줄레주 타일처럼 작은 확인 조각부터 맞춰 나가세요.',
+  health: '건강·회복에서는 익숙한 루틴에만 갇히지 말고 가볍게 시선과 동선을 환기해 몸의 긴장을 풀어 주세요.',
+  decision: '선택 앞에서는 완벽한 지도가 갖춰지길 기다리기보다, 지금 가진 나침반과 기록을 믿고 첫 항로를 그려 보세요.',
+  general: '오늘의 흐름에서는 주 항로와 동반 항로를 함께 보며 기록과 유연한 방향 전환의 균형을 잡으세요.',
+};
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -101,7 +111,7 @@ export function calculatePortugueseSaudadeSagresCompass(params: {
   const shadowWarning = `[${picked.compass.split('(')[0].trim()} 과잉 경계] 새로운 항로를 좇거나 지난 기억을 되새기는 데 기울어 지금 눈앞의 한 걸음을 놓치지 않도록 살피십시오.`;
 
   return {
-    engineVersion: 'LUCKEY-PORTUGUESE-SAGRES-v2.3.0',
+    engineVersion: 'LUCKEY-PORTUGUESE-SAGRES-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     atlanticCompass: picked.compass,
@@ -109,6 +119,7 @@ export function calculatePortugueseSaudadeSagresCompass(params: {
     sagresInsight: `${picked.insight} (동반 항로: ${companion.compass})`,
     atlanticTone: picked.tone,
     caravelHeadingAxis,
+    topicBalanceHint: TOPIC_BALANCE_HINTS[questionTopic],
     shadowWarning,
     reflectionFocus: `포르투갈 대서양 지혜의 '${picked.compass}'와 동반 항로 '${companion.compass}'처럼, 완벽한 지도가 없더라도 지금 내 손에 있는 작은 단서를 믿고 유연하게 각도를 틀어 보세요.`,
     ritualAction: picked.ritual,
@@ -124,6 +135,7 @@ export function formatPortugueseSagresPrompt(res: PortugueseSagresResult): strin
     `- 대서양 상징: ${res.atlanticCompass} (${res.atlanticTone})`,
     `- 동반 항로: ${res.companionCompass}`,
     `- 대서양 항로 축: ${res.caravelHeadingAxis}`,
+    `- 주제별 균형 조언: ${res.topicBalanceHint}`,
     `- 중심 통찰: ${res.sagresInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
