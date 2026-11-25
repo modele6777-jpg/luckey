@@ -16,6 +16,7 @@ export interface SererBaobabResult {
   companionShade: string;
   baobabRoots: string;
   baobabReserveAxis: string;
+  topicBalanceHint: string;
   shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -80,6 +81,15 @@ function classifySererTopic(question?: string): SererQuestionTopic {
   return 'general';
 }
 
+const TOPIC_BALANCE_HINTS: Record<SererQuestionTopic, string> = {
+  career: '일·커리어에서는 외형적 확장보다 보이지 않는 기본기와 여력을 먼저 비축해 두어야 긴 호흡을 버틸 수 있습니다.',
+  relationship: '관계에서는 성급히 답을 내리기보다 바오밥 그늘 아래처럼 상대의 이야기를 끝까지 듣는 여유가 신뢰를 깊게 합니다.',
+  wealth: '재정·계약에서는 당장의 지출과 확장보다 가뭄을 견딜 수 있는 예비 여력부터 점검하는 편이 안전합니다.',
+  health: '건강·회복에서는 계절을 재촉하지 않는 오래된 나무처럼 수면과 휴식의 뿌리를 먼저 챙기세요.',
+  decision: '결정의 기로에서는 혼자 결론을 서두르지 말고 신뢰하는 한 사람과 생각을 나누어 숙성한 뒤 움직이세요.',
+  general: '오늘의 흐름에서는 주 그늘과 동반 그늘을 함께 살피며 비축과 실행 사이의 균형을 맞추세요.',
+};
+
 export function calculateSererBaobabCouncil(input: SererBaobabInput): SererBaobabResult {
   const fate = input.profile.fate ?? {};
   const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
@@ -93,13 +103,14 @@ export function calculateSererBaobabCouncil(input: SererBaobabInput): SererBaoba
   const shadowWarning = '[평의회 과잉 경계] 비축과 경청에만 머무르며 정작 오늘 내디뎌야 할 명확한 선택과 한 걸음을 미루지 않도록 살피십시오.';
 
   return {
-    engineVersion: 'LUCKEY-SERER-BAOBAB-v2.3.0',
+    engineVersion: 'LUCKEY-SERER-BAOBAB-v2.4.0',
     calculatedAtKst: toKstIso(input.now),
     questionTopic,
     councilShade,
     companionShade,
     baobabRoots: ROOTS[(seed >>> 3) % ROOTS.length],
     baobabReserveAxis,
+    topicBalanceHint: TOPIC_BALANCE_HINTS[questionTopic],
     shadowWarning,
     reflectionFocus: `세네갈 세레르 족이 오래된 바오밥 나무 그늘 아래 모여 경청과 비축의 지혜를 나누던 평의회처럼, 주 그늘('${councilShade}')과 동반 그늘('${companionShade}')을 함께 짚어 내면의 여력과 깊은 대화를 살피는 상징적 관점입니다.`,
     ritualAction: ACTIONS[shadeIdx],
@@ -115,6 +126,7 @@ export function formatSererBaobabPrompt(res: SererBaobabResult): string {
     `그늘 자리: ${res.councilShade}`,
     `동반 자리: ${res.companionShade}`,
     `평의회·비축 축: ${res.baobabReserveAxis}`,
+    `주제별 균형 조언: ${res.topicBalanceHint}`,
     `뿌리 지혜: ${res.baobabRoots}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
