@@ -1,10 +1,10 @@
 {
-  "version": "1.8.499",
-  "builtAt": "2026-11-26T07:45:00+09:00",
-  "summary": "무이스카 과타비타·호데노쇼니 7세대·가리푸나 둥구 3대 핵심 엔진 심층 고도화(v1.8.499)",
+  "version": "1.8.500",
+  "builtAt": "2026-11-26T07:55:00+09:00",
+  "summary": "바소토 보토·바타크 토바 소포·바타마리바 타키엔타 3대 핵심 엔진 심층 고도화(v1.8.500)",
   "items": [
-    "무이스카 과타비타 황금 호수 엔진(v2.4.0): 질문 범주(questionCategory)와 주제별 균형 조언(topicBalanceHint) 추가 및 프롬프트 포맷 보강",
-    "호데노쇼니 7세대 대평화 법칙 엔진(v2.4.0): 질문 범주(questionCategory)와 주제별 균형 조언(topicBalanceHint) 추가 및 프롬프트 포맷 보강",
-    "가리푸나 둥구 카리브 해안 리듬 엔진(v2.4.0): 질문 범주(questionCategory)와 주제별 균형 조언(topicBalanceHint) 추가 및 프롬프트 포맷 보강"
+    "바소토 보토·고원 지혜 엔진(v2.4.0): 질문 맥락 분류기(questionTopic)와 고원 교차 축(bothoCrossAxis) 추가 및 프롬프트 포맷 보강",
+    "바타크 토바 소포 가옥 엔진(v2.4.0): 질문 맥락 분류기(questionTopic)와 소포 교차 축(sopoCrossAxis) 추가 및 프롬프트 포맷 보강",
+    "바타마리바 타키엔타 흙탑 엔진(v2.4.0): 질문 맥락 분류기(questionTopic)와 흙탑 교차 축(takientaCrossAxis) 추가 및 프롬프트 포맷 보강"
   ]
 }
