@@ -28,7 +28,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CELTIC_OGHAM_VERSION = 'LUCKEY-CELTIC-OGHAM-v2.3.0';
+export const CELTIC_OGHAM_VERSION = 'LUCKEY-CELTIC-OGHAM-v2.4.0';
 
 export interface OghamTree {
   nameOgham: string;
@@ -78,6 +78,9 @@ export interface CelticTreeOghamReport {
   ritualAction: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
+  questionTopic: 'career' | 'relationship' | 'general';
+  oghamCrossAxis: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
 }
 
@@ -376,6 +379,15 @@ export function calculateCelticTreeOgham(
   const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
   const interpretiveBoundary = '본 켈트 오검 수목 오라클 리포트는 13태음월 수목 상징에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.';
   const trimmedQuestion = question.trim();
+  const questionTopic: CelticTreeOghamReport['questionTopic'] = !trimmedQuestion
+    ? 'general'
+    : /일|진로|사업|이직|선택|시험|계획/.test(trimmedQuestion)
+      ? 'career'
+      : /관계|사랑|연애|사람|가족|갈등|화해/.test(trimmedQuestion)
+        ? 'relationship'
+        : 'general';
+  const oghamCrossAxis = `${questionTopic} · ${birthGuardianTree.nameTreeKo} × ${seasonalOracleTree.nameTreeKo}(${temporalOghamRhythm.groveTempo})`;
+  const shadowWarning = `과잉·편향 경계: 수호목의 기운에만 기대어 뿌리를 다지는 꾸준한 손질과 현실의 인내를 건너뛰려 하지 마십시오.`;
   const reflectionFocus = `${birthGuardianTree.nameTreeKo}의 뿌리와 ${seasonalOracleTree.nameTreeKo}의 계절 기운 사이에서 지금 내가 가지치기할 미련은 무엇인가요?`;
   const reflectiveQuestion = trimmedQuestion
     ? `"${trimmedQuestion}"이라는 물음을 본명 수호목 ${birthGuardianTree.nameTreeKo}와 현재 공명목 ${seasonalOracleTree.nameTreeKo}에 비추어 볼 때, 지금 내가 뿌리를 내리고 지켜야 할 한 가지는 무엇인가요?`
@@ -396,6 +408,9 @@ export function calculateCelticTreeOgham(
     ritualAction: situationalOghamAudit.druidMedicineAction,
     reflectionFocus,
     reflectiveQuestion,
+    questionTopic,
+    oghamCrossAxis,
+    shadowWarning,
     interpretiveBoundary
   };
 }
@@ -414,9 +429,10 @@ export function formatCelticTreeOghamPrompt(report: CelticTreeOghamReport): stri
   - 뿌리 경계: ${report.situationalOghamAudit.rootCaution}
 - **KST 시공간 리듬 (${report.temporalOghamRhythm.kstHour}시)**: ${report.temporalOghamRhythm.groveWatchWindow} · ${report.temporalOghamRhythm.lunarTreeSeason} (${report.temporalOghamRhythm.groveTempo})
   - 시간대 지침: ${report.temporalOghamRhythm.attunementGuidance}
-- **수목 교차 매트릭스**: ${report.oghamSynthesisMatrix.birthSeasonalLink}
+- **수목 교차 매트릭스**: ${report.oghamSynthesisMatrix.birthSeasonalLink} · 교차 축(${report.oghamCrossAxis})
 - **수목 치유 처방 (Tree Medicine)**: ${report.treeMedicinePrescription}
 - **자연 조율 확언 (Affirmation)**: ${report.natureAttunementAffirmation}
 - **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
+- **${report.shadowWarning}**
 - **해석 경계**: ${report.interpretiveBoundary}`;
 }
