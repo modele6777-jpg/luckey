@@ -1,10 +1,10 @@
 {
-  "version": "1.8.479",
-  "builtAt": "2026-11-26T04:25:00+09:00",
-  "summary": "연암 박지원 열하일기·라다크 스투파·오행 생극 공명 3대 엔진 심층 고도화(v1.8.479)",
+  "version": "1.8.480",
+  "builtAt": "2026-11-26T04:35:00+09:00",
+  "summary": "존 듀이·에머슨 자기신뢰·휘트먼 풀잎 3대 엔진 심층 고도화(v1.8.480)",
   "items": [
-    "연암 박지원 열하일기 엔진(v2.4.0): 연암 교차 축(yeonamCrossAxis) 및 주제별 과잉·경계 점검 정밀화",
-    "라다크 스투파·고원 물길 엔진(v2.4.0): 맥락 교차 축(ladakhiCrossAxis) 및 주제별 과잉 경계 정밀화",
-    "오행 생극 공명 엔진(v2.4.0): 질문 맥락 분류(questionTopic), 오행 교차 축(elementalCrossAxis), 주제별 과잉·편향 경계(elementalShadowWarning) 추가"
+    "존 듀이 프래그머티즘 탐구·성장 엔진(v2.4.0): 듀이 교차 축(deweyCrossAxis) 및 주제별 과잉·편향 경계(deweyShadowWarning) 추가",
+    "랄프 왈도 에머슨 《자기신뢰》 엔진(v2.4.0): 에머슨 교차 축(emersonCrossAxis) 및 주제별 과잉·편향 경계(emersonShadowWarning) 추가",
+    "월트 휘트먼 《풀잎》 엔진(v2.4.0): 휘트먼 교차 축(whitmanCrossAxis) 및 주제별 과잉·편향 경계(whitmanShadowWarning) 추가"
   ]
 }

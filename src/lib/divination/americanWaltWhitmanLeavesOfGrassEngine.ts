@@ -9,12 +9,12 @@
  * 4. 격식과 두려움을 떨치고 나아가는 자유로운 개척정신(Democratic Freedom & Open Road Spirit Index): 열린 길(Open Road)을 향해 성큼 발을 내딛는 모험심.
  * 5. 삶과 죽음의 영원한 순환 속에서 피어나는 낙관적 회복탄력성(Cycle of Nature & Optimistic Resilience Score): 절망을 넘어 빛을 향해 고개를 드는 생명력.
  *
- * @version LUCKEY-WHITMAN-LEAVES-OF-GRASS-v2.1.0
+ * @version LUCKEY-WHITMAN-LEAVES-OF-GRASS-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_WALT_WHITMAN_VERSION = 'LUCKEY-WHITMAN-LEAVES-OF-GRASS-v2.3.0';
+export const AMERICAN_WALT_WHITMAN_VERSION = 'LUCKEY-WHITMAN-LEAVES-OF-GRASS-v2.4.0';
 
 export type WhitmanQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -52,6 +52,8 @@ export interface AmericanWaltWhitmanLeavesOfGrassResult {
   cyclicalNatureOptimisticResilienceScore: number; // 자연 순환 신뢰 및 낙관적 회복탄력성 (Cycle of Nature & Resilience)
   // 세부 분석
   questionTopic: WhitmanQuestionTopic;
+  whitmanCrossAxis: string;
+  whitmanShadowWarning: string;
   temporalWhitmanRhythm: WhitmanTemporalRhythm;
   activeWhitmanTheme: WhitmanTheme;
   focalWhitmanAphorism: WhitmanAphorism;
@@ -227,6 +229,13 @@ function buildWhitmanTopicGuidance(topic: WhitmanQuestionTopic): {
   };
 }
 
+const WHITMAN_TOPIC_WARNINGS: Record<WhitmanQuestionTopic, string> = {
+  relationship: '모순과 다름을 품는 포용이 정작 지켜야 할 내 마음의 경계선까지 흐리게 만들지 않도록 살피십시오.',
+  decision: '열린 길을 향한 호쾌한 출발과 함께 오늘 당장 챙겨야 할 구체적인 준비물과 현실 조건도 같이 확인하십시오.',
+  healing: '태양을 향한 낙관의 시선 속에서도 지금 내 안에 남아 있는 피로와 슬픔을 애써 지우지 말고 그대로 쉬게 해 주십시오.',
+  reflection: '수많은 가능성을 품는 광대함 가운데서 오늘 내가 실제로 한 걸음 내디딜 작은 풀잎 하나를 놓치지 마십시오.',
+};
+
 export function calculateAmericanWaltWhitmanLeavesOfGrass(
   profile?: UserProfile,
   query?: string,
@@ -265,6 +274,8 @@ export function calculateAmericanWaltWhitmanLeavesOfGrass(
     `${focalWhitmanAphorism.actionGuidance}`;
 
   const boundaryNotice = '월트 휘트먼 풀잎 해석은 자아 긍정과 열린 시선을 돕는 상징·성찰 관점이며, 미래 예측이나 확정적 판단이 아닙니다.';
+  const whitmanCrossAxis = `${questionTopic} · ${activeWhitmanTheme.themeKey} × ${temporalWhitmanRhythm.timeWindowKo}`;
+  const whitmanShadowWarning = WHITMAN_TOPIC_WARNINGS[questionTopic];
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
   const kstLabel = `${temporalWhitmanRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
@@ -293,6 +304,8 @@ export function calculateAmericanWaltWhitmanLeavesOfGrass(
     democraticFreedomOpenRoadIndex,
     cyclicalNatureOptimisticResilienceScore,
     questionTopic,
+    whitmanCrossAxis,
+    whitmanShadowWarning,
     temporalWhitmanRhythm,
     activeWhitmanTheme,
     focalWhitmanAphorism,
@@ -318,6 +331,8 @@ export function formatAmericanWaltWhitmanLeavesOfGrassPrompt(
     `【월트 휘트먼 《풀잎(Leaves of Grass)》 우주적 생명 찬가 지표 (${res.engineVersion})】`,
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- 휘트먼 교차 축: ${res.whitmanCrossAxis}`,
+    `- 과잉·편향 경계: ${res.whitmanShadowWarning}`,
     `- KST 시공간 리듬: ${res.temporalWhitmanRhythm.kstDateLabel} · ${res.temporalWhitmanRhythm.timeWindowKo} (${res.temporalWhitmanRhythm.vitalityTone}) — ${res.temporalWhitmanRhythm.rhythmDirective}`,
     `- 핵심 휘트먼 생명 테마: ${res.activeWhitmanTheme.themeTitleKo} [${res.activeWhitmanTheme.themeTitleEn}]`,
     `- 시적·실천적 통찰: ${res.activeWhitmanTheme.pragmaticInsight}`,
