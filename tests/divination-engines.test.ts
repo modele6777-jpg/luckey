@@ -812,6 +812,8 @@ test('Auspicious stars: 천을귀인 via year stem, kongwang/chung/hyeong interf
   assert(t.upcomingYears[0].arrivedNobles.includes('천을귀인'));
   const prompt=formatAuspiciousStarsPrompt(r);
   assert(prompt.includes(AUSPICIOUS_STARS_ENGINE_VERSION)&&prompt.includes('천을귀인')&&prompt.includes('공망')&&prompt.includes('성찰 초점')&&prompt.includes('해석 경계'));
+  assert(Boolean(r.questionTopic&&r.auspiciousCrossAxis&&r.shadowWarning?.includes('과잉·편향 경계')));
+  assert(prompt.includes('교차 축')&&prompt.includes('과잉·편향 경계'));
   assert(Boolean(r.ritualAction&&r.ritualAction.length>0&&r.reflectionFocus&&r.reflectionFocus.length>0));
   assert(r.interpretiveBoundary.length>0);
   assert(!prompt.includes('/100')&&!prompt.includes('%')&&!prompt.includes('실측 데이터'));
@@ -2454,11 +2456,13 @@ test('Astrological Decan & Sabian Engine: 점성술 36 데칸 & 사비안 심볼
   assert(res.temporalSabianRhythm.planetaryHourTone.length > 0);
   assert(res.sabianSynthesisMatrix.coreInsight.length > 0);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
+  assert(res.questionTopic.length > 0 && res.decanSabianCrossAxis.length > 0 && res.shadowWarning.includes('과잉·편향 경계'));
   assert(res.interpretiveBoundary.length > 0);
   const prompt = formatAstrologicalDecanSabianPrompt(res);
   assert(prompt.includes(ASTRO_DECAN_SABIAN_VERSION));
   assert(prompt.includes('사비안 심볼'));
   assert(prompt.includes('데칸 배속'));
+  assert(prompt.includes('교차 축') && prompt.includes('과잉·편향 경계'));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
@@ -3019,10 +3023,12 @@ test('Biorhythm Peak Flow Engine: 3대 생체 바이오리듬 & 크로노타입 
   assert(res.temporalBioRhythm.currentPhaseWindow.length > 0);
   assert(res.bioSynthesisMatrix.coreInsight.length > 0);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
+  assert(res.questionTopic.length > 0 && res.biorhythmCrossAxis.length > 0 && res.shadowWarning.includes('과잉·편향 경계'));
   assert(res.interpretiveBoundary.length > 0);
   const prompt = formatBiorhythmPeakFlowPrompt(res);
   assert(prompt.includes('LUCKEY 3대 생체 바이오리듬 & 크로노타입 황금 피크'));
   assert(prompt.includes(res.chronotype));
+  assert(prompt.includes('바이오 교차 축') && prompt.includes('과잉·편향 경계'));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
