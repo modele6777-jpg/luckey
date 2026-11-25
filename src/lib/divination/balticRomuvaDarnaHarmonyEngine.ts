@@ -15,6 +15,8 @@ export interface BalticRomuvaDarnaResult {
   activeAxis: BalticRomuvaAxis;
   companionAxis: BalticRomuvaAxis;
   seasonalPhase: string;
+  questionTopic: 'rhythm' | 'ember' | 'dawn' | 'grounding' | 'general';
+  darnaCrossAxis: string;
   sacredOakNote: string;
   interpretation: string;
   ritualAction: string;
@@ -109,13 +111,28 @@ export function calculateBalticRomuvaDarnaHarmony(params: {
   const companionAxis = ROMUVA_DARNA_AXES[(primaryIdx + companionOffset) % ROMUVA_DARNA_AXES.length];
   const seasonalPhase = SEASONAL_PHASES[phaseHash % SEASONAL_PHASES.length];
   const sacredOakNote = SACRED_OAK_NOTES[(hash >>> 3) % SACRED_OAK_NOTES.length];
+  const q = (params.question ?? '').trim();
+  const questionTopic: BalticRomuvaDarnaResult['questionTopic'] = !q
+    ? 'general'
+    : /리듬|조화|순서|흐름|맞추/.test(q)
+      ? 'rhythm'
+      : /불씨|열정|온기|마음|지키/.test(q)
+        ? 'ember'
+        : /시작|빛|새벽|내일|첫/.test(q)
+          ? 'dawn'
+          : /바탕|현실|몸|피로|다지/.test(q)
+            ? 'grounding'
+            : 'general';
+  const darnaCrossAxis = `${questionTopic} · ${activeAxis.name.split('—')[0].trim()} × ${seasonalPhase.split('—')[0].trim()}`;
 
   return {
-    engineVersion: 'LUCKEY-BALTIC-ROMUVA-DARNA-v2.3.0',
+    engineVersion: 'LUCKEY-BALTIC-ROMUVA-DARNA-v2.4.0',
     calculatedAtKst: formatKstTimestamp(now),
     activeAxis,
     companionAxis,
     seasonalPhase,
+    questionTopic,
+    darnaCrossAxis,
     sacredOakNote,
     interpretation: `발트 리투아니아 로무바(Romuva) 전통의 다르나(Darna) 관점에서는 '${activeAxis.name}'(${activeAxis.element}) 축과 '${companionAxis.name}' 축이 '${seasonalPhase}' 위에서 교차합니다. ${activeAxis.guidance}`,
     ritualAction: `${activeAxis.ritual} (${companionAxis.name.split('—')[0].trim()} 축과 균형 맞추기)`,
@@ -133,6 +150,7 @@ export function formatBalticRomuvaPrompt(result: BalticRomuvaDarnaResult): strin
     `- 조화 축: ${result.activeAxis.name} (${result.activeAxis.element})`,
     `- 보조 축: ${result.companionAxis.name} (${result.companionAxis.element})`,
     `- 계절 국면: ${result.seasonalPhase}`,
+    `- 질문 맥락(${result.questionTopic}) · 다르나 교차 축: ${result.darnaCrossAxis}`,
     `- 참나무 노우트: ${result.sacredOakNote}`,
     `- 해석 요지: ${result.interpretation}`,
     `- 실천 의례: ${result.ritualAction}`,

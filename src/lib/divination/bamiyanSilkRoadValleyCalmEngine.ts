@@ -6,6 +6,8 @@ export interface BamiyanValleyResult {
   bamiyanMotif: string;
   companionMotif: string;
   valleyPhase: string;
+  questionTopic: 'quiet' | 'steadiness' | 'perspective' | 'general';
+  valleyCrossAxis: string;
   bamiyanInsight: string;
   valleyTone: string;
   reflectionFocus: string;
@@ -102,13 +104,26 @@ export function calculateBamiyanSilkRoadValleyCalm(params: {
   const shadowWarning = SHADOW_WARNINGS[(idx + phaseIdx) % SHADOW_WARNINGS.length];
   const shortCompanion = companion.motif.split('(')[0].trim();
   const shortPhase = valleyPhase.split('(')[0].trim();
+  const q = (params.question ?? '').trim();
+  const questionTopic: BamiyanValleyResult['questionTopic'] = !q
+    ? 'general'
+    : /소음|조용|쉼|여유|숨/.test(q)
+      ? 'quiet'
+      : /꾸준|성실|버텨|인내|습관/.test(q)
+        ? 'steadiness'
+        : /시야|크기|복잡|고민|생각/.test(q)
+          ? 'perspective'
+          : 'general';
+  const valleyCrossAxis = `${questionTopic} · ${picked.motif.split('(')[0].trim()} × ${shortPhase}`;
 
   return {
-    engineVersion: 'LUCKEY-BAMIYAN-VALLEY-v2.3.0',
+    engineVersion: 'LUCKEY-BAMIYAN-VALLEY-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     bamiyanMotif: picked.motif,
     companionMotif: companion.motif,
     valleyPhase,
+    questionTopic,
+    valleyCrossAxis,
     bamiyanInsight: `${picked.insight} (동반 결: ${companion.motif} · 국면: ${shortPhase})`,
     valleyTone: picked.tone,
     reflectionFocus: `바미얀 계곡 조화의 '${picked.motif}'와 동반 결 '${companion.motif}'이 '${valleyPhase}'에서 맞물려, 거센 일정 속에서도 등을 기댈 조용한 틈을 먼저 마련하고 맑은 물빛을 지켜야 하는 때입니다.`,
@@ -126,6 +141,7 @@ export function formatBamiyanValleyPrompt(res: BamiyanValleyResult): string {
     `- 계곡 모티프: ${res.bamiyanMotif} (${res.valleyTone})`,
     `- 동반 결: ${res.companionMotif}`,
     `- 계곡 국면: ${res.valleyPhase}`,
+    `- 질문 맥락(${res.questionTopic}) · 계곡 교차 축: ${res.valleyCrossAxis}`,
     `- 중심 통찰: ${res.bamiyanInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
