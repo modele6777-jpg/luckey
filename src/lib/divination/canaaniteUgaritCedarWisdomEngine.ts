@@ -3,9 +3,11 @@ import type { UserProfile } from '../sharedState';
 export interface CanaaniteUgaritResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계/신뢰' | '일/진로' | '재정/균형' | '내면/회복' | '전환/결정';
   levantSymbol: string;
   companionSymbol: string;
   levantPhase: string;
+  ugaritCrossAxis: string;
   ugaritInsight: string;
   cedarTone: string;
   shadowWarning: string;
@@ -84,6 +86,15 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+function classifyUgaritTopic(question?: string): CanaaniteUgaritResult['questionTopic'] {
+  const q = (question ?? '').toLowerCase();
+  if (/(사랑|연애|관계|결혼|사람|가족|친구|갈등|화해|신뢰|경계|부탁)/.test(q)) return '관계/신뢰';
+  if (/(일|직장|진로|이직|사업|공부|시험|성과|기본기|좌표)/.test(q)) return '일/진로';
+  if (/(돈|재정|투자|소비|수입|지출|저축|자산|균형)/.test(q)) return '재정/균형';
+  if (/(마음|불안|지침|회복|휴식|수면|건강|감정|체력)/.test(q)) return '내면/회복';
+  return '전환/결정';
+}
+
 export function calculateCanaaniteUgaritCedarWisdom(params: {
   profile: UserProfile;
   now?: Date;
@@ -97,13 +108,20 @@ export function calculateCanaaniteUgaritCedarWisdom(params: {
   const companion = SYMBOLS[(idx + companionOffset) % SYMBOLS.length];
   const levantPhase = LEVANT_PHASES[stableHash(`${seed}|phase`) % LEVANT_PHASES.length];
   const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
+  const questionTopic = classifyUgaritTopic(params.question);
+  const shortPhase = levantPhase.split('(')[0].trim();
+  const shortSymbol = picked.symbol.split('(')[0].trim();
+  const shortCompanion = companion.symbol.split('(')[0].trim();
+  const ugaritCrossAxis = `${shortPhase} × ${shortSymbol} · ${shortCompanion} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-CANAANITE-UGARIT-v2.3.0',
+    engineVersion: 'LUCKEY-CANAANITE-UGARIT-v2.4.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     levantSymbol: picked.symbol,
     companionSymbol: companion.symbol,
     levantPhase,
+    ugaritCrossAxis,
     ugaritInsight: `${picked.insight} (동반 상징: ${companion.symbol})`,
     cedarTone: picked.tone,
     shadowWarning,
@@ -121,6 +139,7 @@ export function formatCanaaniteUgaritPrompt(res: CanaaniteUgaritResult): string 
     `- 레반트 상징: ${res.levantSymbol} (${res.cedarTone})`,
     `- 동반 상징: ${res.companionSymbol}`,
     `- 레반트 국면: ${res.levantPhase}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.ugaritCrossAxis}`,
     `- 중심 통찰: ${res.ugaritInsight}`,
     `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
