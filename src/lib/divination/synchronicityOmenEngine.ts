@@ -19,7 +19,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SYNCHRONICITY_OMEN_VERSION = 'LUCKEY-SYNCHRONICITY-OMEN-v2.3.0';
+export const SYNCHRONICITY_OMEN_VERSION = 'LUCKEY-SYNCHRONICITY-OMEN-v2.4.0';
 
 function formatSynchronicityKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -63,6 +63,9 @@ export interface SynchronicityOmenReport {
   reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  questionTopic: 'relationship' | 'career' | 'healing' | 'decision' | 'general';
+  synchronicityCrossAxis: string;
+  synchronicityShadowWarning: string;
 }
 
 export function runSynchronicityOmenEngine(
@@ -147,6 +150,17 @@ export function runSynchronicityOmenEngine(
   const resonanceSensitivityScore = 85 + (seed % 15);
   const calculatedAtKst = formatSynchronicityKstTimestamp(targetDate);
   const q = (question || '').trim();
+  const questionTopic: SynchronicityOmenReport['questionTopic'] = !q
+    ? 'general'
+    : /사랑|연애|관계|결혼|사람|이별|가족/.test(q)
+      ? 'relationship'
+      : /일|직장|사업|돈|재물|이직|시험/.test(q)
+        ? 'career'
+        : /치유|회복|마음|휴식|수면|건강|불안/.test(q)
+          ? 'healing'
+          : 'decision';
+  const synchronicityCrossAxis = `${questionTopic} · ${manifestationSignal} × ${element}(${dayMaster}${dayBranch})`;
+  const synchronicityShadowWarning = `과잉·편향 경계: 동시성 신호(${manifestationSignal})를 맹신하거나 모든 우연에 억지 의미를 부여(아포페니아)하지 말고, 차분한 관찰과 현실적 판단을 함께 세우세요.`;
   const synchronicitySynthesisMatrix = {
     dominantTension: `${manifestationSignal} ↔ ${primaryChannelName}`,
     alignmentState: `오멘 테마: ${dominantOmenTheme} · 오행: ${element} (${dayMaster}${dayBranch})`,
@@ -162,6 +176,7 @@ export function runSynchronicityOmenEngine(
 
   const synthesisPromptGuidance = `[LUCKEY 칼 융 동시성 징조 해독 & 오멘 매트릭스 ${SYNCHRONICITY_OMEN_VERSION} | ${calculatedAtKst}]
 - 동시성 오멘 테마: [${dominantOmenTheme}]
+- 질문 맥락: ${questionTopic} · 동시성 교차 축: ${synchronicityCrossAxis}
 - 주 활성 채널: ${primaryChannelName}
 - 우주적 신호성 판별: [${manifestationSignal}] - ${signalSummary}
 - 우주의 윙크(Cosmic Wink) 의미: "${cosmicWinkMeaning}"
@@ -176,6 +191,7 @@ export function runSynchronicityOmenEngine(
 - 교차 매트릭스: [핵심 긴장: ${synchronicitySynthesisMatrix.dominantTension} | 조율 상태: ${synchronicitySynthesisMatrix.alignmentState}]
   * 통합 실천: ${synchronicitySynthesisMatrix.integratedAction}
 - 질문 맞춤 성찰 질문: ${reflectiveQuestion}
+- ${synchronicityShadowWarning}
 - 해석 경계: ${interpretiveBoundary}`;
 
   return {
@@ -202,6 +218,9 @@ export function runSynchronicityOmenEngine(
     reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
+    questionTopic,
+    synchronicityCrossAxis,
+    synchronicityShadowWarning,
   };
 }
 

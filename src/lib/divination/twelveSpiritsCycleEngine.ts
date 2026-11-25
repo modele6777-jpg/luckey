@@ -23,7 +23,7 @@ import {
   EARTHLY_BRANCHES
 } from '../sajuAnalysis';
 
-export const TWELVE_SPIRITS_ENGINE_VERSION = 'LUCKEY-SPIRIT-v2.3.0';
+export const TWELVE_SPIRITS_ENGINE_VERSION = 'LUCKEY-SPIRIT-v2.4.0';
 
 function formatSpiritsKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -265,6 +265,7 @@ export interface TwelveSpiritsResult {
 
   summary: string;
   questionTopic: string;
+  spiritsCrossAxis: string;
   spiritPhase: {
     phase: 'breakthrough_surge' | 'reflective_shelter' | 'harmonic_stage';
     titleKo: string;
@@ -400,6 +401,7 @@ export function calculateTwelveSpiritsCycle(params?: {
             description: '사람의 시선과 사회적 신뢰가 자연스럽게 모여 무대를 넓히기 좋은 시기',
           };
 
+  const spiritsCrossAxis = `${questionTopic} · 내면(${primarySpirit.name}) × 대외(${secondarySpirit.name})`;
   const shadowWarning = `과잉 경계: ${primarySpirit.name}(${primarySpirit.hanja}) 기운이 과해지면 '${primarySpirit.trapToAvoid}' 함정으로 기울 수 있으니 속도를 조절하세요.`;
 
   const reflectiveQuestion = q
@@ -427,6 +429,7 @@ export function calculateTwelveSpiritsCycle(params?: {
     todayStrategy,
     summary,
     questionTopic,
+    spiritsCrossAxis,
     spiritPhase,
     shadowWarning,
     secondarySpirit,
@@ -449,7 +452,7 @@ export function formatTwelveSpiritsPrompt(res: TwelveSpiritsResult): string {
     : '';
 
   return `[사주 12신살(겁재천지년월망장반역육화) 완전 순환 궤도 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst})]
-- 질문 맥락: ${res.questionTopic} · 순환 국면: ${res.spiritPhase.titleKo} (${res.spiritPhase.description})
+- 질문 맥락: ${res.questionTopic} · 순환 국면: ${res.spiritPhase.titleKo} (${res.spiritPhase.description}) · 교차 축: ${res.spiritsCrossAxis}
 - 오늘 일진(${res.todayDaySpirit.branchKo}) 배속:
   • 내면/심리 궤도(일지 기준): [${dSpirit.name}(${dSpirit.hanja})] - ${dSpirit.alias} (${dSpirit.nature})
   • 대외/사회 궤도(년지 기준): [${ySpirit.name}(${ySpirit.hanja})] - ${ySpirit.alias} (${ySpirit.nature})
