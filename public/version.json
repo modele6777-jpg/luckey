@@ -1,10 +1,10 @@
 {
-  "version": "1.8.495",
-  "builtAt": "2026-11-26T07:05:00+09:00",
-  "summary": "발트 로무바·바밀레케 구슬 왕좌·바미얀 실크로드 계곡 3대 핵심 엔진 심층 고도화(v1.8.495)",
+  "version": "1.8.496",
+  "builtAt": "2026-11-26T07:15:00+09:00",
+  "summary": "참파 미선·파슈툰 로샤니야·추마시 토몰 카누 3대 핵심 엔진 심층 고도화(v1.8.496)",
   "items": [
-    "발트 로무바 다르나 조화 엔진(v2.4.0): 질문 맥락 분류기(questionTopic)·다르나 교차 축(darnaCrossAxis) 추가 및 프롬프트 포맷 보강",
-    "바밀레케 구슬 왕좌 결속 엔진(v2.4.0): 질문 맥락 분류기(questionTopic)·구슬 교차 축(beadedCrossAxis) 추가 및 프롬프트 포맷 보강",
-    "바미얀 실크로드 계곡 조화 엔진(v2.4.0): 질문 맥락 분류기(questionTopic)·계곡 교차 축(valleyCrossAxis) 추가 및 프롬프트 포맷 보강"
+    "참파 미선 붉은 벽돌 성소 엔진(v2.4.0): 질문 맥락 분류기(questionTopic)·성소 교차 축(mySonCrossAxis) 추가 및 프롬프트 포맷 보강",
+    "파슈툰 로샤니야 내면의 빛 엔진(v2.4.0): 질문 맥락별 균형 조언(TOPIC_BALANCE_HINTS·topicBalanceHint) 추가 및 프롬프트 포맷 보강",
+    "추마시 토몰 카누 항해 엔진(v2.4.0): 질문 맥락별 균형 조언(TOPIC_BALANCE_HINTS·topicBalanceHint) 추가 및 프롬프트 포맷 보강"
   ]
 }
