@@ -13,6 +13,8 @@ export interface AsturianHorreoResult {
   companionMotif: string;
   woodenBeamState: string;
   ventilationPhase: string;
+  questionTopic: 'preservation' | 'ventilation' | 'boundary' | 'general';
+  horreoCrossAxis: string;
   shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -95,16 +97,29 @@ export function calculateAsturianHorreoPoise(input: AsturianHorreoInput): Asturi
   const woodenBeamState = BEAM_STATES[(h >>> 3) % BEAM_STATES.length];
   const ventilationPhase = VENTILATION_PHASES[phaseIdx];
   const shadowWarning = SHADOW_WARNINGS[(phaseIdx + companionOffset) % SHADOW_WARNINGS.length];
+  const q = (input.question ?? '').trim();
+  const questionTopic: AsturianHorreoResult['questionTopic'] = !q
+    ? 'general'
+    : /보존|습기|비축|지키|저장|버티/.test(q)
+      ? 'preservation'
+      : /바람|환기|소통|숨|답답|흐름/.test(q)
+        ? 'ventilation'
+        : /경계|거리|소란|거절|막아/.test(q)
+          ? 'boundary'
+          : 'general';
+  const horreoCrossAxis = `${questionTopic} · ${granaryMotif.split(':')[0].trim()} × ${ventilationPhase.split('(')[0].trim()}`;
   const ritualAction = `${RITUALS[motifIdx]} (${ventilationPhase} 리듬에 맞춰 동반 모티프 '${companionMotif.split(':')[0]}'의 시선으로 마무리해 보세요.)`;
   const reflectiveQuestion = `${QUESTIONS[motifIdx]} (동반 결 '${companionMotif.split(':')[0]}'까지 함께 얹었을 때 지금 가장 먼저 환기할 구석은 어디인가요?)`;
 
   return {
-    engineVersion: 'LUCKEY-ASTURIAN-HORREO-v2.3.0',
+    engineVersion: 'LUCKEY-ASTURIAN-HORREO-v2.4.0',
     calculatedAtKst: toKstIso(now),
     granaryMotif,
     companionMotif,
     woodenBeamState,
     ventilationPhase,
+    questionTopic,
+    horreoCrossAxis,
     shadowWarning,
     reflectionFocus: `땅의 습기에서 한 뼘 띄워 바람을 통하게 하는 아스투리아스 오레오 곡창처럼, 주 모티프와 동반 모티프('${companionMotif}')가 '${ventilationPhase}' 국면 위에서 어우러져 지금은 '${woodenBeamState}'의 거리 두기가 필요한 때입니다.`,
     ritualAction,
@@ -120,6 +135,7 @@ export function formatAsturianHorreoPrompt(result: AsturianHorreoResult): string
     `- 동반 모티프: ${result.companionMotif}`,
     `- 현재 결: ${result.woodenBeamState}`,
     `- 통풍 국면: ${result.ventilationPhase}`,
+    `- 질문 맥락(${result.questionTopic}) · 오레오 교차 축: ${result.horreoCrossAxis}`,
     `- 과잉 경계: ${result.shadowWarning}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 작은 실천: ${result.ritualAction}`,

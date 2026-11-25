@@ -8,6 +8,8 @@ export interface AymaraPachamamaResult {
   amautaInsight: string;
   altiplanoTone: string;
   reciprocityPhase: string;
+  questionTopic: 'clarity' | 'reciprocity' | 'balance' | 'general';
+  aymaraCrossAxis: string;
   shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -101,15 +103,28 @@ export function calculateAymaraPachamamaAmautaWisdom(params: {
   const companion = LENSES[companionIdx];
   const reciprocityPhase = RECIPROCITY_PHASES[phaseIdx];
   const shadowWarning = SHADOW_WARNINGS[(phaseIdx + companionOffset) % SHADOW_WARNINGS.length];
+  const q = (params.question ?? '').trim();
+  const questionTopic: AymaraPachamamaResult['questionTopic'] = !q
+    ? 'general'
+    : /기준|경험|결정|정오|선택|과거/.test(q)
+      ? 'clarity'
+      : /감사|함께|관계|사람|나누|돌봄/.test(q)
+        ? 'reciprocity'
+        : /균형|속도|휴식|지침|조화/.test(q)
+          ? 'balance'
+          : 'general';
+  const aymaraCrossAxis = `${questionTopic} · ${picked.lens.split('(')[0].trim()} × ${reciprocityPhase.split('(')[0].trim()}`;
 
   return {
-    engineVersion: 'LUCKEY-AYMARA-AMAUTA-v2.3.0',
+    engineVersion: 'LUCKEY-AYMARA-AMAUTA-v2.4.0',
     calculatedAtKst: formatKstStandard(now),
     nayraLens: picked.lens,
     companionLens: companion.lens,
     amautaInsight: picked.insight,
     altiplanoTone: picked.tone,
     reciprocityPhase,
+    questionTopic,
+    aymaraCrossAxis,
     shadowWarning,
     reflectionFocus: `아이마라 지혜의 '${picked.lens}'를 중심에 두고 '${companion.lens}'의 균형을 '${reciprocityPhase}' 국면으로 곁들여, 이미 검증된 나의 경험에서 오늘의 기준을 꺼내 보세요.`,
     ritualAction: `${picked.ritual} (${reciprocityPhase} 흐름에서 '${companion.lens}'의 균형도 함께 챙겨 보세요.)`,
@@ -125,6 +140,7 @@ export function formatAymaraPachamamaPrompt(res: AymaraPachamamaResult): string 
     `- 시간 렌즈: ${res.nayraLens} (${res.altiplanoTone})`,
     `- 보조 맥락: ${res.companionLens}`,
     `- 호혜 국면: ${res.reciprocityPhase}`,
+    `- 질문 맥락(${res.questionTopic}) · 아이마라 교차 축: ${res.aymaraCrossAxis}`,
     `- 과잉 경계: ${res.shadowWarning}`,
     `- 중심 통찰: ${res.amautaInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,

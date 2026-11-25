@@ -8,6 +8,8 @@ export interface AzeriCarpetResult {
   azeriInsight: string;
   bakuTone: string;
   loomTension: string;
+  questionTopic: 'focus' | 'patience' | 'resilience' | 'general';
+  azeriCrossAxis: string;
   shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -100,15 +102,28 @@ export function calculateAzeriCarpetFlamePoise(params: {
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const loomTension = LOOM_TENSIONS[tensionIdx];
   const shadowWarning = SHADOW_WARNINGS[(tensionIdx + companionOffset) % SHADOW_WARNINGS.length];
+  const q = (params.question ?? '').trim();
+  const questionTopic: AzeriCarpetResult['questionTopic'] = !q
+    ? 'general'
+    : /중심|원칙|집중|과제|선택|매듭/.test(q)
+      ? 'focus'
+      : /기다|천천히|숙성|차|시간|속도/.test(q)
+        ? 'patience'
+        : /바람|흔들|불꽃|버텨|위기|지키/.test(q)
+          ? 'resilience'
+          : 'general';
+  const azeriCrossAxis = `${questionTopic} · ${picked.motif.split('(')[0].trim()} × ${loomTension.split('(')[0].trim()}`;
 
   return {
-    engineVersion: 'LUCKEY-AZERI-CARPET-v2.3.0',
+    engineVersion: 'LUCKEY-AZERI-CARPET-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     azeriMotif: picked.motif,
     companionMotif: companion.motif,
     azeriInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     bakuTone: picked.tone,
     loomTension,
+    questionTopic,
+    azeriCrossAxis,
     shadowWarning,
     reflectionFocus: `아제르바이잔 카펫의 '${picked.motif}'와 동반 결 '${companion.motif}'가 '${loomTension}' 국면 위에서 만나 바람 앞에서도 유연하게 흔들리는 불꽃과 중심 원의 균형을 지켜 줍니다.`,
     ritualAction: `${picked.ritual} (${loomTension} 리듬으로 동반 결 '${companion.motif.split('(')[0].trim()}'까지 엮어 보세요.)`,
@@ -124,6 +139,7 @@ export function formatAzeriCarpetPrompt(res: AzeriCarpetResult): string {
     `- 아제리 모티프: ${res.azeriMotif} (${res.bakuTone})`,
     `- 동반 결: ${res.companionMotif}`,
     `- 베틀 장력: ${res.loomTension}`,
+    `- 질문 맥락(${res.questionTopic}) · 아제리 교차 축: ${res.azeriCrossAxis}`,
     `- 과잉 경계: ${res.shadowWarning}`,
     `- 중심 통찰: ${res.azeriInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
