@@ -8,12 +8,12 @@
  * 4. 현실의 부조리를 꿰뚫고 대안을 설계하는 이상주의적 통찰력 (Visionary Ideal & Social Wisdom Index): "양들이 사람을 잡아먹는다"는 비판처럼 현실 문제를 정밀 진단하고 대안을 제시하는 힘.
  * 5. 외적 압박 앞에서도 신념을 굽히지 않는 단호한 도덕적 용기 회복탄력성 (Steadfast Moral Courage Resilience Score): 권력의 위협 앞에서도 타협하지 않고 양심의 법정을 지켜낸 불굴의 기개.
  *
- * @version LUCKEY-THOMAS-MORE-UTOPIA-v2.3.0
+ * @version LUCKEY-THOMAS-MORE-UTOPIA-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_THOMAS_MORE_UTOPIA_VERSION = 'LUCKEY-THOMAS-MORE-UTOPIA-v2.3.0';
+export const BRITISH_THOMAS_MORE_UTOPIA_VERSION = 'LUCKEY-THOMAS-MORE-UTOPIA-v2.4.0';
 
 export type MoreQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -52,6 +52,7 @@ export interface BritishThomasMoreUtopiaResult {
   // 세부 분석
   questionTopic: MoreQuestionTopic;
   utopiaPhase: string;
+  moreCrossAxis: string;
   shadowWarning: string;
   temporalMoreRhythm: MoreTemporalRhythm;
   activeMoreTheme: ThomasMoreTheme;
@@ -277,6 +278,9 @@ export function calculateBritishThomasMoreUtopia(
   const focalMoreAphorism = THOMAS_MORE_APHORISMS[aphorismIndex];
   const utopiaPhase = MORE_UTOPIA_PHASES[(absHash >> 11) % MORE_UTOPIA_PHASES.length];
   const shadowWarning = MORE_SHADOW_WARNINGS[(absHash >> 14) % MORE_SHADOW_WARNINGS.length];
+  const shortPhase = utopiaPhase.split('(')[0].trim();
+  const shortCompanion = companionMoreTheme.themeTitleKo.split('—')[0].trim();
+  const moreCrossAxis = `${shortPhase} × ${shortCompanion} (${questionTopic}) — ${topicGuidance.practiceGuidance}`;
 
   const guidanceTitle = `토머스 모어 유토피아 양심과 삶의 균형 지혜: ${activeMoreTheme.themeTitleKo}`;
   const philosophicalCounsel = `영국의 사상가 토머스 모어는 《유토피아》를 통해 탐욕과 불평등을 넘어 노동과 여가의 조화, ` +
@@ -309,6 +313,7 @@ export function calculateBritishThomasMoreUtopia(
     steadfastMoralCourageResilienceScore,
     questionTopic,
     utopiaPhase,
+    moreCrossAxis,
     shadowWarning,
     temporalMoreRhythm,
     activeMoreTheme,
@@ -336,6 +341,7 @@ export function formatBritishThomasMoreUtopiaPrompt(
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- 유토피아 국면: ${res.utopiaPhase}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.moreCrossAxis}`,
     `- KST 시공간 리듬: ${res.temporalMoreRhythm.kstDateLabel} · ${res.temporalMoreRhythm.timeWindowKo} (${res.temporalMoreRhythm.utopiaTone}) — ${res.temporalMoreRhythm.rhythmDirective}`,
     `- 핵심 토머스 모어 테마: ${res.activeMoreTheme.themeTitleKo} [${res.activeMoreTheme.themeTitleEn}]`,
     `- 동반 토머스 모어 테마: ${res.companionMoreTheme.themeTitleKo}`,

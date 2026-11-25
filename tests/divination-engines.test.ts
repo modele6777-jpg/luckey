@@ -8872,6 +8872,7 @@ test('Desiderius Erasmus Praise of Folly Engine: calculates Humorous Wisdom, Dog
 test('Thomas More Utopia Engine: calculates Communal Conscience, Labor-Leisure Balance, and Spiritual Integrity', () => {
   const rep = calculateBritishThomasMoreUtopia(profile, '일과 쉼의 균형을 지키며 지친 마음을 추스르고 싶어요', new Date('2026-11-14T03:00:00Z'));
   assert.equal(rep.engineVersion, BRITISH_THOMAS_MORE_UTOPIA_VERSION);
+  assert.equal(rep.engineVersion, 'LUCKEY-THOMAS-MORE-UTOPIA-v2.4.0');
   assert.equal(rep.questionTopic, 'healing');
   const restOnly = calculateBritishThomasMoreUtopia(profile, '요즘 일이 많아 잠깐 쉬고 싶어요', new Date('2026-11-14T03:00:00Z'));
   assert.equal(restOnly.questionTopic, 'healing');
@@ -8883,12 +8884,12 @@ test('Thomas More Utopia Engine: calculates Communal Conscience, Labor-Leisure B
   assert(rep.steadfastMoralCourageResilienceScore >= 0 && rep.steadfastMoralCourageResilienceScore <= 100);
   assert(rep.activeMoreTheme.themeTitleKo.length > 0);
   assert(rep.companionMoreTheme.themeKey !== rep.activeMoreTheme.themeKey);
-  assert(rep.utopiaPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert(rep.utopiaPhase.length > 0 && rep.moreCrossAxis.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.boundaryNotice.length > 0 && rep.interpretiveBoundary.length > 0);
   const prompt = formatBritishThomasMoreUtopiaPrompt(rep);
   assert(prompt.includes('토머스 모어 《유토피아》 공동체 양심·삶의 균형 및 도덕적 용기 지표'));
   assert(prompt.includes(rep.activeMoreTheme.themeTitleKo) && prompt.includes(rep.companionMoreTheme.themeTitleKo));
-  assert(prompt.includes(rep.utopiaPhase) && prompt.includes(rep.shadowWarning));
+  assert(prompt.includes(rep.utopiaPhase) && prompt.includes(rep.moreCrossAxis) && prompt.includes(rep.shadowWarning));
   assert(prompt.includes('2026-11-14'));
   assert.ok(rep.calculatedAtKst.includes('KST'));
   assert.ok(prompt.includes('교차 매트릭스'));
@@ -9405,6 +9406,7 @@ test('Seopo Kim Man-jung Guunmong Illusory Awakening Engine: calculates Fame Pen
 test('Virginia Woolf Room of One\'s Own Engine: calculates Autonomy, Moments of Being, and Androgynous Mind', () => {
   const rep = calculateBritishVirginiaWoolfRoomOfOnesOwn(profile);
   assert.equal(rep.engineVersion, BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION);
+  assert.equal(rep.engineVersion, 'LUCKEY-VIRGINIA-WOOLF-ROOM-OF-ONES-OWN-v2.4.0');
   assert(rep.roomOfOnesOwnAutonomyScore >= 0 && rep.roomOfOnesOwnAutonomyScore <= 100);
   assert(rep.momentsOfBeingInsightIndex >= 0 && rep.momentsOfBeingInsightIndex <= 100);
   assert(rep.androgynousMindCreativityScore >= 0 && rep.androgynousMindCreativityScore <= 100);
@@ -9412,12 +9414,12 @@ test('Virginia Woolf Room of One\'s Own Engine: calculates Autonomy, Moments of 
   assert(rep.lighthouseResilienceScore >= 0 && rep.lighthouseResilienceScore <= 100);
   assert(rep.activeWoolfTheme.themeTitleKo.length > 0);
   assert(rep.companionWoolfTheme.themeKey !== rep.activeWoolfTheme.themeKey);
-  assert(rep.luminousPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert(rep.luminousPhase.length > 0 && rep.woolfCrossAxis.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatBritishVirginiaWoolfRoomOfOnesOwnPrompt(rep);
   assert(prompt.includes('버지니아 울프 《자기만의 방·등대로》 사유의 독립·존재의 순간들 지표'));
   assert(prompt.includes(rep.activeWoolfTheme.themeTitleKo) && prompt.includes(rep.companionWoolfTheme.themeTitleKo));
-  assert(prompt.includes(rep.luminousPhase) && prompt.includes(rep.shadowWarning));
+  assert(prompt.includes(rep.luminousPhase) && prompt.includes(rep.woolfCrossAxis) && prompt.includes(rep.shadowWarning));
 });
 
 test('Victor Hugo Les Miserables Engine: calculates Mercy, Conscience, and Humanitarian Solidarity', () => {
@@ -9527,6 +9529,7 @@ test('Ilyeon Samguk Yusa Engine: calculates Hongik Ingan Pride, Hyangga Healing,
 test('William Shakespeare Tragic Wisdom Engine: calculates Tragic Depth, Existential Action, and Readiness', () => {
   const rep = calculateBritishWilliamShakespeareTragicWisdom(profile);
   assert.equal(rep.engineVersion, BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION);
+  assert.equal(rep.engineVersion, 'LUCKEY-SHAKESPEARE-TRAGIC-WISDOM-v2.4.0');
   assert(rep.tragicDepthConfrontationScore >= 0 && rep.tragicDepthConfrontationScore <= 100);
   assert(rep.existentialActionResolveIndex >= 0 && rep.existentialActionResolveIndex <= 100);
   assert(rep.tempestForgivenessGraceScore >= 0 && rep.tempestForgivenessGraceScore <= 100);
@@ -9534,12 +9537,12 @@ test('William Shakespeare Tragic Wisdom Engine: calculates Tragic Depth, Existen
   assert(rep.sereneFortitudeResilienceScore >= 0 && rep.sereneFortitudeResilienceScore <= 100);
   assert(rep.activeShakespeareTheme.themeTitleKo.length > 0);
   assert(rep.companionShakespeareTheme.themeKey !== rep.activeShakespeareTheme.themeKey);
-  assert(rep.dramaticPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert(rep.dramaticPhase.length > 0 && rep.shakespeareCrossAxis.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatBritishWilliamShakespeareTragicWisdomPrompt(rep);
   assert(prompt.includes('윌리엄 셰익스피어 《햄릿·템페스트》 비극적 통찰·실존적 결단 지표'));
   assert(prompt.includes(rep.activeShakespeareTheme.themeTitleKo) && prompt.includes(rep.companionShakespeareTheme.themeTitleKo));
-  assert(prompt.includes(rep.dramaticPhase) && prompt.includes(rep.shadowWarning));
+  assert(prompt.includes(rep.dramaticPhase) && prompt.includes(rep.shakespeareCrossAxis) && prompt.includes(rep.shadowWarning));
 });
 
 test('Marcel Proust Lost Time Regained Engine: calculates Involuntary Memory, Time Regained, and Aesthetic Insight', () => {
