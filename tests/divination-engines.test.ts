@@ -10396,6 +10396,7 @@ test('v2.1.0 pure qualitative deepening: Aristotle Mesotes, Plato Cave, and Epic
 
   const aristotle = calculateAristotleMesotes(testProfile, '조급함과 불안 사이에서 일의 균형을 잡고 싶어요', now);
   assert.equal(aristotle.engineVersion, ARISTOTLE_MESOTES_VERSION);
+  assert.ok(aristotle.aristotleCrossAxis.length > 0 && aristotle.aristotleShadowWarning.length > 0);
   assert.ok(aristotle.dailyPracticeRitual.includes('헥시스'));
   assert.ok(aristotle.reflectiveQuestion.length > 10);
   assert.ok(aristotle.interpretiveBoundary.length > 10);
@@ -10404,6 +10405,7 @@ test('v2.1.0 pure qualitative deepening: Aristotle Mesotes, Plato Cave, and Epic
   assert.ok(aristotlePrompt.includes('오늘의 실천 의례'));
   assert.ok(aristotlePrompt.includes('핵심 성찰 질문'));
   assert.ok(aristotlePrompt.includes('해석 경계'));
+  assert.ok(aristotlePrompt.includes('중용 교차 축') && aristotlePrompt.includes('양극단 경계'));
 
   const plato = calculatePlatonicIdeaCave(testProfile, '타인의 시선과 본질 사이에서 진로를 고민 중입니다', now);
   assert.equal(plato.engineVersion, PLATONIC_IDEA_CAVE_VERSION);
@@ -11891,16 +11893,18 @@ test('SunTzu v2.2 · Yarrow v2.2 · PtahMemphite v2.3: reflectiveQuestion & prom
   const st = calculateSunTzuArtOfWarStrategy(profile, now, query);
   assert.equal(st.engineVersion, SUNTZU_STRATEGY_VERSION);
   assert.match(st.calculatedAtKst, /\+09:00/);
+  assert.ok(st.sunTzuCrossAxis.length > 0 && st.sunTzuShadowWarning.length > 0);
   assert.ok(st.reflectiveQuestion.includes(query));
   const stPrompt = formatSunTzuArtOfWarStrategyPrompt(st);
-  assert.ok(stPrompt.includes('KST') && stPrompt.includes('성찰 질문') && stPrompt.includes('해석 경계'));
+  assert.ok(stPrompt.includes('KST') && stPrompt.includes('손자 교차 축') && stPrompt.includes('성찰 질문') && stPrompt.includes('해석 경계'));
 
   const yr = calculateAncientYarrowProbability({ profile, question: query, now });
   assert.equal(yr.engineVersion, ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION);
   assert.match(yr.calculatedAtKst, /KST/);
+  assert.ok(yr.yarrowCrossAxis.length > 0 && yr.yarrowShadowWarning.length > 0);
   assert.ok(yr.reflectiveQuestion.includes(query));
   const yrPrompt = formatAncientYarrowProbabilityPrompt(yr);
-  assert.ok(yrPrompt.includes('KST') && yrPrompt.includes('성찰 질문') && yrPrompt.includes('해석 경계'));
+  assert.ok(yrPrompt.includes('KST') && yrPrompt.includes('대연 교차 축') && yrPrompt.includes('성찰 질문') && yrPrompt.includes('해석 경계'));
 
   const pt = calculatePtahMemphite(profile, query, now);
   assert.equal(pt.engineVersion, PTAH_MEMPHITE_VERSION);

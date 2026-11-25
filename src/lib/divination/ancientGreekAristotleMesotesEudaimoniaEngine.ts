@@ -7,7 +7,7 @@
  * 3. 실천적 지혜 프로네시스(Phronesis): 구체적인 상황 속에서 올바른 행동의 척도를 가늠하는 이성적 판단력.
  * 4. 텔로스(Telos, 목적론): 모든 존재는 내재된 잠재태(Dynamis)를 실현태(Energeia)로 꽃피우려는 궁극의 목적을 지닌다.
  *
- * @version LUCKEY-ARISTOTLE-MESOTES-EUDAIMONIA-v2.3.0
+ * @version LUCKEY-ARISTOTLE-MESOTES-EUDAIMONIA-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
@@ -83,6 +83,8 @@ export interface AristotleMesotesResult {
   ritualAction: string;
   reflectionFocus: string;
   interpretiveBoundary: string;
+  aristotleCrossAxis: string;
+  aristotleShadowWarning: string;
   aristotleSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -324,6 +326,8 @@ export function calculateAristotleMesotes(
     '아리스토텔레스의 중용과 에우다이모니아 통찰은 길흉이나 점수를 단정하는 예언이 아니라, 구체적 상황에서 실천적 지혜(Phronesis)로 균형을 가늠하기 위한 철학적 성찰 도구입니다.';
 
   const trimmedQ = (question ?? '').trim();
+  const aristotleCrossAxis = `${activeVirtueStage.virtueNameGreek} × ${eudaimoniaBalanceMatrix.dominantAxis} · ${temporalPhronesisRhythm.kstPhaseLabel.split('(')[0].trim()}`;
+  const aristotleShadowWarning = `결핍(${situationalMesotes.deficiencyTrap})과 과도(${situationalMesotes.excessTrap}) 어느 쪽에도 치우치지 않도록 프로네시스 분별을 유지하십시오.`;
   const aristotleSynthesisMatrix = {
     dominantTension: `${situationalMesotes.imbalanceAxis} (${situationalMesotes.deficiencyTrap} ↔ ${situationalMesotes.excessTrap})`,
     alignmentState: `${activeVirtueStage.virtueNameGreek} · ${eudaimoniaBalanceMatrix.dominantAxis}`,
@@ -352,6 +356,8 @@ export function calculateAristotleMesotes(
     ritualAction: dailyPracticeRitual,
     reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
+    aristotleCrossAxis,
+    aristotleShadowWarning,
     aristotleSynthesisMatrix,
   };
 }
@@ -384,6 +390,8 @@ export function formatAristotleMesotesPrompt(res: AristotleMesotesResult): strin
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
+    `- 중용 교차 축: ${res.aristotleCrossAxis}`,
+    `- 양극단 경계: ${res.aristotleShadowWarning}`,
     matrixLine,
   ].filter(Boolean).join('\n');
 }
