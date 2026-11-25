@@ -8214,8 +8214,9 @@ test('Yun Dong-ju Sky Wind Stars Poetry Engine: calculates Pure Conscience, Well
 });
 
 test('Leo Tolstoy Calendar of Wisdom Engine: calculates Spiritual Awakening, Agape Love, Simplicity, and Conscience Integrity', () => {
-  const rep = calculateRussianLeoTolstoyCalendarOfWisdom(profile);
+  const rep = calculateRussianLeoTolstoyCalendarOfWisdom(profile, '선택의 기로에서 양심을 지키고 싶어요');
   assert.equal(rep.engineVersion, RUSSIAN_LEO_TOLSTOY_VERSION);
+  assert.equal(rep.questionTopic, 'decision');
   assert(rep.spiritualAwakeningScore >= 0 && rep.spiritualAwakeningScore <= 100);
   assert(rep.agapeLoveAltruismIndex >= 0 && rep.agapeLoveAltruismIndex <= 100);
   assert(rep.simpleLifeLaborHarmonyScore >= 0 && rep.simpleLifeLaborHarmonyScore <= 100);
@@ -8224,11 +8225,12 @@ test('Leo Tolstoy Calendar of Wisdom Engine: calculates Spiritual Awakening, Aga
   assert(rep.activeTolstoyTheme.themeTitleKo.length > 0);
   assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.tolstoyCrossAxis.length > 0 && rep.shadowWarning.length > 0);
   assert(Boolean(rep.tolstoySynthesisMatrix?.integratedAction));
   const prompt = formatRussianLeoTolstoyCalendarOfWisdomPrompt(rep);
   assert(prompt.includes('레프 톨스토이 《인생독본·사람은 무엇으로 사는가》 영적 각성 & 아가페 사랑 지표'));
   assert(prompt.includes(rep.activeTolstoyTheme.themeTitleKo));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('영혼·아가페 교차 축') && prompt.includes('과잉 경계'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -14682,15 +14684,16 @@ test('Nabataean Petra Cistern Water engine: conduit, +09:00 KST, and interpretiv
 
 test('Frisian Polder Dike Balance engine: principle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateFrisianPolderDikeBalance({ profile, now: new Date('2026-11-20T08:52:00Z'), question: '마음속 수위를 천천히 조절하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-FRISIAN-POLDER-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-FRISIAN-POLDER-v2.4.0');
+  assert.equal(rep.questionCategory, 'decision');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPrinciple !== rep.polderPrinciple);
-  assert.ok(rep.questionTopic.length > 0 && rep.dikeWaterAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.questionTopic.length > 0 && rep.dikeWaterAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatFrisianPolderPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('폴데르') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPrinciple) && prompt.includes(rep.dikeWaterAxis));
+  assert.ok(prompt.includes('폴데르') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPrinciple) && prompt.includes(rep.dikeWaterAxis) && prompt.includes('주제별 균형 조언'));
 });
 
 test('Ukrainian Vyshyvanka Sunflower engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14963,15 +14966,16 @@ test('Parthian Nisa Archery Poise engine: motif, +09:00 KST, and interpretive bo
 
 test('Nahua Xochitl Cuicatl Flow engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateNahuaXochitlCuicatlFlow({ profile, now: new Date('2026-11-20T19:25:00Z'), question: '일상 속 작은 아름다움과 진심을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-NAHUA-XOCHITL-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-NAHUA-XOCHITL-v2.4.0');
+  assert.equal(rep.questionCategory, 'relationship');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.xochitlMotif);
-  assert.ok(rep.questionTopic.length > 0 && rep.xochitlBreathAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.questionTopic.length > 0 && rep.xochitlBreathAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatNahuaXochitlPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('나우아틀') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.xochitlBreathAxis));
+  assert.ok(prompt.includes('나우아틀') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.xochitlBreathAxis) && prompt.includes('주제별 균형 조언'));
 });
 
 test('Benin Bronze Oba Memory engine: motif, +09:00 KST, and interpretive boundary', () => {

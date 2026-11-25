@@ -1,10 +1,10 @@
 {
-  "version": "1.8.497",
-  "builtAt": "2026-11-26T07:25:00+09:00",
-  "summary": "세레르 바오밥·포르투갈 사그레스·투르카나 비취 바다 3대 핵심 엔진 심층 고도화(v1.8.497)",
+  "version": "1.8.498",
+  "builtAt": "2026-11-26T07:35:00+09:00",
+  "summary": "톨스토이 인생독본·프리슬란트 폴데르·나우아틀 쇼치틀 3대 핵심 엔진 심층 고도화(v1.8.498)",
   "items": [
-    "세레르 바오밥 평의회 엔진(v2.4.0): 질문 맥락별 균형 조언(TOPIC_BALANCE_HINTS·topicBalanceHint) 추가 및 프롬프트 포맷 보강",
-    "포르투갈 사우다데·사그레스 나침반 엔진(v2.4.0): 질문 맥락별 균형 조언(TOPIC_BALANCE_HINTS·topicBalanceHint) 추가 및 프롬프트 포맷 보강",
-    "투르카나 비취 바다 바람 엔진(v2.4.0): 질문 맥락별 균형 조언(TOPIC_BALANCE_HINTS·topicBalanceHint) 추가 및 프롬프트 포맷 보강"
+    "레프 톨스토이 인생독본 엔진(v2.4.0): 질문 맥락 분류(questionTopic), 영혼·아가페 교차 축(tolstoyCrossAxis), 과잉 경계(shadowWarning) 추가 및 JSDoc @version 일원화",
+    "프리슬란트 폴데르 방파제 균형 엔진(v2.4.0): 질문 범주(questionCategory)와 주제별 균형 조언(topicBalanceHint) 추가 및 프롬프트 포맷 보강",
+    "나우아틀 꽃과 노래 쇼치틀 엔진(v2.4.0): 질문 범주(questionCategory)와 주제별 균형 조언(topicBalanceHint) 추가 및 프롬프트 포맷 보강"
   ]
 }
