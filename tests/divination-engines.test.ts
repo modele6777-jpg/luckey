@@ -13871,15 +13871,16 @@ test('Samarkand Ulugh Beg Observatory engine: meridian arc, +09:00 KST, and inte
 
 test('Haudenosaunee Seven Generations engine: council principle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateHaudenosauneeSevenGenerations({ profile, now: new Date('2026-11-20T06:20:00Z'), question: '오래 남을 신뢰를 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-HAUDENOSAUNEE-7GEN-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-HAUDENOSAUNEE-7GEN-v2.4.0');
+  assert.equal(rep.questionCategory, 'relationship');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPrinciple !== rep.councilPrinciple);
-  assert.ok(rep.questionTopic.length > 0 && rep.longhousePeaceAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.questionTopic.length > 0 && rep.longhousePeaceAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatHaudenosauneePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('호데노쇼니') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPrinciple) && prompt.includes(rep.longhousePeaceAxis));
+  assert.ok(prompt.includes('호데노쇼니') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPrinciple) && prompt.includes(rep.longhousePeaceAxis) && prompt.includes('주제별 균형 조언'));
 });
 
 test('Swahili Utu Dhow Monsoon engine: wind, +09:00 KST, and interpretive boundary', () => {
@@ -14643,15 +14644,16 @@ test('Balkan Ohrid Lake Reflection engine: symbol, +09:00 KST, and interpretive 
 
 test('Garifuna Dugu Caribbean Rhythm engine: rhythm, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateGarifunaDuguCaribbeanRhythm({ profile, now: new Date('2026-11-20T08:46:00Z'), question: '무거운 생각을 가벼운 박자로 풀어내고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-GARIFUNA-DUGU-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-GARIFUNA-DUGU-v2.4.0');
+  assert.equal(rep.questionCategory, 'decision');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionRhythm !== rep.caribbeanRhythm);
-  assert.ok(rep.questionTopic.length > 0 && rep.coastCadenceAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.questionTopic.length > 0 && rep.coastCadenceAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatGarifunaDuguPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('가리푸나') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionRhythm) && prompt.includes(rep.coastCadenceAxis));
+  assert.ok(prompt.includes('가리푸나') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionRhythm) && prompt.includes(rep.coastCadenceAxis) && prompt.includes('주제별 균형 조언'));
 });
 
 test('Alpine Savoy Col Wisdom engine: principle, +09:00 KST, and interpretive boundary', () => {
@@ -15717,15 +15719,16 @@ test('Orkney Skara Brae Hearth engine: motif, +09:00 KST, and interpretive bound
 
 test('Muisca Guatavita Lake engine: phase, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMuiscaGuatavitaLake({ profile, now: new Date('2026-11-20T22:15:00Z'), question: '마음의 균형을 비우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MUISCA-GUATAVITA-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-MUISCA-GUATAVITA-v2.4.0');
+  assert.equal(rep.questionCategory, 'decision');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPhase !== rep.offeringPhase);
-  assert.ok(rep.questionTopic.length > 0 && rep.goldRaftCycle.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.questionTopic.length > 0 && rep.goldRaftCycle.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMuiscaGuatavitaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('무이스카') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPhase) && prompt.includes(rep.goldRaftCycle));
+  assert.ok(prompt.includes('무이스카') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPhase) && prompt.includes(rep.goldRaftCycle) && prompt.includes('주제별 균형 조언'));
 });
 
 test('Naxi Dongba Chime engine: motif, +09:00 KST, and interpretive boundary', () => {
