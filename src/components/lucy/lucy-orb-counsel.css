@@ -1607,7 +1607,20 @@ html.duo-unfolded-mode .lucy-orb-stage.is-report .lucy-orb-ritual { width: min(6
 .lucy-orb-stage.is-live .lucy-orb-ritual { width: min(86%, 430px, calc(var(--orb-live-room, 9999px) / .92)); }
 html.duo-unfolded-mode .lucy-orb-stage.is-live .lucy-orb-ritual { width: min(62%, 680px, calc(var(--orb-live-room, 9999px) / .92)); }
 .lucy-orb-stage.is-live .lucy-orb-copy { margin-bottom: var(--orb-bok-bottom, 0px); padding-bottom: 8px; min-height: 0; }
-.lucy-orb-stage:not(.is-live):not(.is-report) .lucy-orb-copy { margin-bottom: var(--orb-bok-bottom, 0px); min-height: 0; }
+/* Keep the master cards scrollable above the Big Bang button on short panes. */
+.lucy-orb-stage:not(.is-live):not(.is-report) .lucy-orb-ritual {
+  width: min(86%, 430px, calc(var(--orb-pick-room, 9999px) / .92));
+}
+html.duo-unfolded-mode .lucy-orb-stage:not(.is-live):not(.is-report) .lucy-orb-ritual {
+  width: min(62%, 680px, calc(var(--orb-pick-room, 9999px) / .92));
+}
+.lucy-orb-stage:not(.is-live):not(.is-report) .lucy-orb-copy {
+  margin-top: 12px;
+  margin-bottom: var(--orb-bok-bottom, 0px);
+  padding-bottom: 12px;
+  min-height: 0;
+  touch-action: pan-y;
+}
 
 /* 🃏 "멈춰!" 셔플: 카드 더미가 계속 섞이고, 누르거나 "멈춰"라고 말하면 한 장씩 뽑혀 아래 자리에 놓인다. */
 .lucy-shuffle-deck {

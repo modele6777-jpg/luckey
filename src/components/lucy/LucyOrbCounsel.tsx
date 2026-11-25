@@ -1205,6 +1205,12 @@ export function LucyOrbCounsel({
       }
       // 상담 중: 글·버튼 영역이 빅뱅 버튼 위에서 끝나게 하고, 수정구슬은 남은 공간에 맞춘다.
       const copy = stage.querySelector<HTMLElement>('.lucy-orb-copy');
+      if (phase === 'pick') {
+        const top = parseFloat(getComputedStyle(stage).paddingTop) || 0;
+        const available = Math.max(0, box.height - clear - top - 16);
+        const cardRoom = Math.min(220, available * 0.58);
+        stage.style.setProperty('--orb-pick-room', `${Math.floor(available - cardRoom)}px`);
+      }
       if (copy && phase === 'live') {
         const top = parseFloat(getComputedStyle(stage).paddingTop) || 0;
         const room = box.height - clear - top - copy.scrollHeight - 16;
