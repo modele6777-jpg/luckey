@@ -10640,6 +10640,7 @@ test('v2.1.0 pure qualitative prompts (zero /100 or % exposure): Bhagavad Gita, 
   const gita = calculateBhagavadGitaKarmaYoga(profile, '결과가 불안해서 도무지 집중이 안 돼요', now);
   assert.equal(gita.engineVersion, BHAGAVAD_GITA_KARMA_YOGA_VERSION);
   assertKstTimestamp(gita.calculatedAtKst);
+  assert.ok(gita.gitaCrossAxis.length > 0 && gita.gitaShadowWarning.length > 0);
   assert.ok(Boolean(gita.gitaSynthesisMatrix?.integratedAction));
   assert.ok(gita.dailyPracticeRitual.length > 0);
   assert.ok(gita.reflectiveQuestion.length > 0);
@@ -10648,11 +10649,12 @@ test('v2.1.0 pure qualitative prompts (zero /100 or % exposure): Bhagavad Gita, 
   assert.ok(!gitaPrompt.includes('/100') && !gitaPrompt.includes('%'));
   assert.ok(gitaPrompt.includes('오늘의 실천 의례'));
   assert.ok(gitaPrompt.includes('성찰 질문'));
-  assert.ok(gitaPrompt.includes('해석 경계') && gitaPrompt.includes('+09:00') && gitaPrompt.includes('교차 매트릭스'));
+  assert.ok(gitaPrompt.includes('해석 경계') && gitaPrompt.includes('+09:00') && gitaPrompt.includes('교차 매트릭스') && gitaPrompt.includes('기타 교차 축'));
 
   const buddha = calculateAncientIndianFourNobleTruths(profile, '불안하고 걱정이 많아서 마음이 흔들려요', now);
   assert.equal(buddha.engineVersion, FOUR_NOBLE_TRUTHS_VERSION);
   assertKstTimestamp(buddha.calculatedAtKst);
+  assert.ok(buddha.buddhistCrossAxis.length > 0 && buddha.buddhistShadowWarning.length > 0);
   assert.ok(Boolean(buddha.buddhistSynthesisMatrix?.integratedAction));
   assert.ok(buddha.dailyPracticeRitual.length > 0);
   assert.ok(buddha.reflectiveQuestion.length > 0);
@@ -10661,7 +10663,7 @@ test('v2.1.0 pure qualitative prompts (zero /100 or % exposure): Bhagavad Gita, 
   assert.ok(!buddhaPrompt.includes('/100') && !buddhaPrompt.includes('%'));
   assert.ok(buddhaPrompt.includes('오늘의 실천 의례'));
   assert.ok(buddhaPrompt.includes('성찰 질문'));
-  assert.ok(buddhaPrompt.includes('해석 경계') && buddhaPrompt.includes('+09:00') && buddhaPrompt.includes('교차 매트릭스'));
+  assert.ok(buddhaPrompt.includes('해석 경계') && buddhaPrompt.includes('+09:00') && buddhaPrompt.includes('교차 매트릭스') && buddhaPrompt.includes('사성제 교차 축'));
 
   const nagarjuna = calculateNagarjunaMadhyamakaSunyata(profile, '내 생각만 맞다는 고집 때문에 갈등이 생겼어요', now);
   assert.equal(nagarjuna.engineVersion, NAGARJUNA_MADHYAMAKA_VERSION);
@@ -11959,9 +11961,10 @@ test('Heraclitus v2.4 · Plotinus v2.2 · AmeshaSpentas v2.3: reflectiveQuestion
   const pl = calculateAncientGreekPlotinusEnneadsHenosis(profile, now, query);
   assert.equal(pl.engineVersion, ANCIENT_GREEK_PLOTINUS_VERSION);
   assert.match(pl.calculatedAtKst, /\+09:00 \(KST\)/);
+  assert.ok(pl.plotinusCrossAxis.length > 0 && pl.shadowWarning.length > 0);
   assert.ok(pl.reflectiveQuestion.includes(query));
   const plPrompt = formatAncientGreekPlotinusEnneadsHenosisPrompt(pl);
-  assert.ok(plPrompt.includes('KST') && plPrompt.includes('성찰 질문') && plPrompt.includes('해석 경계'));
+  assert.ok(plPrompt.includes('KST') && plPrompt.includes('엔네아데스 교차 축') && plPrompt.includes('성찰 질문') && plPrompt.includes('해석 경계'));
 
   const am = calculateZoroastrianAmeshaSpentas(profile, query, now);
   assert.equal(am.engineVersion, ZOROASTRIAN_AMESHA_SPENTAS_VERSION);

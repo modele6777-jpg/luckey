@@ -7,7 +7,7 @@
  * 3. 사마트밤(Samatvam): "성공과 실패, 승리와 패배를 동등하게 바라보며 중심을 잃지 않는 것, 그것을 요가(Yoga)라 부른다."
  * 4. 요가스타 쿠루 카르마니(Yogasthah kuru karmani): "집착을 끊고 신성한 자아에 굳건히 서서 행위하라."
  *
- * @version LUCKEY-BHAGAVAD-GITA-KARMA-YOGA-v2.3.0
+ * @version LUCKEY-BHAGAVAD-GITA-KARMA-YOGA-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
@@ -81,6 +81,8 @@ export interface BhagavadGitaKarmaYogaResult {
   ritualAction: string;
   reflectionFocus: string;
   interpretiveBoundary: string;
+  gitaCrossAxis: string;
+  gitaShadowWarning: string;
   gitaSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -319,6 +321,8 @@ export function calculateBhagavadGitaKarmaYoga(
     `바가바드 기타 카르마 요가는 미래의 성패를 점치는 도구가 아니라, 결과 집착을 내려놓고 현재의 본분(Swadharma)에 집중하도록 돕는 상징·성찰 관점입니다.`;
 
   const trimmedQ = (question ?? '').trim();
+  const gitaCrossAxis = `${activeGitaStage.sanskritStage.split(' ')[0]} · ${temporalGunaRhythm.dominantGuna.split(' ')[0]} × ${situationalKarmaAudit.chapterVerse}`;
+  const gitaShadowWarning = '결과에 대한 무집착(Nishkama Karma)을 책임 회피나 무관심으로 오해하지 말고, 오늘 맡은 일의 완성도와 정성은 끝까지 지키십시오.';
   const gitaSynthesisMatrix = {
     dominantTension: `${situationalKarmaAudit.attachmentTrap} ↔ ${activeGitaStage.sanskritStage}`,
     alignmentState: `${temporalGunaRhythm.dominantGuna} · ${primaryGitaSutra.themeKo}`,
@@ -344,6 +348,8 @@ export function calculateBhagavadGitaKarmaYoga(
     ritualAction: dailyPracticeRitual,
     reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
+    gitaCrossAxis,
+    gitaShadowWarning,
     gitaSynthesisMatrix,
   };
 }
@@ -377,6 +383,8 @@ export function formatBhagavadGitaKarmaYogaPrompt(res: BhagavadGitaKarmaYogaResu
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
+    `- 기타 교차 축: ${res.gitaCrossAxis}`,
+    `- 과잉·편향 경계: ${res.gitaShadowWarning}`,
     matrixLine,
   ].filter(Boolean).join('\n');
 }

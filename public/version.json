@@ -1,10 +1,10 @@
 {
-  "version": "1.8.482",
-  "builtAt": "2026-11-26T04:55:00+09:00",
-  "summary": "에픽테토스 통제이분법·에피쿠로스 4중 처방·플라톤 이데아 동굴 3대 엔진 심층 고도화(v1.8.482)",
+  "version": "1.8.483",
+  "builtAt": "2026-11-26T05:05:00+09:00",
+  "summary": "플로티노스 엔네아데스·바가바드기타 카르마 요가·초기불교 사성제 3대 엔진 심층 고도화(v1.8.483)",
   "items": [
-    "에픽테토스 통제이분법 & 프로하이레시스 엔진(v2.4.0): 통제 교차 축(epictetusCrossAxis)·과잉·편향 경계(epictetusShadowWarning) 추가 및 버전 표기 일원화",
-    "에피쿠로스 《테트라파르마코스》 아타락시아 엔진(v2.5.0): 정원 교차 축(epicureanCrossAxis)·과잉·편향 경계(epicureanShadowWarning) 추가 및 버전 표기 일원화",
-    "플라톤 동굴의 비유 & 이데아 4대 추덕 엔진(v2.4.0): 이데아 교차 축(platoCrossAxis)·과잉·편향 경계(platoShadowWarning) 추가 및 버전 표기 일원화"
+    "플로티노스 《엔네아데스》·헤노시스 엔진(v2.4.0): 엔네아데스 교차 축(plotinusCrossAxis) 및 주제별 과잉·편향 경계(PLOTINUS_TOPIC_SHADOW_WARNINGS) 추가",
+    "바가바드 기타 카르마 요가 엔진(v2.4.0): 기타 교차 축(gitaCrossAxis)·과잉·편향 경계(gitaShadowWarning) 추가 및 버전 표기 일원화",
+    "초기불교 사성제 & 팔정도 엔진(v2.4.0): 사성제 교차 축(buddhistCrossAxis)·과잉·편향 경계(buddhistShadowWarning) 추가 및 버전 표기 일원화"
   ]
 }
