@@ -1,3 +1,4 @@
+import { readLucySuggestedQuestions } from '@/lib/lucySuggestedQuestions';
 import { LucyResponseRecommendation } from "@/components/LucyResponseRecommendation";
 import { setLucyMasterMode } from "@/lib/lucyMasterMode";
 import { requestLucyMicrophone, lucyMicrophonePermissionMessage } from '@/lib/lucyMicrophone';
@@ -19,7 +20,7 @@ import {
   orbCardPickMessage, parseCardNumbers, pickOrbCards, saveOrbMemory, shuffleOrbDeck, summarizeOrbSession,
   type OrbDeckCard, type OrbMemoryEntry, type OrbPickedCard,
 } from '@/lib/orbConsult';
-import { Clover, KeyRound, MessageCirclePlus, type LucideIcon } from 'lucide-react';
+import { Clover, KeyRound, MessageCirclePlus, Send, type LucideIcon } from 'lucide-react';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
 import { setMicCaptureActive } from '@/lib/audioMixingPolicy';
@@ -219,6 +220,8 @@ export function LucyOrbCounsel({
   const captionStepTimers = useRef<number[]>([]);
   useEffect(() => () => { for (const timer of captionStepTimers.current) window.clearTimeout(timer); }, []);
   const [draft, setDraft] = useState('');
+  const [lucyQuestions, setLucyQuestions] = useState(() => readLucySuggestedQuestions(account));
+  useEffect(() => { if (open) setLucyQuestions(readLucySuggestedQuestions(account)); }, [account, open]);
   const [notice, setNotice] = useState('');
   const [micPermissionBusy, setMicPermissionBusy] = useState(false);
   const [micUnavailable, setMicUnavailable] = useState(false);
@@ -1640,7 +1643,15 @@ export function LucyOrbCounsel({
         </div>
         {/* 입력창은 마스터가 정해진 뒤(상담 중)에만 보인다. */}
         {phase === 'live' && (
-          <div className="lucy-orb-dock">
+          <div className="lucy-orb-dock lucy-orb-composer">
+            {!talkPressed && (
+              <div className="lucy-orb-lucy-questions" role="group" aria-label="루시 추천 질문">
+                {lucyQuestions.map(question => (
+                  <button key={question} type="button" onClick={() => setDraft(question)}>{question}</button>
+                ))}
+              </div>
+            )}
+            <div className="lucy-orb-composer-row">
             <div className="lucy-orb-input-wrap">
               <input
                 ref={orbInputRef}
@@ -1671,6 +1682,10 @@ export function LucyOrbCounsel({
                 </span>
               )}
               {talkPressed && <span className="lucy-orb-hold-hint" role="status">듣고 있어요 · 손을 떼면 전송</span>}
+            </div>
+              <button type="button" className="lucy-orb-send" onClick={sendDraft} disabled={rolling || micPermissionBusy || talkPressed || (!draft.trim())} aria-label="상담 메시지 보내기">
+                <Send size={18} aria-hidden="true" />
+              </button>
             </div>
           </div>
         )}
