@@ -11,6 +11,7 @@ export interface SamarkandUlughResult {
   meridianFocus: string;
   starAlignmentTone: string;
   observatoryAxis: string;
+  topicBalanceHint: string;
   shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -56,6 +57,15 @@ const ARCS = [
   },
 ];
 
+const TOPIC_BALANCE_HINTS: Record<SamarkandQuestionTopic, string> = {
+  career: '직무·프로젝트는 성과의 크기보다 오늘 검증 가능한 사실 1건을 먼저 짚는 편이 궤도를 바로잡습니다.',
+  relationship: '관계에서는 상대의 의도를 짐작으로 채우기보다 실제 대화에서 확인한 사실만 놓고 호흡을 맞추세요.',
+  wealth: '재정·계약은 막연한 기대나 불안 대신 수치와 기한을 한 줄로 대조하는 자오선 점검이 유리합니다.',
+  health: '컨디션 회복에는 무리한 목표보다 수면·수분처럼 측정 가능한 기본 리듬 1가지를 지키는 편이 좋습니다.',
+  decision: '선택의 갈림길에서는 모든 변수를 다 풀려 하기보다 오늘 확인 가능한 핵심 기준 1개만 먼저 세우세요.',
+  general: '마음이 복잡할수록 큰 그림과 오늘의 작은 관찰 사실 하나를 나란히 두면 시야가 맑아집니다.',
+};
+
 function classifySamarkandTopic(question?: string): SamarkandQuestionTopic {
   const q = (question ?? '').trim();
   if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(q)) return 'career';
@@ -97,11 +107,12 @@ export function calculateSamarkandUlughBegObservatory(params: {
   const picked = ARCS[idx];
   const companion = ARCS[(idx + companionOffset) % ARCS.length];
   const questionTopic = classifySamarkandTopic(params.question);
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const observatoryAxis = `${picked.stage.split('(')[0].trim()} ↔ ${companion.stage.split('(')[0].trim()} 자오선 교차`;
   const shadowWarning = `[${picked.stage.split('(')[0].trim()} 과잉 경계] 분석과 측정에만 매달려 정작 오늘 내디뎌야 할 작은 실행을 미루지 않도록 살피십시오.`;
 
   return {
-    engineVersion: 'LUCKEY-SAMARKAND-ULUGH-v2.3.0',
+    engineVersion: 'LUCKEY-SAMARKAND-ULUGH-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     arcStage: picked.stage,
@@ -109,6 +120,7 @@ export function calculateSamarkandUlughBegObservatory(params: {
     meridianFocus: `${picked.focus} (동반 관측: ${companion.stage})`,
     starAlignmentTone: picked.tone,
     observatoryAxis,
+    topicBalanceHint,
     shadowWarning,
     reflectionFocus: `추측이 부풀어 오를수록 '${picked.stage}'와 동반 관측 '${companion.stage}'처럼 눈앞의 한 가지 기준만 차분히 재어 보세요.`,
     ritualAction: picked.ritual,
@@ -124,6 +136,7 @@ export function formatSamarkandUlughPrompt(res: SamarkandUlughResult): string {
     `- 관측 단계: ${res.arcStage} (${res.starAlignmentTone})`,
     `- 동반 관측: ${res.companionArc}`,
     `- 천문 교차 축: ${res.observatoryAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 중심 통찰: ${res.meridianFocus}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
