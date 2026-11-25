@@ -16,6 +16,7 @@ export interface ChumashTomolResult {
   companionSignal: string;
   plankSealing: string;
   tideNavigationAxis: string;
+  topicBalanceHint: string;
   shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -80,6 +81,15 @@ function classifyChumashTopic(question?: string): ChumashQuestionTopic {
   return 'general';
 }
 
+const TOPIC_BALANCE_HINTS: Record<ChumashQuestionTopic, string> = {
+  career: '일·커리어에서는 큰 항해를 서두르기보다 작은 틈새와 빠진 확인 사항부터 메워 두는 편이 끝까지 안전합니다.',
+  relationship: '관계에서는 혼자 노를 젓기보다 건너편과 조류를 맞출 수 있는 짧은 안부 공유가 거리를 좁혀 줍니다.',
+  wealth: '재정·계약에서는 누수되는 작은 틈을 먼저 점검하고 조류가 열리는 시점을 차분히 기다리는 것이 좋습니다.',
+  health: '건강·회복에서는 맞바람을 힘으로 거스르지 말고 물결이 잔잔해지는 시간에 맞춰 쉼을 배치하세요.',
+  decision: '선택 앞에서는 완벽한 조건만 기다리지 말고, 작은 틈을 메운 뒤 조류가 열릴 때 가볍게 출항하세요.',
+  general: '오늘의 흐름에서는 주 신호와 동반 신호를 함께 보며 선체 점검과 출항 타이밍의 균형을 맞추세요.',
+};
+
 export function calculateChumashTomolCanoe(input: ChumashTomolInput): ChumashTomolResult {
   const fate = input.profile.fate ?? {};
   const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
@@ -93,13 +103,14 @@ export function calculateChumashTomolCanoe(input: ChumashTomolInput): ChumashTom
   const shadowWarning = '[항해 과잉 경계] 틈새 점검과 만반의 준비에만 머무르며 정작 조류가 열린 순간의 출항을 놓치지 않도록 살피십시오.';
 
   return {
-    engineVersion: 'LUCKEY-CHUMASH-TOMOL-v2.3.0',
+    engineVersion: 'LUCKEY-CHUMASH-TOMOL-v2.4.0',
     calculatedAtKst: toKstIso(input.now),
     questionTopic,
     voyageSignal,
     companionSignal,
     plankSealing: SEALINGS[(seed >>> 3) % SEALINGS.length],
     tideNavigationAxis,
+    topicBalanceHint: TOPIC_BALANCE_HINTS[questionTopic],
     shadowWarning,
     reflectionFocus: `캘리포니아 해협을 건너던 추마시 족의 토몰(Tomol) 판자 카누처럼 주 신호('${voyageSignal}')와 동반 신호('${companionSignal}')를 함께 짚어 작은 틈을 정성껏 메우고 해류를 읽으며 나아가는 상징적 관점입니다.`,
     ritualAction: ACTIONS[signalIdx],
@@ -115,6 +126,7 @@ export function formatChumashTomolPrompt(res: ChumashTomolResult): string {
     `항해 신호: ${res.voyageSignal}`,
     `동반 신호: ${res.companionSignal}`,
     `해협 조류 축: ${res.tideNavigationAxis}`,
+    `주제별 균형 조언: ${res.topicBalanceHint}`,
     `선체 결합: ${res.plankSealing}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
