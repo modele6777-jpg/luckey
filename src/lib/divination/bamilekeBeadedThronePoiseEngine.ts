@@ -12,6 +12,8 @@ export interface BamilekeBeadedResult {
   beadPattern: string;
   companionPattern: string;
   weavingPhase: string;
+  questionTopic: 'craft' | 'frame' | 'balance' | 'general';
+  beadedCrossAxis: string;
   craftDignity: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -90,13 +92,26 @@ export function calculateBamilekeBeadedThrone(input: BamilekeBeadedInput): Bamil
   const weavingPhase = WEAVING_PHASES[hashSeed(`${seedText}|phase`) % WEAVING_PHASES.length];
   const beadPattern = PATTERNS[patternIdx];
   const companionPattern = PATTERNS[(patternIdx + companionOffset) % PATTERNS.length];
+  const q = (input.question ?? '').trim();
+  const questionTopic: BamilekeBeadedResult['questionTopic'] = !q
+    ? 'general'
+    : /엮|차곡|구슬|정성|꾸준|작은/.test(q)
+      ? 'craft'
+      : /틀|원칙|기준|질서|모으/.test(q)
+        ? 'frame'
+        : /균형|색|몰리|치우|일정/.test(q)
+          ? 'balance'
+          : 'general';
+  const beadedCrossAxis = `${questionTopic} · ${beadPattern.slice(0, 14)} × ${weavingPhase.split('—')[0].trim()}`;
 
   return {
-    engineVersion: 'LUCKEY-BAMILEKE-BEADS-v2.3.0',
+    engineVersion: 'LUCKEY-BAMILEKE-BEADS-v2.4.0',
     calculatedAtKst: toKstIso(input.now),
     beadPattern,
     companionPattern,
     weavingPhase,
+    questionTopic,
+    beadedCrossAxis,
     craftDignity: DIGNITIES[(seed >>> 3) % DIGNITIES.length],
     reflectionFocus: `카메룬 서부 초원의 바밀레케 왕국이 수만 알의 작은 구슬을 엮어 왕좌와 의례 조각을 완성하듯, '${weavingPhase}' 위에서 주 문양('${beadPattern}')과 동반 문양('${companionPattern}')을 겹쳐 작은 일상의 축적과 질서를 살피는 상징적 관점입니다.`,
     ritualAction: `${ACTIONS[patternIdx]} (${weavingPhase.split('—')[0].trim()} 기준)`,
@@ -113,6 +128,7 @@ export function formatBamilekeBeadedPrompt(res: BamilekeBeadedResult): string {
     `구슬 문양: ${res.beadPattern}`,
     `동반 문양: ${res.companionPattern}`,
     `꿰기 국면: ${res.weavingPhase}`,
+    `질문 맥락(${res.questionTopic}) · 구슬 교차 축: ${res.beadedCrossAxis}`,
     `공예 품격: ${res.craftDignity}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
