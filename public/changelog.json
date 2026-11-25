@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.481",
+    "builtAt": "2026-11-26T04:45:00+09:00",
+    "summary": "손자병법·고대 시초점·아리스토텔레스 중용 3대 엔진 심층 고도화(v1.8.481)",
+    "items": [
+      "손자병법 전략·전술 엔진(v2.4.0): 손자 교차 축(sunTzuCrossAxis) 및 주제별 과잉·편향 경계(sunTzuShadowWarning) 추가",
+      "고대 주역 대연지수 49책 시초점 엔진(v2.4.0): 대연 교차 축(yarrowCrossAxis) 및 주제별 과잉·편향 경계(yarrowShadowWarning) 추가",
+      "아리스토텔레스 중용·에우다이모니아 엔진(v2.4.0): 중용 교차 축(aristotleCrossAxis)·양극단 경계(aristotleShadowWarning) 추가 및 버전 표기 일원화"
+    ]
+  },
+  {
     "version": "1.8.480",
     "builtAt": "2026-11-26T04:35:00+09:00",
     "summary": "존 듀이·에머슨 자기신뢰·휘트먼 풀잎 3대 엔진 심층 고도화(v1.8.480)",

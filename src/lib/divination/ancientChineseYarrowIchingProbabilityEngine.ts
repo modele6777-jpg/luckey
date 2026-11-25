@@ -6,7 +6,7 @@
  * 동효·정효의 시중(時中) 태도를 정성적 행동 성찰에 연결합니다.
  */
 
-export const ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION = 'LUCKEY-YARROW-PROBABILITY-v2.3.0';
+export const ANCIENT_YARROW_PROBABILITY_ENGINE_VERSION = 'LUCKEY-YARROW-PROBABILITY-v2.4.0';
 
 export type YarrowQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -15,6 +15,8 @@ export interface YarrowProbabilityReport {
   calculatedAt: string;
   calculatedAtKst: string;
   questionTheme: YarrowQuestionTheme;
+  yarrowCrossAxis: string;
+  yarrowShadowWarning: string;
   dominantYaoValue: 6 | 7 | 8 | 9;
   remainingStalks: 24 | 28 | 32 | 36; // 3변 후 남은 책수 (remainingStalks / 4 = dominantYaoValue)
   yaoNameKo: string;
@@ -44,6 +46,13 @@ export interface YarrowProbabilityReport {
   boundaryNotice: string;
   interpretiveBoundary: string;
 }
+
+const YARROW_THEME_WARNINGS: Record<YarrowQuestionTheme, string> = {
+  relationship: '동효와 정효의 흐름을 읽으면서도 상대의 실제 말과 감정을 확인하는 직접적인 대화를 생략하지 마십시오.',
+  decision: '시중(時中)의 때를 헤아리느라 현실의 기한, 비용, 대안 검증까지 뒤로 미루지 않도록 균형을 잡으십시오.',
+  healing: '변화와 수렴의 리듬이 몸과 마음의 실제 신호를 대신할 수는 없으므로 필요한 휴식과 돌봄을 우선하십시오.',
+  reflection: '수리의 상징을 오늘의 마음가짐을 비추는 거울로만 삼고, 결과를 단정하는 잣대로 쓰지 마십시오.',
+};
 
 function classifyYarrowTheme(question: string): YarrowQuestionTheme {
   if (/연애|사랑|관계|사람|친구|가족|배우자|이별|갈등|연락/.test(question)) return 'relationship';
@@ -273,6 +282,8 @@ export function calculateAncientYarrowProbability(params: {
 
   const themeContent = guidanceByYaoAndTheme[dominantYaoValue][questionTheme];
   const temporalYarrowRhythm = getTemporalYarrowRhythm(now);
+  const yarrowCrossAxis = `${questionTheme} · ${dominantYaoValue}효(${isChangingLine ? '동효' : '정효'}) × ${temporalYarrowRhythm.dayanWatchWindow.split('—')[0].trim()}`;
+  const yarrowShadowWarning = YARROW_THEME_WARNINGS[questionTheme];
   const yarrowSynthesisMatrix = {
     coreInsight: `[${yaoNameKo}]가 [${questionTheme}] 국면의 시중(時中) 흐름을 비춥니다.`,
     recommendedAction: `${themeContent.practiceGuidance} (${themeContent.ritualAction})`,
@@ -289,6 +300,8 @@ export function calculateAncientYarrowProbability(params: {
     calculatedAt: now.toISOString(),
     calculatedAtKst: temporalYarrowRhythm.kstTimeLabel,
     questionTheme,
+    yarrowCrossAxis,
+    yarrowShadowWarning,
     dominantYaoValue,
     remainingStalks,
     yaoNameKo,
@@ -325,6 +338,8 @@ export function formatAncientYarrowProbabilityPrompt(report: YarrowProbabilityRe
 - **연산 시각**: ${report.calculatedAtKst}
 - **산출 효(爻) 수리값**: ${report.dominantYaoValue} (${report.remainingStalks}책 / 4) - [${report.yaoNameKo}]
 - **동효 여부**: ${report.isChangingLine ? '동효 (국면 전환기)' : '정효 (안정 유지기)'}
+- **대연 교차 축**: ${report.yarrowCrossAxis}
+- **과잉·편향 경계**: ${report.yarrowShadowWarning}
 - **시초점 삼변 비대칭 구조**: ${qualitativeSplit}
 - **시공간 음양 모멘텀**: ${report.temporalYinYangMomentum}
 - **KST 시공간 대연 리듬**: ${report.temporalYarrowRhythm.dayanWatchWindow} / ${report.temporalYarrowRhythm.seasonalChangeTone}

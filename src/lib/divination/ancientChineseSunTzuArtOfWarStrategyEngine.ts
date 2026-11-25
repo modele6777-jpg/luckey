@@ -8,12 +8,12 @@
  * 4. 피실격허(避實擊虛)와 수형(水形): 단단한 정면충돌을 피하고 빈틈과 활로로 흐름
  * 5. 이우위직(以迂爲直): 돌아가는 우회로를 가장 빠른 지름길로 삼는 지혜
  *
- * @version LUCKEY-SUNTZU-STRATEGY-v2.1.0
+ * @version LUCKEY-SUNTZU-STRATEGY-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SUNTZU_STRATEGY_VERSION = 'LUCKEY-SUNTZU-STRATEGY-v2.3.0';
+export const SUNTZU_STRATEGY_VERSION = 'LUCKEY-SUNTZU-STRATEGY-v2.4.0';
 
 export type SunTzuQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -59,6 +59,8 @@ export interface SunTzuArtOfWarStrategyResult {
   calculatedAtKst: string;
   questionTopic: SunTzuQuestionTopic;
   strategicPosture: string;
+  sunTzuCrossAxis: string;
+  sunTzuShadowWarning: string;
   // 내부 계산 호환 필드 (프롬프트 비노출)
   fiveFactorsHarmonyScore: number;
   unfoughtVictoryPowerScore: number;
@@ -283,6 +285,13 @@ function buildSynthesisMatrix(
   };
 }
 
+const SUNTZU_TOPIC_WARNINGS: Record<SunTzuQuestionTopic, string> = {
+  relationship: '명분과 형세를 따지는 전략적 시선이 가까운 사람의 진심까지 계산과 의심으로만 재단하지 않도록 살피십시오.',
+  decision: '우회(以迂爲直)와 빈틈 탐색에 치중해 정작 결단이 필요한 순간까지 관망만 길어지지 않도록 시한을 정하십시오.',
+  healing: '전선을 정리하는 보전의 지혜가 필요한 관계와 회복의 루틴까지 한꺼번에 끊어내는 고립으로 흐르지 않게 하십시오.',
+  reflection: '지피지기의 냉철한 점검이 자기비판이나 과도한 방어심으로 굳어지지 않도록 실행의 여지를 열어 두십시오.',
+};
+
 function getKstDateString(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   return kst.toISOString().slice(0, 10);
@@ -339,6 +348,8 @@ export function calculateSunTzuArtOfWarStrategy(
 
   const counselNote = `5사의 '${focalFiveFactor.factorHanja}' 정비와 '${activeStrategicTactic.tacticNameHanja}' 전술이 결합되어, 지금 국면을 '${topicGuide.posture}'로 안내합니다.`;
   const boundaryNotice = '이 관점은 《손자병법》의 형세 판단과 자원 배분 철학을 빌린 상징적 전략 성찰이며, 확정적 승패 예측이나 법률·투자 자문이 아닙니다.';
+  const sunTzuCrossAxis = `${questionTopic} · ${focalFiveFactor.factorHanja.split(' ')[0]} × ${activeStrategicTactic.tacticNameHanja.split(' ')[0]} · ${temporalSunTzuRhythm.campaignWindow.split('(')[0].trim()}`;
+  const sunTzuShadowWarning = SUNTZU_TOPIC_WARNINGS[questionTopic];
   const cleanQuestion = (question ?? '').trim();
   const reflectiveQuestion = cleanQuestion
     ? `'${cleanQuestion}'의 국면에서 정면 충돌 대신 '${focalFiveFactor.factorHanja}'를 정비하고 '${activeStrategicTactic.tacticNameHanja}'로 우회한다면, 가장 먼저 내려놓아야 할 소모전은 무엇인가요?`
@@ -349,6 +360,8 @@ export function calculateSunTzuArtOfWarStrategy(
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     strategicPosture: topicGuide.posture,
+    sunTzuCrossAxis,
+    sunTzuShadowWarning,
     fiveFactorsHarmonyScore,
     unfoughtVictoryPowerScore,
     situationalClarityScore,
@@ -378,6 +391,8 @@ export function formatSunTzuArtOfWarStrategyPrompt(res: SunTzuArtOfWarStrategyRe
     `【손자병법 오사칠계 & 부전승 피실격허 전략 지표】`,
     `- 엔진 버전: ${res.engineVersion} | 기준 시각(KST): ${res.calculatedAtKst}`,
     `- 질문 맥락 초점: ${res.questionTopic} | 전략적 태도: ${res.strategicPosture}`,
+    `- 손자 교차 축: ${res.sunTzuCrossAxis}`,
+    `- 과잉·편향 경계: ${res.sunTzuShadowWarning}`,
     `- 핵심 정비 요소: ${res.focalFiveFactor.factorHanja} (${res.focalFiveFactor.factorKo})`,
     `- 전략적 의미: ${res.focalFiveFactor.strategicSignificance}`,
     `- 요소별 수양 조언: ${res.focalFiveFactor.cultivationCounsel}`,
