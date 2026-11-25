@@ -8627,7 +8627,7 @@ test('Ohseong and Haneum Friendship Governance Engine: calculates Lifelong Moral
   assert(rep.unyieldingFidelityGraceIndex >= 0 && rep.unyieldingFidelityGraceIndex <= 100);
   assert(rep.activeOhseongHaneumTheme.themeTitleKo.length > 0);
   assert(rep.companionOhseongHaneumTheme.themeKey !== rep.activeOhseongHaneumTheme.themeKey);
-  assert(rep.friendshipPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert(rep.friendshipPhase.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.dailyPracticeRitual.length > 0);
   assert(rep.reflectiveQuestion.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
@@ -8637,7 +8637,7 @@ test('Ohseong and Haneum Friendship Governance Engine: calculates Lifelong Moral
   const prompt = formatKoreanOhseongHaneumFriendshipGovernancePrompt(rep);
   assert(prompt.includes('오성과 한음(이항복·이덕형) 지기지우 & 경세제민 지혜 지표'));
   assert(prompt.includes(rep.activeOhseongHaneumTheme.themeTitleKo) && prompt.includes(rep.companionOhseongHaneumTheme.themeTitleKo));
-  assert(prompt.includes(rep.friendshipPhase) && prompt.includes(rep.shadowWarning));
+  assert(prompt.includes(rep.friendshipPhase) && prompt.includes('맥락 균형 조언') && prompt.includes(rep.shadowWarning));
   assert(prompt.includes('교차 매트릭스'));
   assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
@@ -14402,18 +14402,18 @@ test('Latvian Dainas Mara Harmony engine: motif, +09:00 KST, and interpretive bo
 
 test('Cherokee Gadugi Harmony engine: principle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateCherokeeGadugiHarmony({ profile, now: new Date('2026-11-20T08:04:00Z'), question: '신뢰와 조화에 마음을 보태고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CHEROKEE-GADUGI-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CHEROKEE-GADUGI-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   // '마음'이 들어간 질문은 현재 분류기에서 마음·건강 주제로 묶인다.
   assert.equal(rep.questionTopic, 'health');
   assert.ok(rep.companionPrinciple !== rep.gadugiPrinciple);
-  assert.ok(rep.duyuktvBalanceAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.duyuktvBalanceAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatCherokeeGadugiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('체로키') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPrinciple));
-  assert.ok(prompt.includes('두육트브 조화 축') && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('두육트브 조화 축') && prompt.includes('맥락 균형 조언') && prompt.includes('과잉 경계'));
 });
 
 test('Tlingit Raven Clan Balance engine: balance, +09:00 KST, and interpretive boundary', () => {
@@ -15233,15 +15233,17 @@ test('Zimbabwe Great Stone Wall engine: motif, +09:00 KST, and interpretive boun
 
 test('Bulgarian Rose Valley Dawn engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBulgarianRoseValleyDawn({ profile, now: new Date('2026-11-20T20:19:00Z'), question: '가장 맑은 시간대에 핵심을 모으고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BULGARIAN-ROSE-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BULGARIAN-ROSE-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.roseMotif);
   assert.ok(rep.harvestPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert.equal(rep.questionTopic, 'timing');
+  assert.ok(rep.roseCrossAxis.includes('timing'));
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBulgarianRosePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('불가리아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.harvestPhase) && prompt.includes(rep.shadowWarning));
+  assert.ok(prompt.includes('불가리아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.harvestPhase) && prompt.includes(rep.shadowWarning) && prompt.includes('장미 교차 축'));
 });
 
 test('Azeri Carpet Flame Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
