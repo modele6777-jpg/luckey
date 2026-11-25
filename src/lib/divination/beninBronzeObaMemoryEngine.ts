@@ -1,11 +1,15 @@
 import type { UserProfile } from '../sharedState';
 
+export type BeninObaTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'general';
+
 export interface BeninBronzeObaResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: BeninObaTopic;
   edoMotif: string;
   companionMotif: string;
   castingPhase: string;
+  obaCrossAxis: string;
   beninInsight: string;
   guildTone: string;
   shadowWarning: string;
@@ -65,6 +69,22 @@ const MOTIFS = [
   },
 ];
 
+const TOPIC_AXES: Record<BeninObaTopic, string> = {
+  career: '일·커리어에서는 오래 벼려 온 숙련을 믿고 20분간 흔들림 없이 초안을 붓는 장인의 몰입이 필요합니다.',
+  relationship: '관계에서는 맡은 역할이나 소중한 인연을 급히 다루지 말고 산호 목걸이처럼 정갈하게 돌보세요.',
+  wealth: '재정·계약에서는 그동안 지켜 온 성실한 기록을 바탕으로 서두르지 않고 분명한 매듭을 지으세요.',
+  health: '건강·회복에서는 일정 사이에 15분 이상의 이중 해자 완충 여백을 비워 내 리듬을 보호하세요.',
+  general: '오늘의 흐름에서는 에도 모티프와 동반 결을 함께 살피며 차분한 장인의 손길로 매듭을 다듬으세요.',
+};
+
+function classifyBeninTopic(question: string): BeninObaTopic {
+  if (/일|직장|사업|커리어|프로젝트|성과|경험|매듭/.test(question)) return 'career';
+  if (/사랑|연애|관계|가족|친구|갈등|인연/.test(question)) return 'relationship';
+  if (/돈|재물|재정|투자|소비|계약/.test(question)) return 'wealth';
+  if (/건강|몸|피로|휴식|수면|회복/.test(question)) return 'health';
+  return 'general';
+}
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -97,13 +117,19 @@ export function calculateBeninBronzeObaMemory(params: {
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const castingPhase = CASTING_PHASES[stableHash(`${seed}|phase`) % CASTING_PHASES.length];
   const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
+  const questionTopic = classifyBeninTopic(params.question ?? '');
+  const shortPhase = castingPhase.split('(')[0].trim();
+  const shortCompanion = companion.motif.split('(')[0].trim();
+  const obaCrossAxis = `${shortPhase} × ${shortCompanion} — ${TOPIC_AXES[questionTopic]}`;
 
   return {
-    engineVersion: 'LUCKEY-BENIN-OBA-v2.3.0',
+    engineVersion: 'LUCKEY-BENIN-OBA-v2.4.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     edoMotif: picked.motif,
     companionMotif: companion.motif,
     castingPhase,
+    obaCrossAxis,
     beninInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     guildTone: picked.tone,
     shadowWarning,
@@ -121,6 +147,7 @@ export function formatBeninBronzeObaPrompt(res: BeninBronzeObaResult): string {
     `- 에도 모티프: ${res.edoMotif} (${res.guildTone})`,
     `- 동반 결: ${res.companionMotif}`,
     `- 주조 국면: ${res.castingPhase}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.obaCrossAxis}`,
     `- 중심 통찰: ${res.beninInsight}`,
     `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
