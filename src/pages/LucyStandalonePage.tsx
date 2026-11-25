@@ -1811,6 +1811,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const isLucyGenerating = isMasterMode ? Boolean(isLucyProGenerating) : Boolean(isGenerating?.lucy);
   const pendingAnswerChoices = isLucyGenerating ? [] : getPendingAnswerChoices(lucyMessages);
   const hasPendingAnswer = pendingAnswerChoices.length > 0;
+  const showSuggestedQuestions = isMasterMode || !hasPendingAnswer;
   // 채팅방에 들어올 때마다 첫 인사(시간대 인사 + 문장)를 새로 고른다. 저장된 대화는 그대로 둔다.
   const shownGreetingRef = useRef<(typeof lucyMessages)[number] | null>(null);
   const [greetingEntry, setGreetingEntry] = useState(() => ({ at: Date.now(), variant: Math.floor(Math.random() * LUCY_GREETING_BODIES.length) }));
@@ -2653,7 +2654,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   }, []);
 
   useEffect(() => {
-    if (!isLucyReady) return;
+    if (!isLucyReady || !showSuggestedQuestions) return;
     const container = promptsMarqueeRef.current;
     if (!container) return;
     const hold = promptsMarqueeHoldRef.current;
@@ -2725,7 +2726,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       container.removeEventListener('wheel', handleNativeWheel);
       resizeObserver?.disconnect();
     };
-  }, [isLucyReady, currentPrompts.length, measurePromptsMarqueeLoop, wrapPromptsMarquee]);
+  }, [isLucyReady, showSuggestedQuestions, currentPrompts.length, measurePromptsMarqueeLoop, wrapPromptsMarquee]);
 
   const handlePromptsMarqueePointerEnter = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.pointerType === 'mouse') holdPromptsMarquee('hover', true);
@@ -4135,7 +4136,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // 🎯 가로 스크롤 추천 질문 칩 클릭 시 해당 질문에 맞는 7대 채널 모드로 전환하고 채팅 입력란에만 입력 (즉시 전송 X)
   const handleSelectRecommendationChip = useCallback((promptText: string) => {
-    if (hasPendingAnswer) return;
+    if (!showSuggestedQuestions) return;
     const focusInputBox = (textToFill: string) => {
       setInput(textToFill);
       setTimeout(() => {
@@ -4203,7 +4204,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       title: modeTitle,
     };
     focusInputBox(promptText);
-  }, [isMasterMode, hasPendingAnswer]);
+  }, [isMasterMode, showSuggestedQuestions]);
 
   // Handle pending channel and draft / auto-send input from other sub-apps (ReBible, Prism, etc.)
   useEffect(() => {
@@ -5290,7 +5291,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             )}
 
             {/* ✨ 추천질문 전체보기 모달 트리거 아이콘 버튼 (점술모드에서만) */}
-            {isMasterMode && !hasPendingAnswer && <LucyLibraryTrigger
+            {isMasterMode && <LucyLibraryTrigger
               id="lucy-open-prompt-library-btn"
               type="button"
               aria-haspopup="dialog"
@@ -5307,7 +5308,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             </LucyLibraryTrigger>}
 
             {/* 새로고침 셔플 버튼 */}
-            {!hasPendingAnswer && <button
+            {showSuggestedQuestions && <button
               type="button"
               onClick={refreshPrompts}
               className={`w-[22px] h-[22px] sm:w-[24px] sm:h-[24px] p-0 rounded-lg border transition-all shrink-0 cursor-pointer active:scale-90 flex items-center justify-center shadow-2xs ${
@@ -5322,7 +5323,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             </button>}
 
             {/* 가로 무한 흐름 추천 질문 리스트 (자동 흐름 + 손가락·휠·드래그 양방향 스크롤) */}
-            {!hasPendingAnswer && currentPrompts.length > 0 && (
+            {showSuggestedQuestions && currentPrompts.length > 0 && (
               <div
                 ref={promptsMarqueeRef}
                 aria-label="추천 질문 예시"
@@ -5362,7 +5363,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                 </div>
               </div>
             )}
-            {hasPendingAnswer && (
+            {!showSuggestedQuestions && (
               <div
                 role="status"
                 data-lucy-answer-required="true"
