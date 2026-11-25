@@ -20,9 +20,9 @@ export interface SogdianSilkRoadResult {
 
 function classifySogdianTopic(q: string): SogdianQuestionTopic {
   if (/관계|사람|약속|신뢰|중재|동료/.test(q)) return 'relation';
-  if (/일|계약|협상|사업|여정|일정/.test(q)) return 'work';
   if (/마음|감정|불안|지침|피곤/.test(q)) return 'emotion';
   if (/선택|결정|방향|균형|판단/.test(q)) return 'decision';
+  if (/일|계약|협상|사업|여정|일정/.test(q)) return 'work';
   return 'general';
 }
 

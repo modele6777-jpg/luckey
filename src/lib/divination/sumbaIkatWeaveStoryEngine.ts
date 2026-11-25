@@ -25,8 +25,8 @@ export interface SumbaIkatResult {
 
 function classifySumbaTopic(q: string): SumbaQuestionTopic {
   if (/관계|사람|가족|연애|친구/.test(q)) return 'relation';
-  if (/일|직장|진로|서사|루틴/.test(q)) return 'work';
   if (/마음|감정|불안|지침|여백/.test(q)) return 'emotion';
+  if (/일|직장|진로|서사|루틴/.test(q)) return 'work';
   if (/선택|결정|방향|매듭|짜/.test(q)) return 'decision';
   return 'general';
 }
