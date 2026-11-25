@@ -1,3 +1,5 @@
+import { LucyResponseRecommendation } from "@/components/LucyResponseRecommendation";
+import { setLucyMasterMode } from "@/lib/lucyMasterMode";
 import { requestLucyMicrophone, lucyMicrophonePermissionMessage } from '@/lib/lucyMicrophone';
 import { OrbSessionMetricsView } from './OrbSessionMetricsView';
 import { createOrbSessionMetrics, type OrbSessionMetrics } from '@/lib/orb/orbSessionMetrics';
@@ -227,7 +229,7 @@ export function LucyOrbCounsel({
   const [dice, setDice] = useState<[number, number]>([1, 6]);
   const [rolling, setRolling] = useState(false);
   const [thrown, setThrown] = useState(0);
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const [awayFromOrb, setAwayFromOrb] = useState(false);
   const [bedOn, setBedOn] = useState(false);
   const [bok, setBok] = useState<string | null>(null);
@@ -978,6 +980,11 @@ export function LucyOrbCounsel({
       : current.length >= 3 ? current : [...current, number]);
   };
 
+  const reportQuestions = phase === 'report'
+    ? lines.filter(line => line.who === '나' && !line.text.startsWith('🃏')).map(line => line.text)
+    : [];
+  const reportAnswer = phase === 'report' ? lines.findLast(line => line.who === '루시')?.text || '' : '';
+
   const openReport = () => {
     if (!master || closedRef.current) return;
     if (dieTimer.current != null) {
@@ -1679,6 +1686,23 @@ export function LucyOrbCounsel({
               ))}
               {hearted && <button type="button" className="lucy-talisman-reopen" disabled={!talisman || talismanOpen} onClick={() => setTalismanOpen(true)}>🧧 부적 보기</button>}
             </div>
+            {reportQuestions.length > 0 && reportAnswer && (
+              <div className="lucy-orb-report-recommendation">
+                <LucyResponseRecommendation
+                  userQuery={reportQuestions.at(-1)}
+                  lucyAnswer={reportAnswer}
+                  recentUserTexts={reportQuestions}
+                  currentChannels={[]}
+                  isLight={false}
+                  onNavigate={navigate}
+                  onEnterDivination={() => {
+                    setLucyMasterMode(true);
+                    navigate('/chat');
+                    window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/chat' } }));
+                  }}
+                />
+              </div>
+            )}
             {burst > 0 && (
               <span key={burst} className="lucy-ig-live" style={{ left: `${burstFrom.current}%` }} aria-hidden="true">
                 {IG_HEARTS.map((heart, index) => (

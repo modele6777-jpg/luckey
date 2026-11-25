@@ -1113,6 +1113,19 @@ html.duo-unfolded-mode .lucy-orb-copy { width: min(720px, 92%); }
   text-align: center;
   pointer-events: none;
 }
+.lucy-bok:has(.lucy-orb-report-recommendation) {
+  display: flex;
+  flex-direction: column;
+  max-height: max(160px, calc(100% - var(--orb-bok-bottom, 72px) - 66px));
+}
+.lucy-orb-report-recommendation {
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  pointer-events: auto;
+  text-align: left;
+}
+.lucy-orb-report-recommendation:empty { display: none; }
 .lucy-bok p { margin: 0 0 8px; font-size: 12px; color: rgba(247,244,238,.82); text-shadow: 0 1px 6px rgba(8,6,24,.8); }
 .lucy-bok p.lucy-bok-done { margin-bottom: 6px; font-size: 13.5px; line-height: 1.5; color: #fbf7ff; word-break: keep-all; }
 .lucy-orb-stage.is-report .lucy-orb-copy { display: none; }
