@@ -2822,6 +2822,8 @@ test('Quantum Leap Timing Engine: 퀀텀 점프 준비도 및 골든 모멘텀 �
 test('Elemental Resonance Engine: 오행 생극제화 및 상생 순환 루프 검증', () => {
   const res = calculateElementalResonance({ profile, targetDate: new Date('2026-11-15T07:35:00+09:00'), question: '일과 집중력 회복' });
   assert.equal(res.engineVersion, ELEMENTAL_RESONANCE_VERSION);
+  assert.equal(res.questionTopic, 'career');
+  assert(res.elementalCrossAxis.length > 0 && res.elementalShadowWarning.length > 0);
   assert(res.overallResonanceScore >= 0 && res.overallResonanceScore <= 100);
   assert(res.amplifier.primeElement.length > 0);
   assert(res.amplifier.amplifierColor.length > 0);
@@ -2832,7 +2834,7 @@ test('Elemental Resonance Engine: 오행 생극제화 및 상생 순환 루프 �
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatElementalResonancePrompt(res);
   assert(prompt.includes(ELEMENTAL_RESONANCE_VERSION));
-  assert(prompt.includes('오행 생극제화'));
+  assert(prompt.includes('오행 생극제화') && prompt.includes('오행 교차 축') && prompt.includes('과잉·편향 경계'));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
@@ -7806,6 +7808,7 @@ test('Yeonam Park Jiwon Yeolha Ilgi Engine: calculates One-Night Nine Crossings,
   const rep = calculateYeonamParkJiwonYeolhaIlgi(profile, '새 진로와 사업 방향을 어떻게 결정해야 할까요', new Date('2026-11-15T05:00:00Z'));
   assert.equal(rep.engineVersion, KOREAN_YEONAM_PARK_JIWON_VERSION);
   assert.equal(rep.questionTopic, 'decision');
+  assert(rep.yeonamCrossAxis.length > 0);
   assert(rep.temporalYeonamRhythm.kstSlot.length > 0);
   assert(rep.nightCrossingRiverSerenityScore >= 0 && rep.nightCrossingRiverSerenityScore <= 100);
   assert(rep.beopgoChangsinCreativeWisdomScore >= 0 && rep.beopgoChangsinCreativeWisdomScore <= 100);
@@ -7823,6 +7826,7 @@ test('Yeonam Park Jiwon Yeolha Ilgi Engine: calculates One-Night Nine Crossings,
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatYeonamParkJiwonYeolhaIlgiPrompt(rep);
   assert(prompt.includes('연암 박지원 《열하일기》 일야구도 & 이용후생·법고창신 실학 지표'));
+  assert(prompt.includes('연암 교차 축'));
   assert(prompt.includes(rep.activeYeonamTheme.themeTitleKo) && prompt.includes(rep.companionYeonamTheme.themeTitleKo));
   assert(prompt.includes(rep.silhakPhase) && prompt.includes(rep.shadowWarning));
   assert(prompt.includes('실천 의례'));
@@ -14517,17 +14521,17 @@ test('Portuguese Saudade Sagres Compass engine: compass, +09:00 KST, and interpr
 
 test('Ladakhi Stupa Glacier Water engine: wisdom, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateLadakhiStupaGlacierWater({ profile, now: new Date('2026-11-20T08:28:00Z'), question: '다음 계절을 위해 차분히 모아 두고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-LADAKHI-CHORTEN-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-LADAKHI-CHORTEN-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.equal(rep.questionTopic, 'decision');
   assert.ok(rep.companionWisdom !== rep.glacierWisdom);
-  assert.ok(rep.glacierFlowCycle.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.glacierFlowCycle.length > 0 && rep.ladakhiCrossAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatLadakhiChortenPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('라다크') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionWisdom));
-  assert.ok(prompt.includes('고원 순환 축') && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('고원 순환 축') && prompt.includes('맥락 교차 축') && prompt.includes('과잉 경계'));
 });
 
 test('Assyrian Nineveh Clay Tablet engine: seal, +09:00 KST, and interpretive boundary', () => {
