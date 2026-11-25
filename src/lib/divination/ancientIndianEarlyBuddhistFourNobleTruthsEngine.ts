@@ -3,7 +3,7 @@
  *
  * 《초전법륜경(Dhammacakkappavattana Sutta)》, 《대념처경(Mahāsatipaṭṭhāna Sutta)》, 《법구경(Dhammapada)》 원전 기반.
  *
- * @version LUCKEY-FOUR-NOBLE-TRUTHS-v2.3.0
+ * @version LUCKEY-FOUR-NOBLE-TRUTHS-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
@@ -78,6 +78,8 @@ export interface AncientIndianFourNobleTruthsResult {
   ritualAction: string;
   reflectionFocus: string;
   interpretiveBoundary: string;
+  buddhistCrossAxis: string;
+  buddhistShadowWarning: string;
   buddhistSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -325,6 +327,8 @@ export function calculateAncientIndianFourNobleTruths(
     `초기불교 사성제와 팔정도는 길흉을 단정하는 예언이 아니라, 괴로움의 원인을 살펴 중도(中道)의 실천으로 마음을 고요히 이끄는 상징·성찰 관점입니다.`;
 
   const trimmedQ = (question ?? '').trim();
+  const buddhistCrossAxis = `${activeNobleTruth.truthHanja.split(' ')[0]} · ${focalEightfoldFactor.pathFactorHanja.split(' ')[0]} × ${temporalSatiRhythm.threeTrainingsFocus}`;
+  const buddhistShadowWarning = '갈애를 내려놓는 중도(中道)가 현실의 필요한 결단이나 건강한 자기 보호까지 포기하는 무기력으로 흐르지 않도록 균형을 살피십시오.';
   const buddhistSynthesisMatrix = {
     dominantTension: `${situationalDharmaAudit.cravingKnot} ↔ ${activeNobleTruth.truthHanja}`,
     alignmentState: `${focalEightfoldFactor.pathFactorHanja} · ${temporalSatiRhythm.threeTrainingsFocus}`,
@@ -353,6 +357,8 @@ export function calculateAncientIndianFourNobleTruths(
     ritualAction: dailyPracticeRitual,
     reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
+    buddhistCrossAxis,
+    buddhistShadowWarning,
     buddhistSynthesisMatrix,
   };
 }
@@ -387,6 +393,8 @@ export function formatAncientIndianFourNobleTruthsPrompt(res: AncientIndianFourN
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
+    `- 사성제 교차 축: ${res.buddhistCrossAxis}`,
+    `- 과잉·편향 경계: ${res.buddhistShadowWarning}`,
     matrixLine,
   ].filter(Boolean).join('\n');
 }

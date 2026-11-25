@@ -4,12 +4,12 @@
  * 3세기 신플라톤주의 창시자 플로티노스의 《엔네아데스》 사상 기반:
  * 일자(The One), 누스(Nous), 프쉬케(Psyche), 헤노시스(Henosis)의 내면 정화·관조·합일 관점.
  *
- * @version LUCKEY-PLOTINUS-ENNEADS-v2.3.0
+ * @version LUCKEY-PLOTINUS-ENNEADS-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ANCIENT_GREEK_PLOTINUS_VERSION = 'LUCKEY-PLOTINUS-ENNEADS-v2.3.0';
+export const ANCIENT_GREEK_PLOTINUS_VERSION = 'LUCKEY-PLOTINUS-ENNEADS-v2.4.0';
 
 export type PlotinusQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 export type PlotinusAscentStage = 'KATHARSIS_PURIFICATION' | 'NOUS_ILLUMINATION' | 'HENOSIS_STILLNESS';
@@ -64,6 +64,7 @@ export interface AncientGreekPlotinusEnneadsHenosisResult {
   ascentStage: PlotinusAscentStage;
   ascentStageLabel: string;
   henosisPhase: string;
+  plotinusCrossAxis: string;
   shadowWarning: string;
   activePlotinusTheme: PlotinusTheme;
   companionPlotinusTheme: PlotinusTheme;
@@ -89,11 +90,12 @@ const PLOTINUS_HENOSIS_PHASES = [
   '헤노시스 귀환(외부의 승인이나 분주함을 거두고 내면의 고요한 중심으로 돌아가는 시기)',
 ] as const;
 
-const PLOTINUS_SHADOW_WARNINGS = [
-  '비움과 정화에만 몰두하다 현실의 관계와 일상적 책임을 차갑게 밀어내지 않도록 살피세요.',
-  '본질을 관조하고 사유하는 데 그쳐 정작 지금 손대야 할 구체적 실천을 미루지 않도록 점검하세요.',
-  '홀로 온전한 고요를 지키려다 타인의 진심 어린 조언과 연결의 온기까지 닫아 버리지 않도록 유의하세요.',
-] as const;
+const PLOTINUS_TOPIC_SHADOW_WARNINGS: Record<PlotinusQuestionTopic, string> = {
+  relationship: '비움과 초연함에 몰두하다 가까운 사람의 진심 어린 요청이나 온기까지 차갑게 밀어내지 않도록 살피세요.',
+  decision: '본질을 관조하고 사유하는 데 그쳐 정작 지금 손대야 할 현실적 기한과 실행을 미루지 않도록 점검하세요.',
+  healing: '홀로 고요를 지키는 카타르시스가 필요한 도움이나 돌봄의 연결까지 닫아 버리는 고립이 되지 않게 유의하세요.',
+  reflection: '내면의 조각상을 다듬는 성찰이 자기비판이나 완벽주의로 흐르지 않도록 너그러운 여유를 함께 두세요.',
+};
 
 export const PLOTINUS_THEMES: PlotinusTheme[] = [
   {
@@ -344,11 +346,12 @@ export function calculateAncientGreekPlotinusEnneadsHenosis(
   const ascentStage = stages[(absHash >> 2) % stages.length];
   const ascentStageLabel = PLOTINUS_STAGE_LABELS[ascentStage];
   const henosisPhase = PLOTINUS_HENOSIS_PHASES[(absHash >> 10) % PLOTINUS_HENOSIS_PHASES.length];
-  const shadowWarning = PLOTINUS_SHADOW_WARNINGS[(absHash >> 13) % PLOTINUS_SHADOW_WARNINGS.length];
+  const shadowWarning = PLOTINUS_TOPIC_SHADOW_WARNINGS[questionTopic];
 
   const situationalEnneadsAudit = buildPlotinusSituationalAudit(questionTopic);
   const temporalNousRhythm = buildPlotinusTemporalRhythm(now);
   const plotinusSynthesisMatrix = buildPlotinusSynthesisMatrix(ascentStage, questionTopic, temporalNousRhythm);
+  const plotinusCrossAxis = `${questionTopic} · ${ascentStage} × ${temporalNousRhythm.kstWindowLabel.split(' ')[0]}`;
 
   const practiceGuidance = `${activePlotinusTheme.practicalCounsel} ${PLOTINUS_TOPIC_PRACTICE[questionTopic]} (동반 테마: ${companionPlotinusTheme.themeTitleKo})`;
   const ritualAction = `${PLOTINUS_TOPIC_RITUAL[questionTopic]} (${henosisPhase})`;
@@ -375,6 +378,7 @@ export function calculateAncientGreekPlotinusEnneadsHenosis(
     ascentStage,
     ascentStageLabel,
     henosisPhase,
+    plotinusCrossAxis,
     shadowWarning,
     activePlotinusTheme,
     companionPlotinusTheme,
@@ -400,6 +404,7 @@ export function formatAncientGreekPlotinusEnneadsHenosisPrompt(res: AncientGreek
     `【플로티노스 《엔네아데스》 일자유출설 & 영적 귀환 지표】 (${res.engineVersion} | 기준 시각: ${res.calculatedAtKst})`,
     `- 귀환 단계: ${res.ascentStageLabel}`,
     `- 귀환 국면: ${res.henosisPhase}`,
+    `- 엔네아데스 교차 축: ${res.plotinusCrossAxis}`,
     `- 핵심 영적 테마: ${res.activePlotinusTheme.themeTitleKo} [${res.activePlotinusTheme.themeTitleEn}]`,
     `- 동반 영적 테마: ${res.companionPlotinusTheme.themeTitleKo}`,
     `- 과잉·경계 점검: ${res.shadowWarning}`,
