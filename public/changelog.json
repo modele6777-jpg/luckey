@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.488",
+    "builtAt": "2026-11-26T05:55:00+09:00",
+    "summary": "마틴 부버·비트겐슈타인·켈트 오검 수목 3대 핵심 엔진 심층 고도화(v1.8.488)",
+    "items": [
+      "마틴 부버 《나와 너》 엔진(v2.4.0): 부버 교차 축(buberCrossAxis)·과잉·편향 경계(shadowWarning) 추가 및 JSDoc 버전 표기 일원화",
+      "비트겐슈타인 언어게임·침묵 엔진(v2.4.0): 언어게임 교차 축(wittgensteinCrossAxis)·과잉·편향 경계(shadowWarning) 추가 및 JSDoc 버전 표기 일원화",
+      "켈트 오검 수목 오라클 엔진(v2.4.0): 질문 맥락 분류기(questionTopic)·오검 교차 축(oghamCrossAxis)·과잉·편향 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.487",
     "builtAt": "2026-11-26T05:45:00+09:00",
     "summary": "나가르주나 중관·아메샤 스펜타·7대 차크라 정렬 3대 핵심 엔진 심층 고도화(v1.8.487)",

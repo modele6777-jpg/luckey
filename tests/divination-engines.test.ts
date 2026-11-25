@@ -3786,10 +3786,11 @@ test('Celtic Tree Ogham Engine: derives birth guardian tree and seasonal oracle'
   assert(rep.druidWisdomScore >= 0 && rep.druidWisdomScore <= 100);
   assert(rep.treeMedicinePrescription.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.questionTopic.length > 0 && rep.oghamCrossAxis.length > 0 && rep.shadowWarning.includes('과잉·편향 경계'));
   const prompt = formatCelticTreeOghamPrompt(rep);
   assert(prompt.includes('켈트 오검'));
   assert(prompt.includes(rep.birthGuardianTree.nameTreeKo));
-  assert(prompt.includes('+09:00') && prompt.includes('해석 경계'));
+  assert(prompt.includes('+09:00') && prompt.includes('해석 경계') && prompt.includes('교차 축') && prompt.includes('과잉·편향 경계'));
   assert(!prompt.includes('/100') && !prompt.includes('점수'));
 });
 
@@ -8316,10 +8317,12 @@ test('Martin Buber I and Thou Dialogue Engine: calculates I-Thou Resonance, Auth
   assert(rep.betweenSphereMeaningIndex >= 0 && rep.betweenSphereMeaningIndex <= 100);
   assert(rep.eternalThouCommunionTrustScore >= 0 && rep.eternalThouCommunionTrustScore <= 100);
   assert(rep.activeBuberTheme.themeTitleKo.length > 0);
+  assert(rep.buberCrossAxis.length > 0 && rep.shadowWarning.includes('과잉·편향 경계'));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAustrianMartinBuberIAndThouPrompt(rep);
   assert(prompt.includes('마틴 부버 《나와 너》 인격적 만남 & 진정한 대화(Dialogue) 실존 지표'));
   assert(prompt.includes(rep.activeBuberTheme.themeTitleKo));
+  assert(prompt.includes('부버 교차 축') && prompt.includes('과잉·편향 경계'));
 });
 
 test('Sambong Jeong Do-jeon Minbon Reform Engine: calculates Minbon Serving, Institutional Reform, Clean Governance, and Indomitable Tenacity', () => {
@@ -8785,10 +8788,12 @@ test('Wittgenstein Language Game and Silence Engine: calculates Logical Clarity,
   assert(rep.meaningAsUsePragmaticActionScore >= 0 && rep.meaningAsUsePragmaticActionScore <= 100);
   assert(rep.therapeuticDissolutionClarityScore >= 0 && rep.therapeuticDissolutionClarityScore <= 100);
   assert(rep.activeWittgensteinTheme.themeTitleKo.length > 0);
+  assert(rep.wittgensteinCrossAxis.length > 0 && rep.shadowWarning.includes('과잉·편향 경계'));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAustrianWittgensteinLanguageGameSilencePrompt(rep);
   assert(prompt.includes('비트겐슈타인 《논리철학논고·철학적 탐구》 언어게임·침묵 지혜 지표'));
   assert(prompt.includes(rep.activeWittgensteinTheme.themeTitleKo));
+  assert(prompt.includes('언어게임 교차 축') && prompt.includes('과잉·편향 경계'));
 });
 
 test('Gilles Deleuze Rhizome and Becoming Engine: calculates Rhizomatic Connection, Deterritorialization, and Becoming', () => {
