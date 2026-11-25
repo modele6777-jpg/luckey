@@ -11836,23 +11836,26 @@ test('Dewey · Emerson · Whitman v2.2: KST, reflectiveQuestion, and interpretiv
   const dw = calculateAmericanJohnDeweyPragmaticInquiryGrowth(profile, query, now);
   assert.equal(dw.engineVersion, AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION);
   assert.match(dw.calculatedAtKst, /KST/);
+  assert.ok(dw.deweyCrossAxis.length > 0 && dw.deweyShadowWarning.length > 0);
   assert.ok(dw.reflectiveQuestion.includes(query));
   const dwPrompt = formatAmericanJohnDeweyPragmaticInquiryGrowthPrompt(dw);
-  assert.ok(dwPrompt.includes('KST') && dwPrompt.includes('성찰 질문') && dwPrompt.includes('해석 경계'));
+  assert.ok(dwPrompt.includes('KST') && dwPrompt.includes('듀이 교차 축') && dwPrompt.includes('성찰 질문') && dwPrompt.includes('해석 경계'));
 
   const em = calculateRalphWaldoEmersonSelfReliance(profile, now, query);
   assert.equal(em.engineVersion, AMERICAN_RALPH_WALDO_EMERSON_VERSION);
   assert.match(em.calculatedAtKst, /KST/);
+  assert.ok(em.emersonCrossAxis.length > 0 && em.emersonShadowWarning.length > 0);
   assert.ok(em.reflectiveQuestion.includes(query));
   const emPrompt = formatRalphWaldoEmersonSelfReliancePrompt(em);
-  assert.ok(emPrompt.includes('KST') && emPrompt.includes('성찰 질문') && emPrompt.includes('해석 경계'));
+  assert.ok(emPrompt.includes('KST') && emPrompt.includes('에머슨 교차 축') && emPrompt.includes('성찰 질문') && emPrompt.includes('해석 경계'));
 
   const wh = calculateAmericanWaltWhitmanLeavesOfGrass(profile, query, now);
   assert.equal(wh.engineVersion, AMERICAN_WALT_WHITMAN_VERSION);
   assert.match(wh.calculatedAtKst, /KST/);
+  assert.ok(wh.whitmanCrossAxis.length > 0 && wh.whitmanShadowWarning.length > 0);
   assert.ok(wh.reflectiveQuestion.includes(query));
   const whPrompt = formatAmericanWaltWhitmanLeavesOfGrassPrompt(wh);
-  assert.ok(whPrompt.includes('KST') && whPrompt.includes('성찰 질문') && whPrompt.includes('해석 경계'));
+  assert.ok(whPrompt.includes('KST') && whPrompt.includes('휘트먼 교차 축') && whPrompt.includes('성찰 질문') && whPrompt.includes('해석 경계'));
 });
 
 test('Ancestral · Baopuzi · Mozi v2.3: KST, reflectiveQuestion, and interpretiveBoundary', () => {
