@@ -1,12 +1,16 @@
 import type { UserProfile } from '../sharedState';
 
+export type NahuaQuestionCategory = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
+
 export interface NahuaXochitlResult {
   engineVersion: string;
   calculatedAtKst: string;
   questionTopic: string;
+  questionCategory: NahuaQuestionCategory;
   xochitlMotif: string;
   companionMotif: string;
   xochitlBreathAxis: string;
+  topicBalanceHint: string;
   nahuaInsight: string;
   valleyTone: string;
   reflectionFocus: string;
@@ -61,6 +65,24 @@ const MOTIFS = [
   },
 ];
 
+const TOPIC_BALANCE_HINTS: Record<NahuaQuestionCategory, string> = {
+  career: '일·커리어에서는 큰 결과만 쫓다 지치지 않도록, 치남파 정원처럼 오늘 심을 수 있는 작은 정성에 집중하세요.',
+  relationship: '관계에서는 판단의 잣대를 내려놓고 상대의 선의를 비추는 맑은 거울 같은 말 한마디를 먼저 건네 보세요.',
+  wealth: '재정·계약에서는 바깥의 화려함보다 내면의 비취처럼 오래 남는 실질적 가치와 기반을 먼저 살피세요.',
+  health: '건강·회복에서는 완벽히 멈춘 상태를 바라기보다 흔들릴 때마다 호흡으로 중심을 되찾는 올린의 리듬을 타세요.',
+  decision: '선택의 기로에서는 사라지지 않을 완벽한 답을 기다리기보다 오늘 진심으로 피어나는 방향을 고르세요.',
+  general: '오늘의 흐름에서는 쇼치틀 모티프와 동반 모티프를 함께 살피며 진실한 언어와 소박한 실천의 균형을 맞추세요.',
+};
+
+function classifyNahuaCategory(question: string): NahuaQuestionCategory {
+  if (/일|직장|사업|커리어|프로젝트|성과|이직/.test(question)) return 'career';
+  if (/사랑|연애|관계|가족|친구|갈등|진심/.test(question)) return 'relationship';
+  if (/돈|재물|재정|투자|소비|계약/.test(question)) return 'wealth';
+  if (/건강|몸|피로|휴식|수면|회복/.test(question)) return 'health';
+  if (/선택|결정|방향|고민|진로/.test(question)) return 'decision';
+  return 'general';
+}
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -96,14 +118,17 @@ export function calculateNahuaXochitlCuicatlFlow(params: {
   const questionTopic = trimmedQ
     ? trimmedQ.slice(0, 36)
     : '흐르는 일상 속에서 마음을 살리는 꽃과 노래';
+  const questionCategory = classifyNahuaCategory(trimmedQ);
 
   return {
-    engineVersion: 'LUCKEY-NAHUA-XOCHITL-v2.3.0',
+    engineVersion: 'LUCKEY-NAHUA-XOCHITL-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
+    questionCategory,
     xochitlMotif: picked.motif,
     companionMotif: companion.motif,
     xochitlBreathAxis,
+    topicBalanceHint: TOPIC_BALANCE_HINTS[questionCategory],
     nahuaInsight: `${picked.insight} (동반 모티프: ${companion.motif})`,
     valleyTone: picked.tone,
     reflectionFocus: `질문 맥락('${questionTopic}')에서 나우아틀 꽃과 노래 지혜의 '${picked.motif}'와 숨결 축('${xochitlBreathAxis}')을 함께 살피며, 쫓기는 일정 속에서도 마음을 살리는 진실한 언어와 작은 아름다움의 틈을 내어 보세요.`,
@@ -122,6 +147,7 @@ export function formatNahuaXochitlPrompt(res: NahuaXochitlResult): string {
     `- 쇼치틀 모티프: ${res.xochitlMotif} (${res.valleyTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 숨결 공명 축: ${res.xochitlBreathAxis}`,
+    `- 주제별 균형 조언: ${res.topicBalanceHint}`,
     `- 중심 통찰: ${res.nahuaInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
