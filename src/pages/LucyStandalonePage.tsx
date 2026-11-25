@@ -15,7 +15,7 @@ import { publishTableSaju, publishTableAnswer, publishTableTools } from '@/lib/l
 import { MasterTableSheetButton } from '@/components/duo/MasterTableSheet';
 import { extractAllToolFacts, pickCalculatedToolData, type ToolFact } from '@/lib/lucyMasterToolFacts';
 import { LUCY_MASTER_DEPTH3_TOOLS } from '@/lib/divination/smartAgentRouter';
-import { shouldOfferLucyMaster, dismissLucyMasterOffer, markLucyMasterFromOffer, consumeLucyMasterFromOffer, shouldOfferReturnToLucy, dismissReturnToLucyOffer } from '@/lib/lucyMasterOffer';
+import { shouldOfferLucyMaster, dismissLucyMasterOffer, markLucyMasterFromOffer, consumeLucyMasterFromOffer, shouldOfferReturnToLucy, dismissReturnToLucyOffer, isConsultationClosing } from '@/lib/lucyMasterOffer';
 import { playLucyMasterSuction } from '@/components/omniwarp/BigBangMasterSuction';
 import { isLucyChatPath } from '@/lib/duoPaneFocus';
 import { useOrbCounselOpen } from '@/lib/orbCounselGate';
@@ -55,7 +55,7 @@ import { archiveMasterSession, buildDepthContinuityContext, buildPastMasterSessi
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm, setLucyMasterBgmDepth } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
-import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, getPendingAnswerChoices, isAskingForDeepEngines, createDepthTwoTarotOffer, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate, getLucyMasterDepth, useLucyMasterDepth, LUCY_MASTER_DEPTH_EVENT, LUCY_MASTER_DEPTH_INFO, LUCY_MASTER_MAX_DEPTH, getLucyBubbleMarker, setLucyBubbleMarker, useLucyBubbleMarker, type LucyMasterDepth } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, getPendingAnswerChoices, isAskingForDeepEngines, createDepthTwoTarotOffer, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate, getLucyMasterDepth, deepenLucyMasterDepth, useLucyMasterDepth, LUCY_MASTER_DEPTH_EVENT, LUCY_MASTER_DEPTH_INFO, LUCY_MASTER_MAX_DEPTH, getLucyBubbleMarker, setLucyBubbleMarker, useLucyBubbleMarker, type LucyMasterDepth } from '@/lib/lucyMasterMode';
 import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
 import { detectLucyChannelsFromText, formatChannelsModeTitle } from '@/lib/lucyAutoModeDetector';
 import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
@@ -866,6 +866,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // 🔮 점술모드(Lucy Master): 빅뱅 버튼 홀드로 켜고 끈다. 접힘·펼침 모두 같은 값을 쓴다.
   // 🔮 상담 깊이(빅뱅 홀드로 1→2→3). 바뀔 때 잠깐 안내를 띄운다.
   const masterDepth = useLucyMasterDepth();
+  const nextMasterDepth = masterDepth === 1 ? 2 : masterDepth === 2 ? 3 : null;
   // 배경음: 곡은 그대로, 깊이마다 소리를 한 겹씩 더한다 (켜져 있을 때만 들림)
   useEffect(() => { setLucyMasterBgmDepth(masterDepth); }, [masterDepth]);
   const [depthNotice, setDepthNotice] = useState<{ depth: LucyMasterDepth; changed: boolean; key: number } | null>(null);
@@ -4835,6 +4836,41 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                         ) : null;
 
                         if (dismissedRecommendationFor === msgId) return answerChoiceButtons;
+                        if (isMasterMode && nextMasterDepth && !isGreeting && textContent.trim()
+                          && !answerChoices.length && recentUserTexts.some(text => text.trim())
+                          && returnOfferFor !== msgId && !isConsultationClosing(recentUserTexts)) {
+                          return (
+                            <div
+                              data-lucy-master-next-depth={nextMasterDepth}
+                              className={`mt-3 rounded-xl border p-3 ${isLight ? 'border-violet-200 bg-violet-50 text-violet-950' : 'border-violet-400/40 bg-violet-950/40 text-violet-100'}`}
+                            >
+                              <p className="text-xs font-bold">{nextMasterDepth}단계 · {LUCY_MASTER_DEPTH_INFO[nextMasterDepth].name} 상담으로 이어갈까?</p>
+                              <p className="mt-1 text-xs leading-relaxed break-keep">
+                                {nextMasterDepth === 2
+                                  ? '사주에 타로를 더해서 지금 고민의 원인과 흐름을 함께 살펴볼 수 있어.'
+                                  : '지금 고민에 맞는 점술 도구를 더해 여러 관점에서 깊게 살펴볼 수 있어.'}
+                              </p>
+                              <div className="mt-2.5 flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (!isLucyMasterModeOn() || getLucyMasterDepth() !== masterDepth) return;
+                                    setDismissedRecommendationFor(msgId);
+                                    deepenLucyMasterDepth();
+                                    triggerHaptic('wormhole');
+                                  }}
+                                  className="rounded-full bg-violet-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-violet-800 active:scale-95"
+                                >{nextMasterDepth}단계로 이어가기</button>
+                                <button
+                                  type="button"
+                                  onClick={() => setDismissedRecommendationFor(msgId)}
+                                  className="rounded-full border border-current/25 px-3 py-1.5 text-xs font-semibold hover:bg-violet-500/10 active:scale-95"
+                                >지금 단계에서 계속</button>
+                              </div>
+                            </div>
+                          );
+                        }
+
                         const nextStepRecommendation = !isMasterMode && !msgModeInfo.isCasual && !isGreeting ? (
                           <LucyResponseRecommendation
                             userQuery={recentUserTexts[recentUserTexts.length - 1] || ''}
