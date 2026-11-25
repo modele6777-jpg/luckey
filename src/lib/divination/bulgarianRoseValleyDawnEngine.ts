@@ -6,6 +6,8 @@ export interface BulgarianRoseResult {
   roseMotif: string;
   companionMotif: string;
   harvestPhase: string;
+  questionTopic: 'timing' | 'distill' | 'shelter' | 'general';
+  roseCrossAxis: string;
   bulgarianInsight: string;
   valleyTone: string;
   shadowWarning: string;
@@ -97,13 +99,26 @@ export function calculateBulgarianRoseValleyDawn(params: {
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const harvestPhase = HARVEST_PHASES[stableHash(`${seed}|phase`) % HARVEST_PHASES.length];
   const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
+  const q = (params.question ?? '').trim();
+  const questionTopic: BulgarianRoseResult['questionTopic'] = !q
+    ? 'general'
+    : /새벽|이른|맑은|시간|타이밍|아침/.test(q)
+      ? 'timing'
+      : /핵심|모으|증류|정리|한 줄|선택/.test(q)
+        ? 'distill'
+        : /바람|울타리|보호|차단|조용|쉼/.test(q)
+          ? 'shelter'
+          : 'general';
+  const roseCrossAxis = `${questionTopic} · ${picked.motif.split('(')[0].trim()} × ${harvestPhase.split('(')[0].trim()}`;
 
   return {
-    engineVersion: 'LUCKEY-BULGARIAN-ROSE-v2.3.0',
+    engineVersion: 'LUCKEY-BULGARIAN-ROSE-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     roseMotif: picked.motif,
     companionMotif: companion.motif,
     harvestPhase,
+    questionTopic,
+    roseCrossAxis,
     bulgarianInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     valleyTone: picked.tone,
     shadowWarning,
@@ -121,6 +136,7 @@ export function formatBulgarianRosePrompt(res: BulgarianRoseResult): string {
     `- 장미 계곡 모티프: ${res.roseMotif} (${res.valleyTone})`,
     `- 동반 결: ${res.companionMotif}`,
     `- 수확 국면: ${res.harvestPhase}`,
+    `- 질문 맥락(${res.questionTopic}) · 장미 교차 축: ${res.roseCrossAxis}`,
     `- 중심 통찰: ${res.bulgarianInsight}`,
     `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
