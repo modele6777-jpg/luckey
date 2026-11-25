@@ -8,7 +8,7 @@
  * 4. 4대 추덕(Cardinal Virtues): 지혜(Sophia)·용기(Andreia)·절제(Sophrosyne)·정의(Dikaiosyne)의 조화.
  * 5. 카타바시스(Katabasis): 진리를 본 철인이 다시 동굴로 내려와 공동체를 이끌고 밝히는 실천적 의무.
  *
- * @version LUCKEY-PLATONIC-IDEA-CAVE-v2.3.0
+ * @version LUCKEY-PLATONIC-IDEA-CAVE-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
@@ -85,6 +85,8 @@ export interface PlatonicIdeaCaveResult {
   ritualAction: string;
   reflectionFocus: string;
   interpretiveBoundary: string;
+  platoCrossAxis: string;
+  platoShadowWarning: string;
   platoSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -319,6 +321,8 @@ export function calculatePlatonicIdeaCave(
     '플라톤 동굴의 비유와 이데아 성찰은 외적 결과를 예단하는 점술이 아니라, 현상의 그림자 너머 본질과 4대 추덕의 균형을 비추는 변증법적 사유 도구입니다.';
 
   const trimmedQ = (question ?? '').trim();
+  const platoCrossAxis = `${activeAscentStage.stageNameGreek.split(' ')[0]} · ${focalCardinalVirtue.virtueGreek.split(' ')[0]} × ${temporalDialecticRhythm.kstWindow.split(' ')[0]}`;
+  const platoShadowWarning = '이데아의 순수한 이상에 머무른 채 동굴 속 현실의 구체적인 실행과 타인과의 연대(Katabasis)를 소홀히 하지 않도록 살피십시오.';
   const platoSynthesisMatrix = {
     dominantTension: `${situationalCaveAscent.shadowIllusionTrap} ↔ ${activeAscentStage.stageNameGreek}`,
     alignmentState: `${focalCardinalVirtue.virtueGreek} · ${temporalDialecticRhythm.soulChariotFocus}`,
@@ -347,6 +351,8 @@ export function calculatePlatonicIdeaCave(
     ritualAction: dailyPracticeRitual,
     reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
+    platoCrossAxis,
+    platoShadowWarning,
     platoSynthesisMatrix,
   };
 }
@@ -378,6 +384,8 @@ export function formatPlatonicIdeaCavePrompt(res: PlatonicIdeaCaveResult): strin
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
+    `- 이데아 교차 축: ${res.platoCrossAxis}`,
+    `- 과잉·편향 경계: ${res.platoShadowWarning}`,
     matrixLine,
   ].filter(Boolean).join('\n');
 }
