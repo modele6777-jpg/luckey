@@ -3,9 +3,11 @@ import type { UserProfile } from '../sharedState';
 export interface BugisLontaraResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계/신뢰' | '일/진로' | '재정/균형' | '내면/회복' | '전환/결정';
   lontaraPrinciple: string;
   companionPrinciple: string;
   voyagePhase: string;
+  lontaraCrossAxis: string;
   pasikInsight: string;
   sulawesiTone: string;
   shadowWarning: string;
@@ -84,6 +86,15 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+function classifyLontaraTopic(question?: string): BugisLontaraResult['questionTopic'] {
+  const q = (question ?? '').toLowerCase();
+  if (/(사랑|연애|관계|결혼|사람|가족|친구|갈등|화해|신뢰|품위|연민)/.test(q)) return '관계/신뢰';
+  if (/(일|직장|진로|이직|사업|공부|시험|성과|프로젝트|협업)/.test(q)) return '일/진로';
+  if (/(돈|재정|투자|소비|수입|지출|저축|자산|균형)/.test(q)) return '재정/균형';
+  if (/(마음|불안|지침|회복|휴식|수면|건강|감정|위로)/.test(q)) return '내면/회복';
+  return '전환/결정';
+}
+
 export function calculateBugisLontaraPasikWisdom(params: {
   profile: UserProfile;
   now?: Date;
@@ -97,13 +108,20 @@ export function calculateBugisLontaraPasikWisdom(params: {
   const companion = PRINCIPLES[(idx + companionOffset) % PRINCIPLES.length];
   const voyagePhase = VOYAGE_PHASES[stableHash(`${seed}|phase`) % VOYAGE_PHASES.length];
   const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
+  const questionTopic = classifyLontaraTopic(params.question);
+  const shortPhase = voyagePhase.split('(')[0].trim();
+  const shortPrinciple = picked.principle.split('(')[0].trim();
+  const shortCompanion = companion.principle.split('(')[0].trim();
+  const lontaraCrossAxis = `${shortPhase} × ${shortPrinciple} · ${shortCompanion} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-BUGIS-LONTARA-v2.3.0',
+    engineVersion: 'LUCKEY-BUGIS-LONTARA-v2.4.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     lontaraPrinciple: picked.principle,
     companionPrinciple: companion.principle,
     voyagePhase,
+    lontaraCrossAxis,
     pasikInsight: `${picked.insight} (동반 덕목: ${companion.principle})`,
     sulawesiTone: picked.tone,
     shadowWarning,
@@ -121,6 +139,7 @@ export function formatBugisLontaraPrompt(res: BugisLontaraResult): string {
     `- 론타라 덕목: ${res.lontaraPrinciple} (${res.sulawesiTone})`,
     `- 동반 덕목: ${res.companionPrinciple}`,
     `- 항해 국면: ${res.voyagePhase}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.lontaraCrossAxis}`,
     `- 중심 통찰: ${res.pasikInsight}`,
     `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,

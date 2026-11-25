@@ -3,9 +3,11 @@ import type { UserProfile } from '../sharedState';
 export interface BununMountainResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계/신뢰' | '일/진로' | '재정/균형' | '내면/회복' | '전환/결정';
   bununMotif: string;
   companionMotif: string;
   ridgePhase: string;
+  bununCrossAxis: string;
   bununInsight: string;
   mountainTone: string;
   shadowWarning: string;
@@ -84,6 +86,15 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+function classifyBununTopic(question?: string): BununMountainResult['questionTopic'] {
+  const q = (question ?? '').toLowerCase();
+  if (/(사랑|연애|관계|결혼|사람|가족|친구|갈등|화해|신뢰|공명|화음)/.test(q)) return '관계/신뢰';
+  if (/(일|직장|진로|이직|사업|공부|시험|성과|수확)/.test(q)) return '일/진로';
+  if (/(돈|재정|투자|소비|수입|지출|저축|자산|균형)/.test(q)) return '재정/균형';
+  if (/(마음|불안|지침|회복|휴식|수면|건강|감정|호흡|불씨)/.test(q)) return '내면/회복';
+  return '전환/결정';
+}
+
 export function calculateBununJadeMountainSong(params: {
   profile: UserProfile;
   now?: Date;
@@ -97,13 +108,20 @@ export function calculateBununJadeMountainSong(params: {
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const ridgePhase = RIDGE_PHASES[stableHash(`${seed}|phase`) % RIDGE_PHASES.length];
   const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
+  const questionTopic = classifyBununTopic(params.question);
+  const shortPhase = ridgePhase.split('(')[0].trim();
+  const shortMotif = picked.motif.split('(')[0].trim();
+  const shortCompanion = companion.motif.split('(')[0].trim();
+  const bununCrossAxis = `${shortPhase} × ${shortMotif} · ${shortCompanion} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-BUNUN-MOUNTAIN-v2.3.0',
+    engineVersion: 'LUCKEY-BUNUN-MOUNTAIN-v2.4.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     bununMotif: picked.motif,
     companionMotif: companion.motif,
     ridgePhase,
+    bununCrossAxis,
     bununInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     mountainTone: picked.tone,
     shadowWarning,
@@ -121,6 +139,7 @@ export function formatBununMountainPrompt(res: BununMountainResult): string {
     `- 부눈 모티프: ${res.bununMotif} (${res.mountainTone})`,
     `- 동반 결: ${res.companionMotif}`,
     `- 산맥 국면: ${res.ridgePhase}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.bununCrossAxis}`,
     `- 중심 통찰: ${res.bununInsight}`,
     `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
