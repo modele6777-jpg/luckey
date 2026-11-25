@@ -10,12 +10,12 @@
  * 4. 극장의 우상(Idola Theatri) 극복: 과거의 낡은 권위, 검증되지 않은 전통 체계나 독단적 교조주의를 맹종하지 않는 비판적 성찰력.
  * 5. 참된 귀납과 실천적 힘(Inductio Vera & Scientia Potentia Est): "아는 것이 힘이다(Scientia potentia est)"라는 명제처럼, 면밀한 관찰과 사실 검증을 통해 실질적인 변화를 창출하는 실증적 실행력.
  *
- * @version LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v2.3.0
+ * @version LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_FRANCIS_BACON_VERSION = 'LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v2.3.0';
+export const BRITISH_FRANCIS_BACON_VERSION = 'LUCKEY-FRANCIS-BACON-NOVUM-ORGANUM-v2.4.0';
 
 export type BaconQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -54,6 +54,7 @@ export interface FrancisBaconNovumOrganumResult {
   // 세부 분석
   questionTopic: BaconQuestionTopic;
   inductionPhase: string;
+  baconCrossAxis: string;
   shadowWarning: string;
   temporalBaconRhythm: BaconTemporalRhythm;
   activeBaconTheme: BaconTheme;
@@ -282,6 +283,9 @@ export function calculateFrancisBaconNovumOrganum(
   const focalBaconAphorism = BACON_APHORISMS[aphorismIndex];
   const inductionPhase = BACON_INDUCTION_PHASES[(absHash >> 10) % BACON_INDUCTION_PHASES.length];
   const shadowWarning = BACON_SHADOW_WARNINGS[(absHash >> 13) % BACON_SHADOW_WARNINGS.length];
+  const shortPhase = inductionPhase.split('(')[0].trim();
+  const shortCompanion = companionBaconTheme.themeTitleKo.split('(')[0].trim();
+  const baconCrossAxis = `${shortPhase} × ${shortCompanion} (${questionTopic}) — ${topicGuidance.practiceGuidance}`;
 
   const guidanceTitle = `프랜시스 베이컨 신기관 지성 지혜: ${activeBaconTheme.themeTitleKo}`;
   const philosophicalCounsel = `프랜시스 베이컨의 경험론 철학은 마음을 흐리는 4대 우상을 깨부수고 차가운 사실에 입각한 실천적 힘을 세우도록 이끕니다. ` +
@@ -313,6 +317,7 @@ export function calculateFrancisBaconNovumOrganum(
     trueInductionEmpiricalGroundedScore,
     questionTopic,
     inductionPhase,
+    baconCrossAxis,
     shadowWarning,
     temporalBaconRhythm,
     activeBaconTheme,
@@ -338,6 +343,7 @@ export function formatFrancisBaconNovumOrganumPrompt(res: FrancisBaconNovumOrgan
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- 귀납 국면: ${res.inductionPhase}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.baconCrossAxis}`,
     `- KST 시공간 리듬: ${res.temporalBaconRhythm.kstDateLabel} · ${res.temporalBaconRhythm.timeWindowKo} (${res.temporalBaconRhythm.empiricalTone}) — ${res.temporalBaconRhythm.rhythmDirective}`,
     `- 핵심 우상 타파 테마: ${res.activeBaconTheme.themeTitleKo} [${res.activeBaconTheme.themeTitleLatin}]`,
     `- 동반 우상 타파 테마: ${res.companionBaconTheme.themeTitleKo}`,
