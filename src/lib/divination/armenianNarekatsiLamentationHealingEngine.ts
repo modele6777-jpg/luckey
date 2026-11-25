@@ -22,6 +22,8 @@ export interface ArmenianNarekatsiResult {
   primaryContemplation: NarekatsiContemplation;
   balancingContemplation: NarekatsiContemplation;
   vigilPhase: string;
+  questionTopic: 'healing' | 'release' | 'hope' | 'general';
+  narekatsiCrossAxis: string;
   shadowWarning: string;
   qualitativeSynthesis: string;
   reflectionFocus: string;
@@ -125,6 +127,16 @@ export function calculateArmenianNarekatsiLamentationHealing(params: {
   const balancingContemplation = NAREKATSI_CONTEMPLATIONS[balancingIdx];
   const vigilPhase = VIGIL_PHASES[vigilSeed % VIGIL_PHASES.length];
   const shadowWarning = NAREKATSI_SHADOW_WARNINGS[primaryContemplation.id];
+  const questionTopic: ArmenianNarekatsiResult['questionTopic'] = !query
+    ? 'general'
+    : /지쳐|쉬고|회복|위로|아픔|우울|눈물/.test(query)
+      ? 'healing'
+      : /자책|후회|실수|미안|내려놓|용서/.test(query)
+        ? 'release'
+        : /희망|버텨|내일|불씨|어둠|기다/.test(query)
+          ? 'hope'
+          : 'general';
+  const narekatsiCrossAxis = `${questionTopic} · ${primaryContemplation.id} × ${vigilPhase.split('(')[0].trim()}`;
 
   const qualitativeSynthesis =
     `10세기 아르메니아 시인 그레고르 나레카치의 《애가》 관점으로 '${vigilPhase}'을(를) 살피면, 지금은 ` +
@@ -143,11 +155,13 @@ export function calculateArmenianNarekatsiLamentationHealing(params: {
 
   return {
     engineName: '아르메니아 나레카치 《애가》 내면 정화·성찰 (Narekatsi Lamentation Healing)',
-    engineVersion: 'LUCKEY-ARMENIAN-NAREKATSI-v2.3.0',
+    engineVersion: 'LUCKEY-ARMENIAN-NAREKATSI-v2.4.0',
     calculatedAtKst: formatArmenianKstTimestamp(now),
     primaryContemplation,
     balancingContemplation,
     vigilPhase,
+    questionTopic,
+    narekatsiCrossAxis,
     shadowWarning,
     qualitativeSynthesis,
     reflectionFocus,
@@ -166,6 +180,7 @@ export function formatArmenianNarekatsiPrompt(res: ArmenianNarekatsiResult): str
     `- 중심 성찰: ${res.primaryContemplation.armenianMotif} · ${res.primaryContemplation.koreanLabel}`,
     `- 균형 성찰: ${res.balancingContemplation.armenianMotif} · ${res.balancingContemplation.koreanLabel}`,
     `- 내면 정화 국면: ${res.vigilPhase}`,
+    `- 질문 맥락(${res.questionTopic}) · 나레카치 교차 축: ${res.narekatsiCrossAxis}`,
     `- 과잉·결핍 경계: ${res.shadowWarning}`,
     `- 성찰 해석: ${res.qualitativeSynthesis}`,
     `- 성찰 초점: ${res.reflectionFocus}`,

@@ -13559,11 +13559,12 @@ test('Basque Lauburu & Basajaun Harmony engine: cycle balance, +09:00 KST, and i
   assert.ok(rep.companionArmKey !== rep.lauburuArmKey);
   assert.ok(rep.cycleHarmonyPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.equal(rep.questionTopic, 'healing');
+  assert.ok(rep.lauburuCrossAxis.includes('healing'));
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('개인 점수·심리 진단·미래 예측이 아닙니다'));
   const prompt = formatBasqueLauburuBasajaunHarmonyPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('라부루(Lauburu)') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionArmKey) && prompt.includes(rep.cycleHarmonyPhase) && prompt.includes(rep.shadowWarning));
+  assert.ok(prompt.includes('라부루(Lauburu)') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionArmKey) && prompt.includes(rep.cycleHarmonyPhase) && prompt.includes(rep.shadowWarning) && prompt.includes('라부루 교차 축'));
 });
 
 test('Ojibwe Seven Grandfather Teachings engine: virtues, +09:00 KST, and interpretive boundary', () => {
@@ -13607,15 +13608,17 @@ test('Georgian Rustaveli Knight in the Panther’s Skin engine: virtues, +09:00 
 
 test('Armenian Narekatsi Lamentation Healing engine: contemplations, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateArmenianNarekatsiLamentationHealing({ profile, now: new Date('2026-11-20T05:05:00Z'), question: '마음이 지쳐서 쉬고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ARMENIAN-NAREKATSI-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ARMENIAN-NAREKATSI-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.balancingContemplation.id !== rep.primaryContemplation.id);
   assert.ok(rep.vigilPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert.equal(rep.questionTopic, 'healing');
+  assert.ok(rep.narekatsiCrossAxis.includes('healing'));
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('운세 점수가 아닙니다'));
   const prompt = formatArmenianNarekatsiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('나레카치') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.vigilPhase) && prompt.includes(rep.reflectionFocus));
+  assert.ok(prompt.includes('나레카치') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.vigilPhase) && prompt.includes(rep.reflectionFocus) && prompt.includes('나레카치 교차 축'));
 });
 
 test('Javanese Kejawen Rasa Harmony engine: principles, +09:00 KST, and interpretive boundary', () => {
@@ -15332,15 +15335,17 @@ test('Otavalo Andes Loom Balance engine: motif, +09:00 KST, and interpretive bou
 
 test('Andalusian Patio Fountain Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAndalusianPatioFountainCalm({ profile, now: new Date('2026-11-20T20:49:00Z'), question: '내 안뜰의 잔잔한 물소리를 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ANDALUSIAN-PATIO-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ANDALUSIAN-PATIO-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.patioMotif);
   assert.ok(rep.courtyardPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert.equal(rep.questionTopic, 'calm');
+  assert.ok(rep.patioCrossAxis.includes('calm'));
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatAndalusianPatioPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('안달루시아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.courtyardPhase) && prompt.includes(rep.companionMotif));
+  assert.ok(prompt.includes('안달루시아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.courtyardPhase) && prompt.includes(rep.companionMotif) && prompt.includes('파티오 교차 축'));
 });
 
 test('Lozi Kuomboka Flood Path engine: motif, +09:00 KST, and interpretive boundary', () => {
