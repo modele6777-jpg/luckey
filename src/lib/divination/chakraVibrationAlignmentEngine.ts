@@ -22,7 +22,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const CHAKRA_ALIGNMENT_VERSION = 'LUCKEY-CHAKRA-v2.3.0';
+export const CHAKRA_ALIGNMENT_VERSION = 'LUCKEY-CHAKRA-v2.4.0';
 
 export interface SingleChakraInfo {
   id: string;
@@ -73,6 +73,9 @@ export interface ChakraVibrationAlignmentReport {
   ritualAction: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
+  questionTopic: 'relationship' | 'grounding' | 'recovery' | 'general';
+  chakraCrossAxis: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
   synthesisPromptGuidance: string;
 }
@@ -248,7 +251,18 @@ export function runChakraVibrationAlignmentEngine(
   };
 
   const q = (question || '').trim();
+  const questionTopic: ChakraVibrationAlignmentReport['questionTopic'] = !q
+    ? 'general'
+    : /관계|연애|사람|소통|가족/.test(q)
+      ? 'relationship'
+      : /불안|지침|피곤|회복|수면|우울/.test(q)
+        ? 'recovery'
+        : /일|결정|진로|돈|실행|집중/.test(q)
+          ? 'grounding'
+          : 'general';
   const temporalChakraRhythm = getTemporalChakraRhythm(targetDate);
+  const chakraCrossAxis = `${questionTopic} · ${chosenChakra.sanskritName} × ${temporalChakraRhythm.chakraWatchWindow.split('—')[0].trim()}`;
+  const shadowWarning = `과잉·편향 경계: 특정 차크라의 막힘이나 과활성을 우열로 단정하지 말고, 호흡과 자세로 몸의 긴장을 풀어 주는 균형 신호로만 활용하십시오.`;
   const situationalChakraAudit = /관계|연애|사람|소통|가족/.test(q)
     ? {
         focusTheme: '아나하타(심장)와 비슈다(목)의 부드러운 소통 공명',
@@ -294,10 +308,12 @@ export function runChakraVibrationAlignmentEngine(
 - KST 시공간 차크라 리듬: ${temporalChakraRhythm.chakraWatchWindow} / ${temporalChakraRhythm.seasonalPranaTone}
   * 시공간 지침: ${temporalChakraRhythm.temporalGuidance}
 - 차크라 교차 매트릭스: 핵심(${chakraSynthesisMatrix.coreInsight}) | 실행(${chakraSynthesisMatrix.recommendedAction}) | 주의(${chakraSynthesisMatrix.cautionNotice})
+- 차크라 교차 축: ${questionTopic} · ${chakraCrossAxis}
 - 7대 차크라 상태 요약:
 ${chakrasSummary}
 - 쿤달리니 정렬 호흡법: [${kundaliniBreathingPrescription.techniqueName} ${kundaliniBreathingPrescription.durationMinutes}분] ${kundaliniBreathingPrescription.instruction}
 - 질문 맞춤 성찰 질문: ${reflectionFocus}
+- ${shadowWarning}
 - 해석 경계: ${boundaryNotice}`;
 
   return {
@@ -315,6 +331,9 @@ ${chakrasSummary}
     ritualAction: situationalChakraAudit.groundingStep,
     reflectionFocus,
     reflectiveQuestion: reflectionFocus,
+    questionTopic,
+    chakraCrossAxis,
+    shadowWarning,
     interpretiveBoundary: boundaryNotice,
     synthesisPromptGuidance
   };

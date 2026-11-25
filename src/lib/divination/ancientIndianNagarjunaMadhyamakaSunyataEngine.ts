@@ -1,7 +1,7 @@
 /**
  * 고대 인도 대승불교 용수(Nāgārjuna, 龍樹) 보살 《중론(Mūlamadhyamakakārikā)》 팔불중도 & 공성(Śūnyatā) 통찰 엔진
  *
- * @version LUCKEY-NAGARJUNA-MADHYAMAKA-v2.3.0
+ * @version LUCKEY-NAGARJUNA-MADHYAMAKA-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
@@ -77,6 +77,9 @@ export interface NagarjunaMadhyamakaSunyataResult {
   reflectiveQuestion: string;
   ritualAction: string;
   reflectionFocus: string;
+  questionTopic: 'conflict' | 'loss' | 'relationship' | 'decision' | 'general';
+  nagarjunaCrossAxis: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
   nagarjunaSynthesisMatrix?: {
     dominantTension: string;
@@ -310,6 +313,19 @@ export function calculateNagarjunaMadhyamakaSunyata(
     `용수 《중론》 팔불중도 엔진은 고정된 운명을 예단하는 도구가 아니라, 양극단과 고정관념을 풀어 유연한 변화를 열도록 돕는 상징·성찰 관점입니다.`;
 
   const trimmedQ = (question ?? '').trim();
+  const questionTopic: NagarjunaMadhyamakaSunyataResult['questionTopic'] = !trimmedQ
+    ? 'general'
+    : /고집|반드시|절대|내 생각|맞다|갈등/.test(trimmedQ)
+      ? 'conflict'
+      : /끝|상실|포기|실패|망|허무|무기력/.test(trimmedQ)
+        ? 'loss'
+        : /관계|사람|경계|외로|거리|집착/.test(trimmedQ)
+          ? 'relationship'
+          : /선택|진로|변화|이직|불안|미래/.test(trimmedQ)
+            ? 'decision'
+            : 'general';
+  const nagarjunaCrossAxis = `${questionTopic} · ${activeNegationAspect.aspectHanja} × ${temporalPratityaRhythm.twoTruthsFocus}`;
+  const shadowWarning = `과잉·편향 경계: 공(空)을 아무것도 의미 없다는 허무주의(단견)로 오해하거나, 반대로 중도를 현실 책임을 미루는 핑계로 삼지 마십시오.`;
   const nagarjunaSynthesisMatrix = {
     dominantTension: `${situationalSunyataAudit.substantialistTrap} ↔ ${activeNegationAspect.aspectHanja}`,
     alignmentState: `${temporalPratityaRhythm.twoTruthsFocus} · ${focalKarikaWisdom.chapterThemeKo}`,
@@ -337,6 +353,9 @@ export function calculateNagarjunaMadhyamakaSunyata(
     reflectiveQuestion,
     ritualAction: dailyPracticeRitual,
     reflectionFocus: reflectiveQuestion,
+    questionTopic,
+    nagarjunaCrossAxis,
+    shadowWarning,
     interpretiveBoundary,
     nagarjunaSynthesisMatrix,
   };
@@ -370,6 +389,8 @@ export function formatNagarjunaMadhyamakaSunyataPrompt(res: NagarjunaMadhyamakaS
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 중관 교차 축: ${res.questionTopic} · ${res.nagarjunaCrossAxis}`,
+    `- ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     matrixLine,
   ].filter(Boolean).join('\n');
