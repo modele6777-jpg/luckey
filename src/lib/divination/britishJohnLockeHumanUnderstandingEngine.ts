@@ -8,12 +8,12 @@
  * 4. 사회계약과 상호 신뢰 연대도(Social Contract & Fiduciary Trust): 지배와 복종이 아닌 자유로운 동의와 상호 신뢰를 바탕으로 공정한 연대와 협력을 구축하는 역량.
  * 5. 관용과 다원성 존중·온건한 실용 분별력(Toleration & Practical Prudence): 서로 다른 신념과 개성을 포용하며, 맹목적 광신을 배격하고 상식과 이성에 기반한 평화적 공존을 이끄는 지혜.
  *
- * @version LUCKEY-JOHN-LOCKE-UNDERSTANDING-v2.3.0
+ * @version LUCKEY-JOHN-LOCKE-UNDERSTANDING-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_JOHN_LOCKE_VERSION = 'LUCKEY-JOHN-LOCKE-UNDERSTANDING-v2.3.0';
+export const BRITISH_JOHN_LOCKE_VERSION = 'LUCKEY-JOHN-LOCKE-UNDERSTANDING-v2.4.0';
 
 export type LockeQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -52,6 +52,7 @@ export interface JohnLockeHumanUnderstandingResult {
   // 세부 분석
   questionTopic: LockeQuestionTopic;
   experiencePhase: string;
+  lockeCrossAxis: string;
   shadowWarning: string;
   temporalLockeRhythm: LockeTemporalRhythm;
   activeLockeTheme: LockeTheme;
@@ -273,6 +274,9 @@ export function calculateJohnLockeHumanUnderstanding(
   const focalLockeAphorism = LOCKE_APHORISMS[aphorismIndex];
   const experiencePhase = LOCKE_EXPERIENCE_PHASES[(absHash >> 10) % LOCKE_EXPERIENCE_PHASES.length];
   const shadowWarning = LOCKE_SHADOW_WARNINGS[(absHash >> 13) % LOCKE_SHADOW_WARNINGS.length];
+  const shortPhase = experiencePhase.split('(')[0].trim();
+  const shortCompanion = companionLockeTheme.themeTitleEn.split('(')[0].trim();
+  const lockeCrossAxis = `${shortPhase} × ${shortCompanion} (${questionTopic}) — ${topicGuidance.practiceGuidance}`;
 
   const guidanceTitle = `존 로크 경험론과 천부인권 지혜: ${activeLockeTheme.themeTitleKo}`;
   const philosophicalCounsel = `존 로크의 경험론과 권리 철학은 마음의 백지 위에 편견 없는 경험의 배움을 채우고, 침해할 수 없는 자유와 천부인권, 상호 신뢰와 너른 관용으로 세상을 마주하도록 일깨웁니다. ` +
@@ -304,6 +308,7 @@ export function calculateJohnLockeHumanUnderstanding(
     tolerantPrudenceWisdomScore,
     questionTopic,
     experiencePhase,
+    lockeCrossAxis,
     shadowWarning,
     temporalLockeRhythm,
     activeLockeTheme,
@@ -329,6 +334,7 @@ export function formatJohnLockeHumanUnderstandingPrompt(res: JohnLockeHumanUnder
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- 경험 국면: ${res.experiencePhase}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.lockeCrossAxis}`,
     `- KST 시공간 리듬: ${res.temporalLockeRhythm.kstDateLabel} · ${res.temporalLockeRhythm.timeWindowKo} (${res.temporalLockeRhythm.empiricalTone}) — ${res.temporalLockeRhythm.rhythmDirective}`,
     `- 핵심 경험론 테마: ${res.activeLockeTheme.themeTitleKo} [${res.activeLockeTheme.themeTitleEn}]`,
     `- 동반 경험론 테마: ${res.companionLockeTheme.themeTitleKo}`,
