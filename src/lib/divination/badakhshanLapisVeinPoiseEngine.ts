@@ -13,6 +13,8 @@ export interface BadakhshanLapisResult {
   companionVein: string;
   mineralCraft: string;
   refinementPhase: string;
+  questionTopic: 'purify' | 'craft' | 'patience' | 'general';
+  lapisCrossAxis: string;
   shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -92,14 +94,27 @@ export function calculateBadakhshanLapisVein(input: BadakhshanLapisInput): Badak
   const companionVein = VEINS[(veinIdx + companionOffset) % VEINS.length];
   const refinementPhase = REFINEMENT_PHASES[phaseIdx];
   const shadowWarning = SHADOW_WARNINGS[(phaseIdx + companionOffset) % SHADOW_WARNINGS.length];
+  const q = (input.question ?? '').trim();
+  const questionTopic: BadakhshanLapisResult['questionTopic'] = !q
+    ? 'general'
+    : /정제|불순물|잡음|맑|가라앉/.test(q)
+      ? 'purify'
+      : /고유|결|금점|색|개성|다듬/.test(q)
+        ? 'craft'
+        : /기다리|숙성|인내|먼 길|시간/.test(q)
+          ? 'patience'
+          : 'general';
+  const lapisCrossAxis = `${questionTopic} · ${azureVein.slice(0, 14)} × ${refinementPhase.split('(')[0].trim()}`;
 
   return {
-    engineVersion: 'LUCKEY-BADAKHSHAN-LAPIS-v2.3.0',
+    engineVersion: 'LUCKEY-BADAKHSHAN-LAPIS-v2.4.0',
     calculatedAtKst: toKstIso(input.now),
     azureVein,
     companionVein,
     mineralCraft: CRAFTS[(seed >>> 3) % CRAFTS.length],
     refinementPhase,
+    questionTopic,
+    lapisCrossAxis,
     shadowWarning,
     reflectionFocus: `힌두쿠시 바다흐샨의 험준한 암벽에서 캐낸 청금석(라피스 라줄리)을 곱게 갈아 가장 순수한 푸른 안료를 얻던 공예처럼, 주 맥('${azureVein}')과 동반 맥('${companionVein}')이 '${refinementPhase}' 단계에서 만나 정제와 고유의 결을 함께 읽는 상징적 관점입니다.`,
     ritualAction: `${ACTIONS[veinIdx]} (${refinementPhase} 흐름에서 동반 맥 '${companionVein}'의 결도 함께 살피며 다듬어 보세요.)`,
@@ -115,6 +130,7 @@ export function formatBadakhshanLapisPrompt(res: BadakhshanLapisResult): string 
     `청금석 맥: ${res.azureVein}`,
     `동반 맥: ${res.companionVein}`,
     `정제 단계: ${res.refinementPhase}`,
+    `질문 맥락(${res.questionTopic}) · 청금석 교차 축: ${res.lapisCrossAxis}`,
     `과잉 경계: ${res.shadowWarning}`,
     `정제 공예: ${res.mineralCraft}`,
     `성찰 초점: ${res.reflectionFocus}`,

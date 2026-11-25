@@ -14624,15 +14624,17 @@ test('Estonian Regilaul Forest Calm engine: motif, +09:00 KST, and interpretive 
 
 test('Balkan Ohrid Lake Reflection engine: symbol, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBalkanOhridLakeReflection({ profile, now: new Date('2026-11-20T08:46:00Z'), question: '깊은 바닥에서부터 스스로를 맑게 돌보고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BALKAN-OHRID-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BALKAN-OHRID-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSymbol.length > 0 && rep.companionSymbol !== rep.ohridSymbol);
   assert.ok(rep.springPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert.equal(rep.questionTopic, 'refresh');
+  assert.ok(rep.ohridCrossAxis.includes('refresh'));
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBalkanOhridPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('오흐리드') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus) && prompt.includes(rep.springPhase) && prompt.includes(rep.shadowWarning));
+  assert.ok(prompt.includes('오흐리드') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.reflectionFocus) && prompt.includes(rep.springPhase) && prompt.includes(rep.shadowWarning) && prompt.includes('호수 교차 축'));
 });
 
 test('Garifuna Dugu Caribbean Rhythm engine: rhythm, +09:00 KST, and interpretive boundary', () => {
@@ -15866,15 +15868,17 @@ test('Venetian Lagoon Forcola engine: notch, +09:00 KST, and interpretive bounda
 
 test('Bajau Laut Tide engine: anchor, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBajauLautTide({ profile, now: new Date('2026-11-20T22:55:00Z'), question: '호흡과 물때의 리듬을 맞추고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BAJAU-LAUT-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BAJAU-LAUT-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionAnchor !== rep.tidalAnchor);
   assert.ok(rep.tidalPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert.equal(rep.questionTopic, 'breath');
+  assert.ok(rep.tidalCrossAxis.includes('breath'));
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBajauLautPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('바야우') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.tidalPhase) && prompt.includes(rep.shadowWarning));
+  assert.ok(prompt.includes('바야우') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.tidalPhase) && prompt.includes(rep.shadowWarning) && prompt.includes('물때 교차 축'));
 });
 
 test('Wodaabe Gerewol engine: gathering, +09:00 KST, and interpretive boundary', () => {
@@ -15893,15 +15897,17 @@ test('Wodaabe Gerewol engine: gathering, +09:00 KST, and interpretive boundary',
 
 test('Badakhshan Lapis Vein engine: vein, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBadakhshanLapisVein({ profile, now: new Date('2026-11-20T22:55:00Z'), question: '내 안의 고유한 결을 정제하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BADAKHSHAN-LAPIS-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BADAKHSHAN-LAPIS-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionVein !== rep.azureVein);
   assert.ok(rep.refinementPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert.equal(rep.questionTopic, 'purify');
+  assert.ok(rep.lapisCrossAxis.includes('purify'));
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBadakhshanLapisPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('바다흐샨') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.refinementPhase) && prompt.includes(rep.shadowWarning));
+  assert.ok(prompt.includes('바다흐샨') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.refinementPhase) && prompt.includes(rep.shadowWarning) && prompt.includes('청금석 교차 축'));
 });
 
 test('Kogi Aluna Thread engine: thread, +09:00 KST, and interpretive boundary', () => {
