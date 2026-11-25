@@ -1,11 +1,15 @@
 import type { UserProfile } from '../sharedState';
 
+export type BohemianCrystalTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'general';
+
 export interface BohemianCrystalResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: BohemianCrystalTopic;
   crystalFacet: string;
   companionFacet: string;
   refractionPhase: string;
+  crystalCrossAxis: string;
   bohemianInsight: string;
   forestGlassTone: string;
   shadowWarning: string;
@@ -65,6 +69,22 @@ const FACETS = [
   },
 ];
 
+const TOPIC_AXES: Record<BohemianCrystalTopic, string> = {
+  career: '일·커리어에서는 이것저것 동시에 손대기보다 핵심 한 면을 정해 세공사의 손끝처럼 선명히 다듬으세요.',
+  relationship: '관계에서는 어긋난 결을 날카롭게 재단하지 말고 블타바 강물처럼 여유를 두고 이어 보세요.',
+  wealth: '재정·계약에서는 뭉뚱그린 불안을 사실·조건·실행 세 갈래로 나누어 맑게 가늠하세요.',
+  health: '건강·회복에서는 슈마바 숲의 이끼처럼 10분간 소음을 끄고 지친 자리에 촉촉한 쉼을 채우세요.',
+  general: '오늘의 흐름에서는 중심 각면과 동반 각면을 함께 비추며 뭉친 마음을 맑게 정돈하세요.',
+};
+
+function classifyBohemianTopic(question: string): BohemianCrystalTopic {
+  if (/일|직장|사업|커리어|프로젝트|성과|작업/.test(question)) return 'career';
+  if (/사랑|연애|관계|가족|친구|갈등|사람/.test(question)) return 'relationship';
+  if (/돈|재물|재정|투자|소비|계약/.test(question)) return 'wealth';
+  if (/건강|몸|피로|휴식|수면|마음|쉼/.test(question)) return 'health';
+  return 'general';
+}
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -97,13 +117,19 @@ export function calculateBohemianCrystalGlassLight(params: {
   const companion = FACETS[(idx + companionOffset) % FACETS.length];
   const refractionPhase = REFRACTION_PHASES[stableHash(`${seed}|phase`) % REFRACTION_PHASES.length];
   const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
+  const questionTopic = classifyBohemianTopic(params.question ?? '');
+  const shortPhase = refractionPhase.split('(')[0].trim();
+  const shortCompanion = companion.facet.split('(')[0].trim();
+  const crystalCrossAxis = `${shortPhase} × ${shortCompanion} — ${TOPIC_AXES[questionTopic]}`;
 
   return {
-    engineVersion: 'LUCKEY-BOHEMIAN-CRYSTAL-v2.3.0',
+    engineVersion: 'LUCKEY-BOHEMIAN-CRYSTAL-v2.4.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     crystalFacet: picked.facet,
     companionFacet: companion.facet,
     refractionPhase,
+    crystalCrossAxis,
     bohemianInsight: `${picked.insight} (동반 각면: ${companion.facet})`,
     forestGlassTone: picked.tone,
     shadowWarning,
@@ -121,6 +147,7 @@ export function formatBohemianCrystalPrompt(res: BohemianCrystalResult): string 
     `- 유리 각면: ${res.crystalFacet} (${res.forestGlassTone})`,
     `- 동반 각면: ${res.companionFacet}`,
     `- 굴절 국면: ${res.refractionPhase}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.crystalCrossAxis}`,
     `- 중심 통찰: ${res.bohemianInsight}`,
     `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,

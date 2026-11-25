@@ -9,12 +9,12 @@
  * 4. 비인칭적 흥미와 여가의 활력도(Impersonal Interests & Leisure Vitality Index): 생업의 중압감에서 벗어나 마음을 회복시키는 순수한 취미와 폭넓은 시야.
  * 5. 합리적 이성과 회복탄력성 지수(Rational Equanimity & Resilience Score): 피할 수 없는 불행 앞에서도 불필요한 감정 소모를 멈추고 냉철하고 따뜻한 이성으로 극복하는 지혜.
  *
- * @version LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v2.3.0
+ * @version LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_BERTRAND_RUSSELL_VERSION = 'LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v2.3.0';
+export const BRITISH_BERTRAND_RUSSELL_VERSION = 'LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v2.4.0';
 
 export type RussellQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -53,6 +53,7 @@ export interface BritishBertrandRussellConquestOfHappinessResult {
   // 세부 분석
   questionTopic: RussellQuestionTopic;
   zestPhase: string;
+  russellCrossAxis: string;
   shadowWarning: string;
   temporalRussellRhythm: RussellTemporalRhythm;
   activeRussellTheme: RussellTheme;
@@ -288,6 +289,9 @@ export function calculateBritishBertrandRussellConquestOfHappiness(
   const focalRussellAphorism = RUSSELL_APHORISMS[aphorismIndex];
   const zestPhase = RUSSELL_ZEST_PHASES[(absHash >> 10) % RUSSELL_ZEST_PHASES.length];
   const shadowWarning = RUSSELL_SHADOW_WARNINGS[(absHash >> 13) % RUSSELL_SHADOW_WARNINGS.length];
+  const shortPhase = zestPhase.split('(')[0].trim();
+  const shortCompanion = companionRussellTheme.themeTitleKo.split('—')[0].trim();
+  const russellCrossAxis = `${shortPhase} × ${shortCompanion} (${questionTopic}) — ${topicGuidance.practiceGuidance}`;
 
   const guidanceTitle = `버트런드 러셀 행복의 정복 지혜: ${activeRussellTheme.themeTitleKo}`;
   const philosophicalCounsel = `20세기 최고의 지성 버트런드 러셀의 《행복의 정복》은 불필요한 자기몰두와 남과의 비교를 털어내고, 외부 세계를 향한 열정적 관심(Zest)과 건설적인 일의 기쁨으로 나아가도록 이끕니다. ` +
@@ -319,6 +323,7 @@ export function calculateBritishBertrandRussellConquestOfHappiness(
     rationalEquanimityResilienceScore,
     questionTopic,
     zestPhase,
+    russellCrossAxis,
     shadowWarning,
     temporalRussellRhythm,
     activeRussellTheme,
@@ -346,6 +351,7 @@ export function formatBritishBertrandRussellConquestOfHappinessPrompt(
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- 행복 국면: ${res.zestPhase}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.russellCrossAxis}`,
     `- KST 시공간 리듬: ${res.temporalRussellRhythm.kstDateLabel} · ${res.temporalRussellRhythm.timeWindowKo} (${res.temporalRussellRhythm.zestTone}) — ${res.temporalRussellRhythm.rhythmDirective}`,
     `- 핵심 행복 테마: ${res.activeRussellTheme.themeTitleKo} [${res.activeRussellTheme.themeTitleEn}]`,
     `- 동반 행복 테마: ${res.companionRussellTheme.themeTitleKo}`,

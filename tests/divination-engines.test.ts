@@ -8364,6 +8364,7 @@ test('Sambong Jeong Do-jeon Minbon Reform Engine: calculates Minbon Serving, Ins
 test('Bertrand Russell Conquest of Happiness Engine: calculates Zest for Life, Overcoming Self-Absorption, Constructive Work, and Rational Equanimity', () => {
   const rep = calculateBritishBertrandRussellConquestOfHappiness(profile);
   assert.equal(rep.engineVersion, BRITISH_BERTRAND_RUSSELL_VERSION);
+  assert.equal(rep.engineVersion, 'LUCKEY-BERTRAND-RUSSELL-HAPPINESS-v2.4.0');
   assert(rep.zestForLifeIndex >= 0 && rep.zestForLifeIndex <= 100);
   assert(rep.overcomingSelfAbsorptionIndex >= 0 && rep.overcomingSelfAbsorptionIndex <= 100);
   assert(rep.constructiveWorkFulfillmentScore >= 0 && rep.constructiveWorkFulfillmentScore <= 100);
@@ -8371,12 +8372,12 @@ test('Bertrand Russell Conquest of Happiness Engine: calculates Zest for Life, O
   assert(rep.rationalEquanimityResilienceScore >= 0 && rep.rationalEquanimityResilienceScore <= 100);
   assert(rep.activeRussellTheme.themeTitleKo.length > 0);
   assert(rep.companionRussellTheme.themeKey !== rep.activeRussellTheme.themeKey);
-  assert(rep.zestPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert(rep.zestPhase.length > 0 && rep.russellCrossAxis.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatBritishBertrandRussellConquestOfHappinessPrompt(rep);
   assert(prompt.includes('버트런드 러셀 《행복의 정복》 열정적 관심 & 합리적 낙관 지표'));
   assert(prompt.includes(rep.activeRussellTheme.themeTitleKo) && prompt.includes(rep.companionRussellTheme.themeTitleKo));
-  assert(prompt.includes(rep.zestPhase) && prompt.includes(rep.shadowWarning));
+  assert(prompt.includes(rep.zestPhase) && prompt.includes(rep.russellCrossAxis) && prompt.includes(rep.shadowWarning));
 });
 
 test('Karl Jaspers Existenz Grenzsituationen Engine: calculates Grenzsituationen Acceptance, Existential Leap, Cipher Transcendence, and Loving Struggle Communication', () => {
@@ -14104,15 +14105,16 @@ test('Tuvan Khoomei Overtones Resonance engine: layer, +09:00 KST, and interpret
 
 test('Breton Barzaz Sea Poetry engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBretonBarzazSeaPoetry({ profile, now: new Date('2026-11-20T07:18:00Z'), question: '지금 밀물과 썰물의 때를 알고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BRETON-BARZAZ-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BRETON-BARZAZ-v2.4.0');
+  assert.equal(rep.questionTopic, 'wealth');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.coastalMotif);
-  assert.ok(rep.tidePhase.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.tidePhase.length > 0 && rep.barzazCrossAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBretonBarzazPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('브르타뉴') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.tidePhase) && prompt.includes(rep.shadowWarning));
+  assert.ok(prompt.includes('브르타뉴') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.tidePhase) && prompt.includes(rep.barzazCrossAxis) && prompt.includes(rep.shadowWarning));
 });
 
 test('Hausa Kirari Alada Wisdom engine: proverb, +09:00 KST, and interpretive boundary', () => {
@@ -14825,15 +14827,16 @@ test('Somali Gabay Dhow Horizon engine: principle, +09:00 KST, and interpretive 
 
 test('Bohemian Crystal Glass Light engine: facet, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBohemianCrystalGlassLight({ profile, now: new Date('2026-11-20T09:14:00Z'), question: '뭉쳐 있던 마음을 맑게 나누어 보고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BOHEMIAN-CRYSTAL-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BOHEMIAN-CRYSTAL-v2.4.0');
+  assert.equal(rep.questionTopic, 'health');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionFacet !== rep.crystalFacet);
-  assert.ok(rep.refractionPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.refractionPhase.length > 0 && rep.crystalCrossAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBohemianCrystalPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('보헤미아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionFacet) && prompt.includes(rep.refractionPhase) && prompt.includes(rep.shadowWarning));
+  assert.ok(prompt.includes('보헤미아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionFacet) && prompt.includes(rep.refractionPhase) && prompt.includes(rep.crystalCrossAxis) && prompt.includes(rep.shadowWarning));
 });
 
 test('San Kalahari Tracking Stars engine: sign, +09:00 KST, and interpretive boundary', () => {
