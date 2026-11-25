@@ -8,12 +8,12 @@
  * 4. 내면 의식의 흐름 수용 및 진실성 지표 (Stream of Consciousness Authenticity Index): 관습적 형식에 얽매이지 않고 인간 내면의 솔직한 감정과 사유의 물결을 온전히 긍정하는 힘.
  * 5. 세월의 파도 속에서도 중심을 잡는 등대적 회복탄력성 (Lighthouse Steadfast Resilience Score): 시간의 무상함과 상실 속에서도 삶의 의미를 잃지 않고 내면의 빛을 비추는 회복탄력성.
  *
- * @version LUCKEY-VIRGINIA-WOOLF-ROOM-OF-ONES-OWN-v2.3.0
+ * @version LUCKEY-VIRGINIA-WOOLF-ROOM-OF-ONES-OWN-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION = 'LUCKEY-VIRGINIA-WOOLF-ROOM-OF-ONES-OWN-v2.3.0';
+export const BRITISH_VIRGINIA_WOOLF_ROOM_OF_ONES_OWN_VERSION = 'LUCKEY-VIRGINIA-WOOLF-ROOM-OF-ONES-OWN-v2.4.0';
 
 export type WoolfQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -52,6 +52,7 @@ export interface BritishVirginiaWoolfRoomOfOnesOwnResult {
   // 세부 분석
   questionTopic: WoolfQuestionTopic;
   luminousPhase: string;
+  woolfCrossAxis: string;
   shadowWarning: string;
   temporalWoolfRhythm: WoolfTemporalRhythm;
   activeWoolfTheme: WoolfTheme;
@@ -270,6 +271,9 @@ export function calculateBritishVirginiaWoolfRoomOfOnesOwn(
   const focalWoolfAphorism = WOOLF_APHORISMS[aphorismIndex];
   const luminousPhase = WOOLF_LUMINOUS_PHASES[(absHash >> 11) % WOOLF_LUMINOUS_PHASES.length];
   const shadowWarning = WOOLF_SHADOW_WARNINGS[(absHash >> 14) % WOOLF_SHADOW_WARNINGS.length];
+  const shortPhase = luminousPhase.split('(')[0].trim();
+  const shortCompanion = companionWoolfTheme.themeTitleKo.split('—')[0].trim();
+  const woolfCrossAxis = `${shortPhase} × ${shortCompanion} (${questionTopic}) — ${topicGuidance.practiceGuidance}`;
 
   const guidanceTitle = `버지니아 울프 자기만의 방과 존재의 순간들: ${activeWoolfTheme.themeTitleKo}`;
   const philosophicalCounsel = `20세기 모더니즘 문학의 거장 버지니아 울프 선생은 《자기만의 방》과 《등대로》를 통해 ` +
@@ -303,6 +307,7 @@ export function calculateBritishVirginiaWoolfRoomOfOnesOwn(
     lighthouseResilienceScore,
     questionTopic,
     luminousPhase,
+    woolfCrossAxis,
     shadowWarning,
     temporalWoolfRhythm,
     activeWoolfTheme,
@@ -330,6 +335,7 @@ export function formatBritishVirginiaWoolfRoomOfOnesOwnPrompt(
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- 사유 국면: ${res.luminousPhase}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.woolfCrossAxis}`,
     `- KST 시공간 리듬: ${res.temporalWoolfRhythm.kstDateLabel} · ${res.temporalWoolfRhythm.timeWindowKo} (${res.temporalWoolfRhythm.luminousTone}) — ${res.temporalWoolfRhythm.rhythmDirective}`,
     `- 핵심 울프 테마: ${res.activeWoolfTheme.themeTitleKo} [${res.activeWoolfTheme.themeTitleEn}]`,
     `- 동반 울프 테마: ${res.companionWoolfTheme.themeTitleKo}`,
