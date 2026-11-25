@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.487",
+    "builtAt": "2026-11-26T05:45:00+09:00",
+    "summary": "나가르주나 중관·아메샤 스펜타·7대 차크라 정렬 3대 핵심 엔진 심층 고도화(v1.8.487)",
+    "items": [
+      "용수 《중론》 팔불중도 엔진(v2.4.0): 질문 맥락 분류기(questionTopic)·중관 교차 축(nagarjunaCrossAxis)·과잉·편향 경계(shadowWarning) 추가 및 JSDoc 버전 표기 일원화",
+      "조로아스터교 아메샤 스펜타 엔진(v2.4.0): 질문 맥락 분류기(questionTopic)·아메샤 교차 축(ameshaCrossAxis)·과잉·편향 경계(shadowWarning) 추가 및 JSDoc 버전 표기 일원화",
+      "7대 차크라 파동 정렬 엔진(v2.4.0): 질문 맥락 분류기(questionTopic)·차크라 교차 축(chakraCrossAxis)·과잉·편향 경계(shadowWarning) 추가"
+    ]
+  },
+  {
     "version": "1.8.486",
     "builtAt": "2026-11-26T05:35:00+09:00",
     "summary": "천을귀인·바이오리듬 피크·점성술 데칸·사비안 3대 핵심 엔진 심층 고도화(v1.8.486)",

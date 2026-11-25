@@ -3142,10 +3142,12 @@ test('Chakra Vibration Alignment Engine: frequency-free chakra alignment and bal
   assert(res.chakraSynthesisMatrix.coreInsight.length > 0);
   assert(res.interpretiveBoundary.length > 0);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
+  assert(res.questionTopic.length > 0 && res.chakraCrossAxis.length > 0 && res.shadowWarning.includes('과잉·편향 경계'));
   const prompt = formatChakraVibrationAlignmentPrompt(res);
   assert(prompt.includes('LUCKEY 7대 차크라 파동 정렬 & 에너지 퀀텀 밸런싱'));
   assert(prompt.includes(res.primaryFocusChakra.name));
   assert(prompt.includes('KST'));
+  assert(prompt.includes('차크라 교차 축') && prompt.includes('과잉·편향 경계'));
   assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|주파수/);
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
@@ -6465,11 +6467,12 @@ test('Ancient Persian Zoroastrian Amesha Spentas Engine: calculates Vohu Manah, 
   assert(rep.temporalAtarRhythm.gahWatchWindow.length > 0);
   assert(rep.ameshaSynthesisMatrix.synthesizedVerdict.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.questionTopic.length > 0 && rep.ameshaCrossAxis.length > 0 && rep.shadowWarning.includes('과잉·편향 경계'));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatZoroastrianAmeshaSpentasPrompt(rep);
   assert(prompt.includes('고대 페르시아 조로아스터교 《아베스타(Avesta)》'));
   assert(prompt.includes(rep.activeSpentaStage.stageNameKo));
-  assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes('성찰 초점') && prompt.includes('아메샤 교차 축') && prompt.includes('과잉·편향 경계'));
   assert(!prompt.includes('%'));
   assert(!prompt.includes('/100'));
 });
@@ -7111,10 +7114,11 @@ test('Nagarjuna Madhyamaka Sunyata Engine: calculates Sunyata wisdom, Eightfold 
   assert(rep.clingingDeconstructionScore >= 0 && rep.clingingDeconstructionScore <= 100);
   assert(rep.activeNegationAspect.aspectHanja.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.questionTopic.length > 0 && rep.nagarjunaCrossAxis.length > 0 && rep.shadowWarning.includes('과잉·편향 경계'));
   const prompt = formatNagarjunaMadhyamakaSunyataPrompt(rep);
   assert(prompt.includes('용수 중론 & 팔불중도 공성(Śūnyatā) 지표'));
   assert(prompt.includes(rep.activeNegationAspect.aspectHanja));
-  assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes('성찰 초점') && prompt.includes('중관 교차 축') && prompt.includes('과잉·편향 경계'));
 });
 
 test('Jinul Jeonghye Ssangsu Engine: calculates Donoh insight, Jeomsu cultivation, and Seongjeok equanimity', () => {
