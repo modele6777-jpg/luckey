@@ -1,10 +1,10 @@
 {
-  "version": "1.8.483",
-  "builtAt": "2026-11-26T05:05:00+09:00",
-  "summary": "플로티노스 엔네아데스·바가바드기타 카르마 요가·초기불교 사성제 3대 엔진 심층 고도화(v1.8.483)",
+  "version": "1.8.484",
+  "builtAt": "2026-11-26T05:15:00+09:00",
+  "summary": "카발라 섀도우 타로·에니어그램·마야 촐킨 3대 핵심 엔진 심층 고도화(v1.8.484)",
   "items": [
-    "플로티노스 《엔네아데스》·헤노시스 엔진(v2.4.0): 엔네아데스 교차 축(plotinusCrossAxis) 및 주제별 과잉·편향 경계(PLOTINUS_TOPIC_SHADOW_WARNINGS) 추가",
-    "바가바드 기타 카르마 요가 엔진(v2.4.0): 기타 교차 축(gitaCrossAxis)·과잉·편향 경계(gitaShadowWarning) 추가 및 버전 표기 일원화",
-    "초기불교 사성제 & 팔정도 엔진(v2.4.0): 사성제 교차 축(buddhistCrossAxis)·과잉·편향 경계(buddhistShadowWarning) 추가 및 버전 표기 일원화"
+    "타로 카발라 생명나무 & 섀도우 미러 엔진(v2.4.0): 카발라 교차 축(kabbalahCrossAxis) 추가",
+    "에니어그램 영혼 성격 통합 엔진(v2.4.0): 에니어그램 교차 축(enneagramCrossAxis) 및 통합·분열 과잉 경계(enneagramShadowWarning) 추가",
+    "마야 촐킨 260일 신성력 엔진(v2.4.0): 질문 맥락 분류기(questionTopic)·촐킨 교차 축(tzolkinCrossAxis)·과잉·편향 경계(tzolkinShadowWarning) 추가"
   ]
 }

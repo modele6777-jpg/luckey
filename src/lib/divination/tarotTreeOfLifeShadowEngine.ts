@@ -21,7 +21,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const TAROT_KABBALAH_SHADOW_VERSION = 'LUCKEY-TAROT-KABBALAH-SHADOW-v2.3.0';
+export const TAROT_KABBALAH_SHADOW_VERSION = 'LUCKEY-TAROT-KABBALAH-SHADOW-v2.4.0';
 
 function formatKabbalahShadowKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -63,6 +63,7 @@ export interface TarotTreeOfLifeShadowReport {
     titleKo: string;
     description: string;
   };
+  kabbalahCrossAxis: string;
   shadowWarning: string;
   shadowMirror: TarotShadowMirrorAnalysis;
   soulHermeticAffirmation: string;
@@ -156,6 +157,7 @@ export function runTarotTreeOfLifeShadowEngine(
             description: '높은 직관과 의식의 뜻을 지상의 구체적 행동으로 내리는 시기',
           };
 
+  const kabbalahCrossAxis = `${questionTopic} · ${kabbalahPhase.titleKo.split(' ')[0]} × 제${selectedPathNum}경로(${pathInfo.cardName.split(' ')[0]})`;
   const shadowWarning = `과잉 경계: [${shadowData.name}]의 '${shadowData.defenseMechanism}'이 작동하면 오히려 [${pathInfo.cardName}]의 순수한 상승 흐름이 경직될 수 있습니다.`;
 
   const reflectiveQuestion = q
@@ -176,7 +178,7 @@ export function runTarotTreeOfLifeShadowEngine(
   const soulHermeticAffirmation = `나는 생명나무의 신성한 경로를 따라 영혼을 상승시키며, 빛과 그림자를 모두 통합하여 온전한 존재로 거듭난다.`;
 
   const synthesisPromptGuidance = `[LUCKEY 타로 카발라 생명나무 & 섀도우 미러 심층 ${TAROT_KABBALAH_SHADOW_VERSION} | ${calculatedAtKst}]
-- 질문 맥락: ${questionTopic} · 카발라 국면: ${kabbalahPhase.titleKo} (${kabbalahPhase.description})
+- 질문 맥락: ${questionTopic} · 카발라 국면: ${kabbalahPhase.titleKo} (${kabbalahPhase.description}) · 교차 축: ${kabbalahCrossAxis}
 - 생명나무 상승 경로 (Path of Ascension):
   * 제${selectedPathNum}경로: ${pathInfo.connecting}
   * 주관 메이저 아르카나: [${pathInfo.cardName}] (히브리 문자: ${pathInfo.hebrew})
@@ -219,6 +221,7 @@ export function runTarotTreeOfLifeShadowEngine(
       spiritualGatewayTheme: secondaryPathInfo.gateway
     },
     kabbalahPhase,
+    kabbalahCrossAxis,
     shadowWarning,
     shadowMirror: {
       consciousLightCard: pathInfo.cardName,
