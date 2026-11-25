@@ -6,6 +6,8 @@ export interface AssyrianNinevehResult {
   tabletSeal: string;
   companionSeal: string;
   archiveCycle: string;
+  questionTopic: 'clarity' | 'boundary' | 'work' | 'general';
+  ninevehCrossAxis: string;
   shadowWarning: string;
   ninevehInsight: string;
   tigrisTone: string;
@@ -102,13 +104,26 @@ export function calculateAssyrianNinevehClayTablet(params: {
   const companion = SEALS[companionIdx];
   const archiveCycle = ARCHIVE_CYCLES[cycleIdx];
   const shadowWarning = NINEVEH_SHADOW_WARNINGS[idx];
+  const q = (params.question ?? '').trim();
+  const questionTopic: AssyrianNinevehResult['questionTopic'] = !q
+    ? 'general'
+    : /기록|정리|생각|고민|패턴|헷갈/.test(q)
+      ? 'clarity'
+      : /경계|거절|요청|사람|관계|문턱/.test(q)
+        ? 'boundary'
+        : /일|업무|계획|실행|진로|작업/.test(q)
+          ? 'work'
+          : 'general';
+  const ninevehCrossAxis = `${questionTopic} · ${picked.seal.split('(')[0].trim()} × ${archiveCycle.split('(')[0].trim()}`;
 
   return {
-    engineVersion: 'LUCKEY-ASSYRIAN-NINEVEH-v2.3.0',
+    engineVersion: 'LUCKEY-ASSYRIAN-NINEVEH-v2.4.0',
     calculatedAtKst: formatKstStandard(now),
     tabletSeal: picked.seal,
     companionSeal: companion.seal,
     archiveCycle,
+    questionTopic,
+    ninevehCrossAxis,
     shadowWarning,
     ninevehInsight: picked.insight,
     tigrisTone: picked.tone,
@@ -126,6 +141,7 @@ export function formatAssyrianNinevehPrompt(res: AssyrianNinevehResult): string 
     `- 서고 상징: ${res.tabletSeal} (${res.tigrisTone})`,
     `- 보조 인장: ${res.companionSeal}`,
     `- 서고 기록 국면: ${res.archiveCycle}`,
+    `- 질문 맥락(${res.questionTopic}) · 니네베 교차 축: ${res.ninevehCrossAxis}`,
     `- 과잉·지연 경계: ${res.shadowWarning}`,
     `- 중심 통찰: ${res.ninevehInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,

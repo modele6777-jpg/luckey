@@ -9467,10 +9467,12 @@ test('Rainer Maria Rilke Letters to a Young Poet Engine: calculates Loving Solit
   assert(rep.elegiacSublimationScore >= 0 && rep.elegiacSublimationScore <= 100);
   assert(rep.openHorizonResilienceScore >= 0 && rep.openHorizonResilienceScore <= 100);
   assert(rep.activeRilkeTheme.themeTitleKo.length > 0);
+  assert(rep.rilkeCrossAxis.length > 0 && rep.shadowWarning.includes('과잉·편향 경계'));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAustrianRainerMariaRilkeLettersPrompt(rep);
   assert(prompt.includes('라이너 마리아 릴케 《젊은 시인에게 주는 편지·두이노의 비가》 고독 사랑·질문 품기 지표'));
   assert(prompt.includes(rep.activeRilkeTheme.themeTitleKo));
+  assert(prompt.includes('릴케 교차 축') && prompt.includes('과잉·편향 경계'));
 });
 
 test('Miguel de Cervantes Don Quixote Engine: calculates Noble Idealism, Courage Against Windmills, and Humor Resilience', () => {
@@ -14575,15 +14577,17 @@ test('Ladakhi Stupa Glacier Water engine: wisdom, +09:00 KST, and interpretive b
 
 test('Assyrian Nineveh Clay Tablet engine: seal, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAssyrianNinevehClayTablet({ profile, now: new Date('2026-11-20T08:40:00Z'), question: '머릿속 고민을 짧은 기록으로 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ASSYRIAN-NINEVEH-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ASSYRIAN-NINEVEH-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSeal.length > 0 && rep.companionSeal !== rep.tabletSeal);
   assert.ok(rep.archiveCycle.length > 0 && rep.shadowWarning.length > 0);
+  assert.equal(rep.questionTopic, 'clarity');
+  assert.ok(rep.ninevehCrossAxis.includes('clarity'));
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatAssyrianNinevehPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('아시리아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.archiveCycle) && prompt.includes(rep.reflectionFocus));
+  assert.ok(prompt.includes('아시리아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.archiveCycle) && prompt.includes(rep.reflectionFocus) && prompt.includes('니네베 교차 축'));
 });
 
 test('Tuareg Tagelmust Sahara Stars engine: compass, +09:00 KST, and interpretive boundary', () => {
@@ -14920,15 +14924,17 @@ test('Omani Frankincense Falaj Water engine: symbol, +09:00 KST, and interpretiv
 
 test('Baekje Gilt-Bronze Incense Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateBaekjeGiltBronzeIncenseCalm({ profile, now: new Date('2026-11-20T19:15:00Z'), question: '둥글고 온화한 비례로 마음을 펴고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-BAEKJE-INCENSE-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-BAEKJE-INCENSE-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.buyeoMotif);
   assert.ok(rep.incensePhase.length > 0 && rep.shadowWarning.length > 0);
+  assert.equal(rep.questionTopic, 'work');
+  assert.ok(rep.baekjeCrossAxis.includes('work'));
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatBaekjeIncensePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('백제') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.incensePhase) && prompt.includes(rep.shadowWarning));
+  assert.ok(prompt.includes('백제') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.incensePhase) && prompt.includes(rep.shadowWarning) && prompt.includes('백제 교차 축'));
 });
 
 test('Parthian Nisa Archery Poise engine: motif, +09:00 KST, and interpretive boundary', () => {

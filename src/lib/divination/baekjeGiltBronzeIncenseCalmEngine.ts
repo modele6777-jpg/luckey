@@ -8,6 +8,8 @@ export interface BaekjeIncenseResult {
   baekjeInsight: string;
   incenseTone: string;
   incensePhase: string;
+  questionTopic: 'relationship' | 'work' | 'inner' | 'general';
+  baekjeCrossAxis: string;
   shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -100,15 +102,28 @@ export function calculateBaekjeGiltBronzeIncenseCalm(params: {
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const incensePhase = INCENSE_PHASES[phaseIdx];
   const shadowWarning = SHADOW_WARNINGS[(phaseIdx + companionOffset) % SHADOW_WARNINGS.length];
+  const q = (params.question ?? '').trim();
+  const questionTopic: BaekjeIncenseResult['questionTopic'] = !q
+    ? 'general'
+    : /관계|사람|가족|연애|갈등|대화|화해/.test(q)
+      ? 'relationship'
+      : /일|업무|진로|결정|선택|계획|비례/.test(q)
+        ? 'work'
+        : /마음|긴장|여유|숨|감정|불안|비례/.test(q)
+          ? 'inner'
+          : 'general';
+  const baekjeCrossAxis = `${questionTopic} · ${picked.motif.split('(')[0].trim()} × ${incensePhase.split('(')[0].trim()}`;
 
   return {
-    engineVersion: 'LUCKEY-BAEKJE-INCENSE-v2.3.0',
+    engineVersion: 'LUCKEY-BAEKJE-INCENSE-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     buyeoMotif: picked.motif,
     companionMotif: companion.motif,
     baekjeInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     incenseTone: picked.tone,
     incensePhase,
+    questionTopic,
+    baekjeCrossAxis,
     shadowWarning,
     reflectionFocus: `백제 금동대향로·미소의 지혜 '${picked.motif}'와 동반 결 '${companion.motif}'가 '${incensePhase}' 국면에서 만나 뾰족한 긴장과 불필요한 장식을 덜어 내고 둥글고 온화한 비례로 마음을 고르게 펴 줍니다.`,
     ritualAction: `${picked.ritual} (${incensePhase} 흐름에 맞춰 동반 결 '${companion.motif.split('(')[0].trim()}'의 여유도 곁들여 보세요.)`,
@@ -124,6 +139,7 @@ export function formatBaekjeIncensePrompt(res: BaekjeIncenseResult): string {
     `- 부여 모티프: ${res.buyeoMotif} (${res.incenseTone})`,
     `- 동반 결: ${res.companionMotif}`,
     `- 향로 국면: ${res.incensePhase}`,
+    `- 질문 맥락(${res.questionTopic}) · 백제 교차 축: ${res.baekjeCrossAxis}`,
     `- 과잉 경계: ${res.shadowWarning}`,
     `- 중심 통찰: ${res.baekjeInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,

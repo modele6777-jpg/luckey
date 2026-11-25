@@ -8,12 +8,12 @@
  * 4. 시련과 상실을 성스러운 찬가로 빚어내는 비가의 승화력 (Elegiac Sublimation & Sacred Praise Score): 고통과 상실, 죽음의 유한성을 피하지 않고 존재의 아름다운 찬가로 변용(Verwandlung)시키는 힘.
  * 5. 거대한 열림 속에서 스스로를 바치는 초연한 회복탄력성 (Open Horizon & Surrender Resilience Index): 우주적 열림(Das Offene) 앞에서 두려움 없이 자신을 내어맡기는 의연한 평정심.
  *
- * @version LUCKEY-RILKE-LETTERS-TO-YOUNG-POET-v2.0.0
+ * @version LUCKEY-RILKE-LETTERS-TO-YOUNG-POET-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION = 'LUCKEY-RILKE-LETTERS-TO-YOUNG-POET-v2.3.0';
+export const AUSTRIAN_RAINER_MARIA_RILKE_LETTERS_VERSION = 'LUCKEY-RILKE-LETTERS-TO-YOUNG-POET-v2.4.0';
 
 export type RilkeQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -68,6 +68,8 @@ export interface AustrianRainerMariaRilkeLettersResult {
   situationalRilkeAudit: RilkeSituationalAudit;
   temporalRilkeRhythm: RilkeTemporalRhythm;
   reflectiveQuestion: string;
+  rilkeCrossAxis: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
   rilkeSynthesisMatrix?: {
     coreInsight: string;
@@ -298,6 +300,8 @@ export function calculateAustrianRainerMariaRilkeLetters(
     `${temporalRilkeRhythm.dailyWatchword}`;
 
   const trimmedQuery = (query ?? '').trim();
+  const rilkeCrossAxis = `${questionTopic} · ${activeRilkeTheme.themeKey} × ${temporalRilkeRhythm.timeWindowKo.split('·')[0].trim()}`;
+  const shadowWarning = `과잉·편향 경계: 고독을 사랑하고 질문을 품는 태도가 현실의 필요한 결단이나 다정한 소통까지 미루는 고립의 명분이 되지 않도록 균형을 지키십시오.`;
   const reflectiveQuestion = trimmedQuery
     ? `지금 마음속에 맴도는 "${trimmedQuery}"라는 질문을 당장 해결하려 서두르기보다, 하나의 방처럼 고요히 품고 살아낸다면 내면에서 어떤 변화가 자라날까요?`
     : situationalRilkeAudit.reflectionFocus;
@@ -316,6 +320,8 @@ export function calculateAustrianRainerMariaRilkeLetters(
     situationalRilkeAudit,
     temporalRilkeRhythm,
     reflectiveQuestion,
+    rilkeCrossAxis,
+    shadowWarning,
     interpretiveBoundary: situationalRilkeAudit.boundaryNotice,
     rilkeSynthesisMatrix: {
       coreInsight: activeRilkeTheme.themeTitleKo,
@@ -344,6 +350,8 @@ export function formatAustrianRainerMariaRilkeLettersPrompt(
     `- 일상 의례 제안: ${res.situationalRilkeAudit.ritualAction}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.rilkeSynthesisMatrix?.coreInsight ?? res.activeRilkeTheme.themeTitleKo}) | 실행(${res.rilkeSynthesisMatrix?.recommendedAction ?? res.situationalRilkeAudit.practiceGuidance}) | 주의(${res.rilkeSynthesisMatrix?.cautionNotice ?? '조급한 해답 경계'})`,
+    `- 릴케 교차 축: ${res.rilkeCrossAxis}`,
+    `- ${res.shadowWarning}`,
     `- 조언 요약: ${res.situationalRilkeAudit.counselNote}`,
     `- 릴케 원전 테제: "${res.focalRilkeAphorism.aphorismKo}"`,
     `- 원문: (${res.focalRilkeAphorism.aphorismGerman})`,
