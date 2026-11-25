@@ -3,9 +3,11 @@ import type { UserProfile } from '../sharedState';
 export interface BuryatBaikalResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계/신뢰' | '일/진로' | '재정/균형' | '내면/회복' | '전환/결정';
   baikalSpirit: string;
   companionSpirit: string;
   steppePhase: string;
+  baikalCrossAxis: string;
   tengriInsight: string;
   olkhonTone: string;
   shadowWarning: string;
@@ -84,6 +86,15 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+function classifyBaikalTopic(question?: string): BuryatBaikalResult['questionTopic'] {
+  const q = (question ?? '').toLowerCase();
+  if (/(사랑|연애|관계|결혼|사람|가족|친구|갈등|화해|신뢰|요호르)/.test(q)) return '관계/신뢰';
+  if (/(일|직장|진로|이직|사업|공부|시험|성과|일정)/.test(q)) return '일/진로';
+  if (/(돈|재정|투자|소비|수입|지출|저축|자산|균형)/.test(q)) return '재정/균형';
+  if (/(마음|불안|지침|회복|휴식|수면|건강|감정|물결|조율|샘물)/.test(q)) return '내면/회복';
+  return '전환/결정';
+}
+
 export function calculateBuryatBaikalTengriHarmony(params: {
   profile: UserProfile;
   now?: Date;
@@ -97,13 +108,20 @@ export function calculateBuryatBaikalTengriHarmony(params: {
   const companion = SPIRITS[(idx + companionOffset) % SPIRITS.length];
   const steppePhase = STEPPE_PHASES[stableHash(`${seed}|phase`) % STEPPE_PHASES.length];
   const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
+  const questionTopic = classifyBaikalTopic(params.question);
+  const shortPhase = steppePhase.split('(')[0].trim();
+  const shortSpirit = picked.spirit.split('(')[0].trim();
+  const shortCompanion = companion.spirit.split('(')[0].trim();
+  const baikalCrossAxis = `${shortPhase} × ${shortSpirit} · ${shortCompanion} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-BURYAT-BAIKAL-v2.3.0',
+    engineVersion: 'LUCKEY-BURYAT-BAIKAL-v2.4.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     baikalSpirit: picked.spirit,
     companionSpirit: companion.spirit,
     steppePhase,
+    baikalCrossAxis,
     tengriInsight: `${picked.insight} (동반 결: ${companion.spirit})`,
     olkhonTone: picked.tone,
     shadowWarning,
@@ -121,6 +139,7 @@ export function formatBuryatBaikalPrompt(res: BuryatBaikalResult): string {
     `- 바이칼 상징: ${res.baikalSpirit} (${res.olkhonTone})`,
     `- 동반 결: ${res.companionSpirit}`,
     `- 초원 국면: ${res.steppePhase}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.baikalCrossAxis}`,
     `- 중심 통찰: ${res.tengriInsight}`,
     `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
