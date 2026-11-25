@@ -1,11 +1,15 @@
 import type { UserProfile } from '../sharedState';
 
+export type BengaliBaulTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'general';
+
 export interface BengaliBaulResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: BengaliBaulTopic;
   baulString: string;
   companionString: string;
   melodyPhase: string;
+  baulCrossAxis: string;
   monerInsight: string;
   bengalTone: string;
   shadowWarning: string;
@@ -65,6 +69,22 @@ const STRINGS = [
   },
 ];
 
+const TOPIC_AXES: Record<BengaliBaulTopic, string> = {
+  career: '일·커리어에서는 수많은 조건을 덧붙이기보다 단 한 줄 에크타라처럼 가장 핵심적인 방향만 남기세요.',
+  relationship: '관계에서는 스스로 그어 둔 경계선을 잠시 낮추고 부드러운 호기심과 안부 한 마디를 건네 보세요.',
+  wealth: '재정·계약에서는 화려한 명분보다 가장 단순하고 솔직한 첫 기준(Sohoj)으로 판단을 정리하세요.',
+  health: '건강·회복에서는 찾아오는 감정을 억지로 가두지 말고 아친 파키처럼 가볍게 머물다 흐르게 두세요.',
+  general: '오늘의 흐름에서는 바울 선율과 보조 여운을 함께 살피며 소박한 진심의 울림을 지키세요.',
+};
+
+function classifyBengaliTopic(question: string): BengaliBaulTopic {
+  if (/일|직장|사업|커리어|프로젝트|성과|이직/.test(question)) return 'career';
+  if (/사랑|연애|관계|가족|친구|갈등|안부/.test(question)) return 'relationship';
+  if (/돈|재물|재정|투자|소비|계약/.test(question)) return 'wealth';
+  if (/건강|몸|피로|휴식|수면|마음|울림/.test(question)) return 'health';
+  return 'general';
+}
+
 function formatKstStandard(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -98,13 +118,19 @@ export function calculateBengaliBaulMonerManush(params: {
   const companion = STRINGS[companionIdx];
   const melodyPhase = MELODY_PHASES[stableHash(`${baseSeed}|phase`) % MELODY_PHASES.length];
   const shadowWarning = SHADOW_WARNINGS[stableHash(`${baseSeed}|shadow`) % SHADOW_WARNINGS.length];
+  const questionTopic = classifyBengaliTopic(params.question ?? '');
+  const shortPhase = melodyPhase.split('(')[0].trim();
+  const shortCompanion = companion.stringName.split('(')[0].trim();
+  const baulCrossAxis = `${shortPhase} × ${shortCompanion} — ${TOPIC_AXES[questionTopic]}`;
 
   return {
-    engineVersion: 'LUCKEY-BENGALI-BAUL-v2.3.0',
+    engineVersion: 'LUCKEY-BENGALI-BAUL-v2.4.0',
     calculatedAtKst: formatKstStandard(now),
+    questionTopic,
     baulString: picked.stringName,
     companionString: companion.stringName,
     melodyPhase,
+    baulCrossAxis,
     monerInsight: picked.insight,
     bengalTone: picked.tone,
     shadowWarning,
@@ -122,6 +148,7 @@ export function formatBengaliBaulPrompt(res: BengaliBaulResult): string {
     `- 바울 선율: ${res.baulString} (${res.bengalTone})`,
     `- 보조 여운: ${res.companionString}`,
     `- 선율 국면: ${res.melodyPhase}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.baulCrossAxis}`,
     `- 중심 통찰: ${res.monerInsight}`,
     `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
