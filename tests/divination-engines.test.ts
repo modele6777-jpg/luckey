@@ -10409,6 +10409,7 @@ test('v2.1.0 pure qualitative deepening: Aristotle Mesotes, Plato Cave, and Epic
 
   const plato = calculatePlatonicIdeaCave(testProfile, '타인의 시선과 본질 사이에서 진로를 고민 중입니다', now);
   assert.equal(plato.engineVersion, PLATONIC_IDEA_CAVE_VERSION);
+  assert.ok(plato.platoCrossAxis.length > 0 && plato.platoShadowWarning.length > 0);
   assert.ok(plato.dailyPracticeRitual.includes('카타바시스'));
   assert.ok(plato.reflectiveQuestion.length > 10);
   assert.ok(plato.interpretiveBoundary.length > 10);
@@ -10417,9 +10418,11 @@ test('v2.1.0 pure qualitative deepening: Aristotle Mesotes, Plato Cave, and Epic
   assert.ok(platoPrompt.includes('오늘의 실천 의례'));
   assert.ok(platoPrompt.includes('핵심 성찰 질문'));
   assert.ok(platoPrompt.includes('해석 경계'));
+  assert.ok(platoPrompt.includes('이데아 교차 축') && platoPrompt.includes('과잉·편향 경계'));
 
   const epictetus = calculateEpictetusDichotomyOfControl(testProfile, '내가 바꿀 수 없는 결과 때문에 마음이 흔들립니다', now);
   assert.equal(epictetus.engineVersion, EPICTETUS_CONTROL_VERSION);
+  assert.ok(epictetus.epictetusCrossAxis.length > 0 && epictetus.epictetusShadowWarning.length > 0);
   assert.ok(epictetus.dailyPracticeRitual.includes('프로하이레시스'));
   assert.ok(epictetus.reflectiveQuestion.length > 10);
   assert.ok(epictetus.interpretiveBoundary.length > 10);
@@ -10428,6 +10431,7 @@ test('v2.1.0 pure qualitative deepening: Aristotle Mesotes, Plato Cave, and Epic
   assert.ok(epictetusPrompt.includes('오늘의 실천 의례'));
   assert.ok(epictetusPrompt.includes('핵심 성찰 질문'));
   assert.ok(epictetusPrompt.includes('해석 경계'));
+  assert.ok(epictetusPrompt.includes('통제 교차 축') && epictetusPrompt.includes('과잉·편향 경계'));
 });
 
 test('Aztec Tonalamatl, Balinese Tri Hita Karana, and Celtic Tuatha Four Treasures v2.0.0: qualitative/temporal audits without prompt score leaks', () => {
@@ -11935,9 +11939,10 @@ test('DelphicChilon v2.3 · EleusinianTriptolemos v2.3 · Epicurean v2.4: reflec
   const ep = calculateEpicureanTetrapharmakos(profile, query, now);
   assert.equal(ep.engineVersion, EPICUREAN_TETRAPHARMAKOS_VERSION);
   assertKstTimestamp(ep.calculatedAtKst);
+  assert.ok(ep.epicureanCrossAxis.length > 0 && ep.epicureanShadowWarning.length > 0);
   assert.ok(ep.reflectiveQuestion.includes(query));
   const epPrompt = formatEpicureanTetrapharmakosPrompt(ep);
-  assert.ok(epPrompt.includes('KST') && epPrompt.includes('성찰 질문') && epPrompt.includes('해석 경계'));
+  assert.ok(epPrompt.includes('KST') && epPrompt.includes('정원 교차 축') && epPrompt.includes('성찰 질문') && epPrompt.includes('해석 경계'));
 });
 
 test('Heraclitus v2.4 · Plotinus v2.2 · AmeshaSpentas v2.3: reflectiveQuestion & KST prompt output', () => {

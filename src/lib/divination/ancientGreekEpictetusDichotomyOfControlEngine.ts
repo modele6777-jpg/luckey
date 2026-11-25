@@ -9,7 +9,7 @@
  * 3. 3대 수양 영역(Topoi): 욕망과 기피의 훈련(운명 순응), 충동과 행동의 훈련(적절한 의무), 동의와 판단의 훈련(이성적 명징).
  * 4. 아디아포라(Adiaphora)와 아파테이아(Apatheia): 외부 사물에 대한 초연함과 영혼의 흔들림 없는 평정.
  *
- * @version LUCKEY-EPICTETUS-CONTROL-v2.3.0
+ * @version LUCKEY-EPICTETUS-CONTROL-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
@@ -91,6 +91,8 @@ export interface EpictetusDichotomyOfControlResult {
   ritualAction: string;
   reflectionFocus: string;
   interpretiveBoundary: string;
+  epictetusCrossAxis: string;
+  epictetusShadowWarning: string;
   epictetusSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -301,6 +303,8 @@ export function calculateEpictetusDichotomyOfControl(
     '에픽테토스의 통제이분법 통찰은 외부 사건의 성패를 점치는 도구가 아니라, 인상(Phantasia)에 흔들리지 않고 내면의 자유의지(Prohairesis)를 세우기 위한 스토아 성찰 체계입니다.';
 
   const trimmedQ = (question ?? '').trim();
+  const epictetusCrossAxis = `${activeControlDomain.domainType} · ${focalToposDiscipline.toposNameKo.split(' ')[0]} × ${temporalProhairesisRhythm.kstWindow.split(' ')[0]}`;
+  const epictetusShadowWarning = `감정 억압을 스토아 초연(Apatheia)으로 오해하지 말고, '${situationalControlAudit.taEphHeminFocus}'에만 책임감 있게 집중하십시오.`;
   const epictetusSynthesisMatrix = {
     dominantTension: `${situationalControlAudit.taEphHeminFocus} ↔ ${situationalControlAudit.taOukEphHeminRelease}`,
     alignmentState: `${activeControlDomain.domainNameGreek} · ${focalToposDiscipline.toposNameKo}`,
@@ -329,6 +333,8 @@ export function calculateEpictetusDichotomyOfControl(
     ritualAction: dailyPracticeRitual,
     reflectionFocus: reflectiveQuestion,
     interpretiveBoundary,
+    epictetusCrossAxis,
+    epictetusShadowWarning,
     epictetusSynthesisMatrix,
   };
 }
@@ -359,6 +365,8 @@ export function formatEpictetusDichotomyOfControlPrompt(res: EpictetusDichotomyO
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
     `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
+    `- 통제 교차 축: ${res.epictetusCrossAxis}`,
+    `- 과잉·편향 경계: ${res.epictetusShadowWarning}`,
     matrixLine,
   ].filter(Boolean).join('\n');
 }

@@ -4,7 +4,7 @@
  * 서기전 3세기 헬레니즘 철학자 에피쿠로스(Epicurus)의 정원(The Garden) 철학 원전 기반.
  * 질문 맥락별 테트라파르마코스 4대 치유약 동적 매칭, KST 정원 리듬, 욕망 3분류 자족 매트릭스를 통합합니다.
  *
- * @version LUCKEY-EPICUREAN-TETRAPHARMAKOS-v2.3.0
+ * @version LUCKEY-EPICUREAN-TETRAPHARMAKOS-v2.5.0
  */
 
 import type { UserProfile } from '../sharedState';
@@ -73,6 +73,8 @@ export interface EpicureanTetrapharmakosResult {
   reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
+  epicureanCrossAxis: string;
+  epicureanShadowWarning: string;
 }
 
 export type EpicureanTetrapharmakosReport = EpicureanTetrapharmakosResult;
@@ -271,6 +273,8 @@ export function calculateEpicureanTetrapharmakos(
       : '타인의 시선이나 과도한 성취 압박(공허한 욕망)이 스며들기 쉽습니다. 필수적인 기쁨 외에는 과감히 덜어내세요.';
 
   const trimmedQ = (question || '').trim();
+  const epicureanCrossAxis = `${activeEpicureanStage.stageNameGreek.split(' ')[0]} · 제${remedy.remedyIndex}치유 × ${temporalGardenRhythm.gardenPhaseKo.split('·')[0].trim()}`;
+  const epicureanShadowWarning = '소박한 자족(Autarkeia)과 고요한 은둔(Lathe Biosas)이 현실의 필요한 책임이나 정당한 도전 자체를 회피하는 구실이 되지 않도록 균형을 살피세요.';
   const epicureanSynthesisMatrix = {
     dominantTension: `${primaryTetrapharmakosPrinciple.principleTitleKo} ↔ ${describeDesireBalance(vainEmptyRatio)}`,
     alignmentState: `${activeEpicureanStage.stageNameGreek} · ${temporalGardenRhythm.gardenPhaseKo}`,
@@ -308,6 +312,8 @@ export function calculateEpicureanTetrapharmakos(
     reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
+    epicureanCrossAxis,
+    epicureanShadowWarning,
   };
 }
 
@@ -335,5 +341,7 @@ export function formatEpicureanTetrapharmakosPrompt(result: EpicureanTetrapharma
   → 아타락시아 지혜: "${result.epicureanGardenEpiphany.peacefulWisdom}"
 - 오늘의 작은 의례: ${result.ritualAction}
 - 성찰 초점: ${result.reflectionFocus}
-- 해석 경계: ${result.interpretiveBoundary}${matrixLine}`;
+- 해석 경계: ${result.interpretiveBoundary}
+- 정원 교차 축: ${result.epicureanCrossAxis}
+- 과잉·편향 경계: ${result.epicureanShadowWarning}${matrixLine}`;
 }
