@@ -9,12 +9,30 @@
  *    - Fir Flatha (피르 플라하: 군주의 진실과 공의가 가져오는 대지의 풍요)
  * 2. 7등급 인격 가치 조화율 및 카르마적 분쟁 종결력 산출
  *
- * @version LUCKEY-CELTIC-BREHON-LAW-v1.0.0
+ * @version LUCKEY-CELTIC-BREHON-LAW-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const CELTIC_BREHON_LAW_VERSION = 'LUCKEY-CELTIC-BREHON-LAW-v2.3.0';
+export const CELTIC_BREHON_LAW_VERSION = 'LUCKEY-CELTIC-BREHON-LAW-v2.4.0';
+
+export type BrehonQuestionTopic = 'agreement' | 'relationship' | 'boundary' | 'restoration' | 'general';
+
+function classifyBrehonTopic(q: string): BrehonQuestionTopic {
+  if (/계약|돈|거래|조건|분배|정산|서약/.test(q)) return 'agreement';
+  if (/관계|갈등|가족|친구|연애|대화|화해/.test(q)) return 'relationship';
+  if (/경계|원칙|명예|기준|거절|존중/.test(q)) return 'boundary';
+  if (/회복|사과|보상|용서|치유|마음/.test(q)) return 'restoration';
+  return 'general';
+}
+
+const BREHON_TOPIC_WARNINGS: Record<BrehonQuestionTopic, string> = {
+  agreement: '계약의 조항과 등가성만 엄격히 따지다가 상호 신뢰(Cairde)의 온기까지 메마르지 않도록 여백을 두십시오.',
+  relationship: '상대의 입장을 배려하려다 마땅히 지켜야 할 공정한 선(Cóir)까지 흐리지 않도록 기준을 분명히 하십시오.',
+  boundary: '명예와 원칙을 지키는 태도가 완고한 고집이나 타인 배제로 굳어지지 않도록 대화의 문을 남겨 두십시오.',
+  restoration: '회복과 용서를 서두르다가 정당한 책임 확인과 실질적 보완 단계가 생략되지 않도록 차분히 살피십시오.',
+  general: '진실(Fír)과 공정(Cóir) 어느 한쪽만 앞세우지 말고 사실과 배려가 함께 서는 자리를 찾으십시오.',
+};
 
 export interface BrehonJusticeRank {
   rankLevel: number;
@@ -27,6 +45,9 @@ export interface BrehonJusticeRank {
 export interface CelticBrehonLawResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: BrehonQuestionTopic;
+  brehonCrossAxis: string;
+  brehonShadowWarning: string;
   // 5대 핵심 지표 (0~100)
   cairdePeacePactHarmony: number; // 카이르데 신성 평화 조약 조화율
   ericCompensationRestoration: number; // 에릭 우주적 피해 복구 및 카르마 청산율
@@ -166,6 +187,9 @@ export function calculateCelticBrehonLaw(
   const resolutionPrecedent = BREHON_PRECEDENTS[precedentIdx];
 
   const temporalBrehonRhythm = getTemporalBrehonRhythm(now);
+  const questionTopic = classifyBrehonTopic(q);
+  const brehonCrossAxis = `${questionTopic} · ${activeJusticeRank.rankNameKo} · ${primaryBrehonVirtue.gaelic}`;
+  const brehonShadowWarning = BREHON_TOPIC_WARNINGS[questionTopic];
   const situationalBrehonAudit = /계약|돈|갈등|관계|분쟁|약속/.test(q)
     ? {
         focusTheme: `${primaryBrehonVirtue.nameKo} · 상호 공정 합의 감사`,
@@ -192,6 +216,9 @@ export function calculateCelticBrehonLaw(
   return {
     engineVersion: CELTIC_BREHON_LAW_VERSION,
     calculatedAtKst: temporalBrehonRhythm.kstTimeLabel,
+    questionTopic,
+    brehonCrossAxis,
+    brehonShadowWarning,
     cairdePeacePactHarmony,
     ericCompensationRestoration,
     logNEnechHonorFaceValueScore,
@@ -231,8 +258,10 @@ export function formatCelticBrehonLawPrompt(result: CelticBrehonLawResult): stri
   → 행동 지침: ${result.primaryBrehonVirtue.actionableDirective}
 - 전승 판례 조언: 《${result.resolutionPrecedent.precedentTitle}》
   → 고대 법훈: "${result.resolutionPrecedent.moralWisdom}"
-- 질문 맥락 감사 (${result.situationalBrehonAudit.focusTheme}): ${result.situationalBrehonAudit.tacticalStep}
+- 질문 맥락 감사 (${result.situationalBrehonAudit.focusTheme} · ${result.questionTopic}): ${result.situationalBrehonAudit.tacticalStep}
 - KST 시공간 법정 리듬: ${result.temporalBrehonRhythm.groveCourtWindow} / ${result.temporalBrehonRhythm.seasonalBrehonTone}
+- 브레혼 교차 축: ${result.brehonCrossAxis}
+- 과잉·편향 경계: ${result.brehonShadowWarning}
 - 브레혼 교차 매트릭스: 핵심(${result.brehonSynthesisMatrix.coreInsight}) | 실행(${result.brehonSynthesisMatrix.recommendedAction}) | 법훈(${result.brehonSynthesisMatrix.cautionNotice})
 - 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}
 - 해석 경계: ${result.boundaryNotice}`;

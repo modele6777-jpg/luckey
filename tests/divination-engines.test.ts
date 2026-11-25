@@ -6121,8 +6121,10 @@ test('Egyptian Amduat Twelve Hours Ra Engine: calculates 12 hours of underworld,
 });
 
 test('Celtic Druid Brehon Law Justice Engine: calculates 4 cosmic justices, Cairde peace pact and Eric compensation', () => {
-  const rep = calculateCelticBrehonLaw(profile);
+  const rep = calculateCelticBrehonLaw(profile, undefined, '계약 조건과 관계 갈등을 공정하게 풀고 싶어요');
   assert.equal(rep.engineVersion, CELTIC_BREHON_LAW_VERSION);
+  assert.equal(rep.questionTopic, 'agreement');
+  assert(rep.brehonCrossAxis.length > 0 && rep.brehonShadowWarning.length > 0);
   assert(rep.cairdePeacePactHarmony >= 0 && rep.cairdePeacePactHarmony <= 100);
   assert(rep.ericCompensationRestoration >= 0 && rep.ericCompensationRestoration <= 100);
   assert(rep.logNEnechHonorFaceValueScore >= 0 && rep.logNEnechHonorFaceValueScore <= 100);
@@ -6132,6 +6134,7 @@ test('Celtic Druid Brehon Law Justice Engine: calculates 4 cosmic justices, Cair
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatCelticBrehonLawPrompt(rep);
   assert(prompt.includes('고대 켈트 드루이드 《브레혼 법전(Brehon Law)》'));
+  assert(prompt.includes('브레혼 교차 축') && prompt.includes('과잉·편향 경계'));
   assert(prompt.includes(rep.activeJusticeRank.rankNameKo));
 });
 
@@ -13665,17 +13668,17 @@ test('Melanesian Sand Drawing Pattern engine: motifs, +09:00 KST, and interpreti
 
 test('Etruscan Templum Sky Division engine: sectors, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateEtruscanTemplumSkyDivision({ profile, now: new Date('2026-11-20T05:40:00Z'), question: '지금 집중할 영역과 경계를 정하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ETRUSCAN-TEMPLUM-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ETRUSCAN-TEMPLUM-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.equal(rep.questionTopic, 'decision');
   assert.ok(rep.companionSector.name !== rep.primarySector.name);
-  assert.ok(rep.templumCycle.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.templumCycle.length > 0 && rep.topicCrossDirective.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatEtruscanTemplumPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('템플룸') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSector.name));
-  assert.ok(prompt.includes('구획 순환 축') && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('구획 순환 축') && prompt.includes('맥락 교차 지침') && prompt.includes('과잉 경계'));
 });
 
 test('Ainu Kamuy Iomante Harmony engine: aspects, +09:00 KST, and interpretive boundary', () => {
@@ -14097,17 +14100,17 @@ test('Zapotec Piye Cloud Wisdom engine: glyph, +09:00 KST, and interpretive boun
 
 test('Sakha Olonkho Three Worlds engine: pillar, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSakhaOlonkhoThreeWorlds({ profile, now: new Date('2026-11-20T07:22:00Z'), question: '오늘의 단단한 뿌리를 돌보고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SAKHA-OLONKHO-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SAKHA-OLONKHO-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.equal(rep.questionTopic, 'health');
   assert.ok(rep.companionPillar !== rep.worldPillar);
-  assert.ok(rep.worldAxisBreath.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.worldAxisBreath.length > 0 && rep.sakhaCrossAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSakhaOlonkhoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('사하') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPillar));
-  assert.ok(prompt.includes('세 세계 공명 축') && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('세 세계 공명 축') && prompt.includes('맥락 교차 축') && prompt.includes('과잉 경계'));
 });
 
 test('Scythian Golden Stag Steppe engine: emblem, +09:00 KST, and interpretive boundary', () => {
