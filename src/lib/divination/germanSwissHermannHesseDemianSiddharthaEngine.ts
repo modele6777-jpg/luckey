@@ -9,12 +9,12 @@
  * 4. 강물의 지혜 원융 합일도(River Wisdom Unity Index): 강물의 소리처럼 만물의 슬픔과 기쁨, 생성과 소멸이 거대한 하나의 조화로 흐르고 있음을 직관하는 영혼의 평정심.
  * 5. 내면의 부름 자기 성실성(Inner Calling Fidelity Score): 세속의 인정이나 군중의 소음에 흔들리지 않고, 가슴 깊은 곳에서 솟아 나오는 자기만의 목소리를 살아내는 진실성.
  *
- * @version LUCKEY-HERMANN-HESSE-WISDOM-v2.0.0
+ * @version LUCKEY-HERMANN-HESSE-WISDOM-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_HERMANN_HESSE_VERSION = 'LUCKEY-HERMANN-HESSE-WISDOM-v2.3.0';
+export const GERMAN_HERMANN_HESSE_VERSION = 'LUCKEY-HERMANN-HESSE-WISDOM-v2.4.0';
 
 export interface HesseTheme {
   themeKey: string;
@@ -52,6 +52,11 @@ export interface GermanSwissHermannHesseDemianSiddharthaResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  hesseCrossAxis: {
+    polarityBalance: string;
+    abraxasMomentum: string;
+    dominantDrive: string;
   };
   ritualAction: string;
   reflectionFocus: string;
@@ -205,6 +210,21 @@ export function calculateGermanSwissHermannHesseDemianSiddhartha(
     integratedAction: `${activeHesseTheme.practicalCounsel} (${focalHesseAphorism.actionGuidance})`,
   };
 
+  const hesseCrossAxis = {
+    polarityBalance:
+      innerPolarityHarmonizationIndex >= riverWisdomUnityIndex
+        ? '양극 포용 우위 (빛과 어둠을 함께 껴안아 내적 균형을 지키는 흐름)'
+        : '강물 원융 우위 (시간과 흐름 속에서 조화를 길어 올리는 국면)',
+    abraxasMomentum:
+      abraxasSelfActualizationScore >= 88
+        ? '알을 깨는 강한 도약 (익숙한 틀을 넘어 새 지평으로 나아가는 추진력)'
+        : '주체적 내면 성숙 (조용히 자기만의 목소리를 단련하는 단계)',
+    dominantDrive:
+      siddharthaAutonomousQuestScore >= innerCallingFidelityScore
+        ? '주체적 구도(직접 체험으로 진실을 검증하는 힘)'
+        : '내면 성실(가슴 깊은 곳의 부름에 정직하게 응답하는 힘)',
+  };
+
   const cleanedQuery = (query ?? '').trim();
   const reflectiveQuestion = cleanedQuery
     ? `"${cleanedQuery}"라는 물음 앞에서 지금 내가 깨고 나와야 할 익숙한 알(고정관념)은 무엇이며, 내면의 진실한 부름은 어느 쪽을 향하고 있나요?`
@@ -225,6 +245,7 @@ export function calculateGermanSwissHermannHesseDemianSiddhartha(
       philosophicalCounsel,
     },
     hesseSynthesisMatrix,
+    hesseCrossAxis,
     ritualAction: focalHesseAphorism.actionGuidance,
     reflectionFocus: `${activeHesseTheme.themeTitleKo}의 부름 앞에서 내가 깨고 나와야 할 익숙한 껍질은 무엇인가?`,
     reflectiveQuestion,
@@ -260,6 +281,9 @@ export function formatGermanSwissHermannHesseDemianSiddharthaPrompt(
       `- 통합 실천: ${res.hesseSynthesisMatrix.integratedAction}`,
     );
   }
-  lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
+  lines.push(
+    `- 헤세 교차 축 [양극 균형: ${res.hesseCrossAxis.polarityBalance} | 비상 추진력: ${res.hesseCrossAxis.abraxasMomentum} | 중심 동력: ${res.hesseCrossAxis.dominantDrive}]`,
+    `- 해석 경계: ${res.interpretiveBoundary}`,
+  );
   return lines.join('\n');
 }

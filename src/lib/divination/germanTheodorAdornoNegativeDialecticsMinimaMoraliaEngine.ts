@@ -8,12 +8,12 @@
  * 4. 불협화음 직시 및 긴장 감내력 (Dissonance Tolerance & Aesthetic Resistance Index): 가짜 조화나 거짓된 낙관론의 마취에 기대지 않고, 현실의 갈등과 불협화음(Dissonanz)을 정직하게 버텨내며 예술적 긴장으로 승화하는 힘.
  * 5. 성좌(Konstellation)적 사고 및 입체적 구원 지표 (Constellation Thinking & Multidimensional Redemption Score): 닫힌 하나의 교조에 갇히지 않고 여러 개념과 현상들을 별자리처럼 입체적으로 엮어 진리의 다채로운 단면을 직관하는 사유력.
  *
- * @version LUCKEY-THEODOR-ADORNO-NEGATIVE-DIALECTICS-v2.1.0
+ * @version LUCKEY-THEODOR-ADORNO-NEGATIVE-DIALECTICS-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_THEODOR_ADORNO_NEGATIVE_DIALECTICS_VERSION = 'LUCKEY-THEODOR-ADORNO-NEGATIVE-DIALECTICS-v2.3.0';
+export const GERMAN_THEODOR_ADORNO_NEGATIVE_DIALECTICS_VERSION = 'LUCKEY-THEODOR-ADORNO-NEGATIVE-DIALECTICS-v2.4.0';
 
 export interface AdornoTheme {
   themeKey: string;
@@ -56,6 +56,11 @@ export interface GermanTheodorAdornoNegativeDialecticsMinimaMoraliaResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  adornoCrossAxis: {
+    nonIdenticalMargin: string;
+    dissonanceDrive: string;
+    dominantCritique: string;
   };
 }
 
@@ -205,6 +210,21 @@ export function calculateGermanTheodorAdornoNegativeDialecticsMinimaMoralia(
     integratedAction: `${activeAdornoTheme.practicalCounsel} (${focalAdornoAphorism.actionGuidance})`,
   };
 
+  const adornoCrossAxis = {
+    nonIdenticalMargin:
+      nonIdenticalSafeguardScore >= 93
+        ? '고유한 비동일자 수호 (획일적 기준에 흡수되지 않는 날카로운 차이 보존)'
+        : '균열 응시와 성찰 (일상의 작은 타성을 점검하며 주체성을 지키는 흐름)',
+    dissonanceDrive:
+      dissonanceResilienceIndex >= instrumentalReasonTranscendenceScore
+        ? '불협화음 감내 우위 (값싼 위로 대신 긴장 속에서 진실을 길어 올리는 힘)'
+        : '도구적 이성 탈피 우위 (수단화·물상화의 잣대를 걷어내고 존엄을 지키는 힘)',
+    dominantCritique:
+      constellationDialecticsScore >= damagedLifeCriticalReflectionIndex
+        ? '성좌적 다면 사유(여러 관점을 별자리처럼 엮어 본질을 비추는 통찰)'
+        : '미니마 모랄리아 성찰(일상의 세부를 통해 진실성을 점검하는 비판적 시선)',
+  };
+
   return {
     engineVersion: GERMAN_THEODOR_ADORNO_NEGATIVE_DIALECTICS_VERSION,
     calculatedAtKst: formatAdornoKstTimestamp(now),
@@ -225,6 +245,7 @@ export function calculateGermanTheodorAdornoNegativeDialecticsMinimaMoralia(
       philosophicalCounsel,
     },
     adornoSynthesisMatrix,
+    adornoCrossAxis,
   };
 }
 
@@ -260,5 +281,6 @@ export function formatGermanTheodorAdornoNegativeDialecticsMinimaMoraliaPrompt(
       `- 통합 실천: ${res.adornoSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 아도르노 교차 축 [비동일자 여백: ${res.adornoCrossAxis.nonIdenticalMargin} | 긴장 동력: ${res.adornoCrossAxis.dissonanceDrive} | 비판 중심: ${res.adornoCrossAxis.dominantCritique}]`);
   return lines.join('\n');
 }
