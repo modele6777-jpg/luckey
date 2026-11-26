@@ -3227,13 +3227,14 @@ test('Hero Myth Monomyth Engine: 조셉 캠벨 영웅의 여정 12단계 & 운�
   assert(res.heroicBreakthroughAction.length > 0);
   assertKstTimestamp(res.calculatedAtKst);
   assert(Boolean(res.monomythSynthesisMatrix?.integratedAction));
+  assert(Boolean(res.monomythCrossAxis?.stageArchetype && res.monomythCrossAxis?.thresholdMomentum && res.monomythCrossAxis?.elixirDirection));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatHeroMythMonomythPrompt(res);
-  assert(prompt.includes('LUCKEY 조셉 캠벨 영웅의 여정 12단계 모노미스'));
+  assert(prompt.includes('LUCKEY 조셉 캠벨 영웅의 여정 12단계 모노미스 v2.4.0'));
   assert(prompt.includes(res.heroicArchetype));
   assert(prompt.includes(res.ritualAction));
-  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('모노미스 교차 축') && prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -4080,12 +4081,14 @@ test('Hindu Tantric Kundalini & Nadi Awakening Engine: calculates nadis, chakras
   assert(rep.kundaliniVitalityLevel >= 0 && rep.kundaliniVitalityLevel <= 100);
   assert(rep.granthis.length === 3);
   assert(rep.pranayama.primaryBreathwork.length > 0);
+  assert(Boolean(rep.kundaliniCrossAxis?.nadiPolarity && rep.kundaliniCrossAxis?.granthiAlignment && rep.kundaliniCrossAxis?.pranaDirection));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHinduTantricKundaliniPrompt(rep);
   assert(prompt.includes('힌두 탄트라 쿤달리니 7대 차크라 나디 각성 엔진'));
   assert(prompt.includes(rep.primaryNadi.sanskritName));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes('쿤달리니 교차 축'));
 });
 
 test('Guiguzi Liangtouqian Decision Matrix Engine: calculates two heads gua, destiny star and strategic matrix', () => {
@@ -15827,10 +15830,10 @@ test('Naxi Dongba Chime engine: motif, +09:00 KST, and interpretive boundary', (
 
 test('Hmong Story Cloth engine: pattern, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateHmongStoryCloth({ profile, now: new Date('2026-11-20T22:15:00Z'), question: '지나온 일상을 차분히 엮고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-HMONG-CLOTH-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-HMONG-CLOTH-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPattern !== rep.stitchPattern);
-  assert.ok(rep.storyWeaveAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.storyWeaveAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatHmongStoryClothPrompt(rep);

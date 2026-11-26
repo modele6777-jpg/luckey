@@ -13,6 +13,7 @@ export interface HmongStoryClothResult {
   stitchPattern: string;
   companionPattern: string;
   storyWeaveAxis: string;
+  topicBalanceHint: string;
   clothNarrative: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -75,6 +76,13 @@ const SHADOWS = [
   '고난을 꽃 무늬로 엮어 내는 힘은 귀하지만 지금 아픈 상처에 억지로 미화된 의미부터 붙이지는 마세요.',
 ] as const;
 
+const HMONG_TOPIC_HINTS: Record<HmongStoryClothResult['questionTopic'], string> = {
+  '한땀·과정': '오늘의 한 땀에 정성을 들이되 전체 지도가 가리키는 방향과 마감 시기도 함께 점검하세요.',
+  '테두리·습관': '단단한 테두리 루틴을 유지하면서도 안쪽 장면에 숨 쉴 수 있는 유연한 여백을 남겨 두세요.',
+  '서사·기억': '지나온 장면들을 한 땀씩 되짚되 이미 지나간 실패의 색실을 오늘 위에 덧칠하지 마세요.',
+  '자수 전반': '한 땀의 성실함과 전체 서사를 보는 시야가 맞물릴 때 비로소 고유한 무늬가 완성됩니다.',
+};
+
 function classifyHmongTopic(q: string): HmongStoryClothResult['questionTopic'] {
   if (/한땀|과정|단계|오늘|쪼개/.test(q)) return '한땀·과정';
   if (/테두리|습관|루틴|규칙|유지/.test(q)) return '테두리·습관';
@@ -93,15 +101,17 @@ export function calculateHmongStoryCloth(input: HmongStoryClothInput): HmongStor
   const stitchPattern = PATTERNS[patternIdx];
   const companionPattern = PATTERNS[(patternIdx + companionOffset) % PATTERNS.length];
   const storyWeaveAxis = `${stitchPattern} ↔ ${companionPattern} (${questionTopic})`;
+  const topicBalanceHint = HMONG_TOPIC_HINTS[questionTopic];
   const shadowWarning = SHADOWS[patternIdx];
 
   return {
-    engineVersion: 'LUCKEY-HMONG-CLOTH-v2.3.0',
+    engineVersion: 'LUCKEY-HMONG-CLOTH-v2.4.0',
     calculatedAtKst: toKstIso(input.now),
     questionTopic,
     stitchPattern,
     companionPattern,
     storyWeaveAxis,
+    topicBalanceHint,
     clothNarrative: NARRATIVES[(seed >>> 3) % NARRATIVES.length],
     reflectionFocus: `몽족의 파즈 너우(Paj Ntaub) 자수 이야기 천처럼 주 무늬('${stitchPattern}')와 동반 무늬('${companionPattern}')를 나란히 엮어 지나온 이동과 일상의 기억을 전체 서사로 바라보는 상징적 관점입니다.`,
     ritualAction: ACTIONS[patternIdx],
@@ -116,6 +126,7 @@ export function formatHmongStoryClothPrompt(res: HmongStoryClothResult): string 
     `[몽족·자수 이야기 천 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
     `질문 맥락: ${res.questionTopic} | 자수·서사 축: ${res.storyWeaveAxis}`,
+    `맥락 균형 조언: ${res.topicBalanceHint}`,
     `자수 무늬: ${res.stitchPattern}`,
     `동반 무늬: ${res.companionPattern}`,
     `서사: ${res.clothNarrative}`,
