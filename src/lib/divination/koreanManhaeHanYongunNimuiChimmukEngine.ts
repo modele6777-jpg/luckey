@@ -8,12 +8,12 @@
  * 4. 진흙 속에서도 물들지 않는 출오염(出汚染) 연꽃 지조: 어떤 회유와 탄압 속에서도 호적에 이름을 올리지 않고 북향집(심우장)을 지키며 끝까지 민족의 얼을 수호한 백절불굴의 순결한 절의.
  * 5. 대의단(大疑團)과 철저한 깨달음의 원융 평정심: 백담사와 오세암의 혹독한 참선 속에서 분별망상을 털어내고, 생사의 고뇌를 꿰뚫어 만유일체의 대자유에 도달한 선사(禪師)의 심령 평정.
  *
- * @version LUCKEY-MANHAE-HAN-YONGUN-NIMUI-CHIMMUK-v2.1.0
+ * @version LUCKEY-MANHAE-HAN-YONGUN-NIMUI-CHIMMUK-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_MANHAE_HAN_YONGUN_VERSION = 'LUCKEY-MANHAE-HAN-YONGUN-NIMUI-CHIMMUK-v2.3.0';
+export const KOREAN_MANHAE_HAN_YONGUN_VERSION = 'LUCKEY-MANHAE-HAN-YONGUN-NIMUI-CHIMMUK-v2.4.0';
 
 export interface HanYongunTheme {
   themeKey: string;
@@ -55,6 +55,11 @@ export interface ManhaeHanYongunNimuiChimmukResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  manhaeCrossAxis: {
+    themePair: string;
+    aphorismPair: string;
+    vowAnchor: string;
   };
   ritualAction: string;
   reflectionFocus: string;
@@ -208,6 +213,11 @@ export function calculateManhaeHanYongunNimuiChimmuk(
     alignmentState: describeManhaeStage(avgScore),
     integratedAction: `${focalHanYongunAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
+  const manhaeCrossAxis = {
+    themePair: `${activeHanYongunTheme.themeTitleHanja.split(' ')[0]} ↔ ${secondaryHanYongunTheme.themeTitleHanja.split(' ')[0]}`,
+    aphorismPair: `${focalHanYongunAphorism.aphorismKey} · ${secondaryHanYongunAphorism.aphorismKey}`,
+    vowAnchor: focalHanYongunAphorism.sourceContext,
+  };
 
   const ritualAction = `[${activeHanYongunTheme.themeTitleHanja}] ${focalHanYongunAphorism.actionGuidance}`;
   const reflectionFocus = reflectiveQuestion;
@@ -231,6 +241,7 @@ export function calculateManhaeHanYongunNimuiChimmuk(
       philosophicalCounsel,
     },
     manhaeSynthesisMatrix,
+    manhaeCrossAxis,
     ritualAction,
     reflectionFocus,
   };
@@ -264,6 +275,7 @@ export function formatManhaeHanYongunNimuiChimmukPrompt(res: ManhaeHanYongunNimu
   if (res.manhaeSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스 [핵심 긴장: ${res.manhaeSynthesisMatrix.dominantTension} | 조율 상태: ${res.manhaeSynthesisMatrix.alignmentState}]`,
+      `- 만해 침묵·지조 교차 축: ${res.manhaeCrossAxis.themePair} | ${res.manhaeCrossAxis.vowAnchor}`,
       `- 통합 실천: ${res.manhaeSynthesisMatrix.integratedAction}`,
     );
   }

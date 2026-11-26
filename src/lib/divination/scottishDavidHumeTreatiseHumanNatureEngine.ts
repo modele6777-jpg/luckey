@@ -8,12 +8,12 @@
  * 4. 관습과 경험의 실용적 삶의 안내(Custom as the Great Guide of Life): 공허한 형이상학 대신 세월 속에 검증된 상식과 누적된 경험을 존중하는 실용적 슬기.
  * 5. 극단과 광신을 경계하는 온유한 평정심(Gentle Philosophical Composure): 심오한 철학적 회의 속에서도 친구들과의 대화와 유쾌한 웃음을 잃지 않는 명랑하고 온유한 삶의 균형.
  *
- * @version LUCKEY-DAVID-HUME-TREATISE-HUMAN-NATURE-v2.3.0
+ * @version LUCKEY-DAVID-HUME-TREATISE-HUMAN-NATURE-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SCOTTISH_DAVID_HUME_VERSION = 'LUCKEY-DAVID-HUME-TREATISE-HUMAN-NATURE-v2.3.0';
+export const SCOTTISH_DAVID_HUME_VERSION = 'LUCKEY-DAVID-HUME-TREATISE-HUMAN-NATURE-v2.4.0';
 
 export type HumeQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -61,6 +61,11 @@ export interface DavidHumeTreatiseHumanNatureResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  humeCrossAxis: {
+    themePair: string;
+    phaseAlignment: string;
+    aphorismAnchor: string;
   };
 }
 
@@ -221,6 +226,11 @@ export function calculateDavidHumeTreatiseHumanNature(
     alignmentState: describeHumeStage(composite),
     integratedAction: `${focalHumeAphorism.actionGuidance} (${humePhase})${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
+  const humeCrossAxis = {
+    themePair: `${activeHumeTheme.themeKey} ↔ ${secondaryHumeTheme.themeKey}`,
+    phaseAlignment: `${questionTopic} · ${humePhase.split('(')[0].trim()}`,
+    aphorismAnchor: focalHumeAphorism.aphorismKey,
+  };
   const trimmedQ = query?.trim() ?? '';
   const reflectiveQuestion = trimmedQ
     ? `'${humePhase}' 국면에서 지금 고민하시는 '${trimmedQ}'에서 성급한 독단을 한 걸음 거두고 경험과 온유한 공감(Sympathy)으로 다시 바라보면 어떤 유연한 길이 보입니까?`
@@ -253,6 +263,7 @@ export function calculateDavidHumeTreatiseHumanNature(
     reflectiveQuestion,
     interpretiveBoundary,
     humeSynthesisMatrix,
+    humeCrossAxis,
   };
 }
 
@@ -278,6 +289,7 @@ export function formatDavidHumeTreatiseHumanNaturePrompt(res: DavidHumeTreatiseH
   if (res.humeSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스 [핵심 긴장: ${res.humeSynthesisMatrix.dominantTension} | 조율 상태: ${res.humeSynthesisMatrix.alignmentState}]`,
+      `- 흄 경험 교차 축: ${res.humeCrossAxis.themePair} | ${res.humeCrossAxis.phaseAlignment}`,
       `- 통합 실천: ${res.humeSynthesisMatrix.integratedAction}`,
     );
   }
