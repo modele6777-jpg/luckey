@@ -5,13 +5,13 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { 
   X, Send, Sparkles, TreeDeciduous, Moon, Activity, Bird, Music, Trash2, ChevronRight, ChevronLeft, ChevronDown, HelpCircle, AlertCircle,
-  Volume2, VolumeX, Loader2, Sun, Camera, Paperclip, Copy, Check, FileText, FileCode
+  Volume2, VolumeX, Loader2, Sun, Camera, Paperclip, Copy, Check, FileText, FileCode, Pause, Play
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useApp, PersonaType } from "../contexts/AppContext";
 import { Streamdown } from "./Streamdown";
 import { TTSButton } from "./TTSButton";
-import { stopTTS, playConversation, subscribeTTS, playTTSInChunks, normalizeTextForSpeech } from "../utils/tts";
+import { stopTTS, pauseTTS, resumeTTS, playConversation, subscribeTTS, playTTSInChunks, normalizeTextForSpeech } from "../utils/tts";
 import { getContextAwarePrompts } from "../utils/dynamicContextSuggestions";
 import { calculateDetailedSaju } from "../lib/sajuAnalysis";
 import { cleanUserMessageDisplay, cleanAssistantMessageDisplay } from "../utils/cleanMessage";
@@ -492,11 +492,13 @@ export function UnifiedChat() {
   const [drawerTtsInfo, setDrawerTtsInfo] = useState<{
     isSpeaking: boolean;
     isLoading: boolean;
+    isPaused: boolean;
     activeText: string | null;
     activeSentence?: string | null;
   }>({
     isSpeaking: false,
     isLoading: false,
+    isPaused: false,
     activeText: null,
     activeSentence: null,
   });
@@ -511,6 +513,7 @@ export function UnifiedChat() {
       setDrawerTtsInfo({
         isSpeaking: state.isSpeaking,
         isLoading: state.isLoading,
+        isPaused: Boolean(state.isPaused),
         activeText: state.activeText,
         activeSentence: state.activeSentence || state.currentSentence || null,
       });
@@ -541,6 +544,11 @@ export function UnifiedChat() {
     primeTTSAudioElement();
     const joined = joinKakaoBubblesForTTS(text, 4) || text;
     const clean = normalizeTextForSpeech(joined);
+    if (drawerPlayingMsgId === id && drawerTtsInfo.isPaused) {
+      // 일시정지된 말풍선을 다시 눌렀다면 처음부터가 아니라 그 자리에서 이어 읽는다.
+      resumeTTS();
+      return;
+    }
     if (drawerPlayingMsgId === id && (drawerTtsInfo.isSpeaking || drawerTtsInfo.isLoading)) {
       stopTTS();
       setDrawerPlayingMsgId(null);
@@ -549,7 +557,7 @@ export function UnifiedChat() {
       setDrawerPlayingMsgId(id);
       playTTSInChunks(clean, voice, 110, undefined, undefined, { skipCompletionChime: true, isUserToggleClick: true });
     }
-  }, [drawerPlayingMsgId, drawerTtsInfo.isLoading, drawerTtsInfo.isSpeaking]);
+  }, [drawerPlayingMsgId, drawerTtsInfo.isLoading, drawerTtsInfo.isPaused, drawerTtsInfo.isSpeaking]);
 
   // Always use unified Lucy Master
   useEffect(() => {
@@ -1020,6 +1028,31 @@ export function UnifiedChat() {
                     ) : (
                       <Volume2 size={14} />
                     )}
+                  </button>
+                )}
+
+                {(drawerTtsInfo.isSpeaking || drawerTtsInfo.isLoading || drawerTtsInfo.isPaused || isReadingAll || isReadingAllLoading) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (drawerTtsInfo.isPaused) {
+                        unlockAudioPlayback();
+                        primeTTSAudioElement();
+                        resumeTTS();
+                      } else {
+                        pauseTTS();
+                      }
+                    }}
+                    data-drawer-tts-toggle={drawerTtsInfo.isPaused ? "resume" : "pause"}
+                    className={`p-2 rounded-xl bg-white/5 border transition-all active:scale-95 flex items-center justify-center ${
+                      drawerTtsInfo.isPaused
+                        ? "text-amber-300 border-amber-400/40 bg-amber-500/10 hover:bg-amber-500/15"
+                        : "text-white/70 border-white/10 hover:text-white hover:bg-white/10"
+                    }`}
+                    title={drawerTtsInfo.isPaused ? "이어듣기" : "음성 일시정지"}
+                    aria-label={drawerTtsInfo.isPaused ? "이어듣기" : "음성 일시정지"}
+                  >
+                    {drawerTtsInfo.isPaused ? <Play size={14} className="fill-current" /> : <Pause size={14} />}
                   </button>
                 )}
 
