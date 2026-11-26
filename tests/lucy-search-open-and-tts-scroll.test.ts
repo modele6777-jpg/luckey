@@ -189,7 +189,7 @@ test('automatic sentence tracking keeps its immediate behavior', () => {
 
 test('the conversation is not dragged to the bottom in the gaps between TTS chunks', () => {
   assert.match(page, /const ttsHoldsScrollRef = useRef\(false\);/);
-  assert.match(page, /ttsBlocksAutoScrollRef\.current = ttsInfo\.isSpeaking \|\| ttsInfo\.isLoading \|\| ttsHoldsScrollRef\.current;/);
+  assert.match(page, /ttsBlocksAutoScrollRef\.current = ttsInfo\.isSpeaking \|\| ttsInfo\.isLoading \|\| ttsInfo\.isPaused \|\| ttsHoldsScrollRef\.current;/);
   assert.match(page, /if \(ttsHoldsScrollRef\.current\) return;/);
   // 낭독 중에는 레이아웃 변화가 하단 자동 이동을 다시 부르지 않는다.
   const resizeObserverBlock = page.slice(page.indexOf('resizeObserver.observe(messagesWrapperRef.current)'), page.indexOf('lucy-chat-content-resized'));

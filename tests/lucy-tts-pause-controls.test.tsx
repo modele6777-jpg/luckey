@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import React, { act } from 'react';
+import { Window } from 'happy-dom';
+import { LucyTtsControlBar } from '../src/components/lucy/LucyTtsControlBar.tsx';
 
 const ttsSource = readFileSync(new URL('../src/utils/tts.ts', import.meta.url), 'utf8');
 const pageSource = readFileSync(new URL('../src/pages/LucyStandalonePage.tsx', import.meta.url), 'utf8');
@@ -105,4 +108,89 @@ test('tapping the paused bubble resumes it instead of starting over', () => {
   assert.match(bubbleSource, /Boolean\(ttsInfo\?\.isSpeaking \|\| ttsInfo\?\.isLoading \|\| ttsInfo\?\.isPaused\)/);
   assert.match(bubbleSource, /isThisMsgPlaying && ttsInfo\?\.isPaused \? \(/);
   assert.match(bubbleSource, /일시정지됨 · 이어듣기/);
+});
+
+test('the floating bar renders its state and hands pause/resume and stop to the caller', async () => {
+  const win = new Window({ url: 'https://lucy-tts-pause.invalid' });
+  const names = ['window', 'document', 'navigator', 'HTMLElement', 'Element', 'Node', 'MutationObserver', 'getComputedStyle', 'IS_REACT_ACT_ENVIRONMENT', 'requestAnimationFrame', 'cancelAnimationFrame'];
+  const saved = new Map(names.map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
+  for (const key of names) {
+    const value = key === 'window' ? win
+      : key === 'document' ? win.document
+        : key === 'getComputedStyle' ? win.getComputedStyle.bind(win)
+          : key === 'requestAnimationFrame' ? win.requestAnimationFrame.bind(win)
+            : key === 'cancelAnimationFrame' ? win.cancelAnimationFrame.bind(win)
+              : key === 'IS_REACT_ACT_ENVIRONMENT' ? true
+                : (win as any)[key];
+    Object.defineProperty(globalThis, key, { value, configurable: true, writable: true });
+  }
+  try {
+    const host = win.document.createElement('div');
+    win.document.body.appendChild(host);
+    const { createRoot } = await import('react-dom/client');
+    const root = createRoot(host as any);
+    let toggles = 0;
+    let stops = 0;
+    const renderBar = (paused: boolean) => root.render(
+      <LucyTtsControlBar
+        visible
+        isLight={false}
+        isSpeaking={!paused}
+        isLoading={false}
+        isPaused={paused}
+        sentence="지금 읽고 있는 문장이에요"
+        sentenceIndex={2}
+        sentenceTotal={8}
+        bottomOffset={120}
+        onTogglePause={() => toggles++}
+        onStop={() => stops++}
+      />,
+    );
+
+    await act(async () => renderBar(true));
+    const bar = host.querySelector('[data-lucy-tts-bar]');
+    assert.ok(bar, 'a reading in progress shows the floating bar');
+    assert.equal(bar!.getAttribute('data-lucy-tts-bar'), 'paused');
+    assert.match(host.textContent || '', /일시정지됨/, 'the held reading is labelled as paused');
+    assert.match(host.textContent || '', /지금 읽고 있는 문장/, 'the current sentence is shown in one line');
+
+    const toggle = host.querySelector('[data-lucy-tts-toggle]')!;
+    const stop = host.querySelector('[data-lucy-tts-stop]')!;
+    assert.equal(toggle.getAttribute('data-lucy-tts-toggle'), 'resume', 'a paused reading offers resume');
+    await act(async () => { toggle.dispatchEvent(new win.MouseEvent('click', { bubbles: true })); });
+    await act(async () => { stop.dispatchEvent(new win.MouseEvent('click', { bubbles: true })); });
+    assert.equal(toggles, 1);
+    assert.equal(stops, 1);
+
+    await act(async () => renderBar(false));
+    const speakingToggle = host.querySelector('[data-lucy-tts-toggle]')!;
+    assert.equal(speakingToggle.getAttribute('data-lucy-tts-toggle'), 'pause', 'a live reading offers pause');
+    assert.equal(host.querySelector('[data-lucy-tts-bar]')!.getAttribute('data-lucy-tts-bar'), 'speaking');
+
+    await act(async () => root.unmount());
+
+    const idleHost = win.document.createElement('div');
+    win.document.body.appendChild(idleHost);
+    const idleRoot = createRoot(idleHost as any);
+    await act(async () => idleRoot.render(
+      <LucyTtsControlBar
+        visible={false}
+        isLight={false}
+        isSpeaking={false}
+        isLoading={false}
+        isPaused={false}
+        sentence={null}
+        bottomOffset={120}
+        onTogglePause={() => toggles++}
+        onStop={() => stops++}
+      />,
+    ));
+    assert.equal(idleHost.querySelector('[data-lucy-tts-bar]'), null, 'nothing floats when no reading is active');
+    await act(async () => idleRoot.unmount());
+  } finally {
+    for (const [key, descriptor] of saved) {
+      if (descriptor) Object.defineProperty(globalThis, key, descriptor);
+      else delete (globalThis as any)[key];
+    }
+  }
 });
