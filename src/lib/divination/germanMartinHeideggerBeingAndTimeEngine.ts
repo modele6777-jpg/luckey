@@ -12,12 +12,12 @@
  * v2.1.0 정성 체계: 결과 객체의 수치 필드는 내부 계산 호환용으로만 남기고,
  * 프롬프트 포맷터에서는 /100·%·원본 수치를 노출하지 않고 정성 단계 표현으로 전환합니다.
  *
- * @version LUCKEY-MARTIN-HEIDEGGER-BEING-AND-TIME-v2.1.0
+ * @version LUCKEY-MARTIN-HEIDEGGER-BEING-AND-TIME-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_MARTIN_HEIDEGGER_VERSION = 'LUCKEY-MARTIN-HEIDEGGER-BEING-AND-TIME-v2.3.0';
+export const GERMAN_MARTIN_HEIDEGGER_VERSION = 'LUCKEY-MARTIN-HEIDEGGER-BEING-AND-TIME-v2.4.0';
 
 export type HeideggerQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -78,6 +78,7 @@ export interface MartinHeideggerBeingAndTimeResult {
   situationalDaseinAudit: HeideggerSituationalDaseinAudit;
   temporalAugenblickRhythm: HeideggerTemporalAugenblickRhythm;
   daseinSynthesisMatrix: HeideggerDaseinSynthesisMatrix;
+  heideggerCrossAxis: string;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   ritualAction: string;
@@ -353,6 +354,7 @@ export function calculateMartinHeideggerBeingAndTime(
     `${temporalAugenblickRhythm.dailyDaseinPractice}`;
 
   const topicExtras = buildHeideggerTopicExtras(questionTopic);
+  const heideggerCrossAxis = `${situationalDaseinAudit.existentialMode} × ${activeHeideggerTheme.themeTitleKo} (${temporalAugenblickRhythm.timeWindowKo})`;
   const interpretiveBoundary =
     '하이데거의 실존 현상학 관점은 세인과 본래성의 갈림길을 상징적으로 비추는 성찰 렌즈입니다. 개인의 길흉과 미래를 단정하지 않고, 의학적·심리적 진단이나 전문 상담을 대신하지 않습니다.';
 
@@ -370,6 +372,7 @@ export function calculateMartinHeideggerBeingAndTime(
     situationalDaseinAudit,
     temporalAugenblickRhythm,
     daseinSynthesisMatrix,
+    heideggerCrossAxis,
     dailyPracticeRitual: topicExtras.dailyPracticeRitual,
     reflectiveQuestion: topicExtras.reflectiveQuestion,
     ritualAction: topicExtras.dailyPracticeRitual,
@@ -397,6 +400,7 @@ export function formatMartinHeideggerBeingAndTimePrompt(res: MartinHeideggerBein
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- KST 시공간 리듬: ${res.temporalAugenblickRhythm.timeWindowKo} (${res.temporalAugenblickRhythm.seasonKo}, 본래성 결 ${res.temporalAugenblickRhythm.clarityStageKo}) — ${res.temporalAugenblickRhythm.dailyDaseinPractice}`,
     `- 종합 등급: ${res.daseinSynthesisMatrix.overallDaseinGrade} (세인 탈피 ${describeHeideggerStage(res.daseinSynthesisMatrix.dasManLiberation)} · 기투 ${describeHeideggerStage(res.daseinSynthesisMatrix.entwurfProjection)} · 유한성 직시 ${describeHeideggerStage(res.daseinSynthesisMatrix.seinsMutLucidity)})`,
+    `- 현존재 교차 축: ${res.heideggerCrossAxis}`,
     `- 핵심 실존 테마: ${res.activeHeideggerTheme.themeTitleKo} [${res.activeHeideggerTheme.themeTitleGerman}]`,
     `- 핵심 원전 경구: "${res.focalHeideggerAphorism.aphorismKo}"`,
     `- 일상 실천 의례: ${res.dailyPracticeRitual}`,
