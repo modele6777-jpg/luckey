@@ -8,12 +8,12 @@
  * 4. 텍스트의 즐거움 및 유희적 몰입 지수 (Plaisir du Texte & Jouissance Delight Index): 빡빡한 의무감과 메마른 기능주의를 넘어 배움과 일, 삶의 순간 자체에서 깊은 지적·감각적 희열을 향유하는 능력.
  * 5. 다의적 기표(Signifiant) 유연성 및 열린 해석력 (Polyphonic Signifier Fluidity & Open Horizon Score): 단 하나의 완결된 결론으로 문을 닫지 않고, 끊임없이 확장되는 다채로운 가능성의 결을 기쁘게 음미하는 유연성.
  *
- * @version LUCKEY-ROLAND-BARTHES-SEMIOTICS-PUNCTUM-v2.1.0
+ * @version LUCKEY-ROLAND-BARTHES-SEMIOTICS-PUNCTUM-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_ROLAND_BARTHES_SEMIOTICS_PUNCTUM_VERSION = 'LUCKEY-ROLAND-BARTHES-SEMIOTICS-PUNCTUM-v2.3.0';
+export const FRENCH_ROLAND_BARTHES_SEMIOTICS_PUNCTUM_VERSION = 'LUCKEY-ROLAND-BARTHES-SEMIOTICS-PUNCTUM-v2.4.0';
 
 export interface BarthesTheme {
   themeKey: string;
@@ -43,6 +43,7 @@ export interface FrenchRolandBarthesSemioticsPunctumResult {
   // 세부 분석
   activeBarthesTheme: BarthesTheme;
   focalBarthesAphorism: BarthesAphorism;
+  barthesCrossAxis: string;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   ritualAction: string;
@@ -173,6 +174,7 @@ export function calculateFrenchRolandBarthesSemioticsPunctum(
 
   const activeBarthesTheme = BARTHES_THEMES[themeIndex];
   const focalBarthesAphorism = BARTHES_APHORISMS[aphorismIndex];
+  const barthesCrossAxis = `${activeBarthesTheme.themeTitleKo} × ${focalBarthesAphorism.sourceContext}`;
 
   const guidanceTitle = `롤랑 바르트 기호학과 푼크툼의 지혜: ${activeBarthesTheme.themeTitleKo}`;
   const philosophicalCounsel = `20세기 현대 기호학과 문학비평의 독보적 거장 롤랑 바르트 선생은 《신화론》과 《밝은 방》을 통해 ` +
@@ -209,6 +211,7 @@ export function calculateFrenchRolandBarthesSemioticsPunctum(
     polyphonicSignifierFluidityScore,
     activeBarthesTheme,
     focalBarthesAphorism,
+    barthesCrossAxis,
     dailyPracticeRitual,
     reflectiveQuestion,
     ritualAction: dailyPracticeRitual,
@@ -234,6 +237,7 @@ export function formatFrenchRolandBarthesSemioticsPunctumPrompt(
     `- 텍스트의 즐거움 및 유희적 몰입 결: ${describeBarthesStage(res.plaisirDuTexteSensualDelightIndex)}`,
     `- 다의적 기표 유연성 및 열린 해석력: ${describeBarthesStage(res.polyphonicSignifierFluidityScore)}`,
     `- 핵심 바르트 테마: ${res.activeBarthesTheme.themeTitleKo} [${res.activeBarthesTheme.themeTitleEn}]`,
+    `- 바르트 교차 축: ${res.barthesCrossAxis}`,
     `- 실천적 통찰: ${res.activeBarthesTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeBarthesTheme.practicalCounsel}`,
     `- 바르트 원전 테제: "${res.focalBarthesAphorism.aphorismKo}" (${res.focalBarthesAphorism.aphorismFrench})`,

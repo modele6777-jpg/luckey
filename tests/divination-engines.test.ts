@@ -9010,11 +9010,11 @@ test('Simone de Beauvoir Ambiguity & Freedom Engine: calculates Self-Creation, E
   assert(rep.mutualFreedomSolidarityScore >= 0 && rep.mutualFreedomSolidarityScore <= 100);
   assert(rep.situationalAgencyIndex >= 0 && rep.situationalAgencyIndex <= 100);
   assert(rep.existentialCourageResilienceScore >= 0 && rep.existentialCourageResilienceScore <= 100);
-  assert(rep.activeBeauvoirTheme.themeTitleKo.length > 0);
+  assert(rep.activeBeauvoirTheme.themeTitleKo.length > 0 && rep.beauvoirCrossAxis.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatFrenchSimoneDeBeauvoirAmbiguityFreedomPrompt(rep);
   assert(prompt.includes('시몬 드 보부아르 《애매성의 윤리학》 실존적 자기창조 및 상호자유 관점'));
-  assert(prompt.includes(rep.activeBeauvoirTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeBeauvoirTheme.themeTitleKo) && prompt.includes(rep.beauvoirCrossAxis));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
 
@@ -9137,11 +9137,11 @@ test('Michel Foucault Care of Self Aesthetics Engine: calculates Care of Self, D
   assert(rep.aestheticsOfExistenceScore >= 0 && rep.aestheticsOfExistenceScore <= 100);
   assert(rep.parrhesiaTruthCourageIndex >= 0 && rep.parrhesiaTruthCourageIndex <= 100);
   assert(rep.selfMasteryGovernanceScore >= 0 && rep.selfMasteryGovernanceScore <= 100);
-  assert(rep.activeFoucaultTheme.themeTitleKo.length > 0);
+  assert(rep.activeFoucaultTheme.themeTitleKo.length > 0 && rep.foucaultCrossAxis.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatFrenchMichelFoucaultCareOfSelfAestheticsPrompt(rep);
   assert(prompt.includes('미셸 푸코 《주체의 해석학·자기 배려》 규율권력 탈피 및 존재의 미학 지표'));
-  assert(prompt.includes(rep.activeFoucaultTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeFoucaultTheme.themeTitleKo) && prompt.includes(rep.foucaultCrossAxis));
   assert.ok(rep.calculatedAtKst.includes('KST'));
   assert.ok(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -9267,13 +9267,13 @@ test('Roland Barthes Semiotics and Punctum Engine: calculates Punctum Intuition,
   assert(rep.deathOfAuthorScriptibleReaderScore >= 0 && rep.deathOfAuthorScriptibleReaderScore <= 100);
   assert(rep.plaisirDuTexteSensualDelightIndex >= 0 && rep.plaisirDuTexteSensualDelightIndex <= 100);
   assert(rep.polyphonicSignifierFluidityScore >= 0 && rep.polyphonicSignifierFluidityScore <= 100);
-  assert(rep.activeBarthesTheme.themeTitleKo.length > 0);
+  assert(rep.activeBarthesTheme.themeTitleKo.length > 0 && rep.barthesCrossAxis.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.barthesSynthesisMatrix?.integratedAction));
   const prompt = formatFrenchRolandBarthesSemioticsPunctumPrompt(rep);
   assert(prompt.includes('롤랑 바르트 《신화론》·《밝은 방》 푼크툼(Punctum)·기호학 지표'));
-  assert(prompt.includes(rep.activeBarthesTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeBarthesTheme.themeTitleKo) && prompt.includes(rep.barthesCrossAxis));
   assert(prompt.includes('교차 매트릭스'));
 });
 

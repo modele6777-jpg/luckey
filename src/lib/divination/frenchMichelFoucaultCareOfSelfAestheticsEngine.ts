@@ -8,12 +8,12 @@
  * 4. 파레시아(Parrhesia, 진실을 말할 용기) 지수 (Parrhesia & Courage of Truth Index): 위험과 손실을 감수하더라도 침묵이나 위선적 타협을 거부하고 자기 진실을 당당히 선언하는 실천적 용기.
  * 5. 자기 통치성 및 내면의 자유 주권 지표 (Self-Mastery & Autonomous Governance Score): 타인이나 충동의 노예가 되지 않고 자신의 욕망과 정념을 스스로 다스려 참된 주권을 행사하는 내적 자율성.
  *
- * @version LUCKEY-MICHEL-FOUCAULT-CARE-OF-SELF-v2.1.0
+ * @version LUCKEY-MICHEL-FOUCAULT-CARE-OF-SELF-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MICHEL_FOUCAULT_CARE_OF_SELF_VERSION = 'LUCKEY-MICHEL-FOUCAULT-CARE-OF-SELF-v2.3.0';
+export const FRENCH_MICHEL_FOUCAULT_CARE_OF_SELF_VERSION = 'LUCKEY-MICHEL-FOUCAULT-CARE-OF-SELF-v2.4.0';
 
 export interface FoucaultTheme {
   themeKey: string;
@@ -43,6 +43,7 @@ export interface FrenchMichelFoucaultCareOfSelfAestheticsResult {
   // 세부 분석
   activeFoucaultTheme: FoucaultTheme;
   focalFoucaultAphorism: FoucaultAphorism;
+  foucaultCrossAxis: string;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   ritualAction: string;
@@ -170,6 +171,7 @@ export function calculateFrenchMichelFoucaultCareOfSelfAesthetics(
 
   const activeFoucaultTheme = FOUCAULT_THEMES[themeIndex];
   const focalFoucaultAphorism = FOUCAULT_APHORISMS[aphorismIndex];
+  const foucaultCrossAxis = `${activeFoucaultTheme.themeTitleKo} × ${focalFoucaultAphorism.sourceContext}`;
 
   const guidanceTitle = `미셸 푸코 자기 배려와 존재의 미학 지혜: ${activeFoucaultTheme.themeTitleKo}`;
   const philosophicalCounsel = `20세기 후기 현대 비판철학의 거장 미셸 푸코 선생은 《주체의 해석학》과 《자기 배려》를 통해 ` +
@@ -205,6 +207,7 @@ export function calculateFrenchMichelFoucaultCareOfSelfAesthetics(
     selfMasteryGovernanceScore,
     activeFoucaultTheme,
     focalFoucaultAphorism,
+    foucaultCrossAxis,
     dailyPracticeRitual,
     reflectiveQuestion,
     ritualAction: dailyPracticeRitual,
@@ -230,6 +233,7 @@ export function formatFrenchMichelFoucaultCareOfSelfAestheticsPrompt(
     `- 파레시아 진실 발언 용기(Parrhesia & Courage of Truth): ${describeFoucaultStage(res.parrhesiaTruthCourageIndex)}`,
     `- 자기 통치성 및 내면 주권(Self-Mastery Governance): ${describeFoucaultStage(res.selfMasteryGovernanceScore)}`,
     `- 핵심 푸코 테마: ${res.activeFoucaultTheme.themeTitleKo} [${res.activeFoucaultTheme.themeTitleEn}]`,
+    `- 푸코 교차 축: ${res.foucaultCrossAxis}`,
     `- 실천적 통찰: ${res.activeFoucaultTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeFoucaultTheme.practicalCounsel}`,
     `- 푸코 원전 명언: "${res.focalFoucaultAphorism.aphorismKo}" (${res.focalFoucaultAphorism.aphorismFrench})`,
