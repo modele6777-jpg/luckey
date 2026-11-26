@@ -1292,7 +1292,8 @@ test('Burmese Mahabote: 7-house chart calculation, root house, age transit, Rahu
   assert(r1.transitInteraction!.phase.length > 0);
   assert(prompt.includes('행성 조화도 및 친화수리'));
   assert(prompt.includes('4대 인생 영역 친화도'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('마하보테 교차 축'));
+  assert(Boolean(r1.mahaboteCrossAxis?.rootToTransit && r1.mahaboteCrossAxis?.planetaryAlignment && r1.mahaboteCrossAxis?.remedyAnchor));
   assert(r1.ritualAction && r1.ritualAction.length > 0);
   assert(r1.reflectionFocus && r1.reflectionFocus.length > 0);
   assert(prompt.includes('실천 의례'));
@@ -2953,6 +2954,7 @@ test('Strategic Leverage Engine: 전략 협상 및 손자병법 기문 레버리
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.leverageAxis.length > 0 && res.shadowWarning.length > 0 && res.questionTopic.length > 0);
   assert(Boolean(res.leverageSynthesisMatrix?.integratedAction));
+  assert(Boolean(res.leverageCrossAxis?.doorToTactic && res.leverageCrossAxis?.roleAlignment && res.leverageCrossAxis?.counterAnchor));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.leverageScore >= 0 && res.leverageScore <= 100);
   assert(res.sunTzuTactic.coreMaxim.length > 0);
@@ -2961,7 +2963,7 @@ test('Strategic Leverage Engine: 전략 협상 및 손자병법 기문 레버리
   assert(prompt.includes('LUCKEY 전략 협상 & 손자병법 기문 레버리지'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('과잉 경계') && prompt.includes('레버리지 조타 축'));
-  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('레버리지 교차 축') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -14079,15 +14081,15 @@ test('Aymara Pachamama Amauta Wisdom engine: nayra lens, +09:00 KST, and interpr
 
 test('Welsh Mabinogion Awen Inspiration engine: ray, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateWelshMabinogionAwenInspiration({ profile, now: new Date('2026-11-20T06:55:00Z'), question: '새로운 시도의 영감을 얻고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-WELSH-AWEN-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-WELSH-AWEN-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionRay !== rep.awenRay);
-  assert.ok(rep.awenInspirationAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.awenInspirationAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatWelshMabinogionAwenPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('웨일스') && prompt.includes('동반 빛줄기') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('웨일스') && prompt.includes('동반 빛줄기') && prompt.includes('맥락 균형 조언') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Igbo Ofo Ogu Truth Justice engine: symbol, +09:00 KST, and interpretive boundary', () => {

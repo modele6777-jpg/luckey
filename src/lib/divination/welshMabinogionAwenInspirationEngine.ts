@@ -7,6 +7,7 @@ export interface WelshMabinogionAwenResult {
   awenRay: string;
   companionRay: string;
   awenInspirationAxis: string;
+  topicBalanceHint: string;
   bardicInsight: string;
   valleyTone: string;
   reflectionFocus: string;
@@ -76,6 +77,15 @@ const WELSH_SHADOWS = [
   '리안논의 노래처럼 마음의 평온을 지키는 여유가 해결해야 할 현실의 작은 불편을 외면하는 현실 도피가 되어서는 안 됩니다.',
 ];
 
+const WELSH_TOPIC_HINTS: Record<WelshMabinogionAwenResult['questionTopic'], string> = {
+  '관찰·본질': '관찰과 본질의 질문에서는 해석을 보태기 전에 눈에 보이는 사실 세 가지만 먼저 가려 두세요.',
+  '상상·시도': '상상과 시도의 질문에서는 거창한 청사진보다 오늘 바로 옮겨 볼 수 있는 작은 실험 하나가 영감을 깨웁니다.',
+  '표현·진심': '표현과 진심의 질문에서는 완벽한 문장을 기다리기보다 솔직한 마음 한 줄을 먼저 건네는 편이 맑습니다.',
+  '인내·숙성': '인내와 숙성의 질문에서는 결과를 재촉하기보다 오늘 다듬을 수 있는 작은 디테일 하나에 불을 지피세요.',
+  '평온·위로': '평온과 위로의 질문에서는 바깥 소음을 줄이고 내 마음을 붙들어 주는 짧은 쉼표 하나를 먼저 확보하세요.',
+  '아웬 전반': '전반적 영감의 질문에서는 맑은 관찰과 유연한 시도를 함께 두어 마음이 움직이는 지점을 가볍게 붙잡으세요.',
+};
+
 function classifyWelshTopic(q: string): WelshMabinogionAwenResult['questionTopic'] {
   if (/본질|관찰|사실|진실/.test(q)) return '관찰·본질';
   if (/영감|시도|새로운|상상/.test(q)) return '상상·시도';
@@ -99,14 +109,16 @@ export function calculateWelshMabinogionAwenInspiration(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (RAYS.length - 1));
   const companion = RAYS[(idx + companionOffset) % RAYS.length];
   const awenInspirationAxis = `${picked.ray.split('·')[0].trim()} ↔ ${companion.ray.split('·')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = WELSH_TOPIC_HINTS[questionTopic];
 
   return {
-    engineVersion: 'LUCKEY-WELSH-AWEN-v2.3.0',
+    engineVersion: 'LUCKEY-WELSH-AWEN-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     awenRay: picked.ray,
     companionRay: companion.ray,
     awenInspirationAxis,
+    topicBalanceHint,
     bardicInsight: picked.insight,
     valleyTone: picked.tone,
     reflectionFocus: `웨일스 음유시인 전통의 '${picked.ray}'을 중심에 두고 '${companion.ray}'의 결을 함께 엮어, 정답을 억지로 짜내기보다 마음이 반응하는 작은 호기심 하나를 따라가 보세요.`,
@@ -122,6 +134,7 @@ export function formatWelshMabinogionAwenPrompt(res: WelshMabinogionAwenResult):
     `[웨일스 마비노기온·아웬 영감 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 아웬 영감 축: ${res.awenInspirationAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 아웬 빛줄기: ${res.awenRay} (${res.valleyTone})`,
     `- 동반 빛줄기: ${res.companionRay}`,
     `- 중심 통찰: ${res.bardicInsight}`,

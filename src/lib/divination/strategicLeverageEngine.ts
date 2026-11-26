@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const STRATEGIC_LEVERAGE_VERSION = 'LUCKEY-LEVERAGE-v2.3.0';
+export const STRATEGIC_LEVERAGE_VERSION = 'LUCKEY-LEVERAGE-v2.4.0';
 
 function classifyLeverageTopic(q: string): '계약·조건' | '갈등·방어' | '타이밍·주도' | '협상 전반' {
   if (/계약|조건|단가|연봉|협상/.test(q)) return '계약·조건';
@@ -75,6 +75,11 @@ export interface StrategicLeverageReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  leverageCrossAxis: {
+    doorToTactic: string;
+    roleAlignment: string;
+    counterAnchor: string;
   };
   interpretiveBoundary: string;
 }
@@ -166,6 +171,11 @@ export function runStrategicLeverageEngine(
     alignmentState: `협상 페르소나: ${powerDynamicRole} · 오행: ${element}`,
     integratedAction: `${strategicActionPlan.openingMove}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const leverageCrossAxis = {
+    doorToTactic: `${activeQimenDoor.split(':')[0]} ↔ ${sunTzuTactic.chapter.split('-')[0].trim()}`,
+    roleAlignment: `${powerDynamicRole} · ${questionTopic}`,
+    counterAnchor: strategicActionPlan.counterStrategy,
+  };
 
   function sunTacticSummary(tactic: SunTzuStrategyDetail): string {
     return tactic.chapter;
@@ -190,6 +200,7 @@ export function runStrategicLeverageEngine(
 - 성찰 초점: ${reflectionFocus}
 - 과잉 경계: ${shadowWarning}
 - 교차 매트릭스: [핵심 긴장: ${leverageSynthesisMatrix.dominantTension} | 조율 상태: ${leverageSynthesisMatrix.alignmentState}]
+  * 레버리지 교차 축: ${leverageCrossAxis.doorToTactic} | ${leverageCrossAxis.roleAlignment}
   * 통합 실천: ${leverageSynthesisMatrix.integratedAction}
 - 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}`;
@@ -212,6 +223,7 @@ export function runStrategicLeverageEngine(
     shadowWarning,
     reflectiveQuestion,
     leverageSynthesisMatrix,
+    leverageCrossAxis,
     interpretiveBoundary,
   };
 }
