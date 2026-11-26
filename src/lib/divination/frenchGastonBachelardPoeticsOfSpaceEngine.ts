@@ -10,12 +10,12 @@
  * 4. 지성적 엄밀성과 시적 상상력의 이중 나선 조화도(Dual Spiral of Reason & Poetics): 낮의 냉철한 분석과 밤의 따스한 감성을 조화롭게 넘나드는 유연성.
  * 5. 우주적 친밀감 및 사물 교감 회복탄력성(Cosmic Intimacy & Poetic Resilience): 작은 사물 하나에서도 거대한 우주를 발견하고 마음을 치유하는 감수성.
  *
- * @version LUCKEY-GASTON-BACHELARD-POETICS-v2.3.0
+ * @version LUCKEY-GASTON-BACHELARD-POETICS-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_GASTON_BACHELARD_POETICS_VERSION = 'LUCKEY-GASTON-BACHELARD-POETICS-v2.3.0';
+export const FRENCH_GASTON_BACHELARD_POETICS_VERSION = 'LUCKEY-GASTON-BACHELARD-POETICS-v2.4.0';
 
 export type BachelardQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -54,6 +54,7 @@ export interface FrenchGastonBachelardPoeticsOfSpaceResult {
   // 세부 분석
   questionTopic: BachelardQuestionTopic;
   reveriePhase: string;
+  bachelardCrossAxis: string;
   shadowWarning: string;
   temporalBachelardRhythm: BachelardTemporalRhythm;
   activeBachelardTheme: BachelardTheme;
@@ -282,6 +283,7 @@ export function calculateFrenchGastonBachelardPoeticsOfSpace(
   const companionBachelardTheme = BACHELARD_THEMES[(themeIndex + companionOffset) % BACHELARD_THEMES.length];
   const focalBachelardAphorism = BACHELARD_APHORISMS[aphorismIndex];
   const reveriePhase = BACHELARD_REVERIE_PHASES[(absHash >> 11) % BACHELARD_REVERIE_PHASES.length];
+  const bachelardCrossAxis = `${activeBachelardTheme.themeKey} ↔ ${companionBachelardTheme.themeKey} (${reveriePhase.split('(')[0].trim()} · ${questionTopic})`;
   const shadowWarning = BACHELARD_SHADOW_WARNINGS[(absHash >> 14) % BACHELARD_SHADOW_WARNINGS.length];
 
   const guidanceTitle = `가스통 바슐라르 공간의 시학 지혜: ${activeBachelardTheme.themeTitleKo}`;
@@ -314,6 +316,7 @@ export function calculateFrenchGastonBachelardPoeticsOfSpace(
     cosmicIntimacyReverieResilience,
     questionTopic,
     reveriePhase,
+    bachelardCrossAxis,
     shadowWarning,
     temporalBachelardRhythm,
     activeBachelardTheme,
@@ -341,6 +344,7 @@ export function formatFrenchGastonBachelardPoeticsOfSpacePrompt(
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- 몽상 국면: ${res.reveriePhase}`,
+    `- 바슐라르 시학 교차 축: ${res.bachelardCrossAxis}`,
     `- KST 시공간 리듬: ${res.temporalBachelardRhythm.kstDateLabel} · ${res.temporalBachelardRhythm.timeWindowKo} (${res.temporalBachelardRhythm.poeticsTone}) — ${res.temporalBachelardRhythm.rhythmDirective}`,
     `- 핵심 공간 시학 테마: ${res.activeBachelardTheme.themeTitleKo} [${res.activeBachelardTheme.themeTitleEn}]`,
     `- 동반 공간 시학 테마: ${res.companionBachelardTheme.themeTitleKo}`,

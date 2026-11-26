@@ -14,12 +14,12 @@
  *    - 열거(Dénombrement): 빠뜨린 것이 없는지 전면적으로 점검하고 검토함.
  * 5. 잠정적 도덕 규칙(Morale par provision): 삶의 현장에서 행동을 미루지 않고 결단력 있게 정도를 걸어가는 실천 지혜.
  *
- * @version LUCKEY-DESCARTES-COGITO-v2.3.0
+ * @version LUCKEY-DESCARTES-COGITO-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const DESCARTES_COGITO_VERSION = 'LUCKEY-DESCARTES-COGITO-v2.3.0';
+export const DESCARTES_COGITO_VERSION = 'LUCKEY-DESCARTES-COGITO-v2.4.0';
 
 export type DescartesQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -57,6 +57,7 @@ export interface FrenchDescartesCogitoResult {
   // 세부 명세
   questionTopic: DescartesQuestionTopic;
   cogitoPhase: string;
+  descartesCrossAxis: string;
   shadowWarning: string;
   temporalDescartesRhythm: DescartesTemporalRhythm;
   activeMethodRule: DescartesMethodRule;
@@ -262,6 +263,7 @@ export function calculateFrenchDescartesCogito(
   const companionMethodRule = METHOD_RULES[(ruleIndex + companionOffset) % METHOD_RULES.length];
   const focalProvisionalMoralRule = PROVISIONAL_MORAL_RULES[moralIndex];
   const cogitoPhase = DESCARTES_COGITO_PHASES[(absHash >> 10) % DESCARTES_COGITO_PHASES.length];
+  const descartesCrossAxis = `${activeMethodRule.ruleNameKo} ↔ ${companionMethodRule.ruleNameKo} (${cogitoPhase.split('(')[0].trim()} · ${questionTopic})`;
   const shadowWarning = DESCARTES_SHADOW_WARNINGS[(absHash >> 13) % DESCARTES_SHADOW_WARNINGS.length];
 
   const counselTitle = `데카르트 방법서설: ${activeMethodRule.ruleNameFrench}`;
@@ -293,6 +295,7 @@ export function calculateFrenchDescartesCogito(
     provisionalMoralResolveScore,
     questionTopic,
     cogitoPhase,
+    descartesCrossAxis,
     shadowWarning,
     temporalDescartesRhythm,
     activeMethodRule,
@@ -318,6 +321,7 @@ export function formatFrenchDescartesCogitoPrompt(res: FrenchDescartesCogitoResu
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- 코기토 국면: ${res.cogitoPhase}`,
+    `- 데카르트 교차 축: ${res.descartesCrossAxis}`,
     `- KST 시공간 리듬: ${res.temporalDescartesRhythm.kstDateLabel} · ${res.temporalDescartesRhythm.timeWindowKo} (${res.temporalDescartesRhythm.clarityTone}) — ${res.temporalDescartesRhythm.rhythmDirective}`,
     `- 적용 방법 규칙: ${res.activeMethodRule.ruleNameFrench} (${res.activeMethodRule.ruleNameKo})`,
     `- 동반 방법 규칙: ${res.companionMethodRule.ruleNameFrench} (${res.companionMethodRule.ruleNameKo})`,
