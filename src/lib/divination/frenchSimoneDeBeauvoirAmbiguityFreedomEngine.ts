@@ -3,12 +3,12 @@
  *
  * 20세기 프랑스 실존주의 철학의 거목 시몬 드 보부아르(1908~1986)의 불후의 명저 《애매성의 윤리학》, 《제2의 성》 원전 기반.
  *
- * @version LUCKEY-BEAUVOIR-AMBIGUITY-FREEDOM-v2.1.0
+ * @version LUCKEY-BEAUVOIR-AMBIGUITY-FREEDOM-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_SIMONE_DE_BEAUVOIR_AMBIGUITY_FREEDOM_VERSION = 'LUCKEY-BEAUVOIR-AMBIGUITY-FREEDOM-v2.3.0';
+export const FRENCH_SIMONE_DE_BEAUVOIR_AMBIGUITY_FREEDOM_VERSION = 'LUCKEY-BEAUVOIR-AMBIGUITY-FREEDOM-v2.4.0';
 
 export type BeauvoirQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -67,6 +67,7 @@ export interface FrenchSimoneDeBeauvoirAmbiguityFreedomResult {
   situationalAmbiguityAudit: BeauvoirSituationalAmbiguityAudit;
   temporalSolidarityRhythm: BeauvoirTemporalSolidarityRhythm;
   beauvoirSynthesisMatrix: BeauvoirSynthesisMatrix;
+  beauvoirCrossAxis: string;
   questionTopic: BeauvoirQuestionTopic;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
@@ -341,6 +342,7 @@ export function calculateFrenchSimoneDeBeauvoirAmbiguityFreedom(
     mutualSolidarity,
     overallSynthesis,
   };
+  const beauvoirCrossAxis = `${activeBeauvoirTheme.themeTitleKo} × ${situationalAmbiguityAudit.themeKo} (${temporalSolidarityRhythm.ethicsFocus})`;
 
   const guidanceTitle = `시몬 드 보부아르 실존주의 윤리 철학 지혜: ${activeBeauvoirTheme.themeTitleKo}`;
   const philosophicalCounsel = `20세기 실존주의 철학의 거장 시몬 드 보부아르는 《애매성의 윤리학》과 《제2의 성》을 통해 ` +
@@ -365,6 +367,7 @@ export function calculateFrenchSimoneDeBeauvoirAmbiguityFreedom(
     situationalAmbiguityAudit,
     temporalSolidarityRhythm,
     beauvoirSynthesisMatrix,
+    beauvoirCrossAxis,
     questionTopic,
     dailyPracticeRitual: qualitativePractice.dailyPracticeRitual,
     reflectiveQuestion: qualitativePractice.reflectiveQuestion,
@@ -387,6 +390,7 @@ export function formatFrenchSimoneDeBeauvoirAmbiguityFreedomPrompt(
     `- 자기창조·애매성·연대 결: 자기창조(${describeBeauvoirLevel(res.authenticSelfCreationScore)}) / 애매성 정직(${describeBeauvoirLevel(res.ethicsOfAmbiguityIndex)}) / 상호 연대(${describeBeauvoirLevel(res.mutualFreedomSolidarityScore)})`,
     `- 상황 돌파·용기 결: 상황 돌파(${describeBeauvoirLevel(res.situationalAgencyIndex)}) / 실존적 용기(${describeBeauvoirLevel(res.existentialCourageResilienceScore)})`,
     `- 핵심 보부아르 테마: ${res.activeBeauvoirTheme.themeTitleKo} [${res.activeBeauvoirTheme.themeTitleEn}]`,
+    `- 보부아르 교차 축: ${res.beauvoirCrossAxis}`,
     `- 질문 맥락 애매성 감사 (${res.situationalAmbiguityAudit.themeKo} · ${res.situationalAmbiguityAudit.sourceCitation}): "${res.situationalAmbiguityAudit.translationKo}" [${res.situationalAmbiguityAudit.frenchQuote}]`,
     `- 독단·수동성 경계: ${res.situationalAmbiguityAudit.dogmaOrPassivityTrap}`,
     `- 상황 속 자유 실천: ${res.situationalAmbiguityAudit.situationalFreedomStep}`,
