@@ -8677,14 +8677,14 @@ test('Voltaire Candide and Tolerance Engine: calculates Cultivate Our Garden Dev
   assert(rep.realisticDisillusionmentClarityIndex >= 0 && rep.realisticDisillusionmentClarityIndex <= 100);
   assert(rep.activeVoltaireTheme.themeTitleKo.length > 0);
   assert(rep.companionVoltaireTheme.themeKey !== rep.activeVoltaireTheme.themeKey);
-  assert(rep.gardenPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert(rep.gardenPhase.length > 0 && rep.voltaireCrossAxis.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.voltaireSynthesisMatrix?.integratedAction));
   const prompt = formatFrenchVoltaireCandideTolerancePrompt(rep);
   assert(prompt.includes('볼테르 《캉디드》 & 《관용론》 일상 실천 및 관용 지혜 지표'));
   assert(prompt.includes(rep.activeVoltaireTheme.themeTitleKo) && prompt.includes(rep.companionVoltaireTheme.themeTitleKo));
-  assert(prompt.includes(rep.gardenPhase) && prompt.includes(rep.shadowWarning));
+  assert(prompt.includes(rep.gardenPhase) && prompt.includes(rep.voltaireCrossAxis) && prompt.includes(rep.shadowWarning));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -14211,10 +14211,10 @@ test('Scythian Golden Stag Steppe engine: emblem, +09:00 KST, and interpretive b
 
 test('Galician Camino Atlantic Reflection engine: sign, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateGalicianCaminoAtlanticReflection({ profile, now: new Date('2026-11-20T07:32:00Z'), question: '나만의 걸음 속도를 되찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-GALICIAN-CAMINO-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-GALICIAN-CAMINO-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSign !== rep.atlanticSign);
-  assert.ok(rep.caminoHorizonAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.caminoHorizonAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatGalicianCaminoPrompt(rep);
@@ -15124,10 +15124,10 @@ test('Carthaginian Tanit Harbor Compass engine: motif, +09:00 KST, and interpret
 
 test('Gaya Iron Crown River Harmony engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateGayaIronCrownRiverHarmony({ profile, now: new Date('2026-11-20T19:55:00Z'), question: '열정과 식힘의 균형을 잡고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-GAYA-IRON-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-GAYA-IRON-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.gayaMotif);
-  assert.ok(rep.forgeEstuaryAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.forgeEstuaryAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatGayaIronCrownPrompt(rep);
