@@ -3,12 +3,12 @@
  *
  * 20세기 프랑스 실존주의 철학의 기수 장 폴 사르트르(Jean-Paul Sartre, 1905~1980)의 핵심 원전 기반.
  *
- * @version LUCKEY-JEAN-PAUL-SARTRE-EXISTENTIALISM-v2.1.0
+ * @version LUCKEY-JEAN-PAUL-SARTRE-EXISTENTIALISM-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_JEAN_PAUL_SARTRE_VERSION = 'LUCKEY-JEAN-PAUL-SARTRE-EXISTENTIALISM-v2.3.0';
+export const FRENCH_JEAN_PAUL_SARTRE_VERSION = 'LUCKEY-JEAN-PAUL-SARTRE-EXISTENTIALISM-v2.4.0';
 
 export type SartreQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -67,6 +67,7 @@ export interface JeanPaulSartreExistentialismResult {
   situationalAuthenticityAudit: SartreSituationalAuthenticityAudit;
   temporalProjectRhythm: SartreTemporalProjectRhythm;
   sartreSynthesisMatrix: SartreSynthesisMatrix;
+  sartreCrossAxis: string;
   questionTopic: SartreQuestionTopic;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
@@ -347,6 +348,7 @@ export function calculateJeanPaulSartreExistentialism(
   const baseNow = now ?? new Date();
   const kst = new Date(baseNow.getTime() + 9 * 60 * 60 * 1000);
   const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
+  const sartreCrossAxis = `${activeSartreTheme.themeTitleFrench.split('(')[0].trim()} × ${situationalAuthenticityAudit.themeKo} (${temporalProjectRhythm.projectFocus})`;
 
   return {
     engineVersion: FRENCH_JEAN_PAUL_SARTRE_VERSION,
@@ -361,6 +363,7 @@ export function calculateJeanPaulSartreExistentialism(
     situationalAuthenticityAudit,
     temporalProjectRhythm,
     sartreSynthesisMatrix,
+    sartreCrossAxis,
     questionTopic,
     dailyPracticeRitual: qualitativePractice.dailyPracticeRitual,
     reflectiveQuestion: qualitativePractice.reflectiveQuestion,
@@ -385,6 +388,7 @@ export function formatJeanPaulSartreExistentialismPrompt(res: JeanPaulSartreExis
     `- 자기기만 경계: ${res.situationalAuthenticityAudit.badFaithExcuseTrap}`,
     `- 주체적 기획 첫걸음: ${res.situationalAuthenticityAudit.projectActionStep}`,
     `- KST 실존 리듬: ${res.temporalProjectRhythm.kstWindow} (${res.temporalProjectRhythm.projectFocus} · ${res.temporalProjectRhythm.seasonalTone}) — ${res.temporalProjectRhythm.rhythmDirective}`,
+    `- 사르트르 교차 축: ${res.sartreCrossAxis}`,
     `- 사르트르 매트릭스: 주체적 기획(${describeSartreLevel(res.sartreSynthesisMatrix.projectAutonomy)}) · 자기기만 극복(${describeSartreLevel(res.sartreSynthesisMatrix.badFaithOvercoming)}) · 앙가주망 실천(${describeSartreLevel(res.sartreSynthesisMatrix.engagedAction)})`,
     `- 오늘의 실천 의례(${res.questionTopic}): ${res.dailyPracticeRitual}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,

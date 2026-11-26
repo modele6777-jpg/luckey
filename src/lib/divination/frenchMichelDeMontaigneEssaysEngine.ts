@@ -9,12 +9,12 @@
  * 4. 인간 조건의 불완전성 수용 및 자연스런 삶 조화도(Acceptance of Human Condition & Natural Life Score): 억지 꾸밈없이 소박하게 살아가는 삶의 기술.
  * 5. 영혼의 뒷방(Arrière-Boutique) 내적 자유 및 자립도(Inner Freedom & Spiritual Sanctuary Index): 세상의 풍파 속에서도 독립된 영혼의 안식처를 간직하는 힘.
  *
- * @version LUCKEY-MONTAIGNE-ESSAYS-QUE-SAIS-JE-v2.1.0
+ * @version LUCKEY-MONTAIGNE-ESSAYS-QUE-SAIS-JE-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MICHEL_DE_MONTAIGNE_VERSION = 'LUCKEY-MONTAIGNE-ESSAYS-QUE-SAIS-JE-v2.3.0';
+export const FRENCH_MICHEL_DE_MONTAIGNE_VERSION = 'LUCKEY-MONTAIGNE-ESSAYS-QUE-SAIS-JE-v2.4.0';
 
 export interface MontaigneTheme {
   themeKey: string;
@@ -45,6 +45,7 @@ export interface FrenchMichelDeMontaigneEssaysResult {
   activeMontaigneTheme: MontaigneTheme;
   focalMontaigneAphorism: MontaigneAphorism;
   secondaryMontaigneAphorism: MontaigneAphorism;
+  montaigneCrossAxis: string;
   reflectiveQuestion: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -198,6 +199,7 @@ export function calculateFrenchMichelDeMontaigneEssays(
     `${activeMontaigneTheme.practicalCounsel} 몽테뉴의 통찰 "${focalMontaigneAphorism.aphorismKo}"를 되새기며, ` +
     `${focalMontaigneAphorism.actionGuidance}`;
 
+  const montaigneCrossAxis = `${activeMontaigneTheme.themeTitleKo.split('—')[0].trim()} × ${focalMontaigneAphorism.sourceContext}`;
   const montaigneSynthesisMatrix = {
     dominantTension: `${activeMontaigneTheme.themeTitleKo} ↔ ${focalMontaigneAphorism.sourceContext}`,
     alignmentState:
@@ -218,6 +220,7 @@ export function calculateFrenchMichelDeMontaigneEssays(
     activeMontaigneTheme,
     focalMontaigneAphorism,
     secondaryMontaigneAphorism,
+    montaigneCrossAxis,
     reflectiveQuestion,
     ritualAction: focalMontaigneAphorism.actionGuidance,
     reflectionFocus: reflectiveQuestion,
@@ -253,6 +256,7 @@ export function formatFrenchMichelDeMontaigneEssaysPrompt(
     `- 보조 실천 지침: ${res.secondaryMontaigneAphorism.actionGuidance}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 몽테뉴 교차 축: ${res.montaigneCrossAxis}`,
     `- 종합 몽테뉴 인문주의 권면: ${res.montaigneComprehensiveGuidance.philosophicalCounsel}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ];
