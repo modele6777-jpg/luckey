@@ -17,7 +17,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const IKIGAI_DESTINY_COMPASS_VERSION = 'LUCKEY-IKIGAI-v2.3.0';
+export const IKIGAI_DESTINY_COMPASS_VERSION = 'LUCKEY-IKIGAI-v2.4.0';
 
 export interface IkigaiQuadrants {
   passion: {
@@ -64,6 +64,11 @@ export interface IkigaiDestinyCompassReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  ikigaiCrossAxis: {
+    passionToVocation: string;
+    missionToProfession: string;
+    alignmentStage: string;
   };
 }
 
@@ -191,11 +196,16 @@ export function runIkigaiDestinyCompassEngine(
         : '전문성과 수익성 사이의 레버리지를 조율하는 확장 국면',
     integratedAction: `${monetizationPath.phase1Validation} | ${nextCareerMilestone}${trimmedQuestion ? ` [질문 맥락: ${trimmedQuestion}]` : ''}`,
   };
+  const ikigaiCrossAxis = {
+    passionToVocation: `${quadrants.passion.coreDriver} → ${quadrants.vocation.monetizationLeverage}`,
+    missionToProfession: `${quadrants.mission.societalImpact} ↔ ${quadrants.profession.superpowerSkill}`,
+    alignmentStage: describeIkigaiStage(ikigaiAlignmentScore),
+  };
 
   const ritualAction = `[${soulCallingTitle.split('(')[0].trim()}] ${monetizationPath.phase1Validation}`;
   const reflectionFocus = reflectiveQuestion;
 
-  const synthesisPromptGuidance = `[LUCKEY 이키가이 천직 4대 교집합 & 소명 나침반 v2.3.0]
+  const synthesisPromptGuidance = `[LUCKEY 이키가이 천직 4대 교집합 & 소명 나침반 ${IKIGAI_DESTINY_COMPASS_VERSION}]
 - 연산 시각: ${calculatedAtKst}
 - 궁극의 천직 소명 타이틀: [${soulCallingTitle}]
 - 이키가이 정렬 완성도: ${describeIkigaiStage(ikigaiAlignmentScore)}
@@ -207,6 +217,7 @@ export function runIkigaiDestinyCompassEngine(
 - 3단계 수익화 로드맵: [1단계 검증] ${monetizationPath.phase1Validation} | [2단계 스케일] ${monetizationPath.phase2Scaling} | [3단계 제국] ${monetizationPath.phase3Empire}
 - 1순위 커리어 마일스톤: ${nextCareerMilestone}
 - 교차 매트릭스 [핵심 긴장: ${ikigaiSynthesisMatrix.dominantTension} | 조율 상태: ${ikigaiSynthesisMatrix.alignmentState}]
+- 이키가이 교차 축: ${ikigaiCrossAxis.passionToVocation} | ${ikigaiCrossAxis.missionToProfession}
 - 통합 실천: ${ikigaiSynthesisMatrix.integratedAction}
 - 실천 의례(Ritual Action): ${ritualAction}
 - 성찰 초점(Reflection Focus): ${reflectionFocus}
@@ -228,6 +239,7 @@ export function runIkigaiDestinyCompassEngine(
     reflectionFocus,
     synthesisPromptGuidance,
     ikigaiSynthesisMatrix,
+    ikigaiCrossAxis,
   };
 }
 
