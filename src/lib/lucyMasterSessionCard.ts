@@ -10,7 +10,6 @@ import { LUCY_REVIEW_MODEL, LUCY_REVIEW_FALLBACK_MODELS } from '@/lib/lucyModelP
  */
 export interface MasterSessionCardSource {
   messages: UnifiedMessage[];
-  depth: 1 | 2 | 3;
   endedAt: number;
 }
 

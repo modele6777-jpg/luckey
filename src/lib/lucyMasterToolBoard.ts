@@ -1,11 +1,11 @@
 import { FIFTEEN_DIVINATION_TOOLS, type DivinationToolId } from '@/lib/fifteenDivinationTools';
 import type { CalculationAuditItem } from '@/lib/divination/calculationAudit';
-import { LUCY_MASTER_DEPTH3_TOOLS } from '@/lib/divination/smartAgentRouter';
+import { LUCY_PRO_TOOLS } from '@/lib/divination/smartAgentRouter';
 import { detectMasterConcernTopic, type MasterConcernTopic } from '@/lib/lucyMasterPrompts';
 import type { ToolFact } from '@/lib/lucyMasterToolFacts';
 
 /**
- * 점술모드 3단계 왼쪽 테이블의 "13대 도구" 판.
+ * 루시프로(점술모드) 왼쪽 테이블의 "13대 도구" 판.
  * 순서는 랜덤이 아니라 고민에 맞춰 정해지고, 같은 고민이면 늘 같은 순서가 나온다.
  *  1) 고민 주제에 가장 잘 맞는 추천 도구 1개
  *  2) 루시 답변에서 함께 짚은 도구(공통 신호)
@@ -122,10 +122,10 @@ export function buildToolBoard(params: {
 }): ToolBoard {
   const topic = detectMasterConcernTopic(params.concern);
   const auditById = new Map(params.audit.map(item => [item.toolId, item] as const));
-  const hasResults = LUCY_MASTER_DEPTH3_TOOLS.some(id => auditById.has(id));
+  const hasResults = LUCY_PRO_TOOLS.some(id => auditById.has(id));
   const topicOrder = TOPIC_TOOLS[topic];
 
-  const items: ToolBoardItem[] = LUCY_MASTER_DEPTH3_TOOLS.map(id => {
+  const items: ToolBoardItem[] = LUCY_PRO_TOOLS.map(id => {
     const spec = FIFTEEN_DIVINATION_TOOLS[id];
     const { status, note } = statusOf(auditById.get(id));
     const signal = status === 'needs_info' ? '' : findToolSignal(id, params.answer);
@@ -134,7 +134,7 @@ export function buildToolBoard(params: {
     return { id, name: display.name, hanja: display.hanja, bestFor: shortBestFor(id), status, note, signal, common: Boolean(signal), facts: status === 'calculated' ? (params.facts?.[id] ?? []) : [] };
   });
 
-  const baseIndex = (id: DivinationToolId) => LUCY_MASTER_DEPTH3_TOOLS.indexOf(id);
+  const baseIndex = (id: DivinationToolId) => LUCY_PRO_TOOLS.indexOf(id);
   const topicIndex = (id: DivinationToolId) => {
     const i = topicOrder.indexOf(id);
     return i < 0 ? topicOrder.length : i;

@@ -1,10 +1,11 @@
-import { getDestinationChannel, MessageCircleMinus } from '@/lib/channelMenuIcons';
+import { getDestinationChannel } from '@/lib/channelMenuIcons';
 import { createPortal } from 'react-dom';
 import { BigBangLuckyBreeze } from './BigBangLuckyBreeze';
 import { getOrderedLuckeyPageKeysForCurrentApp, oneStopNavigationPath, nextOrderedLuckeyPage, previousOrderedLuckeyPage } from '@/lib/omniWarp/oneStopPages';
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
-import { ChevronUp, ChevronDown, Clover, KeyRound, MessageCirclePlus, MessageCircleMore, MessageCircleQuestion, MessageCircleWarning } from 'lucide-react';
+import { ChevronUp, ChevronDown, Clover, KeyRound, MessageCircle } from 'lucide-react';
+import { LucyProBubbleDotIcon } from '@/components/icons/LucyProBubbleDotIcon';
 import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase, OmniWarpTarget, OmniWarpContext, WarpForceMetrics } from '@/lib/omniWarp/types';
 import { calculateWarpMetrics, forceToAiTemperature, WARP_ABORT_DISTANCE } from '@/lib/omniWarp/forceSensor';
@@ -31,7 +32,7 @@ import { isDuoUnfoldedState } from '@/lib/perfMode';
 import { isLucyChatScreen } from '@/lib/duoPaneFocus';
 import { isSinglePaneLucyScreen } from '@/lib/workspacePaneDom';
 import { BigBangCircularMeter } from './BigBangCircularMeter';
-import { isLucyMasterModeOn, setLucyMasterMode, deepenLucyMasterDepth, shallowLucyMasterDepth, getLucyMasterDepth, LUCY_MASTER_MAX_DEPTH, useLucyMasterMode, useLucyMasterDepth } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, useLucyMasterMode } from '@/lib/lucyMasterMode';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import { isOrbCounselOpen, setOrbCounselOpen } from '@/lib/orbCounselGate';
 import { OrbShapeIcon } from '@/components/icons/OrbShapeIcon';
@@ -238,15 +239,11 @@ export function BigBangButton() {
   const [feedbackChannel, setFeedbackChannel] = useState<{ id: string; icon: ReturnType<typeof getDestinationChannel>['icon'] } | null>(null);
   const DestinationIcon = feedbackChannel?.icon;
   const navigationFeedbackStorageKey = 'luckey-bigbang-navigation-feedback';
-  // 🔮 점술모드 상담 깊이 표시 (버튼 고리)
+  // 🔮 루시프로(점술모드) 켜짐 표시 (버튼 고리)
   const masterOn = useLucyMasterMode();
-  const masterDepth = useLucyMasterDepth();
-  // 루시로 갈 때 빅뱅 버튼 안 말풍선: 접힌 화면 루시는 −, 펼친 화면 루시 플러스는 +, 점술모드는 깊이 기호(… ? !) — 사이드바와 같다.
-  const LucyBubbleIcon = masterOn
-    ? (masterDepth >= 3 ? MessageCircleWarning : masterDepth === 2 ? MessageCircleQuestion : MessageCircleMore)
-    : isDuoUnfoldedState().unfolded ? MessageCirclePlus : MessageCircleMinus;
+  // 루시로 갈 때 빅뱅 버튼 안 말풍선: 일반 루시는 속이 빈 말풍선, 루시프로는 말풍선 안에 점 하나 — 사이드바와 같다.
+  const LucyBubbleIcon = masterOn ? LucyProBubbleDotIcon : MessageCircle;
   const CenterChannelIcon = feedbackChannel?.id === 'lucy' ? LucyBubbleIcon : DestinationIcon;
-  const lucyBubbleMarker = feedbackChannel?.id === 'lucy' && !masterOn ? (isDuoUnfoldedState().unfolded ? 'plus' : 'minus') : undefined;
   const [gestureFeedback, setGestureFeedback] = useState<'tap' | 'hold' | 'double' | null>(null);
   const gestureFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const centerGesture = isPressing && durationMs >= 220 && hoverDirection === 'none' ? 'hold' : gestureFeedback;
@@ -674,14 +671,12 @@ export function BigBangButton() {
         phase: 'whitehole',
         gauge: metrics.virtualForce,
         aiTemperature: temp,
-        title: isLucyMasterModeOn()
-          ? (getLucyMasterDepth() >= LUCY_MASTER_MAX_DEPTH ? '가장 깊은 상담' : `상담 깊이 ${getLucyMasterDepth() + 1}단계`)
-          : '점술모드 ON',
+        title: isLucyMasterModeOn() ? '루시프로 OFF' : '루시프로 ON',
         actionType: 'navigate',
-        previewLabel: isLucyMasterModeOn() ? '[홀드] 상담 더 깊게' : '[홀드] 루시 점술모드 켜기',
+        previewLabel: isLucyMasterModeOn() ? '[홀드] 일반 루시로' : '[홀드] 루시프로 켜기',
         previewDescription: isLucyMasterModeOn()
-          ? '점술모드에서 길게 누를 때마다 상담이 한 단계씩(최대 3단계) 깊어집니다. 한 번 탭하면 일반 루시로 돌아갑니다.'
-          : '빅뱅 버튼을 길게 누르면 루시 점술모드(Lucy Master)에 들어갑니다.',
+          ? '루시프로(점술모드)는 사주·타로·13대 도구·12대 양피지가 한 번에 열린 통합 상담입니다. 길게 누르거나 한 번 탭하면 일반 루시로 돌아갑니다.'
+          : '빅뱅 버튼을 길게 누르면 루시프로(점술모드) 통합 상담이 열립니다.',
         destinationPath: '/chat',
         themeColor: '#38bdf8',
         accentGlow: 'rgba(56, 189, 248, 0.85)',
@@ -993,7 +988,7 @@ export function BigBangButton() {
     window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/key' } }));
   }, [dispatchBigBangRouteTransition, isKeyChannel, navigate]);
 
-  // 🔮 가운데 홀드: 루시 점술모드(Lucy Master) 켜기/끄기 (접힘·펼침 공통)
+  // 🔮 가운데 홀드: 루시프로(점술모드) 켜기/끄기 (접힘·펼침 공통)
   const toggleDivinationMode = useCallback((metrics?: WarpForceMetrics) => {
     window.dispatchEvent(new CustomEvent('prism:abort_lucy_voice_ptt'));
     setOrbCounselOpen(false);
@@ -1009,11 +1004,15 @@ export function BigBangButton() {
     // 홀드(사용자 제스처) 안에서 바로 배경음을 시작해야 모바일 브라우저가 소리를 허용한다.
     const startBgmIfWanted = () => { if (isLucyMasterBgmPreferred()) void startLucyMasterBgm(); };
     const alreadyMaster = isLucyMasterModeOn();
-    if (alreadyMaster) {
-      // 점술모드 안에서 다시 홀드: 상담이 한 단계 깊어진다 (최대 3단계). 나가기는 한 번 탭.
-      const { changed } = deepenLucyMasterDepth();
-      if (changed) playLucyMasterSuction('deepen');
-      if (lucyVisible) return;
+    if (alreadyMaster && lucyVisible) {
+      // 통합 모드는 단계가 없다. 켜져 있는 화면에서 다시 홀드하면 일반 루시로 돌아간다(토글).
+      playLucyMasterSuction('out');
+      setLucyMasterMode(false);
+      return;
+    } else if (alreadyMaster) {
+      // 다른 화면에서 홀드: 켜 둔 루시프로 상담으로 그대로 들어간다.
+      playLucyMasterSuction();
+      startBgmIfWanted();
     } else if (lucyVisible) {
       setLucyMasterMode(true);
       playLucyMasterSuction('in'); // 들어갈 때: 화면이 버튼 안으로 빨려 들어간다
@@ -1288,8 +1287,8 @@ export function BigBangButton() {
     const targetDir = start.pointerType === 'touch'
       ? start.direction
       : downDirectionRef.current;
-    // 🔮 루시 채팅 화면에서 좌·우 탭: 점술모드 단계를 바로 오간다.
-    // 오른쪽 = 한 단계 깊게 (루시 → 1 → 2 → 3), 왼쪽 = 한 단계 얕게 (3 → 2 → 1 → 루시).
+    // 🔮 루시 채팅 화면에서 좌·우 탭: 루시프로(점술모드)를 바로 켜고 끈다.
+    // 오른쪽 = 루시프로 켜기/끄기 토글, 왼쪽 = 일반 루시로 돌아가기.
     if (!isDragGesture && isChatView && (targetDir === 'west' || targetDir === 'east')) {
       if (singleTapTimerRef.current) {
         clearTimeout(singleTapTimerRef.current);
@@ -1306,20 +1305,13 @@ export function BigBangButton() {
           setLucyMasterMode(true);
           playLucyMasterSuction('in');
           if (isLucyMasterBgmPreferred()) void startLucyMasterBgm();
-        } else if (deepenLucyMasterDepth().changed) {
-          playLucyMasterSuction('deepen');
         } else {
           playLucyMasterSuction('out');
           setLucyMasterMode(false);
         }
       } else if (masterNow) {
-        if (getLucyMasterDepth() > 1) {
-          shallowLucyMasterDepth();
-          playLucyMasterSuction('out');
-        } else {
-          playLucyMasterSuction('out');
-          setLucyMasterMode(false);
-        }
+        playLucyMasterSuction('out');
+        setLucyMasterMode(false);
       }
       triggerHaptic('whitehole');
       showDirectionFeedback(targetDir, '/chat');
@@ -1911,8 +1903,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title={`빅뱅 버튼 (탭: Lucy 채팅 / 더블탭: Key로 이동 / 위·아래: 사이드바 메뉴 순서 / ${isChatView ? '좌우: 점술모드 한 단계 얕게·깊게' : isKeyChannel ? '좌우: Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: 점술모드 / 드래그 후 놓기: 럭키 추천 앱으로 워프 · 범위 밖에서 놓으면 취소)`}
-              aria-label={`빅뱅 버튼 · 탭: Lucy 채팅, 루시 화면에서는 음성모드 켜기·끄기, 더블탭: Key로 이동, 위·아래는 사이드바 메뉴 순서 / ${isChatView ? '좌우는 점술모드 한 단계 얕게·깊게' : isKeyChannel ? '좌우는 Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 루시 마스터(점술모드) 켜기·끄기, 드래그 후 놓으면 럭키 추천 앱으로 워프, 범위 밖이면 취소`}
+              title={`빅뱅 버튼 (탭: Lucy 채팅 / 더블탭: Key로 이동 / 위·아래: 사이드바 메뉴 순서 / ${isChatView ? '좌우: 루시프로 켜기·끄기' : isKeyChannel ? '좌우: Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: 루시프로(점술모드) 켜기·끄기 / 드래그 후 놓기: 럭키 추천 앱으로 워프 · 범위 밖에서 놓으면 취소)`}
+              aria-label={`빅뱅 버튼 · 탭: Lucy 채팅, 루시 화면에서는 음성모드 켜기·끄기, 더블탭: Key로 이동, 위·아래는 사이드바 메뉴 순서 / ${isChatView ? '좌우는 루시프로 켜기·끄기' : isKeyChannel ? '좌우는 Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 루시프로(점술모드) 켜기·끄기, 드래그 후 놓으면 럭키 추천 앱으로 워프, 범위 밖이면 취소`}
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (
@@ -2144,23 +2136,20 @@ export function BigBangButton() {
                 })}
               </div>
 
-              {/* 🔮 점술모드 상담 깊이: 단계마다 금빛 고리가 하나씩 늘어난다 (시각 전용) */}
+              {/* 🔮 루시프로(점술모드): 통합 상담 하나를 나타내는 금빛 고리 하나 (시각 전용) */}
               {masterOn && (
-                <div data-bigbang-master-depth={masterDepth} className="absolute inset-0 z-10 pointer-events-none" aria-hidden="true">
-                  {Array.from({ length: masterDepth }, (_, index) => (
-                    <motion.span
-                      key={index}
-                      className="absolute rounded-full border"
-                      style={{
-                        inset: `${-3 - index * 4}px`,
-                        borderColor: index === masterDepth - 1 ? 'rgba(253,230,138,0.85)' : 'rgba(192,132,252,0.6)',
-                        boxShadow: `0 0 ${6 + index * 4}px rgba(192,132,252,0.55)`,
-                      }}
-                      initial={{ opacity: 0, scale: 1.25 }}
-                      animate={{ opacity: [0.55, 0.95, 0.55], scale: 1 }}
-                      transition={{ opacity: { duration: 2.4, repeat: Infinity, delay: index * 0.3 }, scale: { duration: 0.5 } }}
-                    />
-                  ))}
+                <div data-bigbang-lucy-pro="true" className="absolute inset-0 z-10 pointer-events-none" aria-hidden="true">
+                  <motion.span
+                    className="absolute rounded-full border"
+                    style={{
+                      inset: '-3px',
+                      borderColor: 'rgba(253,230,138,0.85)',
+                      boxShadow: '0 0 10px rgba(192,132,252,0.55)',
+                    }}
+                    initial={{ opacity: 0, scale: 1.25 }}
+                    animate={{ opacity: [0.55, 0.95, 0.55], scale: 1 }}
+                    transition={{ opacity: { duration: 2.4, repeat: Infinity }, scale: { duration: 0.5 } }}
+                  />
                 </div>
               )}
 
@@ -2170,7 +2159,7 @@ export function BigBangButton() {
                   {cloverWind !== 'off' ? (
                     <span data-bigbang-center-drag-core="true" className="w-2.5 h-2.5 rounded-full bg-emerald-200/85 blur-[1px] animate-pulse" aria-hidden="true" />
                   ) : !isPressing && centerDirection !== 'none' && CenterChannelIcon ? (
-                    <CenterChannelIcon data-bigbang-center-channel={feedbackChannel?.id} data-bigbang-center-direction={centerDirection} data-lucy-mode-marker={lucyBubbleMarker} size={24} strokeWidth={1.8} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
+                    <CenterChannelIcon data-bigbang-center-channel={feedbackChannel?.id} data-bigbang-center-direction={centerDirection} data-lucy-pro-bubble={feedbackChannel?.id === 'lucy' && masterOn ? 'true' : undefined} size={24} strokeWidth={1.8} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
                   ) : centerDirection === 'north' || centerDirection === 'south' ? (
                     centerDirection === 'north'
                       ? <ChevronUp data-bigbang-center-arrow="north" size={24} strokeWidth={2} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />

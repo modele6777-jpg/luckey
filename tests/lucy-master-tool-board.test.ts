@@ -1,10 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildToolBoard, findToolSignal } from '../src/lib/lucyMasterToolBoard';
-import { LUCY_MASTER_DEPTH3_TOOLS } from '../src/lib/divination/smartAgentRouter';
+import { LUCY_PRO_TOOLS } from '../src/lib/divination/smartAgentRouter';
 
 const audit = (overrides: Record<string, { status: any; sentToModel: boolean; note?: string }> = {}) =>
-  LUCY_MASTER_DEPTH3_TOOLS.map(id => ({ toolId: id, name: id, status: 'calculated', sentToModel: true, ...overrides[id] })) as any[];
+  LUCY_PRO_TOOLS.map(id => ({ toolId: id, name: id, status: 'calculated', sentToModel: true, ...overrides[id] })) as any[];
 
 test('empty audit shows the waiting board', () => {
   assert.equal(buildToolBoard({ audit: [], concern: '', answer: '' }).hasResults, false);

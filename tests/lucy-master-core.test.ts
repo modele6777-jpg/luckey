@@ -20,7 +20,7 @@ test('chat, master divination and Orb use the common facts policy and calculatio
   const profile = { basic: { birthdate: '1990-05-15', birthtime: '14:30', birthCity: '서울' } };
   const question = '사주로 이직 고민을 살펴봐 주세요.';
   const chat = selectOptimalDivinationTools(question, [], profile);
-  const pro = selectOptimalDivinationTools(question, [], profile, false, { divinationMode: { base: 'saju', deep: false, depth: 1 } });
+  const pro = selectOptimalDivinationTools(question, [], profile, false, { divinationMode: { base: 'saju', deep: false } });
   for (const mode of [chat, pro]) {
     assert.equal(mode.engineTools?.saju?.status, 'calculated');
     assert.ok(mode.promptInjection.includes(LUCY_COUNSEL_GROUNDING));

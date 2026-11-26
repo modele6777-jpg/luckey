@@ -297,7 +297,7 @@ export interface SelectedDivinationToolsResult {
   selectedTools: DivinationToolSpec[];
   firedEngineBadges?: string[];
   calculationAudit?: CalculationAuditItem[];
-  /** 도구별 실제 계산 결과 (점술모드 3단계 테이블이 핵심 값만 뽑아 쓴다). */
+  /** 도구별 실제 계산 결과 (루시프로 점술 테이블이 핵심 값만 뽑아 쓴다). */
   engineTools?: Record<string, { status: string; data?: unknown }>;
   isCasualMessage: boolean;
   isMasterMobilization?: boolean;
@@ -310,7 +310,7 @@ export function selectOptimalDivinationTools(
   activeChannels: SevenThemeChannel[] = [],
   profile?: UserProfile,
   isMasterMode?: boolean,
-  policy: { allowMaster?: boolean; requireBasicAndDeep?: boolean; divinationMode?: { base: 'saju' | 'tarot_saju'; deep?: boolean; depth?: 1 | 2 | 3 }; pinnedTools?: DivinationToolId[]; pinnedDeepKeys?: string[] } = {}
+  policy: { allowMaster?: boolean; requireBasicAndDeep?: boolean; divinationMode?: { base: 'saju' | 'tarot_saju'; deep?: boolean }; pinnedTools?: DivinationToolId[]; pinnedDeepKeys?: string[] } = {}
 ): SelectedDivinationToolsResult {
   const clean = (userText || '').trim();
   const lower = clean.toLowerCase();

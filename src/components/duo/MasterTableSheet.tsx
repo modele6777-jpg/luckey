@@ -2,7 +2,7 @@ import { useEffect, useReducer, useState } from 'react';
 import { X } from 'lucide-react';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { getLucyTableState, LUCY_TABLE_EVENT, type LucyTableState } from '@/lib/lucyTableBus';
-import { LUCY_MASTER_DEPTH_EVENT, useLucyMasterDepth, requestLucyTableFace } from '@/lib/lucyMasterMode';
+import { requestLucyTableFace } from '@/lib/lucyMasterMode';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { MasterSajuBoard } from './MasterSajuBoard';
 import { MasterToolBoard } from './MasterToolBoard';
@@ -10,24 +10,23 @@ import { LucyEngineCatalogPanel } from '@/components/chat/LucyEngineCatalogDialo
 import { getLucyMasterDefaultTableFace, reduceLucyMasterTableFace, type LucyMasterTableFace } from '@/lib/lucyMasterTableFace';
 
 type Face = LucyMasterTableFace;
-const FACES: { id: Face; icon: string; label: string; stage: 1 | 2 | 3 }[] = [
-  { id: 'saju', icon: '☯', label: '사주 원국', stage: 1 },
-  { id: 'tarot', icon: '🃏', label: '타로', stage: 2 },
-  { id: 'recommended', icon: '🧭', label: '추천 도구', stage: 3 },
-  { id: 'scrolls', icon: '📜', label: '양피지', stage: 3 },
-  // 엔진함: 모든 단계에서 볼 수 있는 엔진 이름·뜻 목록 (읽기 전용)
-  { id: 'engines', icon: '📚', label: '엔진함', stage: 1 },
+const FACES: { id: Face; icon: string; label: string; sub: string }[] = [
+  { id: 'saju', icon: '☯', label: '사주 원국', sub: '원국' },
+  { id: 'tarot', icon: '🃏', label: '타로', sub: '카드' },
+  { id: 'recommended', icon: '🧭', label: '추천 도구', sub: '도구' },
+  { id: 'scrolls', icon: '📜', label: '양피지', sub: '양피지' },
+  // 엔진함: 루시가 쓰는 엔진 이름·뜻 목록 (읽기 전용)
+  { id: 'engines', icon: '📚', label: '엔진함', sub: '목록' },
 ];
 
 /**
  * 📱 접은 화면 점술모드의 "도구 보기" 창.
- * 펼친 화면 왼쪽 테이블과 같은 내용(단계별 사주 원국 · 타로 · 추천 도구 · 12대 양피지)을 창으로 띄운다.
+ * 펼친 화면 왼쪽 테이블과 같은 내용(사주 원국 · 타로 · 추천 도구 · 12대 양피지 · 엔진함)을 창으로 띄운다.
  * 카드 뽑기는 대화에서 하므로 여기서는 이미 뽑은 카드만 다시 보여준다.
  */
 export function MasterTableSheet({ onClose }: { onClose: () => void }) {
-  const depth = useLucyMasterDepth();
   const [table, setTable] = useState<LucyTableState>(() => getLucyTableState());
-  const [face, dispatchFace] = useReducer(reduceLucyMasterTableFace, depth, getLucyMasterDefaultTableFace);
+  const [face, dispatchFace] = useReducer(reduceLucyMasterTableFace, getLucyMasterDefaultTableFace());
   const [focusTool, setFocusTool] = useState<string | null>(null);
 
   useEffect(() => {
@@ -42,21 +41,12 @@ export function MasterTableSheet({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener(LUCY_TABLE_EVENT, onTable);
   }, []);
   useEffect(() => {
-    const onDepth = (e: Event) => {
-      const detail = (e as CustomEvent<{ depth?: number; changed?: boolean }>).detail;
-      if (!detail?.changed || typeof detail.depth !== 'number') return;
-      dispatchFace({ type: 'stage-changed', depth: detail.depth, changed: true });
-    };
-    window.addEventListener(LUCY_MASTER_DEPTH_EVENT, onDepth);
-    return () => window.removeEventListener(LUCY_MASTER_DEPTH_EVENT, onDepth);
-  }, []);
-  useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  const visible = FACES.filter(f => f.stage <= depth);
+  const visible = FACES;
   const shown: Face = visible.some(f => f.id === face) ? face : 'saju';
 
   return (
@@ -74,7 +64,7 @@ export function MasterTableSheet({ onClose }: { onClose: () => void }) {
           style={{ colorScheme: 'dark' }}
         >
           <div className="flex shrink-0 items-center gap-2 px-4 pt-3.5">
-            <p className="flex-1 text-[14px] font-black text-amber-100">🔮 점술 도구 <span className="ml-1 text-[11px] font-bold text-amber-200/70">· {depth}단계</span></p>
+            <p className="flex-1 text-[14px] font-black text-amber-100">🔮 점술 도구 <span className="ml-1 text-[11px] font-bold text-amber-200/70">· 사주·타로·13대 도구</span></p>
             <button type="button" onClick={onClose} aria-label="도구 창 닫기" className="flex h-8 w-8 items-center justify-center rounded-full text-slate-300 hover:bg-white/10"><X size={18} /></button>
           </div>
           <div className="flex shrink-0 items-stretch gap-1 px-3 pt-2 pb-1.5" role="tablist" aria-label="점술 도구 보기">
@@ -92,7 +82,7 @@ export function MasterTableSheet({ onClose }: { onClose: () => void }) {
                 >
                   <span className="text-[15px] leading-none" aria-hidden="true">{item.icon}</span>
                   <span className="mt-0.5 max-w-full truncate text-[10.5px] font-bold leading-tight">{item.label}</span>
-                  <span className={`text-[8px] leading-none ${active ? 'text-amber-200/90' : 'text-slate-400'}`}>{item.id === 'engines' ? '목록' : `${item.stage}단계`}</span>
+                  <span className={`text-[8px] leading-none ${active ? 'text-amber-200/90' : 'text-slate-400'}`}>{item.sub}</span>
                 </button>
               );
             })}

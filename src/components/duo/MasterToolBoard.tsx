@@ -46,7 +46,7 @@ function FactRows({ facts, tone }: { facts: ToolFact[]; tone: 'dark' | 'parchmen
 }
 
 /**
- * 🧭 점술모드 3단계 왼쪽 테이블의 두 탭.
+ * 🧭 루시프로(점술모드) 왼쪽 테이블의 두 탭.
  * - recommended: 고민에 맞춘 추천 도구 1개를 크게
  * - scrolls: 나머지 12개를 양피지 두루마리 보조 자료로
  */
@@ -70,7 +70,7 @@ export function MasterToolBoard({ view, tools, concern, lastAnswer, facts, toolD
       <div className="flex-1 flex flex-col items-center justify-center text-center px-6" data-master-tool-board="empty" data-master-tool-view={view}>
         <p className="text-3xl mb-3" aria-hidden="true">{view === 'scrolls' ? '📜' : '🧭'}</p>
         <p className="text-sm font-bold text-amber-200">{view === 'scrolls' ? '12대 도구 두루마리가 놓일 자리예요' : '추천 도구가 펼쳐질 자리예요'}</p>
-        <p className="mt-1.5 text-xs text-slate-300/90 break-keep">3단계에서 고민을 보내면 루시가 13개 도구로 함께 보고, 이 고민에 가장 잘 맞는 도구부터 여기에 펼쳐줘요.</p>
+        <p className="mt-1.5 text-xs text-slate-300/90 break-keep">고민을 보내면 루시가 사주와 13개 도구로 함께 보고, 이 고민에 가장 잘 맞는 도구부터 여기에 펼쳐줘요.</p>
       </div>
     );
   }
