@@ -8,12 +8,12 @@
  * 4. 파스칼의 내기(Pari de Pascal): 불확실한 삶 속에서 의미와 영원한 가치를 향해 전 존재를 던지는 실존적 결단의 용기.
  * 5. 오락과 기만(Divertissement)의 탈피: 내면의 공허를 회피하기 위한 헛된 부산스러움을 멈추고 고요히 참된 자아와 대면하는 평정심.
  *
- * @version LUCKEY-PASCAL-PENSEES-HEART-REASON-v2.3.0
+ * @version LUCKEY-PASCAL-PENSEES-HEART-REASON-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const PASCAL_PENSEES_HEART_REASON_VERSION = 'LUCKEY-PASCAL-PENSEES-HEART-REASON-v2.3.0';
+export const PASCAL_PENSEES_HEART_REASON_VERSION = 'LUCKEY-PASCAL-PENSEES-HEART-REASON-v2.4.0';
 
 export type PascalQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -59,6 +59,7 @@ export interface PascalPenseesHeartReasonResult {
   };
   questionTopic: PascalQuestionTopic;
   heartPhase: string;
+  pascalCrossAxis: string;
   shadowWarning: string;
   temporalRhythm: PascalTemporalRhythm;
   questionContextGuide: string;
@@ -255,6 +256,7 @@ export function calculatePascalPenseesHeartReason(
   const focalPenseesMaxim = PENSEES_MAXIMS[maximIndex];
   const heartPhase = PASCAL_HEART_PHASES[(absHash >> 10) % PASCAL_HEART_PHASES.length];
   const shadowWarning = PASCAL_SHADOW_WARNINGS[(absHash >> 13) % PASCAL_SHADOW_WARNINGS.length];
+  const pascalCrossAxis = `${activeThematicThought.thoughtTitleFrench.split('(')[0].trim()} × ${companionThematicThought.thoughtTitleFrench.split('(')[0].trim()} (${temporalRhythm.kstSlot})`;
 
   const topicGuides: Record<PascalQuestionTopic, { guide: string; ritual: string; question: string }> = {
     relationship: {
@@ -313,6 +315,7 @@ export function calculatePascalPenseesHeartReason(
     },
     questionTopic,
     heartPhase,
+    pascalCrossAxis,
     shadowWarning,
     temporalRhythm,
     questionContextGuide: `${topicPack.guide} (동반 성찰: ${companionThematicThought.thoughtTitleKo})`,
@@ -336,6 +339,7 @@ export function formatPascalPenseesHeartReasonPrompt(res: PascalPenseesHeartReas
     `- 소음 탈피 내면 고요(Divertissement 탈피): ${describePascalQualitativeStage(res.divertissementTranquilityScore)}`,
     `- 현재 시공간 리듬 (${res.temporalRhythm.kstSlot}): ${res.temporalRhythm.rhythmTitle} — ${res.temporalRhythm.rhythmGuidance}`,
     `- 심장의 논리 국면: ${res.heartPhase}`,
+    `- 파스칼 교차 축: ${res.pascalCrossAxis}`,
     `- 질문 맥락 맞춤 성찰 (${res.questionTopic}): ${res.questionContextGuide}`,
     `- 핵심 실존 성찰: ${res.activeThematicThought.thoughtTitleKo} [${res.activeThematicThought.thoughtTitleFrench}]`,
     `- 동반 실존 성찰: ${res.companionThematicThought.thoughtTitleKo}`,
