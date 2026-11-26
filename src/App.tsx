@@ -49,7 +49,7 @@ import { useFoldState, subscribeFoldState } from "./lib/foldState";
 import { isDuoDividerDoubleTap, mapDuoPaneSide, shouldResetDuoPaneSwapOnFold, type DuoDividerTap } from "./lib/duoPaneSwap";
 import { DuoCosmicAmbientRoom } from "./components/duo/DuoCosmicAmbientRoom";
 import { DuoDivinationTarotPane } from "./components/duo/DuoDivinationTarotPane";
-import { useLucyMasterMode, setLucyMasterToolsRequested, initializeLucyMasterModeForFold, applyLucyMasterModeForFoldChange } from "./lib/lucyMasterMode";
+import { useLucyMasterMode, setLucyMasterToolsRequested, applyLucyMasterModeForFoldChange } from "./lib/lucyMasterMode";
 import AuroraBackground from "./components/AuroraBackground";
 import EpilogueApp from "./pages/EpilogueApp";
 
@@ -324,12 +324,6 @@ function AppContent() {
   // Popups live inside their pane; folding must keep that pane on screen.
   const [foldedPopupPane, setFoldedPopupPane] = React.useState<'content' | 'lucy' | null>(null);
   React.useEffect(() => { setFoldedPopupPane(null); }, [location]);
-
-  React.useEffect(() => {
-    // 📱 앱을 열었을 때의 기본 화면: 접힘 = 루시 채팅, 펼침 = 루시 점술모드.
-    // 같은 화면에서 남긴 선택이 있으면 그것을 그대로 쓰고, 처음 여는 화면이면 기본값으로 맞춘다.
-    initializeLucyMasterModeForFold();
-  }, []);
 
   React.useEffect(() => {
     // Root classes are written by the fold store; here only the fold transition is handled.
