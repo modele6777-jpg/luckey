@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { safeSessionStorage } from '@/utils/safeStorage';
+import { getFoldState } from '@/lib/foldState';
 import type { DetectedTarotCard } from '@/utils/tarotDetector';
 import { getTarotCardImageUrl, type TarotCard } from '@/data/tarotData';
 import type { UnifiedMessage } from '@/lib/chatHistorySync';
@@ -9,8 +10,15 @@ import type { UnifiedMessage } from '@/lib/chatHistorySync';
  * 빅뱅 버튼 가운데를 길게 누르면 켜고/끄며, 접힘·펼침 상태 모두 같은 값을 공유한다.
  * - 접힘: 사주 베이스
  * - 펼침: 왼쪽 화면 타로 + 사주 베이스
+ *
+ * 기본 화면(2026-11-26 사용자 지시 "접혔을때는 루시채팅, 펼쳤을때는 루시점술"):
+ * - 접힌 화면은 일반 루시 채팅, 펼친 화면은 루시 점술모드가 기본이다.
+ * - sessionStorage 에 남은 기록이 이번 화면(접힘/펼침)에 대한 것이 아니면 새 화면의 기본값을 쓴다.
+ * - 사용자가 빅뱅 버튼·사이드바로 직접 켜고 끈 선택은 같은 화면에 머무는 동안 유지된다.
  */
 export const LUCY_MASTER_MODE_KEY = 'lucy_master_mode';
+/** 이번 화면(접힘/펼침)에서의 현재 모드와, 그것이 사용자의 직접 선택인지 남긴다. */
+export const LUCY_MASTER_STATE_KEY = 'lucy_master_mode_state';
 export const LUCY_MASTER_MODE_EVENT = 'prism:lucy_master_mode';
 export const LUCY_TAROT_DRAWN_EVENT = 'prism:lucy_tarot_drawn';
 export type LucyBubbleMarker = 'plus' | 'minus' | null;
@@ -83,15 +91,83 @@ export function requestLucyTableFace(face: 'engines'): void {
   window.dispatchEvent(new CustomEvent(LUCY_TABLE_FACE_EVENT, { detail: { face } }));
 }
 
-export function isLucyMasterModeOn(): boolean {
+/* ───────────── 📱 접힘·펼침 기본 화면 ───────────── */
+
+export interface LucyMasterModeState {
+  /** 이 화면에서의 모드 */
+  on: boolean;
+  /** 이 값이 기록된 화면(펼침 여부) */
+  unfolded: boolean;
+  /** 사용자가 직접 켜고 끈 선택인지 (아니면 화면 기본값) */
+  explicit: boolean;
+}
+
+/** 접힌 화면은 일반 루시 채팅, 펼친 화면은 루시 점술모드가 기본이다. */
+export function defaultLucyMasterModeForFold(unfolded: boolean): boolean {
+  return unfolded;
+}
+
+/** 이번 화면에 대한 기록이 있으면 그 값을, 없으면 이번 화면의 기본값을 쓴다. */
+export function resolveLucyMasterModeForFold(unfolded: boolean, state: LucyMasterModeState | null): boolean {
+  if (state && state.unfolded === unfolded) return state.on;
+  return defaultLucyMasterModeForFold(unfolded);
+}
+
+/** 접힘 ↔ 펼침이 실제로 바뀌었을 때 맞출 기본 화면. 전환이 아니면 null. */
+export function lucyMasterModeForFoldChange(wasUnfolded: boolean, isNowUnfolded: boolean): boolean | null {
+  if (wasUnfolded === isNowUnfolded) return null;
+  return defaultLucyMasterModeForFold(isNowUnfolded);
+}
+
+/** Unit tests replace how the current fold is read (this module has no DOM in node tests). */
+let foldUnfoldedReader: () => boolean = () => getFoldState().unfolded;
+
+function currentFoldUnfolded(): boolean {
   try {
-    return safeSessionStorage.getItem(LUCY_MASTER_MODE_KEY) === 'on';
+    return foldUnfoldedReader();
   } catch {
     return false;
   }
 }
 
-export function setLucyMasterMode(on: boolean): void {
+function readLucyMasterModeState(): LucyMasterModeState | null {
+  try {
+    const raw = safeSessionStorage.getItem(LUCY_MASTER_STATE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<LucyMasterModeState> | null;
+    if (!parsed || typeof parsed.on !== 'boolean' || typeof parsed.unfolded !== 'boolean') return null;
+    return { on: parsed.on, unfolded: parsed.unfolded, explicit: parsed.explicit !== false };
+  } catch {
+    return null;
+  }
+}
+
+function writeLucyMasterModeState(state: LucyMasterModeState): void {
+  try {
+    safeSessionStorage.setItem(LUCY_MASTER_STATE_KEY, JSON.stringify(state));
+  } catch { /* storage unavailable: the in-session event still applies */ }
+}
+
+/** 접힌 화면은 일반 루시 채팅, 펼친 화면은 점술모드가 기본이다. */
+export function isLucyMasterModeOn(): boolean {
+  return modeForScreen(currentFoldUnfolded());
+}
+
+/** 특정 화면(접힘/펼침)에서의 모드: 그 화면에 대한 기록이 있으면 그 값, 없으면 기본값. */
+function modeForScreen(unfolded: boolean): boolean {
+  return resolveLucyMasterModeForFold(unfolded, readLucyMasterModeState());
+}
+
+export interface LucyMasterModeChangeOptions {
+  /** false 면 사용자의 직접 선택이 아니라 이번 화면의 기본값으로 기록한다. */
+  explicit?: boolean;
+  /** 이미 켜져 있어도 타로집 인사를 한 번 준비한다. */
+  greet?: boolean;
+}
+
+export function setLucyMasterMode(on: boolean, options: LucyMasterModeChangeOptions = {}): void {
+  const unfolded = currentFoldUnfolded();
+  const wasOn = isLucyMasterModeOn();
   if (on) {
     setLucyBubbleMarker(null);
     setLucyMasterToolsRequested(false);
@@ -99,7 +175,7 @@ export function setLucyMasterMode(on: boolean): void {
   else setLucyMasterToolsRequested(false);
   try {
     if (on) {
-      if (!isLucyMasterModeOn()) {
+      if (!wasOn || options.greet) {
         safeSessionStorage.setItem(GREETING_PENDING_KEY, '1');
         // 단계 개념은 폐지됐다. 예전 세션에 남은 값을 지워 둔다.
         safeSessionStorage.removeItem(LUCY_MASTER_DEPTH_KEY);
@@ -112,9 +188,67 @@ export function setLucyMasterMode(on: boolean): void {
       safeSessionStorage.removeItem(LINK_KEY);
     }
   } catch { /* storage unavailable: the event still updates the open chat */ }
+  writeLucyMasterModeState({ on, unfolded, explicit: options.explicit !== false });
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent(LUCY_MASTER_MODE_EVENT, { detail: { on } }));
   }
+}
+
+let foldDefaultApplied = false;
+
+/**
+ * 앱이 열릴 때 한 번: 지금 화면(접힘/펼침)의 기본 화면을 맞춘다.
+ * 같은 화면에서 남긴 기록(사용자의 직접 선택 포함)이 있으면 그것을 그대로 쓴다.
+ */
+export function initializeLucyMasterModeForFold(): boolean {
+  if (foldDefaultApplied) return isLucyMasterModeOn();
+  foldDefaultApplied = true;
+  const unfolded = currentFoldUnfolded();
+  const state = readLucyMasterModeState();
+  if (state && state.unfolded === unfolded) return state.on;
+  try {
+    if (!state && safeSessionStorage.getItem(LUCY_MASTER_MODE_KEY) === 'on') {
+      // 이 기능 이전 세션에서 켜 둔 점술모드는 사용자가 켠 것으로 존중한다.
+      setLucyMasterMode(true, { explicit: true });
+      return true;
+    }
+  } catch { /* storage unavailable */ }
+  const next = defaultLucyMasterModeForFold(unfolded);
+  // 펼친 화면으로 열리면 점술모드로 들어가며 타로집 인사를 한 번 준비한다.
+  setLucyMasterMode(next, { explicit: false, greet: next });
+  return next;
+}
+
+/**
+ * 접힘 ↔ 펼침 전환: 새 화면의 기본 화면으로 맞춘다.
+ * 이전 화면에서 이미 그 모드였다면 인사말을 다시 예약하지 않고 기록만 새 화면으로 옮긴다.
+ */
+export function applyLucyMasterModeForFoldChange(wasUnfolded: boolean, isNowUnfolded: boolean): boolean | null {
+  const target = lucyMasterModeForFoldChange(wasUnfolded, isNowUnfolded);
+  if (target === null) return null;
+  if (modeForScreen(wasUnfolded) === target) {
+    writeLucyMasterModeState({ on: target, unfolded: isNowUnfolded, explicit: false });
+    return target;
+  }
+  setLucyMasterMode(target, { explicit: false, greet: target });
+  return target;
+}
+
+/** Test-only: choose the fold the store reads, or reset to the real fold store. */
+export function setLucyMasterFoldReaderForTests(reader: (() => boolean) | null): void {
+  foldUnfoldedReader = reader ?? (() => getFoldState().unfolded);
+}
+
+/** Test-only: forget the once-per-load default so it can run again. */
+export function resetLucyMasterModeForTests(options: { keepStorage?: boolean } = {}): void {
+  foldDefaultApplied = false;
+  foldUnfoldedReader = () => getFoldState().unfolded;
+  if (options.keepStorage) return;
+  try {
+    safeSessionStorage.removeItem(LUCY_MASTER_STATE_KEY);
+    safeSessionStorage.removeItem(LUCY_MASTER_MODE_KEY);
+    safeSessionStorage.removeItem(GREETING_PENDING_KEY);
+  } catch { /* storage unavailable */ }
 }
 
 export function toggleLucyMasterMode(): boolean {
