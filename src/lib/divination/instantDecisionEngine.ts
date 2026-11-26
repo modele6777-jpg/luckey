@@ -34,7 +34,7 @@
 import { hexagram, type Yao } from './iching';
 import { calculateQimen } from './eventCharts';
 
-export const INSTANT_DECISION_ENGINE_VERSION = 'LUCKEY-IDE-v2.3.0';
+export const INSTANT_DECISION_ENGINE_VERSION = 'LUCKEY-IDE-v2.4.0';
 
 export type InstantDecisionQuestionTopic = 'decision' | 'timing' | 'relation' | 'contract' | 'general';
 
@@ -167,6 +167,11 @@ export interface InstantDecisionResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  decisionCrossAxis: {
+    hexagramTransition: string;
+    cheYongDynamics: string;
+    gateTimingAnchor: string;
   };
   ritualAction: string;
   reflectionFocus: string;
@@ -468,6 +473,11 @@ export function calculateInstantDecision(options?: {
     alignmentState: `${grade} · ${dominantGate}(${gateNature})`,
     integratedAction: `${doNow}${options?.questionText ? ` [질문 맥락: ${options.questionText.slice(0, 40)}]` : ''}`,
   };
+  const decisionCrossAxis = {
+    hexagramTransition: `${primaryHex.name} → ${huguaHex.name} → ${changedHex.name}`,
+    cheYongDynamics: `${cheYongPrimary.relationType}(${cheYongPrimary.relationQuality}) → ${cheYongChanged.relationType}(${cheYongChanged.relationQuality})`,
+    gateTimingAnchor: `${dominantGate}(${gateNature}) · ${optimalWindow}`,
+  };
 
   return {
     engineVersion: INSTANT_DECISION_ENGINE_VERSION,
@@ -538,6 +548,7 @@ export function calculateInstantDecision(options?: {
       },
     },
     instantDecisionSynthesisMatrix,
+    decisionCrossAxis,
     ritualAction: `본괘 ${primaryHex.name}과 ${dominantGate}(${gateNature}) 흐름에 맞추어 지금 당장 '${doNow}'를 실행하고, '${avoidNow}'는 보류하세요.`,
     reflectionFocus: `즉시 결단(${primaryHex.name} → ${changedHex.name}) — ${cheYongPrimary.relationType} · ${dominantGate}(${grade})`,
     reflectiveQuestion: options?.questionText
@@ -583,6 +594,7 @@ export function formatInstantDecisionPrompt(res: InstantDecisionResult): string 
    - 최적의 실행 시간대: ${v.actionProtocol.optimalWindow}
 ${res.instantDecisionSynthesisMatrix ? `4. [교차 매트릭스 · 질문 맥락: ${res.questionTopic}]:
    - 시공간 결단 축: ${res.chronoDecisionAxis}
+   - 결단 교차 축: ${res.decisionCrossAxis.hexagramTransition} | ${res.decisionCrossAxis.cheYongDynamics}
    - 핵심 긴장: ${res.instantDecisionSynthesisMatrix.dominantTension}
    - 조율 상태: ${res.instantDecisionSynthesisMatrix.alignmentState}
    - 통합 실천: ${res.instantDecisionSynthesisMatrix.integratedAction}

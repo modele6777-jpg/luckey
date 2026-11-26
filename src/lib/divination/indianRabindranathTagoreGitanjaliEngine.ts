@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const INDIAN_TAGORE_GITANJALI_VERSION = 'LUCKEY-TAGORE-GITANJALI-v2.3.0';
+export const INDIAN_TAGORE_GITANJALI_VERSION = 'LUCKEY-TAGORE-GITANJALI-v2.4.0';
 
 export interface TagoreTheme {
   themeKey: string;
@@ -57,6 +57,11 @@ export interface IndianRabindranathTagoreGitanjaliResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  tagoreCrossAxis: {
+    themeToAphorism: string;
+    devotionPolarity: string;
+    dawnResilienceAnchor: string;
   };
 }
 
@@ -198,6 +203,11 @@ export function calculateIndianRabindranathTagoreGitanjali(
         : '질그릇을 비워 새 생명의 노래를 받아들이는 정화 국면',
     integratedAction: `${activeTagoreTheme.practicalCounsel} (${focalTagoreAphorism.actionGuidance})`,
   };
+  const tagoreCrossAxis = {
+    themeToAphorism: `${activeTagoreTheme.themeKey} ↔ ${focalTagoreAphorism.sourceContext}`,
+    devotionPolarity: `${describeTagoreStage(pureDevotionalBhaktiIndex)} · ${describeTagoreStage(fearlessFreedomMindScore)}`,
+    dawnResilienceAnchor: focalTagoreAphorism.actionGuidance,
+  };
 
   const ritualAction = `[${activeTagoreTheme.themeTitleKo}] ${focalTagoreAphorism.actionGuidance}`;
   const reflectionFocus = reflectiveQuestion;
@@ -222,6 +232,7 @@ export function calculateIndianRabindranathTagoreGitanjali(
       philosophicalCounsel,
     },
     tagoreSynthesisMatrix,
+    tagoreCrossAxis,
   };
 }
 
@@ -250,6 +261,7 @@ export function formatIndianRabindranathTagoreGitanjaliPrompt(res: IndianRabindr
   if (res.tagoreSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스 [핵심 긴장: ${res.tagoreSynthesisMatrix.dominantTension} | 조율 상태: ${res.tagoreSynthesisMatrix.alignmentState}]`,
+      `- 타고르 교차 축: ${res.tagoreCrossAxis.themeToAphorism} | ${res.tagoreCrossAxis.devotionPolarity}`,
       `- 통합 실천: ${res.tagoreSynthesisMatrix.integratedAction}`,
     );
   }

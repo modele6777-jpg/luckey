@@ -2740,6 +2740,7 @@ test('Instant Decision Engine: 매화역수·기문둔갑 즉시 결단 검증',
   assert(res.reflectiveQuestion?.includes('지금 추진할까요'));
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.instantDecisionSynthesisMatrix?.integratedAction));
+  assert(Boolean(res.decisionCrossAxis?.hexagramTransition && res.decisionCrossAxis?.cheYongDynamics && res.decisionCrossAxis?.gateTimingAnchor));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.verdict.finalScore >= 0 && res.verdict.finalScore <= 100);
   const prompt = formatInstantDecisionPrompt(res);
@@ -2747,7 +2748,7 @@ test('Instant Decision Engine: 매화역수·기문둔갑 즉시 결단 검증',
   assert(prompt.includes('+09:00 (KST)'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
-  assert(prompt.includes('시공간 결단 축') && prompt.includes('과잉 경계'));
+  assert(prompt.includes('시공간 결단 축') && prompt.includes('결단 교차 축') && prompt.includes('과잉 경계'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
@@ -6963,11 +6964,12 @@ test('Upanishadic Tat Tvam Asi Engine: calculates Brahman-Atman unity, Maya pier
   assert(rep.activeMahavakya.vakyaSanskrit.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.upanishadicSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.upanishadicCrossAxis?.mahavakyaPair && rep.upanishadicCrossAxis?.teachingToWisdom && rep.upanishadicCrossAxis?.turiyaAnchor));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatUpanishadicTatTvamAsiPrompt(rep);
   assert(prompt.includes('우파니샤드 타트 트밤 아시 & 범아일여 순수의식 지표'));
   assert(prompt.includes(rep.activeMahavakya.vakyaNameKo));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('우파니샤드 교차 축'));
   assert(prompt.includes(rep.ritualAction));
   assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
@@ -8299,11 +8301,12 @@ test('Rabindranath Tagore Gitanjali Engine: calculates Cosmic Soul Communion, Bh
   assert(rep.activeTagoreTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.tagoreSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.tagoreCrossAxis?.themeToAphorism && rep.tagoreCrossAxis?.devotionPolarity && rep.tagoreCrossAxis?.dawnResilienceAnchor));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatIndianRabindranathTagoreGitanjaliPrompt(rep);
   assert(prompt.includes('타고르 《기탄잘리·동방의 등불》 우주적 영혼합일 & 두려움 없는 자유 지표'));
   assert(prompt.includes(rep.activeTagoreTheme.themeTitleKo));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('타고르 교차 축'));
   assert(prompt.includes(rep.ritualAction));
   assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
