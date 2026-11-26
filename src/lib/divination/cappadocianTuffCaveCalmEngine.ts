@@ -3,9 +3,11 @@ import type { UserProfile } from '../sharedState';
 export interface CappadocianCaveResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계/신뢰' | '일/진로' | '재정/균형' | '내면/회복' | '전환/결정';
   cappadocianMotif: string;
   companionMotif: string;
   cavePhase: string;
+  caveCrossAxis: string;
   cappadocianInsight: string;
   tuffTone: string;
   shadowWarning: string;
@@ -84,6 +86,15 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+function classifyCaveTopic(question?: string): CappadocianCaveResult['questionTopic'] {
+  const q = (question ?? '').toLowerCase();
+  if (/(사랑|연애|관계|결혼|사람|가족|친구|갈등|화해|신뢰|배려)/.test(q)) return '관계/신뢰';
+  if (/(일|직장|진로|이직|사업|공부|시험|성과|일정|과제)/.test(q)) return '일/진로';
+  if (/(돈|재정|투자|소비|수입|지출|저축|자산|균형)/.test(q)) return '재정/균형';
+  if (/(마음|불안|지침|회복|휴식|수면|건강|감정|숨통|환기)/.test(q)) return '내면/회복';
+  return '전환/결정';
+}
+
 export function calculateCappadocianTuffCaveCalm(params: {
   profile: UserProfile;
   now?: Date;
@@ -97,13 +108,20 @@ export function calculateCappadocianTuffCaveCalm(params: {
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const cavePhase = CAVE_PHASES[stableHash(`${seed}|phase`) % CAVE_PHASES.length];
   const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
+  const questionTopic = classifyCaveTopic(params.question);
+  const shortPhase = cavePhase.split('(')[0].trim();
+  const shortMotif = picked.motif.split('(')[0].trim();
+  const shortCompanion = companion.motif.split('(')[0].trim();
+  const caveCrossAxis = `${shortPhase} × ${shortMotif} · ${shortCompanion} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-CAPPADOCIAN-CAVE-v2.3.0',
+    engineVersion: 'LUCKEY-CAPPADOCIAN-CAVE-v2.4.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     cappadocianMotif: picked.motif,
     companionMotif: companion.motif,
     cavePhase,
+    caveCrossAxis,
     cappadocianInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     tuffTone: picked.tone,
     shadowWarning,
@@ -121,6 +139,7 @@ export function formatCappadocianCavePrompt(res: CappadocianCaveResult): string 
     `- 카파도키아 모티프: ${res.cappadocianMotif} (${res.tuffTone})`,
     `- 동반 결: ${res.companionMotif}`,
     `- 응회암 국면: ${res.cavePhase}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.caveCrossAxis}`,
     `- 중심 통찰: ${res.cappadocianInsight}`,
     `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,

@@ -14273,15 +14273,16 @@ test('Sardinian Nuraghe Stone Calm engine: stone, +09:00 KST, and interpretive b
 
 test('Catalan Seny Rauxa Balance engine: principle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateCatalanSenyRauxaBalance({ profile, now: new Date('2026-11-20T07:42:00Z'), question: '분별과 열정의 균형을 맞추고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CATALAN-SENY-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CATALAN-SENY-v2.4.0');
+  assert.equal(rep.questionTopic, '재정/균형');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPrinciple !== rep.catalanPrinciple);
-  assert.ok(rep.balancePhase.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.balancePhase.length > 0 && rep.senyCrossAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatCatalanSenyRauxaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('카탈루냐') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPrinciple) && prompt.includes(rep.balancePhase) && prompt.includes(rep.shadowWarning));
+  assert.ok(prompt.includes('카탈루냐') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPrinciple) && prompt.includes(rep.balancePhase) && prompt.includes(rep.senyCrossAxis) && prompt.includes(rep.shadowWarning));
 });
 
 test('Kurdish Newroz Zagros Renewal engine: symbol, +09:00 KST, and interpretive boundary', () => {
@@ -15080,15 +15081,16 @@ test('Dayak Longhouse Hornbill Poise engine: motif, +09:00 KST, and interpretive
 
 test('Carthaginian Tanit Harbor Compass engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateCarthaginianTanitHarborCompass({ profile, now: new Date('2026-11-20T19:45:00Z'), question: '방향과 속도를 차분히 점검하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CARTHAGINIAN-TANIT-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CARTHAGINIAN-TANIT-v2.4.0');
+  assert.equal(rep.questionTopic, '일/진로');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.tanitMotif);
-  assert.ok(rep.harborPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.harborPhase.length > 0 && rep.harborCrossAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatCarthaginianTanitPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('카르타고') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.harborPhase) && prompt.includes(rep.shadowWarning));
+  assert.ok(prompt.includes('카르타고') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.harborPhase) && prompt.includes(rep.harborCrossAxis) && prompt.includes(rep.shadowWarning));
 });
 
 test('Gaya Iron Crown River Harmony engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15333,15 +15335,16 @@ test('Samoan Fale Tapa Breeze engine: motif, +09:00 KST, and interpretive bounda
 
 test('Cappadocian Tuff Cave Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateCappadocianTuffCaveCalm({ profile, now: new Date('2026-11-20T20:39:00Z'), question: '막막한 일의 숨통을 열고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CAPPADOCIAN-CAVE-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CAPPADOCIAN-CAVE-v2.4.0');
+  assert.equal(rep.questionTopic, '일/진로');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.cappadocianMotif);
-  assert.ok(rep.cavePhase.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.cavePhase.length > 0 && rep.caveCrossAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatCappadocianCavePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('카파도키아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.cavePhase) && prompt.includes(rep.shadowWarning));
+  assert.ok(prompt.includes('카파도키아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.cavePhase) && prompt.includes(rep.caveCrossAxis) && prompt.includes(rep.shadowWarning));
 });
 
 test('Ifugao Banaue Rice Terrace engine: motif, +09:00 KST, and interpretive boundary', () => {
