@@ -8,12 +8,12 @@
  * 4. 조건 없는 환대 및 타자성 포용 지수 (Unconditional Hospitality & Alterity Openness Index): 내 계산과 규칙을 타자에게 강요하지 않고, 예기치 않은 사건과 낯선 다름을 기꺼이 맞아들이는 열린 포용력.
  * 5. 파르마콘(Pharmakon: 독이자 약) 양면성 변용 치유력 (Pharmakon Dual-Nature Alchemy Score): 나를 위협하거나 고통스럽게 만드는 위기 속에서 오히려 가장 강력한 치유와 혁신의 약효를 길어 올리는 연금술적 지혜.
  *
- * @version LUCKEY-JACQUES-DERRIDA-DECONSTRUCTION-DIFFERANCE-v2.1.0
+ * @version LUCKEY-JACQUES-DERRIDA-DECONSTRUCTION-DIFFERANCE-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_JACQUES_DERRIDA_DECONSTRUCTION_DIFFERANCE_VERSION = 'LUCKEY-JACQUES-DERRIDA-DECONSTRUCTION-DIFFERANCE-v2.3.0';
+export const FRENCH_JACQUES_DERRIDA_DECONSTRUCTION_DIFFERANCE_VERSION = 'LUCKEY-JACQUES-DERRIDA-DECONSTRUCTION-DIFFERANCE-v2.4.0';
 
 export interface DerridaTheme {
   themeKey: string;
@@ -43,6 +43,7 @@ export interface FrenchJacquesDerridaDeconstructionDifferanceResult {
   // 세부 분석
   activeDerridaTheme: DerridaTheme;
   focalDerridaAphorism: DerridaAphorism;
+  derridaCrossAxis: string;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
   ritualAction: string;
@@ -182,6 +183,7 @@ export function calculateFrenchJacquesDerridaDeconstructionDifferance(
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
+  const derridaCrossAxis = `${activeDerridaTheme.themeTitleKo.split('—')[0].trim()} × ${focalDerridaAphorism.sourceContext}`;
   const derridaSynthesisMatrix = {
     coreInsight: activeDerridaTheme.themeTitleKo,
     recommendedAction: dailyPracticeRitual,
@@ -198,6 +200,7 @@ export function calculateFrenchJacquesDerridaDeconstructionDifferance(
     pharmakonTransformativeHealingScore,
     activeDerridaTheme,
     focalDerridaAphorism,
+    derridaCrossAxis,
     dailyPracticeRitual,
     reflectiveQuestion,
     ritualAction: dailyPracticeRitual,
@@ -230,6 +233,7 @@ export function formatFrenchJacquesDerridaDeconstructionDifferancePrompt(
     `- 구체적 실천 지침: ${res.focalDerridaAphorism.actionGuidance}`,
     `- 일상 실천 의례: ${res.dailyPracticeRitual}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 데리다 교차 축: ${res.derridaCrossAxis}`,
     `- 교차 매트릭스: 핵심(${res.derridaSynthesisMatrix.coreInsight}) | 실행(${res.derridaSynthesisMatrix.recommendedAction}) | 주의(${res.derridaSynthesisMatrix.cautionNotice})`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 데리다 권면: ${res.derridaComprehensiveGuidance.philosophicalCounsel}`,
