@@ -58,7 +58,8 @@ import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
 import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, getPendingAnswerChoices, isAskingForDeepEngines, createDepthTwoTarotOffer, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate, getLucyMasterDepth, deepenLucyMasterDepth, useLucyMasterDepth, LUCY_MASTER_DEPTH_EVENT, LUCY_MASTER_DEPTH_INFO, LUCY_MASTER_MAX_DEPTH, getLucyBubbleMarker, setLucyBubbleMarker, useLucyBubbleMarker, type LucyMasterDepth } from '@/lib/lucyMasterMode';
 import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
 import { detectLucyChannelsFromText, formatChannelsModeTitle } from '@/lib/lucyAutoModeDetector';
-import { selectOptimalDivinationTools, THEME_PRIMARY_DIVINATION_TOOLS, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
+import { resolveLucyPageTurn } from '@/lib/lucyTurnMode';
+import { selectOptimalDivinationTools, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { DynamicGhostInputPlaceholder } from '@/components/chat/DynamicGhostInputPlaceholder';
 import { ChatProfileDock } from '@/components/chat/ChatProfileDock';
@@ -908,7 +909,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     window.addEventListener(LUCY_MASTER_MODE_EVENT, handleMasterMode);
     return () => window.removeEventListener(LUCY_MASTER_MODE_EVENT, handleMasterMode);
   }, []);
-  const requireBasicAndDeep = true;
+  // 💬 일반 채팅은 수다모드 전용: 점술모드(마스터)에서만 기초·심층 운명학 엔진을 가동한다.
+  const requireBasicAndDeep = resolveLucyPageTurn(isMasterMode).requireBasicAndDeep;
 
   // Cosmic Room on the unfolded Lucy screen is Lucy Plus by default; folded Lucy is basic Lucy (−).
   useEffect(() => {
@@ -1109,7 +1111,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   });
 
   const setActiveChannels = useCallback((channels: SpecialChannel[]) => {
-    setActiveChannelsState(resolveLucyPageChannels(channels, isMasterMode));
+    // 💬 일반 채팅은 수다모드 전용이라 채널 상태를 켜지 않는다(추천 질문·다른 화면 주입 포함).
+    setActiveChannelsState(isMasterMode ? resolveLucyPageChannels(channels, isMasterMode) : []);
   }, [isMasterMode]);
 
   useEffect(() => {
@@ -3858,65 +3861,25 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         ? [...priorUnansweredTexts, userCleanText].filter(Boolean).join('\n')
         : userCleanText;
 
-    // 💡 만약 예시 질문(candidateGhost)이 전송된 것이라면 해당 예시 질문의 특성에 맞는 채널 자동 매핑 우선 확인
-    let effectiveForcedChannels = forcedChannels;
-    if (effectiveForcedChannels === undefined && !input.trim() && candidateGhost && userCleanText === candidateGhost.trim()) {
-      const horiItem = HORI_PROMPT_LIBRARY.find((p) => p.title === userCleanText || p.body === userCleanText);
-      if (horiItem && horiItem.tool_ids && horiItem.tool_ids.length > 0) {
-        effectiveForcedChannels = horiItem.tool_ids.filter((t) => ALL_CHANNELS.includes(t as SpecialChannel)) as SpecialChannel[];
-      } else {
-        for (const [ch, pool] of Object.entries(CHANNEL_PROMPT_POOLS)) {
-          if (pool.includes(userCleanText)) {
-            effectiveForcedChannels = [ch as SpecialChannel];
-            break;
-          }
-        }
-        if (isMasterMode && !effectiveForcedChannels && MASTER_PROMPT_POOL.includes(userCleanText)) {
-          effectiveForcedChannels = ALL_CHANNELS;
-        }
-      }
-    }
-
-    let channels = effectiveForcedChannels !== undefined ? effectiveForcedChannels : activeChannels;
-    if (isMasterMode) {
-      // 👑 Lucy Pro 마스터 모드: 7대 테마를 사용하고, 실제 계산·참고 상태는 질문별 기록을 따름
-      channels = ALL_CHANNELS;
+    // 💬 일반 루시 채팅은 수다모드 전용이다. 사용자가 무엇을 물어도, 예시 질문이든 다른 화면에서
+    //    넘어온 값이든 채널 자동 감지·운명학 도구 선택을 하지 않고, 점술모드에서만 7대 채널과
+    //    기초·심층 엔진을 켠다.
+    const turnPlan = resolveLucyPageTurn(isMasterMode);
+    const isMaster = turnPlan.isMaster;
+    const channels: SpecialChannel[] = turnPlan.channels;
+    if (isMaster) {
+      // 👑 점술모드: 7대 테마를 사용하고, 실제 계산·참고 상태는 질문별 기록을 따름
       setActiveChannels(ALL_CHANNELS);
       setAutoDetectedTitle('🔮 점술모드');
-    } else if (effectiveForcedChannels !== undefined) {
-      channels = effectiveForcedChannels;
-      setActiveChannels(effectiveForcedChannels);
-      setAutoDetectedTitle(formatChannelsModeTitle(effectiveForcedChannels, isMasterMode));
-      presetModeRef.current = {
-        text: userCleanText,
-        channels: effectiveForcedChannels,
-        title: formatChannelsModeTitle(effectiveForcedChannels, isMasterMode),
-      };
-    } else if (isAutoDetect && forcedChannels === undefined && combinedContextText.length > 0) {
-      const detected = detectPageChannels(combinedContextText, { allowMaster: isMasterMode });
-      if (isMasterMode && detected.isMaster) {
-        channels = ALL_CHANNELS;
-      } else {
-        channels = detected.channels;
-      }
-      setActiveChannels(channels);
-      setAutoDetectedTitle((isMasterMode && detected.isMaster) ? detected.modeTitle : formatChannelsModeTitle(channels, isMasterMode));
-    } else if (forcedChannels !== undefined) {
-      channels = forcedChannels;
-      setActiveChannels(forcedChannels);
-      setAutoDetectedTitle(formatChannelsModeTitle(forcedChannels, isMasterMode));
+    } else {
+      // 💬 일반 채팅: 헤더·상태도 수다모드로 유지한다.
+      setActiveChannels([]);
+      setAutoDetectedTitle('가벼운 일상 수다');
     }
+    const isCasual = turnPlan.isCasual;
 
-    channels = isMasterMode ? ALL_CHANNELS : resolveLucyPageChannels(channels, false);
-    setActiveChannels(channels);
-    setAutoDetectedTitle(formatChannelsModeTitle(channels, isMasterMode));
-    const channelCount = channels.length;
-    const isMaster = isMasterMode;
-    const isCasual = !requireBasicAndDeep && !isMaster && channelCount === 0;
-    const isSingle = !isMaster && channelCount === 1;
-    const isSyn = !isMaster && channelCount >= 2;
-
-    let targetPersona: PersonaType = 'lucy';
+    // 💬 채널·전문 페르소나 없이 항상 루시로 답한다(점술모드도 페르소나는 루시).
+    const targetPersona: PersonaType = 'lucy';
     let extraSystemContext: string | undefined = undefined;
 
     // 👥 활성화된 1인~4인 프로필 사주·점성술 데이터 및 다자간 궁합 가이드 주입 (현재 메인 상담 대상자 강조)
@@ -3927,31 +3890,11 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     const nicknameGuidance = `[사용자 호칭 절대 원칙]\n- 루시채팅에서 사용자를 부를 때는 본명이나 실명('박주형' 등)을 절대 부르지 말고, 반드시 사용자의 닉네임인 '${userDisplayName}'(으)로만 다정하게 불러줘. (예: '${userDisplayName}아', '${userDisplayName}야')`;
     extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${nicknameGuidance}` : nicknameGuidance;
 
-    if (isCasual) {
-      targetPersona = 'lucy';
-    } else if (isSingle) {
-      targetPersona = SPECIAL_CHANNELS[channels[0]].persona;
-      const chCfg = THEME_PRIMARY_DIVINATION_TOOLS[channels[0]];
-      const singleContext = `[${SPECIAL_CHANNELS[channels[0]].name} 전문 모드 — ${SPECIAL_CHANNELS[channels[0]].tagline}]
-- ${chCfg ? `이 테마의 주력 운명학 도구: ${chCfg.fusionPhilosophy}` : `${SPECIAL_CHANNELS[channels[0]].name}의 전문적 통찰을 바탕으로 현실적 대안과 조언을 깊이 있게 설명해 줘.`}`;
-      extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${singleContext}` : singleContext;
-    } else if (isMaster) {
+    if (isMaster) {
       const masterContext = `[루시 통합 상담]
 - 질문과 관련하여 실제 계산 데이터가 전달된 도구만 비교하고, 없는 계산을 실행했다고 말하지 마.
 - 상징적 조언은 상징이라고 밝히고, 계산 실패·입력 부족은 정직하게 안내해. 엔진 개수로 정확성을 주장하지 마.`;
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${masterContext}` : masterContext;
-      targetPersona = 'lucy';
-    } else if (isSyn) {
-      const channelNames = channels.map((c) => SPECIAL_CHANNELS[c]?.name || c).join(' + ');
-      const themeFusions = channels
-        .map((c) => THEME_PRIMARY_DIVINATION_TOOLS[c]?.fusionPhilosophy)
-        .filter(Boolean)
-        .join(' / ');
-      const synContext = `[${channelCount}중 융합 시너지 모드: ${channelNames}]
-- 융합된 테마별 주력 도구 시너지: ${themeFusions}
-- 위 테마들과 질문 의도에 맞춰 가장 적합한 1~3개 핵심 운명학 도구를 교차 융합해 깊이 있고 유용한 시너지 답변을 도출해 줘.`;
-      extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${synContext}` : synContext;
-      targetPersona = 'lucy';
     }
 
     // 🔮 점술모드(타로집): 접힘 = 사주 베이스, 펼침 = 왼쪽 타로 테이블 + 사주 베이스
@@ -3966,9 +3909,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       }
       return '';
     })();
-    const isTarotIntent = Boolean(pickedTarotCards?.length)
+    // 타로 뽑기는 점술모드 전용이다. 일반 채팅에서는 카드를 뽑지 않고 수다로 답한다.
+    const isTarotIntent = isMasterMode && (Boolean(pickedTarotCards?.length)
       || isLucyTarotDrawRequest(combinedContextText)
-      || Boolean(divinationLayout && isAcceptingTarotDrawOffer(userCleanText, lastLucyText));
+      || Boolean(divinationLayout && isAcceptingTarotDrawOffer(userCleanText, lastLucyText)));
     const isThreeCardRequest = /3장|세\s*장|쓰리카드|과거\s*현재\s*미래/i.test(combinedContextText);
     // 🃏 루시 마스터: 카드는 자동으로 뽑지 않고, 손님이 직접 섞고(셔플) 스프레드에서 고르게 한다.
     // 펼친 타로 테이블: 고민·질문을 적으면 그에 맞는 배열법으로 바로 카드 스프레드를 연다.
@@ -4108,9 +4052,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       omitConsultMemoryContext: isMasterMode && skipConsultMemoryRef.current,
       omitConsultMemoryRecord: Boolean(handoffContext),
       customUserProfile: counselingUserProfile,
-      channels: isMaster ? ALL_CHANNELS : channels,
-      mode: isMaster ? 'master' : (isCasual ? 'casual' : (isSingle ? channels[0] : isSyn ? 'synergy' : 'auto')),
-      channel: isSingle ? channels[0] : undefined,
+      channels: isMaster ? ALL_CHANNELS : [],
+      mode: isCasual ? 'casual' : 'master',
       usedTools: usedToolNames,
       calculationAudit: divinationSelection.calculationAudit || [],
       onFinish: async (fullText, _sentText, replyMsgId) => {
