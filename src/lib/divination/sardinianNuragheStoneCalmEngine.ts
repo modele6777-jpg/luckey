@@ -109,9 +109,6 @@ export function calculateSardinianNuragheStoneCalm(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (STONES.length - 1));
   const companion = STONES[(idx + companionOffset) % STONES.length];
   const nuragheDryStoneAxis = `${picked.stone.split('(')[0].trim()} ↔ ${companion.stone.split('(')[0].trim()} (${questionTopic})`;
-
-  const companionStone = companion.stone;
-  const nuragheDryStoneAxis = `${picked.stone.split('(')[0].trim()} ↔ ${companion.stone.split('(')[0].trim()} (${questionTopic})`;
   const topicBalanceHint = SARDINIAN_TOPIC_HINTS[questionTopic];
 
   return {
