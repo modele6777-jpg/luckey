@@ -24,7 +24,7 @@ import {
   type FiveElement
 } from '../sajuAnalysis';
 
-export const ENERGETIC_PRESCRIPTION_ENGINE_VERSION = 'LUCKEY-EPE-v2.3.0';
+export const ENERGETIC_PRESCRIPTION_ENGINE_VERSION = 'LUCKEY-EPE-v2.4.0';
 
 export type EnergeticQuestionTopic = 'vitality' | 'work' | 'emotion' | 'relation' | 'general';
 
@@ -136,6 +136,7 @@ export interface EnergeticPrescriptionResult {
   // 5. 교차 매트릭스
   questionTopic: EnergeticQuestionTopic;
   energeticBalanceAxis: string;
+  energeticCrossAxis: string;
   shadowWarning: string;
   energeticSynthesisMatrix?: {
     dominantTension: string;
@@ -572,6 +573,7 @@ export function calculateEnergeticPrescription(options: {
 
     microRituals,
     lifestyleRemedy,
+    energeticCrossAxis: `${primaryLacking} 결핍 × ${therapeuticYongsin} 용신 (${questionTopic} · ${bioEnergeticAlignment.vitalityLevel || vitalityLevel})`,
     energeticSynthesisMatrix,
     reflectiveQuestion,
     ritualAction,
@@ -624,6 +626,7 @@ ${ritualLines}
    - 풍수 방위 & 소품: ${l.fengShuiDirection} 방향 | 추천 오브제: ${l.spatialObject}
    - 데일리 확언 문장: "${l.dailyAffirmation}"
 ${res.energeticSynthesisMatrix ? `5. [교차 매트릭스 · 질문 맥락: ${res.questionTopic}]:
+   - 에너지 교차 축: ${res.energeticCrossAxis}
    - 에너지 균형 축: ${res.energeticBalanceAxis}
    - 핵심 긴장: ${res.energeticSynthesisMatrix.dominantTension}
    - 조율 상태: ${res.energeticSynthesisMatrix.alignmentState}

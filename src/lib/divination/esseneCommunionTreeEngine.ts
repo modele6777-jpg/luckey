@@ -36,7 +36,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ESSENE_COMMUNION_VERSION = 'LUCKEY-ESSENE-COMMUNION-v2.3.0';
+export const ESSENE_COMMUNION_VERSION = 'LUCKEY-ESSENE-COMMUNION-v2.4.0';
 
 export interface EsseneAngel {
   realm: 'earthly' | 'heavenly';
@@ -61,6 +61,7 @@ export interface EsseneCommunionReport {
   morningEarthlyAngel: EsseneAngel;
   eveningHeavenlyAngel: EsseneAngel;
   secondaryEarthlyAngel: EsseneAngel;
+  esseneCrossAxis: string;
   treeTrinity: EsseneTreeTrinity;
   communionVibrationalScore: number; // 0 ~ 100 종합 교감 점수
   dailyEsseneGuidance: string;
@@ -303,6 +304,8 @@ export function calculateEsseneCommunion(
       : `오늘 내 생각·감정·행동 중 대지 어머니의 온기나 천상 아버지의 고요가 가장 필요한 한 자리는 어디인가요?`,
   };
 
+  const esseneCrossAxis = `${morningEarthlyAngel.koreanName} × ${eveningHeavenlyAngel.koreanName} (${qumranCommunionWindow.split('(')[0].trim()})`;
+
   return {
     engineVersion: ESSENE_COMMUNION_VERSION,
     calculatedAt: now.toISOString(),
@@ -310,6 +313,7 @@ export function calculateEsseneCommunion(
     morningEarthlyAngel,
     eveningHeavenlyAngel,
     secondaryEarthlyAngel,
+    esseneCrossAxis,
     treeTrinity: {
       thoughtPurityScore,
       feelingTendernessScore,
@@ -352,6 +356,7 @@ export function formatEsseneCommunionPrompt(report: EsseneCommunionReport): stri
 - **보조 지상 교감 천사**: **${report.secondaryEarthlyAngel.koreanName}** (${report.secondaryEarthlyAngel.originalEsseneName}) — ${report.secondaryEarthlyAngel.spiritualGift}
 - **에세네 생명나무 삼위일체 균형**: ${report.treeTrinity.harmonicEquilibrium}
 - **시공간 교감 리듬**: ${report.temporalEsseneRhythm.qumranCommunionWindow} · ${report.temporalEsseneRhythm.seasonalTreePhase}
+- **천사 교차 축**: ${report.esseneCrossAxis}
 - **에세네 일일 나침반**:
   - 실천 지침: ${report.dailyEsseneGuidance}
   - 통합 조언: ${report.synthesisMessage}
