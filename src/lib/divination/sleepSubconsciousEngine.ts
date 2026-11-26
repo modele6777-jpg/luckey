@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SLEEP_SUBCONSCIOUS_VERSION = 'LUCKEY-SLEEP-v2.3.0';
+export const SLEEP_SUBCONSCIOUS_VERSION = 'LUCKEY-SLEEP-v2.4.0';
 
 function classifySleepTopic(q: string): '숙면·이완' | '꿈·직관' | '생각·비움' | '야간 전반' {
   if (/꿈|해몽|상징|직관|무의식/.test(q)) return '꿈·직관';
@@ -79,6 +79,11 @@ export interface SleepSubconsciousResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  sleepCrossAxis: {
+    qualityToDream: string;
+    ritualSequence: string;
+    soundscapeAnchor: string;
   };
   interpretiveBoundary: string;
 }
@@ -148,6 +153,11 @@ export function calculateSleepSubconscious(params?: {
     alignmentState: `사운드: ${soundscape.recommendedSounds}`,
     integratedAction: `${nightRitual.step3Incubation}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const sleepCrossAxis = {
+    qualityToDream: `${sleepQualityTitle} → ${dreamDecoding.dreamSymbolCategory}`,
+    ritualSequence: '비움 → 온열 감압 → 꿈 인큐베이션',
+    soundscapeAnchor: `${soundscape.recommendedSounds} (${questionTopic})`,
+  };
 
   const interpretiveBoundary = '본 수면 회복 & 무의식 직관 리포트는 사주 12운성과 상징 수리에 기반한 정성적 야간 이완 안내이며, 수면의학적·정신의학적 진단을 대신하지 않습니다.';
   const ritualAction = `[나이트 리셋] ${nightRitual.step2ThermalRelease}`;
@@ -173,6 +183,7 @@ export function calculateSleepSubconscious(params?: {
     shadowWarning,
     reflectiveQuestion,
     sleepSynthesisMatrix,
+    sleepCrossAxis,
     interpretiveBoundary,
   };
 }
@@ -200,6 +211,7 @@ export function formatSleepSubconsciousPrompt(res: SleepSubconsciousResult): str
   if (res.sleepSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스: [핵심 긴장: ${res.sleepSynthesisMatrix.dominantTension} | 조율 상태: ${res.sleepSynthesisMatrix.alignmentState}]`,
+      `  • 수면 교차 축: ${res.sleepCrossAxis.qualityToDream} | ${res.sleepCrossAxis.ritualSequence} | ${res.sleepCrossAxis.soundscapeAnchor}`,
       `  • 통합 실천: ${res.sleepSynthesisMatrix.integratedAction}`,
     );
   }

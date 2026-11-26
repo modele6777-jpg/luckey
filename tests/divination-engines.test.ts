@@ -2794,6 +2794,7 @@ test('Sleep Subconscious Engine: 수면 사운드 안내 및 3단계 나이트 �
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.sleepRhythmAxis.length > 0 && res.shadowWarning.length > 0 && res.questionTopic.length > 0);
   assert(Boolean(res.sleepSynthesisMatrix?.integratedAction));
+  assert(Boolean(res.sleepCrossAxis?.qualityToDream && res.sleepCrossAxis?.ritualSequence && res.sleepCrossAxis?.soundscapeAnchor));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.sleepRecoveryScore >= 0 && res.sleepRecoveryScore <= 100);
   assert(res.soundscape.recommendedSounds.length > 0);
@@ -2802,6 +2803,7 @@ test('Sleep Subconscious Engine: 수면 사운드 안내 및 3단계 나이트 �
   const prompt = formatSleepSubconsciousPrompt(res);
   assert(prompt.includes(SLEEP_SUBCONSCIOUS_VERSION));
   assert(prompt.includes('수면 회복 잠재력'));
+  assert(prompt.includes('수면 교차 축'));
   assert(prompt.includes('나이트 리셋 리추얼'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('과잉 경계') && prompt.includes('야간 리듬 축'));
@@ -2902,12 +2904,14 @@ test('Soul Journey Tarot Engine: 영혼 연금술 3단계 및 4원소 균형 검
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.alchemyAxis.length > 0 && res.shadowWarning.length > 0 && res.questionTopic.length > 0);
   assert(Boolean(res.soulJourneySynthesisMatrix?.integratedAction));
+  assert(Boolean(res.tarotCrossAxis?.archetypeStage && res.tarotCrossAxis?.elementalPolarity && res.tarotCrossAxis?.transcendenceAnchor));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.currentArchetype.number >= 0 && res.currentArchetype.number <= 21);
   assert(res.elementalBalance.wands.score >= 0 && res.elementalBalance.wands.score <= 100);
   assert(res.riteOfPassage.alchemyScore >= 0 && res.riteOfPassage.alchemyScore <= 100);
   const prompt = formatSoulJourneyTarotPrompt(res);
   assert(prompt.includes('LUCKEY 영혼 타로 여정 지능'));
+  assert(prompt.includes('타로 교차 축'));
   assert(prompt.includes(res.currentArchetype.nameKo));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('과잉 경계') && prompt.includes('연금술 균형 축'));
@@ -14316,10 +14320,10 @@ test('Ossetian Nart Sagas Forge engine: emblem, +09:00 KST, and interpretive bou
 
 test('Sardinian Nuraghe Stone Calm engine: stone, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSardinianNuragheStoneCalm({ profile, now: new Date('2026-11-20T07:38:00Z'), question: '꾸밈없는 고요한 균형을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SARDINIAN-NURAGHE-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SARDINIAN-NURAGHE-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionStone !== rep.nuragheStone);
-  assert.ok(rep.nuragheDryStoneAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.nuragheDryStoneAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSardinianNuraghePrompt(rep);

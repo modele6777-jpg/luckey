@@ -17,7 +17,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SOUL_JOURNEY_TAROT_VERSION = 'LUCKEY-JOURNEY-v2.3.0';
+export const SOUL_JOURNEY_TAROT_VERSION = 'LUCKEY-JOURNEY-v2.4.0';
 
 function classifySoulJourneyTopic(q: string): '정체성·방향' | '관계·선택' | '시련·전환' | '현실·결실' | '영혼 전반' {
   if (/관계|사랑|연애|인연|사람/.test(q)) return '관계·선택';
@@ -82,6 +82,11 @@ export interface SoulJourneyTarotReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  tarotCrossAxis: {
+    archetypeStage: string;
+    elementalPolarity: string;
+    transcendenceAnchor: string;
   };
   interpretiveBoundary: string;
 }
@@ -368,6 +373,11 @@ export function runSoulJourneyTarotEngine(
     alignmentState: `우세 원소: ${dominantSuit} · 보완 원소: ${lackingSuit}`,
     integratedAction: `${currentArchetype.transcendenceKey}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const tarotCrossAxis = {
+    archetypeStage: `${currentArchetype.nameKo} (${currentArchetype.stage})`,
+    elementalPolarity: `${dominantSuit} → ${lackingSuit}`,
+    transcendenceAnchor: `${currentArchetype.transcendenceKey} (${questionTopic})`,
+  };
 
   const interpretiveBoundary = '본 영혼의 타로 여정 & 4원소 연금술 리포트는 타로 메이저 아르카나 원형과 생년월일 수비학에 기반한 정성적 성찰 안내이며, 확정적 미래 예언이 아닙니다.';
   const ritualAction = `[${currentArchetype.nameKo}] ${currentArchetype.transcendenceKey}`;
@@ -387,6 +397,7 @@ export function runSoulJourneyTarotEngine(
 - 성찰 초점: ${reflectionFocus}
 - 과잉 경계: ${shadowWarning}
 - 교차 매트릭스: [핵심 긴장: ${soulJourneySynthesisMatrix.dominantTension} | 조율 상태: ${soulJourneySynthesisMatrix.alignmentState}]
+  * 타로 교차 축: ${tarotCrossAxis.archetypeStage} | ${tarotCrossAxis.elementalPolarity}
   * 통합 실천: ${soulJourneySynthesisMatrix.integratedAction}
 - 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}`;
@@ -406,6 +417,7 @@ export function runSoulJourneyTarotEngine(
     shadowWarning,
     reflectiveQuestion,
     soulJourneySynthesisMatrix,
+    tarotCrossAxis,
     interpretiveBoundary,
   };
 }

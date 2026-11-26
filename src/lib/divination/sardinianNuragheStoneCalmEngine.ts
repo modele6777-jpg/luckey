@@ -7,6 +7,7 @@ export interface SardinianNuragheResult {
   nuragheStone: string;
   companionStone: string;
   nuragheDryStoneAxis: string;
+  topicBalanceHint: string;
   sardinianInsight: string;
   mediterraneanTone: string;
   reflectionFocus: string;
@@ -76,6 +77,15 @@ const SARDINIAN_SHADOWS = [
   '고요한 석실로 물러나는 쉼이 해결해야 할 대화를 피하기 위한 회피용 동굴이 되지 않게 돌아 나올 시각을 정해 두세요.',
 ];
 
+const SARDINIAN_TOPIC_HINTS: Record<SardinianNuragheResult['questionTopic'], string> = {
+  '균형·중심': '모르타르 없이 서로의 무게로 버티는 돌처럼 억지 꾸밈을 덜어내고 내 자리의 중심만 단단히 지키세요.',
+  '화음·경청': '칸투 아 테노레의 네 목소리처럼 상대의 음역을 끝까지 들은 뒤 내 음색을 부드럽게 얹으세요.',
+  '우물·직관': '수 포지 우물의 고요한 물결처럼 바깥 소음을 잠시 끄고 내 안의 첫 번째 맑은 직관을 길어 올리세요.',
+  '여유·보폭': '사르데냐 목동의 걸음처럼 계절의 순리를 믿되, 오늘 꼭 짚어야 할 한 걸음의 방향은 놓치지 마세요.',
+  '고요·여백': '바위 속 작은 방의 서늘한 평화 속에서 피로를 내려놓고 다시 세상으로 나올 시각도 함께 정해 두세요.',
+  '누라게 전반': '스스로의 무게로 서는 단단함과 공동체의 깊은 화음이 어우러질 때 어떤 바람에도 흔들리지 않습니다.',
+};
+
 function classifySardinianTopic(q: string): SardinianNuragheResult['questionTopic'] {
   if (/균형|중심|꾸밈|자리/.test(q)) return '균형·중심';
   if (/대화|화음|듣|목소리/.test(q)) return '화음·경청';
@@ -99,14 +109,16 @@ export function calculateSardinianNuragheStoneCalm(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (STONES.length - 1));
   const companion = STONES[(idx + companionOffset) % STONES.length];
   const nuragheDryStoneAxis = `${picked.stone.split('(')[0].trim()} ↔ ${companion.stone.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = SARDINIAN_TOPIC_HINTS[questionTopic];
 
   return {
-    engineVersion: 'LUCKEY-SARDINIAN-NURAGHE-v2.3.0',
+    engineVersion: 'LUCKEY-SARDINIAN-NURAGHE-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     nuragheStone: picked.stone,
     companionStone: companion.stone,
     nuragheDryStoneAxis,
+    topicBalanceHint,
     sardinianInsight: picked.insight,
     mediterraneanTone: picked.tone,
     reflectionFocus: `사르데냐 누라게 거석 문화의 '${picked.stone}'을 중심에 두고 '${companion.stone}'의 균형을 함께 엮어, 억지로 붙잡아 두려 하지 않아도 제자리에 맞물리는 고요한 균형을 믿어 보세요.`,
@@ -122,6 +134,7 @@ export function formatSardinianNuraghePrompt(res: SardinianNuragheResult): strin
     `[사르데냐 누라게·고요한 돌탑 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 거석 균형 축: ${res.nuragheDryStoneAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 누라게 상징: ${res.nuragheStone} (${res.mediterraneanTone})`,
     `- 동반 상징: ${res.companionStone}`,
     `- 중심 통찰: ${res.sardinianInsight}`,
