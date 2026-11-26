@@ -8326,12 +8326,13 @@ test('Hermann Hesse Demian Siddhartha Engine: calculates Abraxas Self-Actualizat
   assert(rep.activeHesseTheme.themeTitleKo.length > 0);
   assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.hesseSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.hesseCrossAxis?.polarityBalance && rep.hesseCrossAxis?.abraxasMomentum && rep.hesseCrossAxis?.dominantDrive));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGermanSwissHermannHesseDemianSiddharthaPrompt(rep);
   assert(prompt.includes('헤르만 헤세 《데미안·싯다르타》 아브락사스 자아실현 & 내면의 길 지표'));
   assert(prompt.includes(rep.activeHesseTheme.themeTitleKo));
-  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('헤세 교차 축') && prompt.includes('해석 경계'));
   assert(prompt.includes('실천 의례:') && prompt.includes('성찰 초점:'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -9222,11 +9223,12 @@ test('Theodor Adorno Negative Dialectics and Minima Moralia Engine: calculates N
   assert(rep.activeAdornoTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.adornoSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.adornoCrossAxis?.nonIdenticalMargin && rep.adornoCrossAxis?.dissonanceDrive && rep.adornoCrossAxis?.dominantCritique));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatGermanTheodorAdornoNegativeDialecticsMinimaMoraliaPrompt(rep);
   assert(prompt.includes('테오도어 아도르노 《부정변증법》 비동일자 수호·미니마 모랄리아 지표'));
   assert(prompt.includes(rep.activeAdornoTheme.themeTitleKo));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('아도르노 교차 축'));
   assert(prompt.includes('실천 의례:') && prompt.includes('성찰 초점:'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -14960,10 +14962,10 @@ test('Canaanite Ugarit Cedar Wisdom engine: symbol, +09:00 KST, and interpretive
 
 test('Goguryeo Samjoko Mural Spirit engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateGoguryeoSamjokoMuralSpirit({ profile, now: new Date('2026-11-20T19:05:00Z'), question: '시야를 넓혀 당당하게 나아가고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-GOGURYEO-SAMJOKO-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-GOGURYEO-SAMJOKO-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.muralMotif);
-  assert.ok(rep.samjokoMuralAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.samjokoMuralAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatGoguryeoSamjokoPrompt(rep);
