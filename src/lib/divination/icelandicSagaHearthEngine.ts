@@ -8,6 +8,7 @@ export interface IcelandicSagaResult {
   symbolicMotif: string;
   companionMotif: string;
   sagaHearthAxis: string;
+  topicBalanceHint: string;
   ritualAction: string;
   shadowWarning: string;
   reflectiveQuestion: string;
@@ -65,6 +66,13 @@ const ICELANDIC_SHADOWS = [
   '이끼가 자라듯 시간을 두어 기다리되 이미 썩은 나무를 붙잡고 있는 게 아닌지도 가끔 살피세요.',
 ];
 
+const ICELANDIC_TOPIC_HINTS: Record<IcelandicSagaResult['questionTopic'], string> = {
+  '절제·온기': '감정을 담백하게 절제하되 스스로를 돌보는 따뜻한 지열과 휴식은 아끼지 마세요.',
+  '경청·차례': '상대의 이야기를 한 박자 더 경청하되 내가 지켜야 할 사실과 경계선도 또렷이 남기세요.',
+  '회복·이끼': '화산암 위 이끼처럼 차분히 시간을 두어 회복하되 멈춰 서 있는 이유도 가끔 살피세요.',
+  '화덕 전반': '과장을 덜어낸 담백한 말과 방 안의 작은 온기가 함께할 때 긴 겨울도 흔들리지 않습니다.',
+};
+
 function classifyIcelandicTopic(q: string): IcelandicSagaResult['questionTopic'] {
   if (/절제|온기|과장|촛불|지열/.test(q)) return '절제·온기';
   if (/경청|차례|대화|듣|이야기/.test(q)) return '경청·차례';
@@ -88,12 +96,13 @@ export function calculateIcelandicSagaHearth(params: {
   const motif = ICELANDIC_MOTIFS[idx];
   const companionMotif = ICELANDIC_MOTIFS[(idx + companionOffset) % ICELANDIC_MOTIFS.length];
   const sagaHearthAxis = `${motif.slice(0, 18)}… ↔ ${companionMotif.slice(0, 18)}… (${questionTopic})`;
+  const topicBalanceHint = ICELANDIC_TOPIC_HINTS[questionTopic];
   const ritualAction = ICELANDIC_ACTIONS[idx];
   const shadowWarning = ICELANDIC_SHADOWS[idx];
   const reflectiveQuestion = ICELANDIC_QUESTIONS[idx];
 
   return {
-    engineVersion: 'LUCKEY-ICELANDIC-SAGA-v2.3.0',
+    engineVersion: 'LUCKEY-ICELANDIC-SAGA-v2.4.0',
     calculatedAtKst: getKstTimeString(now),
     questionTopic,
     reflectionFocus: q
@@ -102,6 +111,7 @@ export function calculateIcelandicSagaHearth(params: {
     symbolicMotif: motif,
     companionMotif,
     sagaHearthAxis,
+    topicBalanceHint,
     ritualAction,
     shadowWarning,
     reflectiveQuestion,
@@ -115,6 +125,7 @@ export function formatIcelandicSagaPrompt(result: IcelandicSagaResult): string {
     `[아이슬란드·사가 화덕 관점 (${result.engineVersion})]`,
     `- 기준 시각: ${result.calculatedAtKst}`,
     `- 질문 맥락: ${result.questionTopic} | 사가·화덕 축: ${result.sagaHearthAxis}`,
+    `- 맥락 균형 조언: ${result.topicBalanceHint}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 상징 모티프: ${result.symbolicMotif}`,
     `- 동반 모티프: ${result.companionMotif}`,

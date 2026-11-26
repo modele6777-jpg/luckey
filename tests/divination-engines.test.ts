@@ -2243,12 +2243,13 @@ test('Iching Master Engine: 64괘 4대 대칭 괘상(본·지·호·착·종) �
   assert(res.palGongSeYing.yingYao >= 1 && res.palGongSeYing.yingYao <= 6);
   assert(res.temporalIchingRhythm.divinationWatchWindow.length > 0);
   assert(res.ichingSynthesisMatrix.coreInsight.length > 0);
+  assert(Boolean(res.ichingCrossAxis?.primaryToChanged && res.ichingCrossAxis?.tiYongPalacePair && res.ichingCrossAxis?.seYingMomentumAxis));
   assert.equal(res.questionTopic, 'decision');
   assert(res.ichingBalanceAxis.length > 0 && res.shadowWarning.length > 0);
   assert(res.interpretiveBoundary.length > 0);
   const prompt = formatIchingMasterPrompt(res);
   assert(prompt.includes(ICHING_MASTER_ENGINE_VERSION));
-  assert(prompt.includes('주역 균형 축') && prompt.includes('과잉 경계'));
+  assert(prompt.includes('주역 교차 축') && prompt.includes('주역 균형 축') && prompt.includes('과잉 경계'));
   assert(prompt.includes('KST'));
   assert(prompt.includes('본괘(本卦)'));
   assert(prompt.includes('지괘(之卦/변괘)'));
@@ -2754,11 +2755,12 @@ test('Iching 384 Yao Engine: 주역 384효 동효 & 착종복잡 4대 변괘 및
   assert.equal(res.engineVersion, ICHING_384YAO_ENGINE_VERSION);
   assertKstTimestamp(res.calculatedAtKst);
   assert(Boolean(res.ichingSynthesisMatrix?.integratedAction));
+  assert(Boolean(res.yaoCrossAxis?.originalToTransformed && res.yaoCrossAxis?.nuclearInversePair && res.yaoCrossAxis?.timingActionAxis));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatIching384YaoPrompt(res);
   assert(prompt.includes(ICHING_384YAO_ENGINE_VERSION));
-  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('384효 교차 축') && prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(prompt.includes(res.ritualAction));
 });
 
@@ -15614,10 +15616,10 @@ test('Yemeni Shibam Mud Tower engine: motif, +09:00 KST, and interpretive bounda
 
 test('Icelandic Saga Hearth engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateIcelandicSagaHearth({ profile, now: new Date('2026-11-20T21:28:00Z'), question: '과장을 덜어내고 온기를 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ICELANDIC-SAGA-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ICELANDIC-SAGA-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.symbolicMotif);
-  assert.ok(rep.sagaHearthAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.sagaHearthAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatIcelandicSagaPrompt(rep);

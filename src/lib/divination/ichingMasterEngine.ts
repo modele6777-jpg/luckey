@@ -32,7 +32,7 @@ import { convertSolarToLunar } from '../lunarCalendar';
 
 import { hexagram, Yao, calculateIching } from './iching';
 
-export const ICHING_MASTER_ENGINE_VERSION = 'LUCKEY-ICHING-v2.3.0';
+export const ICHING_MASTER_ENGINE_VERSION = 'LUCKEY-ICHING-v2.4.0';
 
 export type IchingQuestionTopic = 'decision' | 'relation' | 'work' | 'emotion' | 'general';
 
@@ -149,6 +149,11 @@ export interface IchingMasterResult {
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
+  };
+  ichingCrossAxis: {
+    primaryToChanged: string;
+    tiYongPalacePair: string;
+    seYingMomentumAxis: string;
   };
   boundaryNotice: string;
   interpretiveBoundary: string;
@@ -601,6 +606,11 @@ export function calculateIchingMaster(
   const reflectiveQuestion = q
     ? `지금 "${q}" 앞에서 본괘 ${primary.name}·${dominantStage.yaoName}의 흐름을 ${decisionGrade} 기조로 풀어가기 위해 오늘 먼저 점검할 한 가지는 무엇입니까?`
     : reflectionFocus;
+  const ichingCrossAxis = {
+    primaryToChanged: `${primary.name} → ${changed.name}`,
+    tiYongPalacePair: `${tiYongRel} · ${palGongSeYing.palaceName}`,
+    seYingMomentumAxis: `세${palGongSeYing.seYao}·응${palGongSeYing.yingYao}(${palGongSeYing.seYingHarmony}) · ${hexagramDynamics.phaseShift}`,
+  };
 
   return {
     engineVersion: ICHING_MASTER_ENGINE_VERSION,
@@ -635,6 +645,7 @@ export function calculateIchingMaster(
     shadowWarning,
     temporalIchingRhythm,
     ichingSynthesisMatrix,
+    ichingCrossAxis,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     ritualAction,
@@ -691,6 +702,7 @@ export function formatIchingMasterPrompt(res: IchingMasterResult): string {
 - KST 시공간 주역 리듬: ${res.temporalIchingRhythm.divinationWatchWindow} / ${res.temporalIchingRhythm.seasonalIchingTone}
   • 시공간 지침: ${res.temporalIchingRhythm.temporalGuidance}
 - 주역 교차 매트릭스: 핵심(${res.ichingSynthesisMatrix.coreInsight}) | 실행(${res.ichingSynthesisMatrix.recommendedAction}) | 주의(${res.ichingSynthesisMatrix.cautionNotice})
+- 주역 교차 축: ${res.ichingCrossAxis.primaryToChanged} | 체용·궁위: ${res.ichingCrossAxis.tiYongPalacePair} | 세응·모멘텀: ${res.ichingCrossAxis.seYingMomentumAxis}
 - 종합 결단 기조: ${res.decisionGrade}
 - 실천 의례(Ritual Action): ${res.ritualAction}
 - 성찰 초점(Reflection Focus): ${res.reflectionFocus}
