@@ -193,7 +193,6 @@ export function createTarotHouseGreeting(userName: string | undefined, layout: '
   const content = layout === 'unfolded'
     ? `어서 와, ${name}루시의 타로 하우스에 온 걸 환영해 🕯️🔮\n촛불 켜두고 왼쪽엔 네 사주 원국판을 펼쳐뒀어. 차 한 잔 마신다 생각하고 편하게 얘기해줘. 이야기 듣다가 카드가 필요해지면 그때 같이 뽑아보자.`
     : `어서 와, ${name}루시의 타로 하우스에 온 걸 환영해 🕯️🔮\n오늘은 네 사주를 바탕에 깔고 천천히 이야기 나눠보자. 듣다가 필요하면 카드도 한 장 뽑아볼게.`;
-  const depthHint = '\n\n💡 지금은 루시프로 통합 상담이야. 사주 원국·타로·13대 도구·12대 양피지가 처음부터 다 열려 있어. 빅뱅 버튼을 한 번 탭하거나 꾹 누르면 일반 루시로 돌아가.';
   const choices = askToLink
     ? '\n\n아, 그리고 하나만 먼저 물어볼게. 일반 루시랑 나눴던 이야기를 여기로 이어서 가져올까, 아니면 오늘은 새로 시작할까?\n[답변선택: 루시랑 하던 얘기 이어서 | 새로 시작할래]'
     : `\n\n${CONCERN_QUESTION}\n${CONCERN_CHOICES}`;
@@ -203,7 +202,7 @@ export function createTarotHouseGreeting(userName: string | undefined, layout: '
     persona: 'lucy',
     timestamp: Date.now(),
     mode: 'master',
-    content: content + depthHint + choices,
+    content: content + choices,
   };
 }
 

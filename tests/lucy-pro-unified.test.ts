@@ -99,9 +99,27 @@ test('the divination tool button is a pencil-only round icon', () => {
   assert.match(SHEET_BUTTON, /requestLucyTableFace\('engines'\)/);
 });
 
+test('the pro greeting no longer carries the 💡 integration hint paragraph', () => {
+  // 사용자 지시: "점술모드 인사말에 💡 지금은 루시프로 통합 상담이야… 없애줘" (2026-11-26)
+  for (const layout of ['folded', 'unfolded'] as const) {
+    for (const askToLink of [false, true]) {
+      const content = String(createTarotHouseGreeting('쭈', layout, askToLink).content);
+      assert.doesNotMatch(content, /💡/);
+      assert.doesNotMatch(content, /지금은 루시프로 통합 상담이야/);
+      assert.doesNotMatch(content, /빅뱅 버튼을 한 번 탭하거나/);
+      assert.doesNotMatch(content, /처음부터 다 열려 있어/);
+      assert.ok(!/\n{3,}/.test(content), 'no leftover blank lines where the hint was');
+    }
+  }
+  // 인사말 본문 다음에 빈 줄 하나를 두고 바로 고민 질문이 붙는다
+  const content = String(createTarotHouseGreeting('쭈', 'unfolded').content);
+  assert.match(content, /뽑아보자\.\n\n오늘은 어떤 고민이나 궁금한 게 있어\?/);
+  // 소스 어디에도 안내 문구가 남아 있지 않다
+  assert.doesNotMatch(read('src/lib/lucyMasterMode.ts'), /지금은 루시프로 통합 상담이야/);
+});
+
 test('no stage wording is left in the pro greeting, guide or page guides', () => {
   const greeting = String(createTarotHouseGreeting('쭈', 'unfolded').content);
-  assert.match(greeting, /루시프로/);
   assert.doesNotMatch(greeting, /3단계|한 단계씩/);
   const guide = buildTarotHouseGuide('unfolded', false);
   assert.match(guide, /통합 상담/);
