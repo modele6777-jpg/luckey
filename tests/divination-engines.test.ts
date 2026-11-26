@@ -2505,6 +2505,7 @@ test('Life Season Timing Engine: 10년 대운 및 교운기 타이밍 검증', (
   assert(res.reflectionFocus.length > 0);
   assert(res.reflectiveQuestion?.includes('올해의 계절'));
   assert(Boolean(res.lifeSeasonSynthesisMatrix?.integratedAction));
+  assert(Boolean(res.lifeSeasonCrossAxis?.daewoonToSeason && res.lifeSeasonCrossAxis?.annualSynergyAxis && res.lifeSeasonCrossAxis?.gyowungiAnchor));
   assert(res.interpretiveBoundary.length > 0);
   const prompt = formatLifeSeasonTimingPrompt(res);
   assert(prompt.includes(LIFE_SEASON_ENGINE_VERSION));
@@ -2513,7 +2514,7 @@ test('Life Season Timing Engine: 10년 대운 및 교운기 타이밍 검증', (
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('과잉 경계'));
-  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('대운 교차 축') && prompt.includes('해석 경계'));
   assert(!prompt.includes('%'));
   assert(!prompt.includes('/100'));
 });
@@ -4249,6 +4250,7 @@ test('Taoist Huangting Jing Internal Palaces Engine: calculates palaces, guardia
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.huangtingSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.huangtingCrossAxis?.palaceToViscera && rep.huangtingCrossAxis?.spiritPair && rep.huangtingCrossAxis?.breathAnchor));
   assert(rep.palaces.dominantPalace.length > 0);
   assert(rep.guardianSpirit.spiritName.length > 0);
   assert(rep.secondarySpirit.spiritName.length > 0);
@@ -4263,7 +4265,7 @@ test('Taoist Huangting Jing Internal Palaces Engine: calculates palaces, guardia
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('황정 교차 축'));
   assert(!prompt.includes('/100'));
 });
 
@@ -15579,15 +15581,15 @@ test('Faroese Turf Roof Shelter engine: motif, +09:00 KST, and interpretive boun
 
 test('Marshallese Stick Chart engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMarshalleseStickChart({ profile, now: new Date('2026-11-20T21:16:00Z'), question: '보이지 않는 흐름의 결을 읽고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MARSHALLESE-CHART-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-MARSHALLESE-CHART-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.symbolicMotif);
-  assert.ok(rep.swellChartAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.swellChartAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMarshalleseChartPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('마셜') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('마셜') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('맥락 균형 조언') && prompt.includes('과잉 경계'));
 });
 
 test('Maldivian Coral Atoll engine: motif, +09:00 KST, and interpretive boundary', () => {

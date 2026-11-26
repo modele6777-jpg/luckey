@@ -8,6 +8,7 @@ export interface MarshalleseChartResult {
   symbolicMotif: string;
   companionMotif: string;
   swellChartAxis: string;
+  topicBalanceHint: string;
   ritualAction: string;
   shadowWarning: string;
   reflectiveQuestion: string;
@@ -65,6 +66,13 @@ const MARSHALLESE_SHADOWS = [
   '어둠 속 직감의 신호를 믿는 동시에, 밝은 곳에서 다시 확인해야 할 현실의 수치와 사실도 함께 챙기세요.',
 ];
 
+const MARSHALLESE_TOPIC_HINTS: Record<MarshalleseChartResult['questionTopic'], string> = {
+  '항법·감각': '항법과 감각의 질문에서는 먼 결론을 서두르기보다 손끝과 발끝에 닿는 첫 번째 물결의 꺾임부터 확인하세요.',
+  '분기점·균형': '분기점과 균형의 질문에서는 두 흐름을 동시에 잡으려 하지 말고 뱃머리를 맞출 기준선 하나를 먼저 고르세요.',
+  '현재·리듬': '현재와 리듬의 질문에서는 지나간 파도나 올 파도보다 지금 내 배 밑을 지나가는 호흡의 박자에 맞추세요.',
+  '스틱 차트 전반': '전반적 항해의 질문에서는 시야가 좁아질수록 중심 균형대를 믿고 작은 방향 조정 한 가지부터 실행하세요.',
+};
+
 function classifyMarshalleseTopic(q: string): MarshalleseChartResult['questionTopic'] {
   if (/감각|흐름|신호|너울|보이지/.test(q)) return '항법·감각';
   if (/분기점|균형|각도|중심|기준/.test(q)) return '분기점·균형';
@@ -88,11 +96,12 @@ export function calculateMarshalleseStickChart(params: {
   const motif = MARSHALLESE_MOTIFS[idx];
   const companionMotif = MARSHALLESE_MOTIFS[(idx + companionOffset) % MARSHALLESE_MOTIFS.length];
   const swellChartAxis = `${motif.split('(')[0].trim()} ↔ ${companionMotif.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = MARSHALLESE_TOPIC_HINTS[questionTopic];
   const ritualAction = MARSHALLESE_ACTIONS[idx];
   const reflectiveQuestion = MARSHALLESE_QUESTIONS[idx];
 
   return {
-    engineVersion: 'LUCKEY-MARSHALLESE-CHART-v2.3.0',
+    engineVersion: 'LUCKEY-MARSHALLESE-CHART-v2.4.0',
     calculatedAtKst: getKstTimeString(now),
     questionTopic,
     reflectionFocus: q
@@ -101,6 +110,7 @@ export function calculateMarshalleseStickChart(params: {
     symbolicMotif: motif,
     companionMotif,
     swellChartAxis,
+    topicBalanceHint,
     ritualAction,
     shadowWarning: MARSHALLESE_SHADOWS[idx],
     reflectiveQuestion,
@@ -114,6 +124,7 @@ export function formatMarshalleseChartPrompt(result: MarshalleseChartResult): st
     `[마셜 제도·막대 해도 항법 관점 (${result.engineVersion})]`,
     `- 기준 시각: ${result.calculatedAtKst}`,
     `- 질문 맥락: ${result.questionTopic} | 너울 항법 축: ${result.swellChartAxis}`,
+    `- 맥락 균형 조언: ${result.topicBalanceHint}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 상징 모티프: ${result.symbolicMotif}`,
     `- 동반 모티프: ${result.companionMotif}`,

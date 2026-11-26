@@ -37,7 +37,7 @@ import {
 } from '../sajuAnalysis';
 import { getAstronomicalSajuYear } from '../astronomicalSolarTerms';
 
-export const LIFE_SEASON_ENGINE_VERSION = 'LUCKEY-LIFE-SEASON-v2.3.0';
+export const LIFE_SEASON_ENGINE_VERSION = 'LUCKEY-LIFE-SEASON-v2.4.0';
 
 export type LifeSeasonQuestionTopic = 'season' | 'career' | 'wealth' | 'relation' | 'general';
 
@@ -197,6 +197,11 @@ export interface LifeSeasonTimingResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  lifeSeasonCrossAxis: {
+    daewoonToSeason: string;
+    annualSynergyAxis: string;
+    gyowungiAnchor: string;
   };
   reflectiveQuestion?: string;
   interpretiveBoundary: string;
@@ -486,6 +491,11 @@ export function calculateLifeSeasonTiming(params: {
     alignmentState: `${currentSeason} · ${elementAffinity}`,
     integratedAction: `${actionProtocol}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const lifeSeasonCrossAxis = {
+    daewoonToSeason: `${curD.ganKr}${curD.zhiKr}대운(${curD.tenGodGan}/${curD.tenGodZhi}) → ${currentSeason.split(' ')[0]}`,
+    annualSynergyAxis: `${annual.yearName.split(' ')[1] || '丙午'} ↔ ${curD.ganZhi} · ${elementAffinity.split(' ')[0]}`,
+    gyowungiAnchor: `${gyowungiPhase} · ${actionProtocol}`,
+  };
 
   return {
     engineVersion: LIFE_SEASON_ENGINE_VERSION,
@@ -548,6 +558,7 @@ export function calculateLifeSeasonTiming(params: {
     ritualAction,
     reflectionFocus,
     lifeSeasonSynthesisMatrix,
+    lifeSeasonCrossAxis,
     reflectiveQuestion: q
       ? `‘${q}’에 대해 현재 ${curD.ganKr}${curD.zhiKr}대운(${currentSeason})의 리듬 속에서 지금 밀어붙일 영역과 한 템포 고를 영역은 어디입니까?`
       : `현재 ${curD.ganKr}${curD.zhiKr}대운 ${yearsInCurrentDaewoon}년 차(${gyowungiPhase})를 지나며 가장 먼저 정리하거나 심화할 인생 과제는 무엇입니까?`,
@@ -609,7 +620,7 @@ export function formatLifeSeasonTimingPrompt(result: LifeSeasonTimingResult): st
 
 6. 📜 [8대 대운 전 생애 타임라인 참조]
 ${timelineRows}
-${result.lifeSeasonSynthesisMatrix ? `\n7. 🔗 [교차 매트릭스]\n- 핵심 긴장: ${result.lifeSeasonSynthesisMatrix.dominantTension}\n- 조율 상태: ${result.lifeSeasonSynthesisMatrix.alignmentState}\n- 통합 실천: ${result.lifeSeasonSynthesisMatrix.integratedAction}` : ''}
+${result.lifeSeasonSynthesisMatrix ? `\n7. 🔗 [교차 매트릭스]\n- 대운 교차 축: ${result.lifeSeasonCrossAxis.daewoonToSeason} | ${result.lifeSeasonCrossAxis.annualSynergyAxis}\n- 핵심 긴장: ${result.lifeSeasonSynthesisMatrix.dominantTension}\n- 조율 상태: ${result.lifeSeasonSynthesisMatrix.alignmentState}\n- 통합 실천: ${result.lifeSeasonSynthesisMatrix.integratedAction}` : ''}
 - 실천 의례: ${result.ritualAction}
 - 성찰 초점: ${result.reflectionFocus}
 - 과잉 경계: ${result.shadowWarning}
