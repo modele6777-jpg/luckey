@@ -5,6 +5,7 @@
  * - 단계(1·2·3) 순환은 없어지고 일반 루시 ↔ 루시프로 두 상태만 남는다.
  * - 루시프로는 사주 원국·타로·13대 도구·12대 양피지·엔진함을 처음부터 모두 연다.
  * - 아이콘: 일반 루시 = 속이 빈 말풍선, 루시프로 = 말풍선 안 점 하나.
+ * - 빅뱅 버튼 좌·우 탭: 어느 쪽을 눌러도 루시프로 켜기·끄기(사용자: "루시일반채팅에서 좌측 빅뱅버튼 눌러도 점술모드로 가게 해줘").
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -24,6 +25,7 @@ import { allPageGuides } from '../src/lib/pageGuides';
 const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const SIDEBAR = read('src/components/navigation/LeftSidebarNav.tsx');
 const BIGBANG = read('src/components/omniwarp/BigBangButton.tsx');
+const GUIDE = read('src/lib/pageGuides.ts');
 const PANE = read('src/components/duo/DuoDivinationTarotPane.tsx');
 const SHEET = read('src/components/duo/MasterTableSheet.tsx');
 const ICON = read('src/components/icons/LucyProBubbleDotIcon.tsx');
@@ -110,4 +112,29 @@ test('no stage wording is left in the pro greeting, guide or page guides', () =>
   assert.match(masterGuide.title, /루시프로/);
   assert.doesNotMatch(text, /1단계|2단계|3단계|… \? !|한 단계씩|한 단계 깊게/);
   assert.match(text, /13대 추천 도구|13대 도구|13개 도구/);
+});
+
+test('a left (west) tap in the regular Lucy chat enters the pro mode, same as the right (east) tap', () => {
+  const start = BIGBANG.indexOf('루시 채팅 화면에서 좌·우 탭');
+  assert.ok(start >= 0, 'chat-view west/east handling block exists');
+  const end = BIGBANG.indexOf('Key 채널에서 좌·우 탭', start);
+  assert.ok(end > start, 'the chat-view block ends before the Key channel block');
+  const block = BIGBANG.slice(start, end);
+
+  // 좌·우를 한 분기에서 같이 받는다
+  assert.match(block, /targetDir === 'west' \|\| targetDir === 'east'/);
+  // 왼쪽만 다르게 처리하거나 왼쪽 동작을 제한하는 분기가 남아 있으면 실패
+  assert.doesNotMatch(block, /if \(targetDir === 'east'\)/, 'east-only branch is gone');
+  assert.doesNotMatch(block, /else if \(masterNow\)/, 'left tap is no longer limited to turning the mode off');
+  // 일반 루시에서 누르면 켜기, 루시프로에서 누르면 끄기 — 좌·우 공통 토글
+  assert.match(
+    block,
+    /if \(!masterNow\) \{\s*setLucyMasterMode\(true\);\s*playLucyMasterSuction\('in'\);\s*if \(isLucyMasterBgmPreferred\(\)\) void startLucyMasterBgm\(\);\s*\} else \{\s*playLucyMasterSuction\('out'\);\s*setLucyMasterMode\(false\);\s*\}/,
+    'both directions run the same on/off toggle',
+  );
+});
+
+test('the page guide explains both directions as the pro toggle', () => {
+  assert.match(GUIDE, /빅뱅 버튼 왼쪽·오른쪽 어느 쪽을 눌러도 루시프로가 켜지고/);
+  assert.doesNotMatch(GUIDE, /왼쪽을 누르면 언제든 일반 루시로 돌아와요/);
 });

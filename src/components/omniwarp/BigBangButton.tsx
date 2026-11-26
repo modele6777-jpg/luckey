@@ -1287,8 +1287,8 @@ export function BigBangButton() {
     const targetDir = start.pointerType === 'touch'
       ? start.direction
       : downDirectionRef.current;
-    // 🔮 루시 채팅 화면에서 좌·우 탭: 루시프로(점술모드)를 바로 켜고 끈다.
-    // 오른쪽 = 루시프로 켜기/끄기 토글, 왼쪽 = 일반 루시로 돌아가기.
+    // 🔮 루시 채팅 화면에서 좌·우 탭: 어느 쪽을 눌러도 루시프로(점술모드)를 바로 켜고 끈다.
+    // 왼쪽·오른쪽 모두 같은 토글(일반 루시 ↔ 루시프로).
     if (!isDragGesture && isChatView && (targetDir === 'west' || targetDir === 'east')) {
       if (singleTapTimerRef.current) {
         clearTimeout(singleTapTimerRef.current);
@@ -1300,16 +1300,12 @@ export function BigBangButton() {
       setHoverDirection('none');
       window.dispatchEvent(new CustomEvent('prism:abort_lucy_voice_ptt'));
       const masterNow = isLucyMasterModeOn();
-      if (targetDir === 'east') {
-        if (!masterNow) {
-          setLucyMasterMode(true);
-          playLucyMasterSuction('in');
-          if (isLucyMasterBgmPreferred()) void startLucyMasterBgm();
-        } else {
-          playLucyMasterSuction('out');
-          setLucyMasterMode(false);
-        }
-      } else if (masterNow) {
+      // 좌·우 모두 같은 토글: 일반 루시에서 누르면 루시프로로, 루시프로에서 누르면 일반 루시로.
+      if (!masterNow) {
+        setLucyMasterMode(true);
+        playLucyMasterSuction('in');
+        if (isLucyMasterBgmPreferred()) void startLucyMasterBgm();
+      } else {
         playLucyMasterSuction('out');
         setLucyMasterMode(false);
       }
