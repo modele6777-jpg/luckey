@@ -1,4 +1,5 @@
 import { FIFTEEN_DIVINATION_TOOLS, type DivinationToolId } from '@/lib/fifteenDivinationTools';
+import { CONCERN_TOOL_ORDER } from '@/lib/divination/concernToolOrder';
 import type { CalculationAuditItem } from '@/lib/divination/calculationAudit';
 import { LUCY_PRO_TOOLS } from '@/lib/divination/smartAgentRouter';
 import { detectMasterConcernTopic, type MasterConcernTopic } from '@/lib/lucyMasterPrompts';
@@ -13,7 +14,7 @@ import type { ToolFact } from '@/lib/lucyMasterToolFacts';
  *  4) 정보가 없어 계산되지 않은 도구는 맨 아래
  */
 
-export type ToolBoardStatus = 'calculated' | 'symbolic' | 'needs_info' | 'pending';
+export type ToolBoardStatus = 'calculated' | 'symbolic' | 'needs_info' | 'pending' | 'unused';
 
 export interface ToolBoardItem {
   id: DivinationToolId;
@@ -41,13 +42,7 @@ export interface ToolBoard {
 }
 
 /** 고민 주제별로 잘 맞는 도구 (앞일수록 더 잘 맞음). 맨 앞이 추천 도구. */
-const TOPIC_TOOLS: Record<MasterConcernTopic, DivinationToolId[]> = {
-  love: ['ziwei', 'sukuyo', 'astrology', 'liuren', 'vedic', 'kabbalah'],
-  career: ['qimen', 'liuren', 'taiyi', 'iching', 'kyusei', 'ziwei'],
-  money: ['qimen', 'ziwei', 'tojeong', 'kyusei', 'liuren', 'taiyi'],
-  mind: ['vedic', 'astrology', 'kabbalah', 'iching', 'mahabote', 'sukuyo'],
-  general: ['iching', 'tojeong', 'taiyi', 'astrology', 'kyusei', 'ziwei'],
-};
+export { CONCERN_TOOL_ORDER } from '@/lib/divination/concernToolOrder';
 
 const RECOMMEND_REASON: Record<MasterConcernTopic, string> = {
   love: '두 사람의 인연과 마음의 자리를 보기에 가장 잘 맞아',
@@ -105,7 +100,8 @@ function shortBestFor(id: DivinationToolId): string {
 }
 
 function statusOf(item: CalculationAuditItem | undefined): { status: ToolBoardStatus; note: string } {
-  if (!item) return { status: 'pending', note: '' };
+  // 이번 질문에 루시가 그 도구를 아예 쓰지 않았다(절제된 선택).
+  if (!item) return { status: 'unused', note: '이번 질문엔 쓰지 않았어요' };
   const note = item.note || '';
   if (item.status === 'calculated' && item.sentToModel) return { status: 'calculated', note };
   if (item.status === 'symbolic') return { status: 'symbolic', note: '계산 기준을 다시 살펴보는 중이라 상징 참고로만 봐요' };
@@ -122,13 +118,14 @@ export function buildToolBoard(params: {
 }): ToolBoard {
   const topic = detectMasterConcernTopic(params.concern);
   const auditById = new Map(params.audit.map(item => [item.toolId, item] as const));
-  const hasResults = LUCY_PRO_TOOLS.some(id => auditById.has(id));
-  const topicOrder = TOPIC_TOOLS[topic];
+  const hasResults = Object.values(FIFTEEN_DIVINATION_TOOLS).some(tool => auditById.has(tool.id));
+  const topicOrder = CONCERN_TOOL_ORDER[topic];
+  const isUnused = (item: ToolBoardItem) => item.status === 'unused' || item.status === 'needs_info';
 
   const items: ToolBoardItem[] = LUCY_PRO_TOOLS.map(id => {
     const spec = FIFTEEN_DIVINATION_TOOLS[id];
     const { status, note } = statusOf(auditById.get(id));
-    const signal = status === 'needs_info' ? '' : findToolSignal(id, params.answer);
+    const signal = status === 'needs_info' || status === 'unused' ? '' : findToolSignal(id, params.answer);
     // 기문은 출생 기반 홍국기문이 아니라 지금 시각으로 세운 기문둔갑(차보법) 판을 보여주므로 이름을 그에 맞춘다.
     const display = id === 'qimen' ? { name: '기문둔갑', hanja: '奇門遁甲 · 지금 시각 판' } : { name: spec.koName, hanja: spec.hanjaOrEng };
     return { id, name: display.name, hanja: display.hanja, bestFor: shortBestFor(id), status, note, signal, common: Boolean(signal), facts: status === 'calculated' ? (params.facts?.[id] ?? []) : [] };
@@ -140,14 +137,14 @@ export function buildToolBoard(params: {
     return i < 0 ? topicOrder.length : i;
   };
 
-  // 추천: 주제 순서에서 계산된(또는 아직 대기 중인) 첫 도구. 정보가 없어 못 본 도구는 추천하지 않는다.
-  const recommendedId = topicOrder.find(id => items.find(item => item.id === id)?.status !== 'needs_info')
-    ?? items.find(item => item.status !== 'needs_info')?.id
+  // 추천: 주제 순서에서 계산된 첫 도구. 쓰지 않았거나 정보가 없어 못 본 도구는 추천하지 않는다.
+  const recommendedId = topicOrder.find(id => !isUnused(items.find(item => item.id === id)!))
+    ?? items.find(item => !isUnused(item))?.id
     ?? topicOrder[0];
   const recommended = items.find(item => item.id === recommendedId)!;
 
   const rank = (item: ToolBoardItem) => [
-    item.status === 'needs_info' ? 1 : 0,
+    isUnused(item) ? 1 : 0,
     item.common ? 0 : 1,
     topicIndex(item.id),
     baseIndex(item.id),

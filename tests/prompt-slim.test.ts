@@ -12,13 +12,11 @@ test('Lucy Pro level 3 sends compact calculated facts, not 200k characters of ap
   for (const removed of ['timelineCards', 'ritualAction', 'SynthesisMatrix', 'reflectiveQuestion', 'interpretiveBoundary', '\n  "']) {
     assert.ok(!prompt.includes(removed), removed);
   }
-  // 계산값은 남는다
+  // 계산값은 남는다 (이번 고민에 고른 도구만)
   assert.ok(prompt.includes('"gan":"庚"') && prompt.includes('"zhi":"午"'), 'saju pillars kept');
-  assert.ok(prompt.includes('우타라아샤다'), 'vedic nakshatra kept');
-  assert.ok(prompt.includes('lord=라후'), 'current mahadasha kept');
-  // 시각·연도 공통 판 표시
-  assert.ok(prompt.includes('지금 시각의 괘'));
-  assert.ok(prompt.includes('올해의 연국'));
+  assert.ok(prompt.includes('자미두수'), 'the concern-matched tool is carried');
+  assert.ok(prompt.includes('명궁'), 'ziwei chart kept');
+  assert.ok(prompt.length > 0 && !prompt.includes('우타라아샤다'), 'tools outside this turn\'s selection are not injected');
 });
 
 test('slimToolData drops interpretive keys and keeps facts', () => {

@@ -28,6 +28,7 @@ const BIGBANG = read('src/components/omniwarp/BigBangButton.tsx');
 const GUIDE = read('src/lib/pageGuides.ts');
 const PANE = read('src/components/duo/DuoDivinationTarotPane.tsx');
 const SHEET = read('src/components/duo/MasterTableSheet.tsx');
+const TABS = read('src/lib/divination/trayTabs.ts');
 const ICON = read('src/components/icons/LucyProBubbleDotIcon.tsx');
 const PAGE = read('src/pages/LucyStandalonePage.tsx');
 const MODE_NAME = read('src/components/chat/LucyModeName.tsx');
@@ -43,10 +44,17 @@ test('the pro mode is a single unified state, not three stages', () => {
   assert.deepEqual(LUCY_MASTER_DEPTH3_TOOLS, LUCY_PRO_TOOLS);
 });
 
-test('every face of the divination table is open from the start', () => {
-  for (const face of ['saju', 'tarot', 'recommended', 'scrolls', 'engines']) {
-    assert.ok(PANE.includes(`id: '${face}'`), `unfolded pane face ${face}`);
-    assert.ok(SHEET.includes(`id: '${face}'`), `folded sheet face ${face}`);
+test('the divination table holds 15 tool tabs and no engine box, recommended or parchment tab', () => {
+  for (const tab of ['saju', 'tarot', 'astrology', 'ziwei', 'sukuyo', 'mahabote', 'vedic', 'liuren', 'qimen', 'kabbalah', 'iching', 'thai_astrology', 'tojeong', 'kyusei', 'taiyi']) {
+    assert.ok(TABS.includes(`'${tab}'`), `tool tab ${tab}`);
+  }
+  // 두 화면(접힘·펼침) 모두 같은 15개 도구 탭 바를 쓴다.
+  assert.match(PANE, /DivinationToolTabBar/);
+  assert.match(SHEET, /DivinationToolTabBar/);
+  for (const removed of ['engines', 'recommended', 'scrolls']) {
+    assert.ok(!TABS.includes(`'${removed}'`), `removed tab ${removed}`);
+    assert.doesNotMatch(PANE, new RegExp(`id: '${removed}'`));
+    assert.doesNotMatch(SHEET, new RegExp(`id: '${removed}'`));
   }
   for (const source of [PANE, SHEET]) {
     assert.doesNotMatch(source, /stage <= depth|toolsAvailable|tarotAvailable/, 'no stage gating');
@@ -93,10 +101,13 @@ test('the divination tool button is a pencil-only round icon', () => {
   assert.doesNotMatch(SHEET_BUTTON, />\s*도구\s*</, 'no 도구 text label');
   // 접근성·동작·색상 톤은 그대로
   assert.match(SHEET_BUTTON, /data-master-table-sheet-button/);
-  assert.match(SHEET_BUTTON, /aria-label="점술 도구 보기"/);
-  assert.match(SHEET_BUTTON, /title="점술 도구"/);
+  assert.match(SHEET_BUTTON, /aria-label=\{isMasterMode \? '점술 도구 보기' : '엔진함 보기'\}/);
+  assert.match(SHEET_BUTTON, /title=\{isMasterMode \? '점술 도구' : '엔진함'\}/);
   assert.match(SHEET_BUTTON, /tone === 'light'/);
-  assert.match(SHEET_BUTTON, /requestLucyTableFace\('engines'\)/);
+  // 엔진함 탭이 사라져 왼쪽 테이블로 포커스를 넘기던 호출도 없어졌다 (점술모드도 창으로 연다).
+  assert.doesNotMatch(SHEET_BUTTON, /requestLucyTableFace/);
+  // 일반 채팅에서도 같은 버튼이 나온다.
+  assert.match(PAGE, /<MasterTableSheetButton tone=\{isLight \? 'light' : 'dark'\} isMasterMode=\{isMasterMode\} \/>/);
 });
 
 test('the pro greeting no longer carries the 💡 integration hint paragraph', () => {

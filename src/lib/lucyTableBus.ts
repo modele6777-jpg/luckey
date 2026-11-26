@@ -1,6 +1,7 @@
 import type { SajuAnalysisResult } from '@/lib/sajuAnalysis';
 import type { CalculationAuditItem } from '@/lib/divination/calculationAudit';
 import type { ToolFact } from '@/lib/lucyMasterToolFacts';
+import type { LucyActiveEngineTray } from '@/lib/lucyActiveEngineTray';
 
 /**
  * Lucy Master's unfolded left table listens to what Lucy is doing in the right pane:
@@ -20,11 +21,15 @@ export interface LucyTableState {
   facts: Record<string, ToolFact[]>;
   /** 도구별 계산 원자료 (전용 화면용, 계산된 도구만). */
   toolData: Record<string, unknown>;
+  /** 이번 질문에 루시가 고른 기초 도구·심층 관점 중 실제로 쓴 것만 (도구함 표시용). */
+  activeEngines: LucyActiveEngineTray;
   /** 이번 상담에서 손님이 마지막으로 직접 뽑은 카드 (접힌 화면 도구 창에서 다시 보기). */
   cards: Array<{ id: string; nameKo: string; reversed: boolean; imageUrl?: string; orientationKo?: string }>;
 }
 
-let state: LucyTableState = { saju: null, lastAnswer: '', lastAnswerHasTarot: false, answerVersion: 0, tools: [], concern: '', facts: {}, toolData: {}, cards: [] };
+const EMPTY_ACTIVE_ENGINES: LucyActiveEngineTray = { foundational: [], deep: [], total: 0 };
+
+let state: LucyTableState = { saju: null, lastAnswer: '', lastAnswerHasTarot: false, answerVersion: 0, tools: [], concern: '', facts: {}, toolData: {}, activeEngines: EMPTY_ACTIVE_ENGINES, cards: [] };
 
 export function getLucyTableState(): LucyTableState {
   return state;
@@ -40,8 +45,20 @@ export function publishTableSaju(saju: SajuAnalysisResult | null): void {
   emit();
 }
 
-export function publishTableTools(tools: readonly CalculationAuditItem[], concern: string, facts: Record<string, ToolFact[]> = {}, toolData: Record<string, unknown> = {}): void {
-  state = { ...state, tools: [...tools], concern, facts, toolData };
+export function publishTableTools(
+  tools: readonly CalculationAuditItem[],
+  concern: string,
+  facts: Record<string, ToolFact[]> = {},
+  toolData: Record<string, unknown> = {},
+  activeEngines: LucyActiveEngineTray = EMPTY_ACTIVE_ENGINES,
+): void {
+  state = { ...state, tools: [...tools], concern, facts, toolData, activeEngines };
+  emit();
+}
+
+/** 💬 일반 대화에서 루시가 고른 심층 관점만 갱신한다 (엔진함의 '이번 대화에서 쓴 관점' 표시용). */
+export function publishTableActiveEngines(activeEngines: LucyActiveEngineTray, concern = ''): void {
+  state = { ...state, activeEngines, concern };
   emit();
 }
 
@@ -62,8 +79,10 @@ if (typeof window !== 'undefined') {
 }
 
 export function clearTableTools(): void {
-  if (state.tools.length === 0 && !state.concern && state.cards.length === 0) return;
-  state = { ...state, tools: [], concern: '', facts: {}, toolData: {}, cards: [] };
+  const alreadyEmpty = state.tools.length === 0 && !state.concern && state.cards.length === 0
+    && state.activeEngines.total === 0;
+  if (alreadyEmpty) return;
+  state = { ...state, tools: [], concern: '', facts: {}, toolData: {}, activeEngines: EMPTY_ACTIVE_ENGINES, cards: [] };
   emit();
 }
 

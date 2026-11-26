@@ -1,41 +1,89 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { X, Pencil } from 'lucide-react';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { getLucyTableState, LUCY_TABLE_EVENT, type LucyTableState } from '@/lib/lucyTableBus';
-import { requestLucyTableFace } from '@/lib/lucyMasterMode';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { MasterSajuBoard } from './MasterSajuBoard';
-import { MasterToolBoard } from './MasterToolBoard';
-import { LucyEngineCatalogPanel } from '@/components/chat/LucyEngineCatalogDialog';
-import { getLucyMasterDefaultTableFace, reduceLucyMasterTableFace, type LucyMasterTableFace } from '@/lib/lucyMasterTableFace';
-
-type Face = LucyMasterTableFace;
-const FACES: { id: Face; icon: string; label: string; sub: string }[] = [
-  { id: 'saju', icon: '☯', label: '사주 원국', sub: '원국' },
-  { id: 'tarot', icon: '🃏', label: '타로', sub: '카드' },
-  { id: 'recommended', icon: '🧭', label: '추천 도구', sub: '도구' },
-  { id: 'scrolls', icon: '📜', label: '양피지', sub: '양피지' },
-  // 엔진함: 루시가 쓰는 엔진 이름·뜻 목록 (읽기 전용)
-  { id: 'engines', icon: '📚', label: '엔진함', sub: '목록' },
-];
+import { MasterToolTabPanel } from './MasterToolTabPanel';
+import { DivinationToolTabBar, resolveToolTabViews } from './MasterToolTabs';
+import { LucyDeepPerspectivePanel } from '@/components/chat/LucyEngineCatalogDialog';
+import type { DivinationToolId } from '@/lib/fifteenDivinationTools';
 
 /**
- * 📱 접은 화면 점술모드의 "도구 보기" 창.
- * 펼친 화면 왼쪽 테이블과 같은 내용(사주 원국 · 타로 · 추천 도구 · 12대 양피지 · 엔진함)을 창으로 띄운다.
- * 카드 뽑기는 대화에서 하므로 여기서는 이미 뽑은 카드만 다시 보여준다.
+ * 📱 도구함(연필 버튼) 창.
+ * - 점술모드: 사주 원국 · 타로 · 나머지 13개 기초 도구 = 15개 탭 (엔진함·추천 도구·양피지는 없앴다)
+ * - 일반 채팅: 엔진함(심층 관점 설명)만
  */
-export function MasterTableSheet({ onClose }: { onClose: () => void }) {
+export function MasterTableSheetBody({ table, variant, onClose }: {
+  table: LucyTableState;
+  variant: 'divination' | 'chat';
+  onClose?: () => void;
+}) {
+  if (variant === 'chat') {
+    return (
+      <div className="flex h-full min-h-0 flex-col" data-tool-sheet-variant="chat">
+        <div className="flex shrink-0 items-center gap-2 px-4 pt-3.5">
+          <p className="flex-1 text-[14px] font-black text-amber-100">📚 엔진함 <span className="ml-1 text-[11px] font-bold text-amber-200/70">· 심층 관점 설명</span></p>
+          {onClose && (
+            <button type="button" onClick={onClose} aria-label="도구 창 닫기" className="flex h-8 w-8 items-center justify-center rounded-full text-slate-300 hover:bg-white/10"><X size={18} /></button>
+          )}
+        </div>
+        <div className="flex min-h-0 flex-1 flex-col">
+          <LucyDeepPerspectivePanel activeKeys={table.activeEngines.deep.map(item => item.key)} />
+        </div>
+      </div>
+    );
+  }
+
+  return <DivinationTableBody table={table} onClose={onClose} />;
+}
+
+/** 점술모드 도구함: 15개 도구 탭 (가로 스크롤) + 선택한 도구 화면. */
+export function DivinationTableBody({ table, onClose, compact = false }: {
+  table: LucyTableState;
+  onClose?: () => void;
+  /** 접힌 화면 창(좁은 폭)에서는 탭을 더 작게 */
+  compact?: boolean;
+}) {
+  const [tab, setTab] = useState<DivinationToolId>('saju');
+  const views = useMemo(() => resolveToolTabViews(table), [table]);
+  // 루시가 이번 질문에 쓰지 않은 도구는 잠겨 있으므로, 잠긴 탭이 골라져 있으면 첫 열린 탭으로 돌린다.
+  const activeTab = useMemo<DivinationToolId>(() => {
+    const current = views.find(view => view.id === tab);
+    if (current && !current.locked) return current.id;
+    return (views.find(view => !view.locked)?.id ?? 'saju') as DivinationToolId;
+  }, [tab, views]);
+
+  return (
+    <div className="flex h-full min-h-0 flex-col" data-tool-sheet-variant="divination">
+      <div className="flex shrink-0 items-center gap-2 px-4 pt-3.5">
+        <p className="flex-1 text-[14px] font-black text-amber-100">🔮 점술 도구 <span className="ml-1 text-[11px] font-bold text-amber-200/70">· 사주·타로·13대 도구</span></p>
+        {onClose && (
+          <button type="button" onClick={onClose} aria-label="도구 창 닫기" className="flex h-8 w-8 items-center justify-center rounded-full text-slate-300 hover:bg-white/10"><X size={18} /></button>
+        )}
+      </div>
+      <DivinationToolTabBar table={table} activeTab={activeTab} onSelect={setTab} compact={compact} />
+      <div className="flex min-h-0 flex-1 flex-col">
+        {activeTab === 'saju' ? (
+          <MasterSajuBoard saju={table.saju} lastAnswer={table.lastAnswer} />
+        ) : activeTab === 'tarot' ? (
+          <DrawnCards cards={table.cards} />
+        ) : (
+          <MasterToolTabPanel toolId={activeTab} table={table} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** 점술모드 접힌 화면의 도구 창 (화면 밖 포털 + 어두운 창). */
+export function MasterTableSheet({ onClose, variant = 'divination' }: { onClose: () => void; variant?: 'divination' | 'chat' }) {
   const [table, setTable] = useState<LucyTableState>(() => getLucyTableState());
-  const [face, dispatchFace] = useReducer(reduceLucyMasterTableFace, getLucyMasterDefaultTableFace());
-  const [focusTool, setFocusTool] = useState<string | null>(null);
 
   useEffect(() => {
     const onTable = (e: Event) => {
       const next = (e as CustomEvent<LucyTableState>).detail;
-      if (next) {
-        setTable(next);
-        dispatchFace({ type: 'answer-updated' });
-      }
+      if (next) setTable(next);
     };
     window.addEventListener(LUCY_TABLE_EVENT, onTable);
     return () => window.removeEventListener(LUCY_TABLE_EVENT, onTable);
@@ -46,67 +94,23 @@ export function MasterTableSheet({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [onClose]);
 
-  const visible = FACES;
-  const shown: Face = visible.some(f => f.id === face) ? face : 'saju';
-
   return (
     <ScreenPortal>
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/55 p-3 backdrop-blur-[2px]" onClick={onClose}>
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="점술 도구 보기"
+          aria-label={variant === 'chat' ? '엔진함' : '점술 도구 보기'}
           data-master-table-sheet
+          data-master-table-sheet-variant={variant}
           // 창은 화면 밖(포털)에 떠서 아침·낮 밝은 테마가 카드 색을 밝게 바꿔 버린다. 늘 어두운 창으로 고정.
           data-theme-dark-island="true"
           onClick={e => e.stopPropagation()}
-          className="flex h-[min(42rem,calc(var(--overlay-height,100dvh)-1.5rem))] w-full max-w-[420px] flex-col overflow-hidden rounded-3xl border border-amber-200/20 bg-gradient-to-b from-[#24163a] to-[#140c24] text-white shadow-2xl"
+          className="relative flex h-[min(42rem,calc(var(--overlay-height,100dvh)-1.5rem))] w-full max-w-[420px] flex-col overflow-hidden rounded-3xl border border-amber-200/20 bg-gradient-to-b from-[#24163a] to-[#140c24] text-white shadow-2xl"
           style={{ colorScheme: 'dark' }}
         >
-          <div className="flex shrink-0 items-center gap-2 px-4 pt-3.5">
-            <p className="flex-1 text-[14px] font-black text-amber-100">🔮 점술 도구 <span className="ml-1 text-[11px] font-bold text-amber-200/70">· 사주·타로·13대 도구</span></p>
-            <button type="button" onClick={onClose} aria-label="도구 창 닫기" className="flex h-8 w-8 items-center justify-center rounded-full text-slate-300 hover:bg-white/10"><X size={18} /></button>
-          </div>
-          <div className="flex shrink-0 items-stretch gap-1 px-3 pt-2 pb-1.5" role="tablist" aria-label="점술 도구 보기">
-            {visible.map(item => {
-              const active = shown === item.id;
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  data-table-face={item.id}
-                  onClick={() => { triggerHaptic('whitehole'); dispatchFace({ type: 'tab-selected', face: item.id }); }}
-                  className={`flex min-w-0 flex-1 flex-col items-center justify-center rounded-xl border px-1 py-1.5 ${active ? 'border-amber-300/80 bg-amber-400/20 text-amber-50' : 'border-white/12 bg-white/[0.05] text-slate-200'}`}
-                >
-                  <span className="text-[15px] leading-none" aria-hidden="true">{item.icon}</span>
-                  <span className="mt-0.5 max-w-full truncate text-[10.5px] font-bold leading-tight">{item.label}</span>
-                  <span className={`text-[8px] leading-none ${active ? 'text-amber-200/90' : 'text-slate-400'}`}>{item.sub}</span>
-                </button>
-              );
-            })}
-          </div>
-          <div className="flex min-h-0 flex-1 flex-col">
-            {shown === 'engines' ? (
-              <LucyEngineCatalogPanel />
-            ) : shown === 'saju' ? (
-              <MasterSajuBoard saju={table.saju} lastAnswer={table.lastAnswer} />
-            ) : shown === 'tarot' ? (
-              <DrawnCards cards={table.cards} />
-            ) : (
-              <MasterToolBoard
-                view={shown}
-                tools={table.tools}
-                concern={table.concern}
-                lastAnswer={table.lastAnswer}
-                facts={table.facts}
-                toolData={table.toolData}
-                focusId={focusTool}
-                onFocusTool={id => { setFocusTool(id); dispatchFace({ type: 'tab-selected', face: 'recommended' }); }}
-                onShowScrolls={() => { triggerHaptic('whitehole'); dispatchFace({ type: 'tab-selected', face: 'scrolls' }); }}
-              />
-            )}
+          <div className="relative z-[1] flex min-h-0 flex-1 flex-col">
+            <MasterTableSheetBody table={table} variant={variant} onClose={onClose} />
           </div>
         </div>
       </div>
@@ -144,41 +148,25 @@ function DrawnCards({ cards }: { cards: LucyTableState['cards'] }) {
   );
 }
 
-function leftMasterTableIsVisible(): boolean {
-  if (typeof document === 'undefined') return false;
-  const pane = document.getElementById('duo-content-viewport');
-  const table = pane?.querySelector('[data-duo-divination-tarot="true"]');
-  if (!table) return false;
-  const box = table.getBoundingClientRect();
-  return box.width > 0 && box.height > 0;
-}
-
-/** 왼쪽이 점술 테이블이면 엔진함만 연다. 왼쪽이 다른 화면이면 도구 팝업을 연다. */
-export function MasterTableSheetButton({ tone = 'dark' }: { tone?: 'dark' | 'light' }) {
+/** 헤더의 연필 모양 도구함 버튼. 점술모드와 일반 채팅 모두 같은 버튼을 쓴다. */
+export function MasterTableSheetButton({ tone = 'dark', isMasterMode = false }: { tone?: 'dark' | 'light'; isMasterMode?: boolean }) {
   const [open, setOpen] = useState(false);
   return (
     <>
       <button
         type="button"
         data-master-table-sheet-button
-        aria-label="점술 도구 보기"
-        title="점술 도구"
-        onClick={() => {
-          triggerHaptic('whitehole');
-          if (leftMasterTableIsVisible()) {
-            setOpen(false);
-            requestLucyTableFace('engines');
-            return;
-          }
-          setOpen(true);
-        }}
+        data-tool-sheet-variant={isMasterMode ? 'divination' : 'chat'}
+        aria-label={isMasterMode ? '점술 도구 보기' : '엔진함 보기'}
+        title={isMasterMode ? '점술 도구' : '엔진함'}
+        onClick={() => { triggerHaptic('whitehole'); setOpen(true); }}
         className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border backdrop-blur-md active:scale-95 ${tone === 'light'
           ? 'border-slate-300/80 bg-white/80 text-slate-700'
           : 'border-amber-200/30 bg-amber-400/10 text-amber-100'}`}
       >
         <Pencil size={15} aria-hidden="true" />
       </button>
-      {open && <MasterTableSheet onClose={() => setOpen(false)} />}
+      {open && <MasterTableSheet onClose={() => setOpen(false)} variant={isMasterMode ? 'divination' : 'chat'} />}
     </>
   );
 }
