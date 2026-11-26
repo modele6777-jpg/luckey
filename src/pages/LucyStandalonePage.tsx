@@ -8,6 +8,7 @@ import { useHoldToTalk } from '@/hooks/useHoldToTalk';
 import { takePendingLucyContext } from '@/lib/lucyPendingContext';
 import { buildLucyConsultMemoryBrief } from '@/lib/lucyConsultMemory';
 import { LucyConsultMemorySettings } from '@/components/lucy/LucyConsultMemorySettings';
+import { LucyTtsControlBar } from '@/components/lucy/LucyTtsControlBar';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { LucyEntryScreen, type LucyEntryVariant } from '@/components/chat/LucyEntryScreen';
@@ -25,7 +26,7 @@ import { LUCY_PRO_PATH, resolveLucyPageChannels } from '@/lib/lucyChatPageMode';
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Send, Search, X, Check, Volume2, VolumeX, Square,
+  Send, Search, X, Check, Volume2, VolumeX, Square, Play,
   Download, User, Plus, Sparkles, Sun, TreeDeciduous, Activity, Bird, Music, Zap, Flame, Compass,
   Loader2, Copy, RefreshCw, Camera, BookOpen, BookMarked, Mic, MicOff, MessageSquare, ChevronDown
 } from 'lucide-react';
@@ -33,7 +34,7 @@ import { useApp, PersonaType, getPersistentUserProfile, setPersistentUserProfile
 import { useTheme, LucyThemeBoundary } from '@/contexts/ThemeContext';
 import { saveProfileToAllVaults } from '@/lib/profileVault';
 import { useLocation } from 'wouter';
-import { playTTS, playTTSInChunks, playQAndATTS, stopTTS, useTTSActive, subscribeTTS, prefetchTTS, prefetchTTSChunks, normalizeTextForSpeech } from '@/utils/tts';
+import { playTTS, playTTSInChunks, playQAndATTS, pauseTTS, resumeTTS, stopTTS, useTTSActive, subscribeTTS, prefetchTTS, prefetchTTSChunks, normalizeTextForSpeech } from '@/utils/tts';
 import { unlockAudioPlayback, primeTTSAudioElement } from '@/lib/audio';
 import { playAudioHaptic } from '@/lib/audioHaptics';
 import { calculateDetailedSaju } from '@/lib/sajuAnalysis';
@@ -1206,8 +1207,11 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const [ttsInfo, setTtsInfo] = useState({
     isSpeaking: false,
     isLoading: false,
+    isPaused: false,
     activeText: null as string | null,
     activeSentence: null as string | null,
+    sentenceIndex: -1,
+    sentenceTotal: 0,
   });
 
   // 🔊 낭독 세션 동안은 하단 자동 이동을 붙잡는다.
@@ -1215,7 +1219,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // 다시 중앙으로 올라와 화면이 위아래로 출렁인다. 낭독이 멈춘 뒤에도 잠깐 더 잡아 둔다.
   const ttsHoldsScrollRef = useRef(false);
   const ttsHoldTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const ttsReading = Boolean(playingMsgId) || ttsInfo.isSpeaking || ttsInfo.isLoading;
+  const [ttsBarFooterHeight, setTtsBarFooterHeight] = useState(0);
+  const ttsReading = Boolean(playingMsgId) || ttsInfo.isSpeaking || ttsInfo.isLoading || ttsInfo.isPaused;
 
   useEffect(() => {
     if (ttsHoldTimerRef.current) {
@@ -1681,6 +1686,26 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       } catch (_) {}
     }, 600);
     return () => clearTimeout(timer);
+  }, [isLucyReady]);
+
+  // 🔊 낭독 컨트롤 바는 입력창 바로 위에 떠야 하므로, 이 화면의 실제 푸터 높이를 직접 잰다
+  // (듀오 접힘·펼침 어느 쪽에서도 패널 폭 기준으로 정확한 위치가 나온다).
+  useEffect(() => {
+    if (!isLucyReady) return;
+    const el = chatFooterRef.current;
+    if (!el) return;
+    const measure = () => {
+      const height = Math.round(el.getBoundingClientRect().height);
+      setTtsBarFooterHeight(prev => (prev === height ? prev : height));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    window.addEventListener('resize', measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', measure);
+    };
   }, [isLucyReady]);
 
   const orbOpen = useOrbCounselOpen();
@@ -2975,8 +3000,11 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       setTtsInfo({
         isSpeaking: state.isSpeaking,
         isLoading: state.isLoading,
+        isPaused: Boolean(state.isPaused),
         activeText: state.activeText,
         activeSentence: state.activeSentence || state.currentSentence || null,
+        sentenceIndex: typeof state.activeSentenceIndex === 'number' ? state.activeSentenceIndex : -1,
+        sentenceTotal: typeof state.totalSentences === 'number' ? state.totalSentences : 0,
       });
       if (!state.isSpeaking && !state.isLoading && !state.isPaused && !state.activeSessionId) {
         setPlayingMsgId(null);
@@ -3299,7 +3327,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // Keep the callback stable: playback changes must not rerun the mount scroll effect.
   const ttsBlocksAutoScrollRef = useRef(false);
-  ttsBlocksAutoScrollRef.current = ttsInfo.isSpeaking || ttsInfo.isLoading || ttsHoldsScrollRef.current;
+  ttsBlocksAutoScrollRef.current = ttsInfo.isSpeaking || ttsInfo.isLoading || ttsInfo.isPaused || ttsHoldsScrollRef.current;
 
   const scrollToBottom = useCallback((force = false, smooth = true) => {
     if (!messagesContainerRef.current) return;
@@ -4287,6 +4315,11 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     setTtsError('');
     lastAutoSpokenMsgIdRef.current = id;
     const clean = normalizeTextForSpeech(text);
+    // 이 말풍선을 읽다가 잠시 멈춰 둔 상태라면, 새로 읽지 않고 그 자리에서 이어 읽는다.
+    if (playingMsgId === id && ttsInfo.isPaused) {
+      resumeTTS();
+      return;
+    }
     if (playingMsgId === id && (ttsInfo.isSpeaking || ttsInfo.isLoading)) {
       manualTtsActiveRef.current = false;
       stopTTS();
@@ -4312,6 +4345,26 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       }
     }
   };
+
+  // ⏸️ 이어듣기 / ▶️ 일시정지 토글: 어느 말풍선에서 시작된 낭독이든 전역 TTS 상태를 그대로 제어한다.
+  const handleTtsTogglePause = useCallback(() => {
+    if (ttsInfo.isPaused) {
+      unlockAudioPlayback();
+      primeTTSAudioElement();
+      resumeTTS();
+    } else {
+      pauseTTS();
+    }
+  }, [ttsInfo.isPaused]);
+
+  // ⏹️ 완전 멈춤: 대기 중인 요청까지 취소하고 말풍선 상태를 즉시 되돌린다.
+  const handleTtsStopAll = useCallback(() => {
+    manualTtsActiveRef.current = false;
+    stopTTS();
+    setPlayingMsgId(null);
+  }, []);
+
+  const showTtsControlBar = ttsInfo.isSpeaking || ttsInfo.isLoading || ttsInfo.isPaused || Boolean(playingMsgId);
 
   // Export full conversation as Markdown
   const handleExportChat = () => {
@@ -4751,21 +4804,25 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                         <button
                           onClick={() => handleVoicePlay(msgId, textContent, 'Charon')}
                           className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                            playingMsgId === msgId && (ttsInfo.isSpeaking || ttsInfo.isLoading)
+                            playingMsgId === msgId && (ttsInfo.isSpeaking || ttsInfo.isLoading || ttsInfo.isPaused)
                               ? 'text-amber-600 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60'
                               : isLight
                               ? 'text-slate-400 hover:text-amber-600 hover:bg-slate-100'
                               : 'text-white/65 hover:text-amber-300 hover:bg-white/10'
                           }`}
                           title={
-                            playingMsgId === msgId && ttsInfo.isLoading
+                            playingMsgId === msgId && ttsInfo.isPaused
+                              ? '눌러서 이어듣기'
+                              : playingMsgId === msgId && ttsInfo.isLoading
                               ? '음성 준비 중...'
                               : playingMsgId === msgId && ttsInfo.isSpeaking
                               ? '음성 멈추기'
                               : '음성으로 듣기'
                           }
                         >
-                          {playingMsgId === msgId && ttsInfo.isLoading ? (
+                          {playingMsgId === msgId && ttsInfo.isPaused ? (
+                            <Play size={14} className="fill-current" />
+                          ) : playingMsgId === msgId && ttsInfo.isLoading ? (
                             <Loader2 size={14} className="animate-spin text-amber-600" />
                           ) : playingMsgId === msgId && ttsInfo.isSpeaking ? (
                             <VolumeX size={14} className="animate-pulse" />
@@ -4992,45 +5049,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             : 'bg-slate-950/88 border-white/10 text-white'
         }`}
       >
-        {/* 🔊 실시간 루시 음성 재생 바 (현재 말하는 중일 때 즉시 멈춤 지원) */}
-        <AnimatePresence>
-          {(ttsInfo.isSpeaking || ttsInfo.isLoading) && (
-            <motion.div
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 6 }}
-              className="lucy-voice-status lucy-tts-caption flex items-center justify-between px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-amber-500/15 via-yellow-500/20 to-amber-500/15 border border-amber-300/80 dark:border-amber-500/40 rounded-lg sm:rounded-xl text-[10px] sm:text-xs text-amber-950 dark:text-white shadow-xs"
-            >
-              <div className="flex items-center gap-1.5 min-w-0">
-                {ttsInfo.isLoading ? (
-                  <Loader2 size={11} className="animate-spin text-amber-600 dark:text-amber-400 shrink-0" />
-                ) : (
-                  <Volume2 size={11} className="text-amber-600 dark:text-amber-400 animate-pulse shrink-0" />
-                )}
-                <span className={`font-bold text-[10px] sm:text-[11px] shrink-0 ${isLight ? 'text-amber-950' : 'text-white'}`}>
-                  {ttsInfo.isLoading ? '루시 음성 준비 중...' : '루시 음성 안내 중'}
-                </span>
-                {ttsInfo.activeText && ttsInfo.activeText !== '__CONVERSATION__' && (
-                  <span className={`text-[9px] sm:text-[10px] truncate max-w-[170px] sm:max-w-[340px] ${isLight ? 'text-amber-900/70' : 'text-white/85'}`}>
-                    "{ttsInfo.activeText.slice(0, 30)}..."
-                  </span>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  stopTTS();
-                  setPlayingMsgId(null);
-                }}
-                className="flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-600 hover:bg-amber-700 text-white rounded-md font-bold text-[9px] cursor-pointer active:scale-95 transition-all shadow-2xs shrink-0 ml-1.5"
-                title="음성 즉시 중지"
-              >
-                <Square size={8} className="fill-current" />
-                <span>중지</span>
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* 🔊 낭독 상태 · 일시정지 · 멈춤은 입력창 위 플로팅 컨트롤 바(LucyTtsControlBar)가 맡는다 */}
 
         <div className="lucy-input-stack w-full min-w-0 max-w-full flex flex-col gap-1 overflow-x-hidden">
           {/* Image Attachment Preview */}
@@ -5546,6 +5565,21 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
           </div>
         </div>
       </footer>
+
+        {/* 🔊 음성 낭독 플로팅 컨트롤: 스크롤 위치와 상관없이 일시정지·이어듣기·멈춤 */}
+        <LucyTtsControlBar
+          visible={showTtsControlBar}
+          isLight={isLight}
+          isSpeaking={ttsInfo.isSpeaking}
+          isLoading={ttsInfo.isLoading}
+          isPaused={ttsInfo.isPaused}
+          sentence={ttsInfo.activeSentence || (ttsInfo.activeText && ttsInfo.activeText !== '__CONVERSATION__' ? ttsInfo.activeText : null)}
+          sentenceIndex={ttsInfo.sentenceIndex}
+          sentenceTotal={ttsInfo.sentenceTotal}
+          bottomOffset={(ttsBarFooterHeight || 96) + 8}
+          onTogglePause={handleTtsTogglePause}
+          onStop={handleTtsStopAll}
+        />
         </div>
       </div>
 
@@ -5622,7 +5656,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         onResume={() => resumeLucyAutoScroll('smooth')}
         remainingSeconds={lucyRemainingSeconds}
         fixed
-        className="!bottom-[calc(var(--sidebar-footer-height,var(--lucy-footer-height,140px))+12px)] sm:!bottom-[calc(var(--sidebar-footer-height,var(--lucy-footer-height,140px))+16px)]"
+        className={showTtsControlBar
+          ? "!bottom-[calc(var(--sidebar-footer-height,var(--lucy-footer-height,140px))+60px)] sm:!bottom-[calc(var(--sidebar-footer-height,var(--lucy-footer-height,140px))+64px)]"
+          : "!bottom-[calc(var(--sidebar-footer-height,var(--lucy-footer-height,140px))+12px)] sm:!bottom-[calc(var(--sidebar-footer-height,var(--lucy-footer-height,140px))+16px)]"}
       />
 
       <AnimatePresence>
