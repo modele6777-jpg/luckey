@@ -7878,11 +7878,11 @@ test('Jean-Paul Sartre Existentialism Engine: calculates Existence Precedes Esse
   assert(rep.badFaithOvercomingAuthenticityScore >= 0 && rep.badFaithOvercomingAuthenticityScore <= 100);
   assert(rep.existentialAnguishLucidityScore >= 0 && rep.existentialAnguishLucidityScore <= 100);
   assert(rep.engagementSolidarityActionIndex >= 0 && rep.engagementSolidarityActionIndex <= 100);
-  assert(rep.activeSartreTheme.themeTitleKo.length > 0);
+  assert(rep.activeSartreTheme.themeTitleKo.length > 0 && rep.sartreCrossAxis.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatJeanPaulSartreExistentialismPrompt(rep);
   assert(prompt.includes('장 폴 사르트르 《존재와 무》 실존적 자유 & 앙가주망 관점'));
-  assert(prompt.includes(rep.activeSartreTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeSartreTheme.themeTitleKo) && prompt.includes(rep.sartreCrossAxis));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
 
@@ -8620,13 +8620,13 @@ test('Michel de Montaigne Essays Engine: calculates Epistemic Humility, Candid S
   assert(rep.toleranceMiddleWayPrudenceIndex >= 0 && rep.toleranceMiddleWayPrudenceIndex <= 100);
   assert(rep.humanConditionAcceptanceScore >= 0 && rep.humanConditionAcceptanceScore <= 100);
   assert(rep.innerFreedomSanctuaryIndex >= 0 && rep.innerFreedomSanctuaryIndex <= 100);
-  assert(rep.activeMontaigneTheme.themeTitleKo.length > 0);
+  assert(rep.activeMontaigneTheme.themeTitleKo.length > 0 && rep.montaigneCrossAxis.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.montaigneSynthesisMatrix?.integratedAction));
   const prompt = formatFrenchMichelDeMontaigneEssaysPrompt(rep);
   assert(prompt.includes('미셸 드 몽테뉴 《수상록(Les Essais)》 "내가 무엇을 아는가" 지혜 지표'));
-  assert(prompt.includes(rep.activeMontaigneTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeMontaigneTheme.themeTitleKo) && prompt.includes(rep.montaigneCrossAxis));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -9028,11 +9028,11 @@ test('Maurice Merleau-Ponty Embodied Phenomenology Engine: calculates Body-Subje
   assert(rep.phenomenologicalGroundingResilienceScore >= 0 && rep.phenomenologicalGroundingResilienceScore <= 100);
   assert(rep.activePontyTheme.themeTitleKo.length > 0);
   assert(rep.companionPontyTheme.themeKey !== rep.activePontyTheme.themeKey);
-  assert(rep.embodiedPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert(rep.embodiedPhase.length > 0 && rep.pontyCrossAxis.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatFrenchMauriceMerleauPontyEmbodiedPhenomenologyPrompt(rep);
   assert(prompt.includes('모리스 메를로퐁티 《지각의 현상학·눈과 마음》 신체-주체 및 원초적 지각 성찰 가이드'));
-  assert(prompt.includes(rep.activePontyTheme.themeTitleKo) && prompt.includes(rep.companionPontyTheme.themeTitleKo));
+  assert(prompt.includes(rep.activePontyTheme.themeTitleKo) && prompt.includes(rep.companionPontyTheme.themeTitleKo) && prompt.includes(rep.pontyCrossAxis));
   assert(prompt.includes(rep.embodiedPhase) && prompt.includes(rep.shadowWarning));
   assert.ok(rep.calculatedAtKst.includes('KST'));
   assert.ok(prompt.includes('교차 매트릭스'));
