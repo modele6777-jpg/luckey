@@ -54,6 +54,7 @@ import {
 } from '../utils/suggestions';
 import { hasUnlockedPinToday, markPinUnlockedToday, clearPinUnlockedToday } from '../lib/dailyCache';
 import { PERSONA_GREETINGS, PRISM_VOICE_RULES, LUCY_CHAT_VOICE_RULES, resolveLucyResponseLength, LUCY_RESPONSE_PROFILES } from '../lib/copyTone';
+import { requiresBasicAndDeepForTurn } from '../lib/lucyTurnMode';
 import { isMobileDevice, isPerfReduced, isStandalonePWA } from '../lib/perfMode';
 import { validateAndExtractKeyExercise } from '../lib/keyExercisesCatalog';
 import { resetLucyContextOnTaskSwitch } from '../lib/lucyChatUtils';
@@ -2097,9 +2098,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       options?.extraSystemContext?.includes('선별된 도구별 맞춤 풀이 가이드');
     const activeThemeList = (options?.channels || (options?.channel ? [options.channel] : [])) as SevenThemeChannel[];
     const isMasterCall = Boolean(isLucyPro);
-    const requireBasicAndDeep = options?.voiceTurn
-      ? false
-      : sourcePersona === 'lucy' || isMasterCall || Boolean(options?.requireBasicAndDeep);
+    // 💬 일반 루시 채팅(수다모드)은 기초·심층 운명학 엔진을 돌리지 않는다.
+    //    점술모드(isMasterCall)나 도구 사용을 명시한 호출만 엔진을 가동한다.
+    const requireBasicAndDeep = requiresBasicAndDeepForTurn({
+      persona: sourcePersona,
+      optionMode: options?.mode,
+      channelCount: activeThemeList.length,
+      requireBasicAndDeep: Boolean(options?.requireBasicAndDeep),
+      isMasterCall,
+      voiceTurn: Boolean(options?.voiceTurn),
+    });
     const isCasualMode =
       !options?.tarotCardMarkers && !requireBasicAndDeep && (
         options?.mode === 'casual' ||
