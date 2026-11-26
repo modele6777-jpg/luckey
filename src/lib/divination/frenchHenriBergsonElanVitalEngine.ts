@@ -8,12 +8,12 @@
  * 4. 창조적 자유(Liberté créatrice): 우리의 행동이 인격 전체로부터 흘러나와 스스로의 독창적 삶을 조각해 나가는 완전한 실존적 자유.
  * 5. 열린 도덕과 생명성(Société ouverte): 폐쇄된 집단의 배타적 경계를 허물고, 모든 살아있는 존재를 향해 무한히 확장되는 열린 영성과 생명적 연대.
  *
- * @version LUCKEY-HENRI-BERGSON-ELAN-VITAL-v2.3.0
+ * @version LUCKEY-HENRI-BERGSON-ELAN-VITAL-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_HENRI_BERGSON_VERSION = 'LUCKEY-HENRI-BERGSON-ELAN-VITAL-v2.3.0';
+export const FRENCH_HENRI_BERGSON_VERSION = 'LUCKEY-HENRI-BERGSON-ELAN-VITAL-v2.4.0';
 
 export type BergsonQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -45,6 +45,7 @@ export interface HenriBergsonElanVitalResult {
   calculatedAtKst: string;
   questionTopic: BergsonQuestionTopic;
   durationPhase: string;
+  bergsonCrossAxis: string;
   shadowWarning: string;
   temporalBergsonRhythm: BergsonTemporalRhythm;
   // 5대 핵심 베르그송 생명·시간 지표 (내부 호환용 보존, 프롬프트 비노출)
@@ -324,6 +325,7 @@ export function calculateHenriBergsonElanVital(
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const kstTimeLabel = `${temporalBergsonRhythm.kstDateLabel} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
+  const bergsonCrossAxis = `${activeBergsonTheme.themeTitleFrench.split('(')[0].trim()} × ${companionBergsonTheme.themeTitleFrench.split('(')[0].trim()} (${temporalBergsonRhythm.timeBand})`;
   const bergsonSynthesisMatrix = {
     coreInsight: `${activeBergsonTheme.themeTitleKo} (동반: ${companionBergsonTheme.themeTitleKo})`,
     recommendedAction: `${practiceGuidance} (${durationPhase})`,
@@ -335,6 +337,7 @@ export function calculateHenriBergsonElanVital(
     calculatedAtKst: kstTimeLabel,
     questionTopic,
     durationPhase,
+    bergsonCrossAxis,
     shadowWarning,
     temporalBergsonRhythm,
     pureDurationContinuityScore,
@@ -380,6 +383,7 @@ export function formatHenriBergsonElanVitalPrompt(res: HenriBergsonElanVitalResu
     `- 맥락 맞춤 가이드: ${res.practiceGuidance}`,
     `- 오늘의 실천 의례(${res.questionTopic}): ${res.dailyPracticeRitual}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 베르그송 교차 축: ${res.bergsonCrossAxis}`,
     `- 교차 매트릭스: 핵심(${res.bergsonSynthesisMatrix.coreInsight}) | 실행(${res.bergsonSynthesisMatrix.recommendedAction}) | 주의(${res.bergsonSynthesisMatrix.cautionNotice})`,
     `- 핵심 경구: "${res.focalBergsonAphorism.aphorismKo}"`,
     `- 원전 출처: "${res.focalBergsonAphorism.aphorismFrench}" [${res.focalBergsonAphorism.sourceContext}]`,

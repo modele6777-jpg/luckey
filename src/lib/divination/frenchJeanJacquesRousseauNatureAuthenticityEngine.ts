@@ -10,12 +10,12 @@
  * 4. 일반의지(Volonté Générale): 개별적인 사욕과 편협한 에고를 넘어, 모두의 공공선과 인류적 조화를 지향하는 고결한 공감과 연대.
  * 5. 자율적 주체성과 내적 자유: 억압적 관습의 사슬을 자각하고 영혼의 주권자로서 진정한 자율성을 꽃피우는 성숙.
  *
- * @version LUCKEY-JJ-ROUSSEAU-NATURE-v2.3.0
+ * @version LUCKEY-JJ-ROUSSEAU-NATURE-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_JJ_ROUSSEAU_VERSION = 'LUCKEY-JJ-ROUSSEAU-NATURE-v2.3.0';
+export const FRENCH_JJ_ROUSSEAU_VERSION = 'LUCKEY-JJ-ROUSSEAU-NATURE-v2.4.0';
 
 export type RousseauQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -61,6 +61,7 @@ export interface JeanJacquesRousseauNatureAuthenticityResult {
   };
   questionTopic: RousseauQuestionTopic;
   naturePhase: string;
+  rousseauCrossAxis: string;
   shadowWarning: string;
   temporalRhythm: RousseauTemporalRhythm;
   questionContextGuide: string;
@@ -273,6 +274,7 @@ export function calculateFrenchJeanJacquesRousseauNatureAuthenticity(
 
   const kst = new Date(targetDate.getTime() + 9 * 60 * 60 * 1000);
   const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
+  const rousseauCrossAxis = `${activeRousseauTheme.themeTitleKo.split('-')[0].trim()} × ${companionRousseauTheme.themeTitleKo.split('-')[0].trim()} (${temporalRhythm.kstSlot})`;
   const rousseauSynthesisMatrix = {
     coreInsight: `${activeRousseauTheme.themeTitleKo} (동반: ${companionRousseauTheme.themeTitleKo})`,
     recommendedAction: `${topicPack.guide} (${naturePhase})`,
@@ -296,6 +298,7 @@ export function calculateFrenchJeanJacquesRousseauNatureAuthenticity(
     },
     questionTopic,
     naturePhase,
+    rousseauCrossAxis,
     shadowWarning,
     temporalRhythm,
     questionContextGuide: `${topicPack.guide} (동반 테마: ${companionRousseauTheme.themeTitleKo})`,
@@ -330,6 +333,7 @@ export function formatJeanJacquesRousseauNatureAuthenticityPrompt(res: JeanJacqu
     `- 구체적 실천 지침: ${res.focalRousseauAphorism.actionGuidance}`,
     `- 오늘의 진정성 의례: ${res.dailyPracticeRitual}`,
     `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 루소 교차 축: ${res.rousseauCrossAxis}`,
     `- 교차 매트릭스: 핵심(${res.rousseauSynthesisMatrix.coreInsight}) | 실행(${res.rousseauSynthesisMatrix.recommendedAction}) | 주의(${res.rousseauSynthesisMatrix.cautionNotice})`,
     `- 종합 통찰 권면: ${res.rousseauComprehensiveGuidance.philosophicalCounsel}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
