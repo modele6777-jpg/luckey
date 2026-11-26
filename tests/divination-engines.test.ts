@@ -3697,9 +3697,9 @@ test('Five Emotions Pulse Engine: calculates five elements emotional harmony and
   assert(rep.temporalPulseRhythm.organMeridianWindow.length > 0);
   assert(rep.pulseSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.pulseCrossAxis.length > 0);
   const prompt = formatFiveEmotionsPulsePrompt(rep);
-  assert(prompt.includes('오행 칠정'));
+  assert(prompt.includes('오행 칠정') && prompt.includes(rep.pulseCrossAxis));
   assert(prompt.includes(rep.dominantEmotion));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
@@ -4037,9 +4037,9 @@ test('Feng Shui Eight Mansions Engine: calculates kua number, east/west mansion 
   assert(rep.temporalFengShuiRhythm.sunDirectionWindow.length > 0);
   assert(rep.fengShuiSynthesisMatrix.coreInsight.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
-  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.fengShuiCrossAxis.length > 0);
   const prompt = formatFengShuiEightMansionsPrompt(rep);
-  assert(prompt.includes('동양 정통 풍수 8택(八宅) 공간 에너지'));
+  assert(prompt.includes('동양 정통 풍수 8택(八宅) 공간 에너지') && prompt.includes(rep.fengShuiCrossAxis));
   assert(prompt.includes(rep.kuaTrigram));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
@@ -8824,11 +8824,11 @@ test('Gilles Deleuze Rhizome and Becoming Engine: calculates Rhizomatic Connecti
   assert(rep.desiringProductionLiberationResilienceScore >= 0 && rep.desiringProductionLiberationResilienceScore <= 100);
   assert(rep.activeDeleuzeTheme.themeTitleKo.length > 0);
   assert(rep.companionDeleuzeTheme.themeKey !== rep.activeDeleuzeTheme.themeKey);
-  assert(rep.becomingPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert(rep.becomingPhase.length > 0 && rep.deleuzeCrossAxis.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatFrenchGillesDeleuzeRhizomeBecomingPrompt(rep);
   assert(prompt.includes('들뢰즈 《천 개의 고원·차이와 반복》 리좀·탈영토화·생성 성찰 가이드'));
-  assert(prompt.includes(rep.activeDeleuzeTheme.themeTitleKo) && prompt.includes(rep.companionDeleuzeTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeDeleuzeTheme.themeTitleKo) && prompt.includes(rep.companionDeleuzeTheme.themeTitleKo) && prompt.includes(rep.deleuzeCrossAxis));
   assert(prompt.includes(rep.becomingPhase) && prompt.includes(rep.shadowWarning));
   assert.ok(rep.calculatedAtKst.includes('KST'));
   assert.ok(prompt.includes('교차 매트릭스'));
