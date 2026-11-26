@@ -9,12 +9,12 @@
  * 4. 페르소나(Persona) 유연성: 사회적 적응을 위한 가면(Persona)과 진정한 내적 자기를 혼동하지 않고 유연하게 상황을 조율하는 경계 지혜.
  * 5. 동시성(Synchronicity): 물리적 인과율을 넘어 내면의 심리 상태와 외부 세계의 사건이 깊은 상징적 의미로 연결되는 초인과적 유의미한 일치 직관.
  *
- * @version LUCKEY-SWISS-JUNG-INDIVIDUATION-v2.1.0
+ * @version LUCKEY-SWISS-JUNG-INDIVIDUATION-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SWISS_JUNG_INDIVIDUATION_VERSION = 'LUCKEY-SWISS-JUNG-INDIVIDUATION-v2.3.0';
+export const SWISS_JUNG_INDIVIDUATION_VERSION = 'LUCKEY-SWISS-JUNG-INDIVIDUATION-v2.4.0';
 
 export interface JungArchetypeTheme {
   themeKey: string;
@@ -54,6 +54,7 @@ export interface JungIndividuationArchetypeResult {
     integratedAction: string;
   };
   ritualAction: string;
+  jungCrossAxis: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
@@ -186,6 +187,7 @@ export function calculateJungIndividuationArchetype(
     `${focalJungAphorism.practicalAction}`;
 
   const calculatedAtKst = formatJungKstTimestamp(now);
+  const jungCrossAxis = `${activeJungTheme.themeTitleKo} × ${focalJungAphorism.archetypeDimension}`;
   const jungSynthesisMatrix = {
     dominantTension: `${activeJungTheme.themeTitleKo} ↔ ${focalJungAphorism.archetypeDimension}`,
     alignmentState: `${activeJungTheme.themeTitleGerman} · 개성화 통합`,
@@ -215,6 +217,7 @@ export function calculateJungIndividuationArchetype(
     },
     jungSynthesisMatrix,
     ritualAction,
+    jungCrossAxis,
     reflectionFocus,
     reflectiveQuestion,
     interpretiveBoundary,
@@ -239,6 +242,7 @@ export function formatJungIndividuationArchetypePrompt(res: JungIndividuationArc
     );
   }
   lines.push(`- 실천 의례: ${res.ritualAction}`);
+  lines.push(`- 카를 융 교차 축: ${res.jungCrossAxis}`);
   lines.push(`- 성찰 초점: ${res.reflectionFocus}`);
   lines.push(`- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`);
   lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
