@@ -5,7 +5,6 @@ import { setLucyMasterMode } from "@/lib/lucyMasterMode";
 import { requestLucyMicrophone, lucyMicrophonePermissionMessage } from '@/lib/lucyMicrophone';
 import { OrbSessionMetricsView } from './OrbSessionMetricsView';
 import { createOrbSessionMetrics, type OrbSessionMetrics } from '@/lib/orb/orbSessionMetrics';
-import { LucyConsultMemorySettings } from './LucyConsultMemorySettings';
 import { buildLucyConsultMemoryBrief } from '@/lib/lucyConsultMemory';
 import { PageGuideButton } from '@/components/guide/PageGuide';
 import { getPageGuide } from '@/lib/pageGuides';
@@ -1432,7 +1431,6 @@ export function LucyOrbCounsel({
             >
               {bedOn ? '배경음 켜짐' : '배경음 꺼짐'}
             </button>
-            <LucyConsultMemorySettings key={account} account={account} mode="voice" onChange={refreshMemory} />
             <PageGuideButton guide={getPageGuide('orb')} />
           </div>
         </header>
