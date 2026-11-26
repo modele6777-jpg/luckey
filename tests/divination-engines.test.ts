@@ -26,6 +26,8 @@ import { calculateNobleNetwork, formatNobleNetworkPrompt, NOBLE_NETWORK_VERSION 
 import { calculateMonthlyFlow, formatMonthlyFlowPrompt, MONTHLY_FLOW_ENGINE_VERSION } from '../src/lib/divination/monthlyFlowEngine';
 import { calculateVoicePersona, formatVoicePersonaPrompt, VOICE_PERSONA_VERSION } from '../src/lib/divination/voicePersonaEngine';
 import { calculateContractShield, formatContractShieldPrompt, CONTRACT_SHIELD_VERSION } from '../src/lib/divination/contractShieldEngine';
+import { calculateChronoTransit, formatChronoTransitPrompt, CHRONO_TRANSIT_VERSION } from '../src/lib/divination/chronoTransitEngine';
+import { calculateContextualSynastry, formatContextualSynastryPrompt, CONTEXTUAL_SYNASTRY_VERSION } from '../src/lib/divination/contextualSynastryEngine';
 import { calculateLifeDomainWheel, formatLifeDomainWheelPrompt, LIFE_DOMAIN_WHEEL_VERSION } from '../src/lib/divination/lifeDomainWheelEngine';
 import { calculateEnergeticPrescription, formatEnergeticPrescriptionPrompt, ENERGETIC_PRESCRIPTION_ENGINE_VERSION } from '../src/lib/divination/energeticPrescriptionEngine';
 import { calculateInstantDecision, formatInstantDecisionPrompt, INSTANT_DECISION_ENGINE_VERSION } from '../src/lib/divination/instantDecisionEngine';
@@ -2663,12 +2665,12 @@ test('Contract Shield Engine: 계약 분쟁 리스크 및 5대 쉴드 체크리�
   assert(res.shieldChecklist.length === 5);
   assert(res.ichingSongWisdom.hexagram.length > 0);
   assert(res.calculatedAtKst.includes('KST'));
-  assert(res.temporalShieldRhythm.negotiationWindow.length > 0);
+  assert(res.temporalShieldRhythm.negotiationWindow.length > 0 && res.shieldCrossAxis.length > 0);
   assert(res.interpretiveBoundary.length > 0);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatContractShieldPrompt(res);
   assert(prompt.includes(CONTRACT_SHIELD_VERSION));
-  assert(prompt.includes('계약 & 분쟁 경계 기조'));
+  assert(prompt.includes('계약 & 분쟁 경계 기조') && prompt.includes(res.shieldCrossAxis));
   assert(prompt.includes('5대 계약 쉴드 체크리스트'));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
@@ -16047,4 +16049,26 @@ test('Menorca Talayot Stone Balance engine: stance, +09:00 KST, and interpretive
   const prompt = formatMenorcaTalayotPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('메노르카·탈라요트') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionStance) && prompt.includes('과잉 경계'));
+});
+
+test('Chrono-Transit Engine: calculates real-time pillars, western transits, and chronoCrossAxis', () => {
+  const rep = calculateChronoTransit({ profile, targetDate: new Date('2026-11-26T06:20:00Z'), question: '오늘 일진과 행성 흐름은 어떤가요?' });
+  assert.equal(rep.engineVersion, CHRONO_TRANSIT_VERSION);
+  assert.ok(rep.easternPillars.day.koreanName.length > 0 && rep.westernTransits.transits.length === 10);
+  assert.ok(rep.chronoCrossAxis.length > 0 && rep.temporalChronoRhythm.kstTimeLabel.includes('+09:00'));
+  const prompt = formatChronoTransitPrompt(rep);
+  assert.ok(prompt.includes(CHRONO_TRANSIT_VERSION) && prompt.includes(rep.chronoCrossAxis));
+});
+
+test('Contextual Synastry Engine: detects relationship context and computes synastryCrossAxis', () => {
+  const rep = calculateContextualSynastry({
+    questionText: '여자친구와 주말에 진지한 대화를 나누려는데 어떻게 풀면 좋을까요?',
+    myProfile: profile,
+    targetDate: new Date('2026-11-26T06:20:00Z'),
+  });
+  assert.equal(rep.engineVersion, CONTEXTUAL_SYNASTRY_VERSION);
+  assert.equal(rep.hasRelationshipContext, true);
+  assert.ok(rep.synastryCrossAxis.length > 0 && rep.calculatedAtKst.includes('+09:00'));
+  const prompt = formatContextualSynastryPrompt(rep);
+  assert.ok(prompt.includes(CONTEXTUAL_SYNASTRY_VERSION) && prompt.includes(rep.synastryCrossAxis));
 });
