@@ -5026,6 +5026,7 @@ test('Vedic Mahavakya Consciousness Engine: calculates qualitative Brahman conte
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.mahavakyaSynthesisMatrix?.integratedAction));
   assert.equal(rep.questionFocus, 'relationship');
+  assert(rep.mahavakyaCrossAxis.includes('relationship'));
   assert(rep.awarenessPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.brahmanRealizationScore >= 0 && rep.brahmanRealizationScore <= 100);
   assert(rep.innerSohamResonance >= 0 && rep.innerSohamResonance <= 100);
@@ -5038,6 +5039,7 @@ test('Vedic Mahavakya Consciousness Engine: calculates qualitative Brahman conte
   assert(prompt.includes('고대 인도 베다 우파니샤드 4대 마하바키야(Mahāvākya) 대선언 실측 데이터'));
   assert(prompt.includes(rep.activeMahavakya.sanskritPhrase));
   assert(prompt.includes('보조 교차 대선언'));
+  assert(prompt.includes(rep.mahavakyaCrossAxis));
   assert(prompt.includes('의식 각성 국면') && prompt.includes('과잉 경계'));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
@@ -13723,15 +13725,16 @@ test('Mapuche Kultrun Cosmic Balance engine: directions, +09:00 KST, and interpr
 
 test('Melanesian Sand Drawing Pattern engine: motifs, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMelanesianSandDrawingPattern({ profile, now: new Date('2026-11-20T05:40:00Z'), question: '흩어진 고민을 하나로 잇고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MELANESIAN-SAND-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-MELANESIAN-SAND-v2.4.0');
+  assert.equal(rep.questionTopic, '연결·매듭');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.bridgingMotif.name !== rep.primaryMotif.name);
-  assert.ok(rep.sandGridAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.sandGridAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMelanesianSandPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('모래 그림') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.bridgingMotif.name) && prompt.includes(rep.sandGridAxis));
+  assert.ok(prompt.includes('모래 그림') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.bridgingMotif.name) && prompt.includes(rep.sandGridAxis) && prompt.includes(rep.topicBalanceHint));
 });
 
 test('Etruscan Templum Sky Division engine: sectors, +09:00 KST, and interpretive boundary', () => {
@@ -14313,15 +14316,16 @@ test('Kurdish Newroz Zagros Renewal engine: symbol, +09:00 KST, and interpretive
 
 test('Sindhi Bhitai Indus Melody engine: sur, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSindhiBhitaiIndusMelody({ profile, now: new Date('2026-11-20T07:42:00Z'), question: '내 마음의 진실한 선율을 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SINDHI-BHITAI-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SINDHI-BHITAI-v2.4.0');
+  assert.equal(rep.questionCategory, '진실·소박');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSur !== rep.surMelody);
-  assert.ok(rep.questionTopic.length > 0 && rep.indusFlowAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.questionTopic.length > 0 && rep.indusFlowAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSindhiBhitaiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('신드') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSur) && prompt.includes(rep.indusFlowAxis));
+  assert.ok(prompt.includes('신드') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSur) && prompt.includes(rep.indusFlowAxis) && prompt.includes(rep.topicBalanceHint));
 });
 
 test('Corsican Paghjella Maquis Harmony engine: voice, +09:00 KST, and interpretive boundary', () => {

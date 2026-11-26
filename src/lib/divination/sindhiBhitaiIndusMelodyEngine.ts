@@ -4,9 +4,11 @@ export interface SindhiBhitaiResult {
   engineVersion: string;
   calculatedAtKst: string;
   questionTopic: string;
+  questionCategory: '항해·신뢰' | '해방·표현' | '진실·소박' | '포용·정성';
   surMelody: string;
   companionSur: string;
   indusFlowAxis: string;
+  topicBalanceHint: string;
   sindhiInsight: string;
   indusTone: string;
   reflectionFocus: string;
@@ -22,6 +24,20 @@ const INDUS_FLOW_AXES = [
   '아즈락 반복 염색 · 조바심 없이 겹 쌓기',
   '타르 사막 이슬 · 겉치레 내려놓기',
 ] as const;
+
+const TOPIC_BALANCE_HINTS: Record<SindhiBhitaiResult['questionCategory'], string> = {
+  '항해·신뢰': '수르 사만디의 닻처럼 바깥 바람을 통제하려 애쓰기보다 지금 내 손에 있는 방향타를 먼저 점검하세요.',
+  '해방·표현': '수르 카파로의 단부로 선율처럼 묵힌 답답함을 글이나 말로 흘려보내되, 감정의 과잉 소모는 경계하세요.',
+  '진실·소박': '수르 마루이의 저녁 이슬처럼 남의 비교를 끄고 내 마음이 진짜 편하고 떳떳한 자리를 고르세요.',
+  '포용·정성': '아즈락의 반복 염색처럼 곁의 다른 결을 한 호흡 품어 안으며 오늘 보탤 정성 한 번에 집중하세요.',
+};
+
+function classifySindhiCategory(q: string): SindhiBhitaiResult['questionCategory'] {
+  if (/갈등|관계|사람|상대|정성|인내|기다림/.test(q)) return '포용·정성';
+  if (/표현|답답|감정|노래|글|해방|스트레스/.test(q)) return '해방·표현';
+  if (/방향|결정|선택|바람|불안|신뢰|항해/.test(q)) return '항해·신뢰';
+  return '진실·소박';
+}
 
 const SURS = [
   {
@@ -96,14 +112,18 @@ export function calculateSindhiBhitaiIndusMelody(params: {
   const questionTopic = trimmedQ
     ? trimmedQ.slice(0, 36)
     : '바깥 바람 속에서도 내 안의 맑은 선율 지키기';
+  const questionCategory = classifySindhiCategory(trimmedQ || questionTopic);
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionCategory];
 
   return {
-    engineVersion: 'LUCKEY-SINDHI-BHITAI-v2.3.0',
+    engineVersion: 'LUCKEY-SINDHI-BHITAI-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
+    questionCategory,
     surMelody: picked.sur,
     companionSur: companion.sur,
     indusFlowAxis,
+    topicBalanceHint,
     sindhiInsight: `${picked.insight} (동반 선율: ${companion.sur})`,
     indusTone: picked.tone,
     reflectionFocus: `질문 맥락('${questionTopic}')에서 신드 시인 샤 압둘 라티프 비타이의 '${picked.sur}'와 인더스 흐름 축('${indusFlowAxis}')을 함께 살피며, 바깥의 바람이 불 때도 내 안의 맑은 선율과 진실을 잃지 마세요.`,
@@ -118,7 +138,8 @@ export function formatSindhiBhitaiPrompt(res: SindhiBhitaiResult): string {
   return [
     `[신드 비타이·인더스 선율 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
-    `- 질문 맥락: ${res.questionTopic}`,
+    `- 질문 맥락: ${res.questionTopic} (분류: ${res.questionCategory})`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 선율(Sur): ${res.surMelody} (${res.indusTone})`,
     `- 동반 선율: ${res.companionSur}`,
     `- 인더스 흐름 축: ${res.indusFlowAxis}`,
