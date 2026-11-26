@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const DESTINY_SYNASTRY_ECHO_VERSION = 'LUCKEY-ECHO-v2.3.0';
+export const DESTINY_SYNASTRY_ECHO_VERSION = 'LUCKEY-ECHO-v2.4.0';
 
 export type KarmicGravityType = 
   | '카르마 거울형 (Karmic Mirror · 자아 투사와 결핍 치유)'
@@ -29,6 +29,7 @@ export interface DestinySynastryEchoReport {
   calculatedAt: string;
   calculatedAtKst: string;
   gravityType: KarmicGravityType;
+  echoCrossAxis: string;
   karmicEchoScore: number;         // 운명적 공명 지수 (내부 호환용, 프롬프트 비노출)
   soulConnectionDepth: number;     // 영혼 차원 연결 깊이 (내부 호환용, 프롬프트 비노출)
   relationshipDynamics: {
@@ -188,9 +189,12 @@ export function runDestinySynastryEchoEngine(
     ? `‘${q}’ 관계 국면에서 내가 먼저 내려놓을 무의식적 투사(${blindspotVulnerability})와 건넬 말(${deescalationPhrase})은 무엇입니까?`
     : `[${gravityType}] 인연의 흐름 속에서 오늘 나의 경계와 진심을 조율할 첫 실천은 무엇입니까?`;
 
+  const echoCrossAxis = `${gravityType.split(' ')[0]} · ${echoTone} (${temporalEchoRhythm.resonanceWindow.split('—')[0].trim()})`;
+
   const synthesisPromptGuidance = `[LUCKEY 다차원 운명 공명 에코 & 카르마적 인연 중력 ${DESTINY_SYNASTRY_ECHO_VERSION}]
 - 연산 시각: ${temporalEchoRhythm.kstTimeLabel}
 - 인연 중력 아키타입: [${gravityType}]
+- 에코 교차 축: ${echoCrossAxis}
 - 공명 기조: ${echoTone} / 연결 깊이 기조: ${depthTone}
 - 핵심 인력 요인: ${magneticPullFactor}
 - 무의식적 갈등 취약점: ${blindspotVulnerability}
@@ -210,6 +214,7 @@ export function runDestinySynastryEchoEngine(
     calculatedAt: targetDate.toISOString(),
     calculatedAtKst: temporalEchoRhythm.kstTimeLabel,
     gravityType,
+    echoCrossAxis,
     karmicEchoScore,
     soulConnectionDepth,
     relationshipDynamics: {
