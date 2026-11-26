@@ -15,7 +15,7 @@
 import type { UserProfile } from '../sharedState';
 import { parseBirthTime } from '../birthDateTime';
 
-export const ICHING_384YAO_ENGINE_VERSION = 'LUCKEY-ICHING-384YAO-v2.3.0';
+export const ICHING_384YAO_ENGINE_VERSION = 'LUCKEY-ICHING-384YAO-v2.4.0';
 
 export interface HexagramSimple {
   number: number;
@@ -49,6 +49,11 @@ export interface Iching384YaoReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  yaoCrossAxis: {
+    originalToTransformed: string;
+    nuclearInversePair: string;
+    timingActionAxis: string;
   };
   interpretiveBoundary: string;
   ritualAction: string;
@@ -168,6 +173,11 @@ export function calculateIching384Yao(params: {
   const reflectiveQuestion = qClean
     ? `지금 "${qClean}" 앞에서 본괘 ${original.nameKo}·${YAO_TITLES[changingYaoPos - 1]}의 흐름을 '${timeTimingDecision}'의 태도로 풀어내기 위해 오늘 지킬 한 가지 원칙은 무엇입니까?`
     : reflectionFocus;
+  const yaoCrossAxis = {
+    originalToTransformed: `${original.nameKo}(${YAO_TITLES[changingYaoPos - 1]}) → ${transformed.nameKo}`,
+    nuclearInversePair: `호괘 ${nuclear.nameKo} ↔ 착괘 ${inverse.nameKo}`,
+    timingActionAxis: `${timeTimingDecision} · ${yaoInfo.advice}`,
+  };
 
   return {
     engineVersion: ICHING_384YAO_ENGINE_VERSION,
@@ -187,6 +197,7 @@ export function calculateIching384Yao(params: {
     timeTimingDecision,
     hexagramQuadStrategy,
     ichingSynthesisMatrix,
+    yaoCrossAxis,
     ritualAction,
     reflectionFocus,
     reflectiveQuestion,
@@ -196,7 +207,7 @@ export function calculateIching384Yao(params: {
 
 export function formatIching384YaoPrompt(report: Iching384YaoReport): string {
   const matrixBlock = report.ichingSynthesisMatrix
-    ? `\n3. 🧭 [교차 매트릭스]:\n   - 핵심 긴장: ${report.ichingSynthesisMatrix.dominantTension}\n   - 조율 상태: ${report.ichingSynthesisMatrix.alignmentState}\n   - 통합 실천: ${report.ichingSynthesisMatrix.integratedAction}\n`
+    ? `\n3. 🧭 [교차 매트릭스]:\n   - 핵심 긴장: ${report.ichingSynthesisMatrix.dominantTension}\n   - 조율 상태: ${report.ichingSynthesisMatrix.alignmentState}\n   - 통합 실천: ${report.ichingSynthesisMatrix.integratedAction}\n   - 384효 교차 축: ${report.yaoCrossAxis.originalToTransformed} | ${report.yaoCrossAxis.nuclearInversePair} | ${report.yaoCrossAxis.timingActionAxis}\n`
     : '';
   return `[☯️ 주역 384효 동효(動爻) & 착종복잡 4대 변괘 실측 데이터]
 ======================================================================
