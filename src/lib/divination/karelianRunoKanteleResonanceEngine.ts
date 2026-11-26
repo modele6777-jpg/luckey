@@ -7,6 +7,7 @@ export interface KarelianRunoResult {
   runoMotif: string;
   companionMotif: string;
   kanteleChordAxis: string;
+  topicBalanceHint: string;
   kanteleInsight: string;
   forestLakeTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const KARELIAN_SHADOWS = [
   '새벽의 맑은 시선을 핑계로 어제 매듭지어야 했던 책임을 가볍게 넘기지 않도록 살피세요.',
 ];
 
+const KARELIAN_TOPIC_HINTS: Record<KarelianRunoResult['questionTopic'], string> = {
+  '관계·호흡': '내가 말을 먼저 채우기보다 상대의 마지막 문장을 한 박자 곱씹을 때 공명이 깊어집니다.',
+  '일·꾸준함': '당장 눈에 띄는 성과보다 매일 조용히 나이테를 쌓는 루틴 하나를 지키는 편이 오래 갑니다.',
+  '마음·소박함': '수많은 조건을 더 붙이기 전에 지금 손에 쥔 소박한 요소 몇 가지로 충분히 맑은 소리를 낼 수 있습니다.',
+  '공명 전반': '복잡한 꾸밈을 덜어내고 내 안에 남은 진실한 울림에 귀를 기울이면 방향이 선명해집니다.',
+};
+
 function classifyKarelianTopic(q: string): KarelianRunoResult['questionTopic'] {
   if (/관계|호흡|사람|사랑|연애|대화/.test(q)) return '관계·호흡';
   if (/일|직장|진로|꾸준|루틴|성과/.test(q)) return '일·꾸준함';
@@ -102,15 +110,17 @@ export function calculateKarelianRunoKanteleResonance(params: {
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const kanteleChordAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = KARELIAN_TOPIC_HINTS[questionTopic];
   const shadowWarning = KARELIAN_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-KARELIAN-KANTELE-v2.3.0',
+    engineVersion: 'LUCKEY-KARELIAN-KANTELE-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     runoMotif: picked.motif,
     companionMotif: companion.motif,
     kanteleChordAxis,
+    topicBalanceHint,
     kanteleInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     forestLakeTone: picked.tone,
     reflectionFocus: `카렐리야 루노·칸텔레 전통의 '${picked.motif}'와 동반 결 '${companion.motif}'처럼, 복잡한 꾸밈을 덜어내고 내 마음에 남은 진실한 울림에 귀를 기울여 보세요.`,
@@ -126,6 +136,7 @@ export function formatKarelianRunoPrompt(res: KarelianRunoResult): string {
     `[카렐리야 루노·칸텔레 공명 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 공명 축: ${res.kanteleChordAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 루노 상징: ${res.runoMotif} (${res.forestLakeTone})`,
     `- 동반 결: ${res.companionMotif}`,
     `- 중심 통찰: ${res.kanteleInsight}`,

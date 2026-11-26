@@ -13609,10 +13609,10 @@ test('Basque Lauburu & Basajaun Harmony engine: cycle balance, +09:00 KST, and i
 
 test('Ojibwe Seven Grandfather Teachings engine: virtues, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateOjibweSevenGrandfatherTeachings({ profile, now: new Date('2026-11-20T04:40:00Z'), question: '관계에서 중심을 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-OJIBWE-SEVEN-GRANDFATHERS-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-OJIBWE-SEVEN-GRANDFATHERS-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.balancingTeaching.id !== rep.dominantTeaching.id);
-  assert.ok(rep.virtueBalanceAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.virtueBalanceAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('수치적 운세 점수가 아닙니다'));
   const prompt = formatOjibweSevenGrandfatherPrompt(rep);
@@ -14502,10 +14502,10 @@ test('Oromo Gadaa Saffuu Harmony engine: cycle, +09:00 KST, and interpretive bou
 
 test('Karelian Runo Kantele Resonance engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKarelianRunoKanteleResonance({ profile, now: new Date('2026-11-20T08:11:00Z'), question: '내 마음에 남은 소박한 울림을 듣고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KARELIAN-KANTELE-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-KARELIAN-KANTELE-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.runoMotif);
-  assert.ok(rep.kanteleChordAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.kanteleChordAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKarelianRunoPrompt(rep);
@@ -15301,10 +15301,10 @@ test('Palauan Bai Rafter Balance engine: motif, +09:00 KST, and interpretive bou
 
 test('Zimbabwe Great Stone Wall engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateZimbabweGreatStoneWall({ profile, now: new Date('2026-11-20T20:19:00Z'), question: '제 무게로 맞물리는 자리를 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ZIMBABWE-STONE-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ZIMBABWE-STONE-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.zimbabweMotif);
-  assert.ok(rep.stoneLockAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.stoneLockAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatZimbabweStonePrompt(rep);

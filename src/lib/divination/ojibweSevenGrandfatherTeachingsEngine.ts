@@ -27,6 +27,7 @@ export interface OjibweSevenGrandfatherResult {
   balancingTeaching: OjibweGrandfatherTeaching;
   medicineWheelPhase: string;
   virtueBalanceAxis: string;
+  topicBalanceHint: string;
   qualitativeSynthesis: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -128,6 +129,13 @@ function classifyOjibweTopic(q: string): OjibweSevenGrandfatherResult['questionT
   return '덕목 전반';
 }
 
+const OJIBWE_TOPIC_HINTS: Record<OjibweSevenGrandfatherResult['questionTopic'], string> = {
+  '관계·중심': '상대를 바꾸려 애쓰기보다 존중의 경계를 지키면서 내 안의 진심을 부드럽게 건네 보세요.',
+  '일·토대': '당장 눈앞의 박수보다 오래 남을 토대 하나를 묵묵히 다지는 지혜가 힘을 발휘합니다.',
+  '마음·진심': '남의 기대에 맞추려 자신을 과장하거나 줄이지 말고 지금의 한계를 솔직히 인정해 주세요.',
+  '덕목 전반': '일곱 덕목 중 한 가지만 고집하지 말고 동반 덕목으로 균형을 맞출 때 길이 열립니다.',
+};
+
 const OJIBWE_SHADOWS: Record<OjibweGrandfatherTeachingId, string> = {
   nbwaakaawin_wisdom: '토대를 다지는 데만 골몰해 지금 당장 건네야 할 따뜻한 실행을 미루지 않도록 경계하세요.',
   zaagidiwin_love: '타인을 품으려다 정작 나를 지키는 건강한 경계까지 내어주지 않도록 살피세요.',
@@ -164,6 +172,7 @@ export function calculateOjibweSevenGrandfatherTeachings(params: {
   const balancingTeaching = GRANDFATHER_TEACHINGS[balancingIdx];
   const medicineWheelPhase = MEDICINE_WHEEL_PHASES[wheelIdx];
   const virtueBalanceAxis = `${dominantTeaching.koreanName} ↔ ${balancingTeaching.koreanName} (${questionTopic})`;
+  const topicBalanceHint = OJIBWE_TOPIC_HINTS[questionTopic];
   const shadowWarning = OJIBWE_SHADOWS[dominantTeaching.id];
 
   const qualitativeSynthesis =
@@ -183,13 +192,14 @@ export function calculateOjibweSevenGrandfatherTeachings(params: {
 
   return {
     engineName: '오지브웨(아니시나베) 7대 할아버지 가르침 (Seven Grandfather Teachings)',
-    engineVersion: 'LUCKEY-OJIBWE-SEVEN-GRANDFATHERS-v2.3.0',
+    engineVersion: 'LUCKEY-OJIBWE-SEVEN-GRANDFATHERS-v2.4.0',
     calculatedAtKst: formatOjibweKstTimestamp(now),
     questionTopic,
     dominantTeaching,
     balancingTeaching,
     medicineWheelPhase,
     virtueBalanceAxis,
+    topicBalanceHint,
     qualitativeSynthesis,
     reflectionFocus,
     ritualAction,
@@ -206,6 +216,7 @@ export function formatOjibweSevenGrandfatherPrompt(res: OjibweSevenGrandfatherRe
     `[보조 상징 관점 — ${res.engineName}]`,
     `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 덕목 축: ${res.virtueBalanceAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 주된 가르침: ${res.dominantTeaching.ojibweName} (${res.dominantTeaching.koreanName}) · 토템 ${res.dominantTeaching.totemAnimal}`,
     `- 균형 가르침: ${res.balancingTeaching.ojibweName} (${res.balancingTeaching.koreanName}) · 토템 ${res.balancingTeaching.totemAnimal}`,
     `- 약바퀴 방향: ${res.medicineWheelPhase}`,
