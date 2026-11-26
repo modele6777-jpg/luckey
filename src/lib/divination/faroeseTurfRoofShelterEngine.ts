@@ -7,6 +7,7 @@ export interface FaroeseTurfResult {
   faroeseMotif: string;
   companionMotif: string;
   cliffShelterAxis: string;
+  topicBalanceHint: string;
   faroeseInsight: string;
   atlanticTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const FAROESE_SHADOWS = [
   '안락한 부엌의 온기에만 머무르다 바깥 날씨가 개었을 때 나아가야 할 타이밍을 놓치지 않도록 살피세요.',
 ];
 
+const TOPIC_BALANCE_HINTS: Record<FaroeseTurfResult['questionTopic'], string> = {
+  '안식·포용': '잔디 지붕처럼 거친 바람을 완충해 받아들이되, 내 지붕이 감당할 수 있는 무게의 선은 지키세요.',
+  '이정표·걸음': '안개 속 돌무더기 하나만큼의 걸음만 보고 나아가되, 분명한 위험 신호 앞에서는 잠시 멈춰 살피세요.',
+  '본질·온기': '양털의 기름기와 부엌의 온기를 지키되, 타인과 호흡을 맞추는 유연함도 함께 열어 두세요.',
+  '안식 전반': '바깥 날씨가 흐려도 내 마음의 부엌을 따뜻하게 유지하되, 날이 개면 다시 나아갈 준비를 챙기세요.',
+};
+
 function classifyFaroeseTopic(q: string): FaroeseTurfResult['questionTopic'] {
   if (/안식|포용|지붕|감정|완충/.test(q)) return '안식·포용';
   if (/이정표|돌무더기|걸음|안개|길|방향/.test(q)) return '이정표·걸음';
@@ -102,15 +110,17 @@ export function calculateFaroeseTurfRoofShelter(params: {
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const cliffShelterAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = FAROESE_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-FAROESE-TURF-v2.3.0',
+    engineVersion: 'LUCKEY-FAROESE-TURF-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     faroeseMotif: picked.motif,
     companionMotif: companion.motif,
     cliffShelterAxis,
+    topicBalanceHint,
     faroeseInsight: picked.insight,
     atlanticTone: picked.tone,
     reflectionFocus: `페로 제도 풀지붕의 '${picked.motif}'과 동반 결 '${companion.motif}'을 함께 헤아리며, 짙은 안개 속에서도 당장 눈앞에 보이는 돌무더기 하나만큼의 걸음만 믿어 보세요.`,
@@ -126,6 +136,7 @@ export function formatFaroeseTurfPrompt(res: FaroeseTurfResult): string {
     `[페로·풀지붕 안식 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 절벽·안식 축: ${res.cliffShelterAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 페로 모티프: ${res.faroeseMotif} (${res.atlanticTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.faroeseInsight}`,
