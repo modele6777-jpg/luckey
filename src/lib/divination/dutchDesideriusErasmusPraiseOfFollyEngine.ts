@@ -8,12 +8,12 @@
  * 4. 사변적 형식주의 탈피와 소박한 실천 덕성 지수 (Sincere Practical Virtue Index): 헛된 말장난과 허례허식을 배격하고 삶의 현장에서 행동으로 드러나는 참된 선의.
  * 5. 유쾌한 삶의 긍정과 회복탄력성 (Cheerful Life Affirmation & Resilience Score): 시련과 오해 앞에서도 냉소에 빠지지 않고 웃음과 지혜로 일어서는 회복탄력성.
  *
- * @version LUCKEY-ERASMUS-PRAISE-OF-FOLLY-v2.0.0
+ * @version LUCKEY-ERASMUS-PRAISE-OF-FOLLY-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION = 'LUCKEY-ERASMUS-PRAISE-OF-FOLLY-v2.3.0';
+export const DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION = 'LUCKEY-ERASMUS-PRAISE-OF-FOLLY-v2.4.0';
 
 export type ErasmusQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -51,6 +51,7 @@ export interface DutchDesideriusErasmusPraiseOfFollyResult {
   cheerfulResilienceScore: number;                // 유쾌한 삶의 긍정 회복탄력성 (Cheerful Resilience)
   // 세부 분석
   questionTopic: ErasmusQuestionTopic;
+  erasmusCrossAxis: string;
   temporalErasmusRhythm: ErasmusTemporalRhythm;
   activeErasmusTheme: ErasmusTheme;
   focalErasmusAphorism: ErasmusAphorism;
@@ -278,6 +279,7 @@ export function calculateDutchDesideriusErasmusPraiseOfFolly(
     recommendedAction: topicGuidance.practiceGuidance,
     cautionNotice: '지나친 엄숙주의나 흑백논리에 갇혀 자신과 타인의 연약함을 가혹하게 재단하지 마십시오.',
   };
+  const erasmusCrossAxis = `${activeErasmusTheme.themeTitleKo.split('—')[0].trim()} × ${temporalErasmusRhythm.humanismTone} (${questionTopic})`;
 
   return {
     engineVersion: DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION,
@@ -288,6 +290,7 @@ export function calculateDutchDesideriusErasmusPraiseOfFolly(
     practicalSincereVirtueIndex,
     cheerfulResilienceScore,
     questionTopic,
+    erasmusCrossAxis,
     temporalErasmusRhythm,
     activeErasmusTheme,
     focalErasmusAphorism,
@@ -311,7 +314,7 @@ export function formatDutchDesideriusErasmusPraiseOfFollyPrompt(
   return [
     `【데시데리우스 에라스무스 《우신예찬》 르네상스 휴머니즘 및 해학·관용 지혜 지표 (${res.engineVersion})】`,
     `- 연산 시각: ${res.calculatedAtKst}`,
-    `- 질문 주제 맥락: ${res.questionTopic}`,
+    `- 질문 주제 맥락: ${res.questionTopic} | 교차 축: ${res.erasmusCrossAxis}`,
     `- KST 시공간 리듬: ${res.temporalErasmusRhythm.kstDateLabel} · ${res.temporalErasmusRhythm.timeWindowKo} (${res.temporalErasmusRhythm.humanismTone}) — ${res.temporalErasmusRhythm.rhythmDirective}`,
     `- 핵심 에라스무스 테마: ${res.activeErasmusTheme.themeTitleKo} [${res.activeErasmusTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeErasmusTheme.pragmaticInsight}`,

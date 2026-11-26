@@ -8857,6 +8857,7 @@ test('Desiderius Erasmus Praise of Folly Engine: calculates Humorous Wisdom, Dog
   const rep = calculateDutchDesideriusErasmusPraiseOfFolly(profile, '사람들과의 갈등 속에서 마음을 넓히고 싶어요', new Date('2026-11-14T03:00:00Z'));
   assert.equal(rep.engineVersion, DUTCH_DESIDERIUS_ERASMUS_PRAISE_OF_FOLLY_VERSION);
   assert.equal(rep.questionTopic, 'relationship');
+  assert(rep.erasmusCrossAxis.includes('relationship'));
   assert.equal(rep.temporalErasmusRhythm.kstDateLabel, '2026-11-14');
   assert(rep.follyHumorousWisdomScore >= 0 && rep.follyHumorousWisdomScore <= 100);
   assert(rep.dogmaticPrejudiceDissolutionIndex >= 0 && rep.dogmaticPrejudiceDissolutionIndex <= 100);
@@ -8868,6 +8869,7 @@ test('Desiderius Erasmus Praise of Folly Engine: calculates Humorous Wisdom, Dog
   const prompt = formatDutchDesideriusErasmusPraiseOfFollyPrompt(rep);
   assert(prompt.includes('데시데리우스 에라스무스 《우신예찬》 르네상스 휴머니즘 및 해학·관용 지혜 지표'));
   assert(prompt.includes(rep.activeErasmusTheme.themeTitleKo));
+  assert(prompt.includes(rep.erasmusCrossAxis));
   assert(prompt.includes('2026-11-14'));
   assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
@@ -13996,15 +13998,16 @@ test('Tongan Kava Circle Tauhi Va engine: practice, +09:00 KST, and interpretive
 
 test('Dogon Amma Nommo Harmony engine: star phase, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateDogonAmmaNommoHarmony({ profile, now: new Date('2026-11-20T06:55:00Z'), question: '기다림과 대화의 균형을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-DOGON-AMMA-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-DOGON-AMMA-v2.4.0');
+  assert.equal(rep.questionTopic, '기다림·주기');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPhase !== rep.starPhase);
-  assert.ok(rep.cosmicOrderAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.cosmicOrderAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatDogonAmmaNommoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('도곤') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPhase) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('도곤') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPhase) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
 });
 
 test('Aymara Pachamama Amauta Wisdom engine: nayra lens, +09:00 KST, and interpretive boundary', () => {
@@ -15123,15 +15126,16 @@ test('Gaya Iron Crown River Harmony engine: motif, +09:00 KST, and interpretive 
 
 test('Elamite Susa Water Choga engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateElamiteSusaWaterChoga({ profile, now: new Date('2026-11-20T19:55:00Z'), question: '단단한 일상 루틴을 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ELAMITE-SUSA-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ELAMITE-SUSA-v2.4.0');
+  assert.equal(rep.questionTopic, '루틴·질서');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.susaMotif);
-  assert.ok(rep.chogaCanalAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.chogaCanalAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatElamiteSusaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('수사') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('수사') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
 });
 
 test('Lycian Cliff Horizon Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
