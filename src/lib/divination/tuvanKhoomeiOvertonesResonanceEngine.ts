@@ -4,9 +4,11 @@ export interface TuvanKhoomeiResult {
   engineVersion: string;
   calculatedAtKst: string;
   questionTopic: string;
+  questionCategory: '내면·경청' | '초점·정리' | '안정·호흡' | '조율·공명';
   overtoneLayer: string;
   companionLayer: string;
   resonanceAxis: string;
+  topicBalanceHint: string;
   steppeInsight: string;
   soundTone: string;
   reflectionFocus: string;
@@ -22,6 +24,20 @@ const RESONANCE_AXES = [
   '카르기라 대지 저음 · 발바닥 붙이고 중심 잡기',
   '이기르 두 줄 공명 · 상반된 요구 조율하기',
 ] as const;
+
+const TOPIC_BALANCE_HINTS: Record<TuvanKhoomeiResult['questionCategory'], string> = {
+  '내면·경청': '후메이의 깊은 배음처럼 겉말 뒤의 진심을 듣되, 상대가 전하는 현실 피드백도 놓치지 마세요.',
+  '초점·정리': '시깃의 맑은 휘파람처럼 핵심 한 가지를 세우되, 자잘한 확인 절차를 건너뛰지는 마세요.',
+  '안정·호흡': '카르기라의 대지 저음처럼 발바닥과 호흡으로 중심을 잡되, 필요한 다음 한 걸음을 미루지 마세요.',
+  '조율·공명': '이기르의 두 줄 현처럼 상반된 요구를 한 화음으로 맞추되, 내 기본 한계선도 함께 지키세요.',
+};
+
+function classifyTuvanCategory(q: string): TuvanKhoomeiResult['questionCategory'] {
+  if (/조율|갈등|관계|사람|상대|화음|공명/.test(q)) return '조율·공명';
+  if (/안정|호흡|불안|지침|흔들|중심|휴식/.test(q)) return '안정·호흡';
+  if (/정리|초점|결정|선택|핵심|우선/.test(q)) return '초점·정리';
+  return '내면·경청';
+}
 
 const LAYERS = [
   {
@@ -96,14 +112,18 @@ export function calculateTuvanKhoomeiOvertonesResonance(params: {
   const questionTopic = trimmedQ
     ? trimmedQ.slice(0, 36)
     : '겉소음을 줄이고 내 안의 진짜 울림 듣기';
+  const questionCategory = classifyTuvanCategory(trimmedQ || questionTopic);
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionCategory];
 
   return {
-    engineVersion: 'LUCKEY-TUVAN-KHOOMEI-v2.3.0',
+    engineVersion: 'LUCKEY-TUVAN-KHOOMEI-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
+    questionCategory,
     overtoneLayer: picked.layer,
     companionLayer: companion.layer,
     resonanceAxis,
+    topicBalanceHint,
     steppeInsight: `${picked.insight} (동반 배음: ${companion.layer})`,
     soundTone: picked.tone,
     reflectionFocus: `질문 맥락('${questionTopic}')에서 시베리아 투바 후메이의 '${picked.layer}'와 배음 공명 축('${resonanceAxis}')을 함께 살피며, 겉으로 흩어지는 소음을 줄이고 내 안의 진짜 울림에 귀를 기울여 보세요.`,
@@ -118,7 +138,8 @@ export function formatTuvanKhoomeiPrompt(res: TuvanKhoomeiResult): string {
   return [
     `[투바 후메이 배음 공명 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
-    `- 질문 맥락: ${res.questionTopic}`,
+    `- 질문 맥락: ${res.questionTopic} (분류: ${res.questionCategory})`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 배음 층위: ${res.overtoneLayer} (${res.soundTone})`,
     `- 동반 배음: ${res.companionLayer}`,
     `- 공명 축: ${res.resonanceAxis}`,
