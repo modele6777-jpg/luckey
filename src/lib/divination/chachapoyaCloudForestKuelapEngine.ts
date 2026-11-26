@@ -3,9 +3,11 @@ import type { UserProfile } from '../sharedState';
 export interface ChachapoyaKuelapResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계/신뢰' | '일/진로' | '재정/균형' | '내면/회복' | '전환/결정';
   cloudCitadel: string;
   companionCitadel: string;
   cloudPhase: string;
+  kuelapCrossAxis: string;
   kuelapInsight: string;
   andesCloudTone: string;
   shadowWarning: string;
@@ -84,6 +86,15 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+function classifyKuelapTopic(question?: string): ChachapoyaKuelapResult['questionTopic'] {
+  const q = (question ?? '').toLowerCase();
+  if (/(사랑|연애|관계|결혼|사람|가족|친구|갈등|화해|신뢰|동료)/.test(q)) return '관계/신뢰';
+  if (/(일|직장|진로|이직|사업|공부|시험|성과|일정|시야)/.test(q)) return '일/진로';
+  if (/(돈|재정|투자|소비|수입|지출|저축|자산|균형)/.test(q)) return '재정/균형';
+  if (/(마음|불안|지침|회복|휴식|수면|건강|감정|호흡|안개)/.test(q)) return '내면/회복';
+  return '전환/결정';
+}
+
 export function calculateChachapoyaCloudForestKuelap(params: {
   profile: UserProfile;
   now?: Date;
@@ -97,13 +108,20 @@ export function calculateChachapoyaCloudForestKuelap(params: {
   const companion = CITADELS[(idx + companionOffset) % CITADELS.length];
   const cloudPhase = CLOUD_PHASES[stableHash(`${seed}|phase`) % CLOUD_PHASES.length];
   const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
+  const questionTopic = classifyKuelapTopic(params.question);
+  const shortPhase = cloudPhase.split('(')[0].trim();
+  const shortCitadel = picked.citadel.split('(')[0].trim();
+  const shortCompanion = companion.citadel.split('(')[0].trim();
+  const kuelapCrossAxis = `${shortPhase} × ${shortCitadel} · ${shortCompanion} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-CHACHAPOYA-KUELAP-v2.3.0',
+    engineVersion: 'LUCKEY-CHACHAPOYA-KUELAP-v2.4.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     cloudCitadel: picked.citadel,
     companionCitadel: companion.citadel,
     cloudPhase,
+    kuelapCrossAxis,
     kuelapInsight: `${picked.insight} (동반 결: ${companion.citadel})`,
     andesCloudTone: picked.tone,
     shadowWarning,
@@ -121,6 +139,7 @@ export function formatChachapoyaKuelapPrompt(res: ChachapoyaKuelapResult): strin
     `- 구름숲 상징: ${res.cloudCitadel} (${res.andesCloudTone})`,
     `- 동반 결: ${res.companionCitadel}`,
     `- 운무림 국면: ${res.cloudPhase}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.kuelapCrossAxis}`,
     `- 중심 통찰: ${res.kuelapInsight}`,
     `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,

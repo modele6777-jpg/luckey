@@ -14,12 +14,12 @@
  *    - 다일렘(Dáilem, 헌작관·환대자): 화합과 환대의 잔치를 베풂.
  * 3. 7대 다재다능 품계 및 루의 신성 투석구 타흘룸 조언 산출
  *
- * @version LUCKEY-LUGH-SAMILDANACH-v1.0.0
+ * @version LUCKEY-LUGH-SAMILDANACH-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const LUGH_SAMILDANACH_VERSION = 'LUCKEY-LUGH-SAMILDANACH-v2.3.0';
+export const LUGH_SAMILDANACH_VERSION = 'LUCKEY-LUGH-SAMILDANACH-v2.4.0';
 
 export interface LughCraftRank {
   rankLevel: number;
@@ -32,6 +32,8 @@ export interface LughCraftRank {
 export interface LughSamildanachResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계/신뢰' | '일/진로' | '재정/균형' | '내면/회복' | '전환/결정';
+  lughCrossAxis: string;
   // 5대 핵심 지표 (0~100)
   samildanachPolymathIntegrityIndex: number; // 사밀다나크 만능 융합 및 다재다능 지수
   areadbharSpearOfLightPrecision: number; // 빛의 창 아레아드바르 정밀 타격력
@@ -144,6 +146,15 @@ function hashSeed(seedStr: string): number {
   return Math.abs(h);
 }
 
+function classifyLughTopic(question: string): LughSamildanachResult['questionTopic'] {
+  const q = question.toLowerCase();
+  if (/(사랑|연애|관계|결혼|사람|가족|친구|갈등|화해|신뢰|환대)/.test(q)) return '관계/신뢰';
+  if (/(일|직장|진로|이직|사업|공부|시험|성과|프로젝트|커리어|창작)/.test(q)) return '일/진로';
+  if (/(돈|재정|투자|소비|수입|지출|저축|자산|균형)/.test(q)) return '재정/균형';
+  if (/(마음|불안|지침|회복|휴식|수면|건강|감정|치유)/.test(q)) return '내면/회복';
+  return '전환/결정';
+}
+
 export function calculateLughSamildanach(
   profile?: UserProfile,
   nowArg?: Date,
@@ -172,6 +183,8 @@ export function calculateLughSamildanach(
   const magTuiredEpiphany = MAG_TUIRED_EPIPHANIES[epiphanyIdx];
 
   const temporalLughRhythm = getTemporalLughRhythm(now);
+  const questionTopic = classifyLughTopic(q);
+  const lughCrossAxis = `${activeCraftRank.rankNameKo} × ${primaryPolymathVirtue.gaelicMotto} (${questionTopic})`;
   const situationalLughAudit = /일|커리어|프로젝트|창작|도전/.test(q)
     ? {
         focusTheme: `${activeCraftRank.rankNameKo} · 실전 다재다능 감사`,
@@ -198,6 +211,8 @@ export function calculateLughSamildanach(
   return {
     engineVersion: LUGH_SAMILDANACH_VERSION,
     calculatedAtKst: temporalLughRhythm.kstTimeLabel,
+    questionTopic,
+    lughCrossAxis,
     samildanachPolymathIntegrityIndex,
     areadbharSpearOfLightPrecision,
     taraHallAdmissionWorthiness,
@@ -240,6 +255,7 @@ export function formatLughSamildanachPrompt(result: LughSamildanachResult): stri
 - 마그 투이레드 신화의 계시: 《${result.magTuiredEpiphany.battleSceneTitle}》
   → 켈트의 불멸 지혜: "${result.magTuiredEpiphany.celticWisdom}"
 - 질문 맥락 감사 (${result.situationalLughAudit.focusTheme}): ${result.situationalLughAudit.tacticalStep}
+- 질문 맥락(${result.questionTopic}) 교차 축: ${result.lughCrossAxis}
 - KST 시공간 리듬: ${result.temporalLughRhythm.taraWatchWindow} / ${result.temporalLughRhythm.seasonalSolarTone}
 - 루 교차 매트릭스: 핵심(${result.lughSynthesisMatrix.coreInsight}) | 실행(${result.lughSynthesisMatrix.recommendedAction}) | 계시(${result.lughSynthesisMatrix.cautionNotice})
 - 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}

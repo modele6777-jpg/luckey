@@ -2675,10 +2675,12 @@ test('Contract Shield Engine: 계약 분쟁 리스크 및 5대 쉴드 체크리�
 
   const lugh = calculateLughSamildanach(profile, new Date('2026-11-15T08:25:00+09:00'), '새 프로젝트 시작');
   assert.equal(lugh.engineVersion, LUGH_SAMILDANACH_VERSION);
+  assert.equal(lugh.questionTopic, '일/진로');
+  assert(lugh.lughCrossAxis.includes('일/진로'));
   assert(lugh.calculatedAtKst.includes('KST'));
   assert(lugh.temporalLughRhythm.taraWatchWindow.length > 0);
   const lughPrompt = formatLughSamildanachPrompt(lugh);
-  assert(lughPrompt.includes('KST'));
+  assert(lughPrompt.includes('KST') && lughPrompt.includes(lugh.lughCrossAxis));
   assert(!lughPrompt.includes('/100') && !lughPrompt.includes('%') && !lughPrompt.includes('점수'));
 });
 
@@ -14756,15 +14758,16 @@ test('Ket Yenisei Taiga Stars engine: sign, +09:00 KST, and interpretive boundar
 
 test('Chachapoya Cloud Forest Kuelap engine: citadel, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateChachapoyaCloudForestKuelap({ profile, now: new Date('2026-11-20T08:58:00Z'), question: '둥글게 바람을 흘려보내며 높은 시야를 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CHACHAPOYA-KUELAP-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CHACHAPOYA-KUELAP-v2.4.0');
+  assert.equal(rep.questionTopic, '일/진로');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionCitadel !== rep.cloudCitadel);
-  assert.ok(rep.cloudPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.cloudPhase.length > 0 && rep.kuelapCrossAxis.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatChachapoyaKuelapPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('차차포야스') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionCitadel) && prompt.includes(rep.cloudPhase) && prompt.includes(rep.shadowWarning));
+  assert.ok(prompt.includes('차차포야스') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionCitadel) && prompt.includes(rep.cloudPhase) && prompt.includes(rep.kuelapCrossAxis) && prompt.includes(rep.shadowWarning));
 });
 
 test('Yapese Rai Stone Trust engine: stone, +09:00 KST, and interpretive boundary', () => {
@@ -15174,15 +15177,16 @@ test('Haida Gwaii Cedar Canoe engine: motif, +09:00 KST, and interpretive bounda
 
 test('Chavin Lanzon Stone Balance engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateChavinLanzonStoneBalance({ profile, now: new Date('2026-11-20T20:09:00Z'), question: '흔들리지 않는 중심을 잡고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CHAVIN-LANZON-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CHAVIN-LANZON-v2.4.0');
+  assert.equal(rep.questionTopic, '일·중심');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.chavinMotif);
-  assert.ok(rep.stoneBalanceAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.stoneBalanceAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatChavinLanzonPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('차빈') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('차빈') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
 });
 
 test('Maramures Wood Gate Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
