@@ -663,7 +663,7 @@ test('Big Bang hold toggles the unified Lucy Pro, and a single tap leaves', asyn
   await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
   await expect(page).not.toHaveURL(/\/key$/);
   await expect(page.locator('.lucy-master-room')).toBeVisible();
-  await expect(page.locator('[data-lucy-pro-badge="true"]')).toBeVisible();
+  await expect(page.locator('[data-lucy-name-marker="master"]')).toBeVisible();
 
   // 루시프로 안에서 다시 홀드: 단계 없이 일반 루시로 돌아온다.
   await page.waitForTimeout(400);
@@ -727,7 +727,7 @@ test('expanded Cosmic Room starts in Lucy Plus and the bubble opens the unified 
   await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
   await expect(lucyBubble.locator('[data-lucy-pro-bubble="true"]')).toBeVisible();
   await expect(leftPane.locator('[data-duo-divination-tarot="true"]')).toBeVisible();
-  await expect(lucyPane.locator('[data-lucy-pro-badge="true"]')).toBeVisible();
+  await expect(lucyPane.locator('[data-lucy-name-marker="master"]')).toBeVisible();
   for (const face of ['saju', 'tarot', 'recommended', 'scrolls', 'engines']) {
     await expect(leftPane.locator(`[data-table-face="${face}"]`)).toBeVisible();
   }
@@ -790,13 +790,13 @@ test('Lucy Master preserves the other pane on re-entry; only a Lucy bubble tap o
   const lucyPane = page.locator('#duo-lucy-viewport');
   await expect(page.locator('html')).toHaveClass(/duo-unfolded-portrait/);
   await expect(leftPane.locator('[data-duo-divination-tarot="true"]')).toBeVisible();
-  await expect(lucyPane.locator('[data-lucy-master-depth="1"]')).toBeVisible();
+  await expect(lucyPane.locator('[data-lucy-name-marker="master"]')).toBeVisible();
 
   await page.evaluate(() => window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/prologue' } })));
   await expect.poll(() => new URL(page.url()).pathname).toBe('/prologue');
   await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
   await expect(leftPane.locator('[data-duo-divination-tarot="true"]')).toHaveCount(0);
-  await expect(lucyPane.locator('[data-lucy-master-depth="1"]')).toBeVisible();
+  await expect(lucyPane.locator('[data-lucy-name-marker="master"]')).toBeVisible();
 
   // Re-entering the app at its retained route must keep that pane, not auto-open tarot tools.
   await page.reload({ waitUntil: 'domcontentloaded' });
@@ -808,7 +808,7 @@ test('Lucy Master preserves the other pane on re-entry; only a Lucy bubble tap o
   await expect.poll(() => new URL(page.url()).pathname).toBe('/');
   await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
   await expect(leftPane.locator('[data-duo-divination-tarot="true"]')).toBeVisible();
-  await expect(lucyPane.locator('[data-lucy-master-depth="1"]')).toBeVisible();
+  await expect(lucyPane.locator('[data-lucy-name-marker="master"]')).toBeVisible();
 });
 
 test('Master keeps its tools visible when the split screen is unfolded again', async ({ page }) => {

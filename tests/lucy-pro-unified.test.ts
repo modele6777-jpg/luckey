@@ -27,6 +27,9 @@ const BIGBANG = read('src/components/omniwarp/BigBangButton.tsx');
 const PANE = read('src/components/duo/DuoDivinationTarotPane.tsx');
 const SHEET = read('src/components/duo/MasterTableSheet.tsx');
 const ICON = read('src/components/icons/LucyProBubbleDotIcon.tsx');
+const PAGE = read('src/pages/LucyStandalonePage.tsx');
+const MODE_NAME = read('src/components/chat/LucyModeName.tsx');
+const SHEET_BUTTON = SHEET.slice(SHEET.indexOf('export function MasterTableSheetButton'));
 
 test('the pro mode is a single unified state, not three stages', () => {
   assert.equal(LUCY_MASTER_MAX_DEPTH, 1);
@@ -64,6 +67,34 @@ test('regular Lucy shows an empty bubble, only the pro mode shows the dot', () =
     // 일반 루시 = 속이 빈 MessageCircle, 루시프로 = 점 말풍선
     assert.match(source, /isLucyMaster \? LucyProBubbleDotIcon : MessageCircle|masterOn \? LucyProBubbleDotIcon : MessageCircle/);
   }
+});
+
+test('the pro header shows no unified badge — only the Lucy Pro name', () => {
+  // 사용자 지시: "루시프로 상단 통합배지 없애주고" (2026-11-26)
+  assert.doesNotMatch(PAGE, /data-lucy-pro-badge/, 'no pro badge element');
+  assert.doesNotMatch(PAGE, />\s*통합\s*<\/span>/, 'no 통합 badge label');
+  assert.doesNotMatch(PAGE, /data-lucy-master-depth=/, 'no depth badge marker');
+});
+
+test('the Pro wordmark is a straight sans-serif, not an italic serif', () => {
+  // 사용자 지시: "Pro 글씨체 바꿔줘" (2026-11-26)
+  assert.match(MODE_NAME, /<span className="font-sans font-extrabold tracking-wide" style=\{style\}>Pro<\/span>/);
+  assert.doesNotMatch(MODE_NAME, /font-serif[^"`]*italic[^`]*>Pro</, 'the Pro word is no longer an italic serif');
+});
+
+test('the divination tool button is a pencil-only round icon', () => {
+  // 사용자 지시: "도구버튼도 연필모양 아이콘으로 바꿔줘" (2026-11-26)
+  assert.match(SHEET, /import \{[^}]*\bPencil\b[^}]*\} from 'lucide-react'/);
+  assert.match(SHEET_BUTTON, /<Pencil size=\{15\}/);
+  assert.match(SHEET_BUTTON, /h-8 w-8 shrink-0 items-center justify-center rounded-full/, 'round 32px icon button');
+  assert.doesNotMatch(SHEET_BUTTON, /🔮/, 'no crystal ball emoji');
+  assert.doesNotMatch(SHEET_BUTTON, />\s*도구\s*</, 'no 도구 text label');
+  // 접근성·동작·색상 톤은 그대로
+  assert.match(SHEET_BUTTON, /data-master-table-sheet-button/);
+  assert.match(SHEET_BUTTON, /aria-label="점술 도구 보기"/);
+  assert.match(SHEET_BUTTON, /title="점술 도구"/);
+  assert.match(SHEET_BUTTON, /tone === 'light'/);
+  assert.match(SHEET_BUTTON, /requestLucyTableFace\('engines'\)/);
 });
 
 test('no stage wording is left in the pro greeting, guide or page guides', () => {

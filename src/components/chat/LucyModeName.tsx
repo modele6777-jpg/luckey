@@ -24,7 +24,7 @@ function MasterWords({ style }: { style: React.CSSProperties }) {
   return (
     <>
       <span className="font-black tracking-tight" style={style}>Lucy</span>
-      <span className="font-serif italic font-semibold tracking-normal" style={style}>Pro</span>
+      <span className="font-sans font-extrabold tracking-wide" style={style}>Pro</span>
     </>
   );
 }
