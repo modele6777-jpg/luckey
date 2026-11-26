@@ -3,9 +3,11 @@ import type { UserProfile } from '../sharedState';
 export interface CarthaginianTanitResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계/신뢰' | '일/진로' | '재정/균형' | '내면/회복' | '전환/결정';
   tanitMotif: string;
   companionMotif: string;
   harborPhase: string;
+  harborCrossAxis: string;
   carthaginianInsight: string;
   harborTone: string;
   shadowWarning: string;
@@ -84,6 +86,15 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+function classifyHarborTopic(question?: string): CarthaginianTanitResult['questionTopic'] {
+  const q = (question ?? '').toLowerCase();
+  if (/(사랑|연애|관계|결혼|사람|가족|친구|갈등|화해|신뢰)/.test(q)) return '관계/신뢰';
+  if (/(일|직장|진로|이직|사업|공부|시험|성과|일정|방향|속도)/.test(q)) return '일/진로';
+  if (/(돈|재정|투자|소비|수입|지출|저축|자산|균형)/.test(q)) return '재정/균형';
+  if (/(마음|불안|지침|회복|휴식|수면|건강|감정|내항)/.test(q)) return '내면/회복';
+  return '전환/결정';
+}
+
 export function calculateCarthaginianTanitHarborCompass(params: {
   profile: UserProfile;
   now?: Date;
@@ -97,13 +108,20 @@ export function calculateCarthaginianTanitHarborCompass(params: {
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const harborPhase = HARBOR_PHASES[stableHash(`${seed}|phase`) % HARBOR_PHASES.length];
   const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
+  const questionTopic = classifyHarborTopic(params.question);
+  const shortPhase = harborPhase.split('(')[0].trim();
+  const shortMotif = picked.motif.split('(')[0].trim();
+  const shortCompanion = companion.motif.split('(')[0].trim();
+  const harborCrossAxis = `${shortPhase} × ${shortMotif} · ${shortCompanion} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-CARTHAGINIAN-TANIT-v2.3.0',
+    engineVersion: 'LUCKEY-CARTHAGINIAN-TANIT-v2.4.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     tanitMotif: picked.motif,
     companionMotif: companion.motif,
     harborPhase,
+    harborCrossAxis,
     carthaginianInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     harborTone: picked.tone,
     shadowWarning,
@@ -121,6 +139,7 @@ export function formatCarthaginianTanitPrompt(res: CarthaginianTanitResult): str
     `- 타닛 모티프: ${res.tanitMotif} (${res.harborTone})`,
     `- 동반 결: ${res.companionMotif}`,
     `- 항해 국면: ${res.harborPhase}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.harborCrossAxis}`,
     `- 중심 통찰: ${res.carthaginianInsight}`,
     `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
