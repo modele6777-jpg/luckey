@@ -3276,7 +3276,7 @@ test('Somatic Body Armoring Engine: 빌헬름 라이히 7대 신체 갑옷 해�
   const res = calculateSomaticBodyArmoring({ profile, targetDate: new Date('2026-11-03T10:00:00+09:00'), question: '신체 긴장 해소' });
   assert.equal(res.engineVersion, SOMATIC_ARMORING_VERSION);
   assertKstTimestamp(res.calculatedAtKst);
-  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
+  assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0 && res.somaticCrossAxis.length > 0);
   assert(Boolean(res.somaticSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.primaryArmorSegment.segmentName.length > 0);
@@ -3285,7 +3285,7 @@ test('Somatic Body Armoring Engine: 빌헬름 라이히 7대 신체 갑옷 해�
   assert(res.vagusNerveResetPrescription.durationSeconds > 0);
   const prompt = formatSomaticBodyArmoringPrompt(res);
   assert(prompt.includes('LUCKEY 빌헬름 라이히 7대 신체 갑옷 해제 & 체성 감각'));
-  assert(prompt.includes(res.primaryArmorSegment.segmentName));
+  assert(prompt.includes(res.primaryArmorSegment.segmentName) && prompt.includes(res.somaticCrossAxis));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
@@ -10826,7 +10826,7 @@ test('Korean Yutjeom engine: five qualitative stances without raw scores or a cl
   const rep = calculateKoreanYutjeomFourStickOracle(profile, '이직을 해야 할지 고민이에요', new Date('2026-11-15T03:00:00Z'));
   assert.equal(rep.engineVersion, KOREAN_YUTJEOM_FOUR_STICK_VERSION);
   assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
-  assert.ok(Boolean(rep.yutjeomSynthesisMatrix?.integratedAction));
+  assert.ok(Boolean(rep.yutjeomSynthesisMatrix?.integratedAction) && rep.yutCrossAxis.length > 0);
   assert.equal(rep.actualCastRecorded, false);
   assert.equal(rep.questionTopic, 'decision');
   assert.ok(rep.activeStanceTheme.stanceNameKo.length > 0);
@@ -10844,7 +10844,7 @@ test('Korean Yutjeom engine: five qualitative stances without raw scores or a cl
   assert.ok(prompt.includes('해석 경계'));
   assert.ok(prompt.includes('KST 시공간 리듬'));
   assert.ok(prompt.includes('낮 — 가락을 주고받는 시간'));
-  assert.ok(prompt.includes('+09:00') && prompt.includes('교차 매트릭스'));
+  assert.ok(prompt.includes('+09:00') && prompt.includes('교차 매트릭스') && prompt.includes(rep.yutCrossAxis));
 
   const relationship = calculateKoreanYutjeomFourStickOracle(profile, '가족과 자꾸 다투어요');
   assert.equal(relationship.questionTopic, 'relationship');
@@ -15914,15 +15914,15 @@ test('Batammariba Takienta engine: tower, +09:00 KST, and interpretive boundary'
 
 test('Kuna Mola Stitch engine: layer, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKunaMolaStitch({ profile, now: new Date('2026-11-20T22:45:00Z'), question: '불필요한 겹을 덜어내고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KUNA-MOLA-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-KUNA-MOLA-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionLayer !== rep.fabricLayer);
-  assert.ok(rep.questionTopic.length > 0 && rep.molaStitchAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.questionTopic.length > 0 && rep.molaStitchAxis.length > 0 && rep.shadowWarning.length > 0 && rep.topicBalanceHint.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKunaMolaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('쿠나·몰라') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLayer) && prompt.includes(rep.molaStitchAxis));
+  assert.ok(prompt.includes('쿠나·몰라') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLayer) && prompt.includes(rep.molaStitchAxis) && prompt.includes(rep.topicBalanceHint));
 });
 
 test('Venetian Lagoon Forcola engine: notch, +09:00 KST, and interpretive boundary', () => {

@@ -10,6 +10,8 @@ export interface KunaMolaResult {
   engineVersion: string;
   calculatedAtKst: string;
   questionTopic: string;
+  questionCategory: 'relationship' | 'decision' | 'healing' | 'reflection';
+  topicBalanceHint: string;
   fabricLayer: string;
   companionLayer: string;
   molaStitchAxis: string;
@@ -56,6 +58,21 @@ const QUESTIONS = [
   '서로 다른 색깔의 역할들이 부딪히지 않고 하나의 무늬가 되려면 어떤 배치의 여유가 필요할까요?',
 ] as const;
 
+const TOPIC_BALANCE_HINTS: Record<'relationship' | 'decision' | 'healing' | 'reflection', string> = {
+  relationship: '관계에서는 상대를 바꾸려는 덧댐보다 내 안의 오해라는 겉겹을 한 꺼풀 덜어낼 때 진심이 선명해집니다.',
+  decision: '결정 앞에서는 새 조건을 계속 겹치기보다 핵심 기준 한 가지만 남기고 바깥 겹을 오려 내는 쪽이 단단합니다.',
+  healing: '회복의 자리에서는 애써 화려한 무늬를 만들려 하지 말고, 가장 편안한 바닥 천으로 숨을 고르는 시간이 먼저입니다.',
+  reflection: '성찰의 자리에서는 겉으로 보이는 역할과 그 아래 숨어 있는 나만의 원색이 어디서 맞물리는지 천천히 살펴보세요.',
+};
+
+function classifyKunaTopic(question?: string): 'relationship' | 'decision' | 'healing' | 'reflection' {
+  const q = (question ?? '').toLowerCase();
+  if (/관계|사람|연인|가족|친구|동료|갈등|화해|마음/.test(q)) return 'relationship';
+  if (/결정|선택|이직|창업|시작|계약|진로|방향|정리/.test(q)) return 'decision';
+  if (/불안|지침|회복|휴식|건강|수면|힘들|위로|치유/.test(q)) return 'healing';
+  return 'reflection';
+}
+
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -89,10 +106,15 @@ export function calculateKunaMolaStitch(input: KunaMolaInput): KunaMolaResult {
     ? trimmedQ.slice(0, 36)
     : '불필요한 겹을 덜어내고 본질 드러내기';
 
+  const questionCategory = classifyKunaTopic(input.question);
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionCategory];
+
   return {
-    engineVersion: 'LUCKEY-KUNA-MOLA-v2.3.0',
+    engineVersion: 'LUCKEY-KUNA-MOLA-v2.4.0',
     calculatedAtKst: toKstIso(input.now),
     questionTopic,
+    questionCategory,
+    topicBalanceHint,
     fabricLayer,
     companionLayer,
     molaStitchAxis,
@@ -109,7 +131,8 @@ export function formatKunaMolaPrompt(res: KunaMolaResult): string {
   return [
     `[쿠나·몰라 겹 바느질 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
-    `질문 맥락: ${res.questionTopic}`,
+    `질문 맥락: ${res.questionTopic} (${res.questionCategory})`,
+    `맥락 균형 조언: ${res.topicBalanceHint}`,
     `천의 겹: ${res.fabricLayer}`,
     `동반 겹: ${res.companionLayer}`,
     `겹바느질 축: ${res.molaStitchAxis}`,
