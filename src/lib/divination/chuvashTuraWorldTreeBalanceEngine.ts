@@ -7,6 +7,7 @@ export interface ChuvashTuraResult {
   chuvashSign: string;
   companionSign: string;
   worldTreeAxis: string;
+  topicBalanceHint: string;
   turaInsight: string;
   volgaTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const CHUVASH_SHADOWS = [
   '선배의 지혜에 기대다 내 상황에 맞는 고유한 판단과 책임을 미루지 않도록 살피세요.',
 ];
 
+const TOPIC_BALANCE_HINTS: Record<ChuvashTuraResult['questionTopic'], string> = {
+  '관계·순리': '억지로 흐름을 꺾기보다 서로의 속도와 순리를 존중하는 자리에서 고요한 평화가 열립니다.',
+  '일·질서': '서두르며 건너뛰기보다 한 땀씩 자수를 놓듯 순서를 밟을 때 오래 가는 힘이 쌓입니다.',
+  '판단·지혜': '감정적 수식어를 걷어내고 있는 그대로의 사실과 앞선 지혜를 함께 비추어 보세요.',
+  '조화 전반': '자연의 순리를 기다리는 여유와 오늘 내가 돌봐야 할 작은 질서 사이에서 박자를 맞추세요.',
+};
+
 function classifyChuvashTopic(q: string): ChuvashTuraResult['questionTopic'] {
   if (/관계|순리|사람|사랑|대화|평화/.test(q)) return '관계·순리';
   if (/일|직장|질서|순서|정돈|루틴/.test(q)) return '일·질서';
@@ -102,15 +110,17 @@ export function calculateChuvashTuraWorldTreeBalance(params: {
   const picked = SIGNS[idx];
   const companion = SIGNS[(idx + companionOffset) % SIGNS.length];
   const worldTreeAxis = `${picked.sign.split('(')[0].trim()} ↔ ${companion.sign.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = CHUVASH_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-CHUVASH-TURA-v2.3.0',
+    engineVersion: 'LUCKEY-CHUVASH-TURA-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     chuvashSign: picked.sign,
     companionSign: companion.sign,
     worldTreeAxis,
+    topicBalanceHint,
     turaInsight: picked.insight,
     volgaTone: picked.tone,
     reflectionFocus: `볼가 추바시 자연 철학의 '${picked.sign}'과 동반 상징 '${companion.sign}'을 함께 엮어, 한 땀씩 정갈하게 순서를 밟아 나가는 성실함 속에서 고요한 질서를 세워 보세요.`,
@@ -126,6 +136,7 @@ export function formatChuvashTuraPrompt(res: ChuvashTuraResult): string {
     `[추바시 투라·세계수 조화 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 세계수 축: ${res.worldTreeAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 추바시 상징: ${res.chuvashSign} (${res.volgaTone})`,
     `- 동반 상징: ${res.companionSign}`,
     `- 중심 통찰: ${res.turaInsight}`,
