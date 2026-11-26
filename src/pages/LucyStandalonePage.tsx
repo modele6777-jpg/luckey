@@ -4382,19 +4382,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                       <LucyModeName plus={showPlusMarker} pro={false} master={isMasterMode} isLight={isLight} />
                     </span>
                   </h1>
-                  {isMasterMode && (
-                    <span
-                      data-lucy-master-depth="1"
-                      data-lucy-pro-badge="true"
-                      title="루시프로(점술모드) · 사주·타로·13대 도구·12대 양피지 통합 상담"
-                      aria-label="루시프로 점술모드 · 사주, 타로, 13대 도구, 12대 양피지를 함께 보는 통합 상담"
-                      className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full border border-amber-300/50 bg-amber-400/15 px-2.5"
-                    >
-                      <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-amber-300 shadow-[0_0_6px_rgba(252,211,77,0.8)]" />
-                      <span className="text-[10.5px] font-bold text-amber-100">통합</span>
-                    </span>
-                  )}
-                  {/* 엔진함은 점술 도구 창(접은 화면 "도구" 버튼 · 펼친 화면 왼쪽 테이블)의 📚 엔진함 탭으로 옮겨졌다 */}
+                  {/* 루시프로 표시는 'Lucy Pro' 이름만 남긴다 — 상단 '통합' 배지는 사용자 요청으로 제거(2026-11-26).
+                      엔진함은 점술 도구 창(접은 화면 연필 버튼 · 펼친 화면 왼쪽 테이블)의 📚 엔진함 탭에서 본다. */}
                 </div>
               </div>
             </div>
@@ -4402,7 +4391,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
           {/* Right Action Tools: 검색 · 자동 읽기 · 내보내기 */}
           <div className="lucy-header-actions flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* 🔮 접은 화면 루시프로: 펼친 화면의 왼쪽 점술 테이블(사주·타로·추천 도구·양피지)을 창으로 본다 */}
+            {/* ✏️ 접은 화면 루시프로: 펼친 화면의 왼쪽 점술 테이블(사주·타로·추천 도구·양피지)을 창으로 본다 */}
             {isMasterMode && <MasterTableSheetButton tone={isLight ? 'light' : 'dark'} />}
             {/* 📘 가이드 */}
             <PageGuideButton guide={getPageGuide(isMasterMode ? 'master' : 'lucy')} tone={isLight ? 'light' : 'dark'} />

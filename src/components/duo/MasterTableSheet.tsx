@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Pencil } from 'lucide-react';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { getLucyTableState, LUCY_TABLE_EVENT, type LucyTableState } from '@/lib/lucyTableBus';
 import { requestLucyTableFace } from '@/lib/lucyMasterMode';
@@ -172,12 +172,11 @@ export function MasterTableSheetButton({ tone = 'dark' }: { tone?: 'dark' | 'lig
           }
           setOpen(true);
         }}
-        className={`inline-flex h-8 items-center gap-1 rounded-full border px-2.5 text-[11px] font-bold backdrop-blur-md active:scale-95 ${tone === 'light'
+        className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border backdrop-blur-md active:scale-95 ${tone === 'light'
           ? 'border-slate-300/80 bg-white/80 text-slate-700'
           : 'border-amber-200/30 bg-amber-400/10 text-amber-100'}`}
       >
-        <span aria-hidden="true">🔮</span>
-        도구
+        <Pencil size={15} aria-hidden="true" />
       </button>
       {open && <MasterTableSheet onClose={() => setOpen(false)} />}
     </>
