@@ -6,7 +6,7 @@ import { slimToolData } from '../src/lib/divination/promptSlim.ts';
 const profile: any = { basic: { birthdate: '1990-05-15', birthtime: '14:30', birthTimeAccuracy: 'exact', gender: 'female', lunarSolar: 'solar', birthCity: '서울' } };
 
 test('Lucy Pro level 3 sends compact calculated facts, not 200k characters of app prose', () => {
-  const r = routeAndExecute({ text: '이직을 해야 할지 고민이에요', profile, isMasterRequested: true, divinationMode: { base: 'tarot_saju', depth: 3 } });
+  const r = routeAndExecute({ text: '이직을 해야 할지 고민이에요', profile, isMasterRequested: true, divinationMode: { base: 'tarot_saju' } });
   const prompt = r.promptInjection;
   assert.ok(prompt.length < 60000, `prompt length ${prompt.length}`);
   for (const removed of ['timelineCards', 'ritualAction', 'SynthesisMatrix', 'reflectiveQuestion', 'interpretiveBoundary', '\n  "']) {

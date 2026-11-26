@@ -7,17 +7,17 @@ export type LucyMasterTableFaceAction =
   | { type: 'tarot-requested' }
   | { type: 'tab-selected'; face: LucyMasterTableFace };
 
-/** The default left-side view for each Lucy Pro consultation stage. */
-export function getLucyMasterDefaultTableFace(depth: number): LucyMasterTableFace {
-  if (depth === 2) return 'tarot';
-  if (depth >= 3) return 'recommended';
+/**
+ * 루시프로(점술모드)는 하나의 통합 상담이라 단계별 기본 화면이 없다.
+ * 들어오면 언제나 사주 원국에서 시작하고, 타로·13대 도구·12대 양피지·엔진함은 탭으로 바로 연다.
+ */
+export function getLucyMasterDefaultTableFace(_depth?: number): LucyMasterTableFace {
   return 'saju';
 }
 
 /**
- * Stage changes choose that stage's default. Answers alone do not change the
- * user's tab choice, so a manually selected view remains visible until the
- * user changes stage or selects another tab.
+ * The unified mode has no stage changes; a reset or a requested face moves the view,
+ * an answer alone keeps the user's tab choice.
  */
 export function reduceLucyMasterTableFace(
   current: LucyMasterTableFace,

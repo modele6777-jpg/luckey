@@ -56,7 +56,7 @@ test('second-round cards cover every Ziwei main star, mutagen, Kyusei star, Liur
 test('a full Lucy Pro level-3 prompt carries the cards for its own chart', async () => {
   const { routeAndExecute } = await import('../src/lib/divination/smartAgentRouter.ts');
   const profile: any = { basic: { birthdate: '1990-05-15', birthtime: '14:30', birthTimeAccuracy: 'exact', gender: 'female', lunarSolar: 'solar', birthCity: '서울' } };
-  const prompt = routeAndExecute({ text: '이직 고민', profile, isMasterRequested: true, divinationMode: { base: 'tarot_saju', depth: 3 } }).promptInjection;
+  const prompt = routeAndExecute({ text: '이직 고민', profile, isMasterRequested: true, divinationMode: { base: 'tarot_saju' } }).promptInjection;
   // 庚년생 사화: 태양 화록·무곡 화권·태음 화과·천동 화기
   assert.match(prompt, /생년 化祿: [^—]*태양/);
   assert.match(prompt, /생년 化權: [^—]*무곡/);

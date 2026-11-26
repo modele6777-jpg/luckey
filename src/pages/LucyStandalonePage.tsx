@@ -14,8 +14,8 @@ import { LucyEntryScreen, type LucyEntryVariant } from '@/components/chat/LucyEn
 import { publishTableSaju, publishTableAnswer, publishTableTools } from '@/lib/lucyTableBus';
 import { MasterTableSheetButton } from '@/components/duo/MasterTableSheet';
 import { extractAllToolFacts, pickCalculatedToolData, type ToolFact } from '@/lib/lucyMasterToolFacts';
-import { LUCY_MASTER_DEPTH3_TOOLS } from '@/lib/divination/smartAgentRouter';
-import { shouldOfferLucyMaster, dismissLucyMasterOffer, markLucyMasterFromOffer, consumeLucyMasterFromOffer, shouldOfferReturnToLucy, dismissReturnToLucyOffer, isConsultationClosing } from '@/lib/lucyMasterOffer';
+import { LUCY_PRO_TOOLS } from '@/lib/divination/smartAgentRouter';
+import { shouldOfferLucyMaster, dismissLucyMasterOffer, markLucyMasterFromOffer, consumeLucyMasterFromOffer, shouldOfferReturnToLucy, dismissReturnToLucyOffer } from '@/lib/lucyMasterOffer';
 import { playLucyMasterSuction } from '@/components/omniwarp/BigBangMasterSuction';
 import { isLucyChatPath } from '@/lib/duoPaneFocus';
 import { useOrbCounselOpen } from '@/lib/orbCounselGate';
@@ -55,7 +55,7 @@ import { archiveMasterSession, buildDepthContinuityContext, buildPastMasterSessi
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm, setLucyMasterBgmDepth } from '@/lib/lucyMasterBgm';
 import remarkGfm from 'remark-gfm';
 import { safeSessionStorage, safeLocalStorage } from '@/utils/safeStorage';
-import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, getPendingAnswerChoices, isAskingForDeepEngines, createDepthTwoTarotOffer, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate, getLucyMasterDepth, deepenLucyMasterDepth, useLucyMasterDepth, LUCY_MASTER_DEPTH_EVENT, LUCY_MASTER_DEPTH_INFO, LUCY_MASTER_MAX_DEPTH, getLucyBubbleMarker, setLucyBubbleMarker, useLucyBubbleMarker, type LucyMasterDepth } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, publishLucyTarotDraw, isAcceptingTarotDrawOffer, buildTarotHouseGuide, createTarotHouseGreeting, consumeTarotHouseGreetingPending, parseAnswerChoices, getPendingAnswerChoices, isAskingForDeepEngines, setLucyMasterLink, getLucyMasterLink, resolveLucyMasterLinkChoice, buildLinkedLucyContext, isTarotHouseGreetingPending, findConcernAnchor, createTarotHouseConcernQuestion, LUCY_TAROT_PICK_REQUEST_EVENT, LUCY_TAROT_PICKED_EVENT, LUCY_TAROT_PICK_CANCEL_EVENT, tarotPickPositions, toDetectedTarotCards, takeQueuedMasterTarotSpread, buildSpreadLayoutContext, matchMasterTarotSpread, isAutoSpreadCandidate, getLucyBubbleMarker, setLucyBubbleMarker, useLucyBubbleMarker, type LucyMasterDepth } from '@/lib/lucyMasterMode';
 import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/cleanMessage';
 import { detectLucyChannelsFromText, formatChannelsModeTitle } from '@/lib/lucyAutoModeDetector';
 import { resolveLucyPageTurn } from '@/lib/lucyTurnMode';
@@ -737,8 +737,9 @@ function LucyThinkingLine({ isLight, master }: { isLight: boolean; master: boole
   );
 }
 
-function useThinkingProgress(master: boolean, depth: LucyMasterDepth = 1): number {
-  const expectedMs = master ? (depth >= 3 ? 110000 : depth === 2 ? 75000 : 55000) : 25000;
+function useThinkingProgress(master: boolean): number {
+  // 루시프로는 사주·타로·13대 도구·양피지를 한 번에 계산하는 통합 상담이라 한 가지 기준 시간만 쓴다.
+  const expectedMs = master ? 95000 : 25000;
   const [progress, setProgress] = useState(0);
   useEffect(() => {
     const startedAt = Date.now();
@@ -785,10 +786,10 @@ function LucyThinkingClover({ progress, isLight }: { progress: number; isLight: 
  * Rough waiting time shown as a ring that fills, never as seconds.
  * It approaches full over the usual time for this mode (90% at the expected time) and never quite completes before the answer arrives.
  */
-function LucyThinkingRing({ isLight, depth = 1, master, progress }: { isLight: boolean; depth?: LucyMasterDepth; master: boolean; progress: number }) {
+function LucyThinkingRing({ isLight, master, progress }: { isLight: boolean; master: boolean; progress: number }) {
   const radius = 9;
   const length = 2 * Math.PI * radius;
-  const hint = master ? (depth >= 3 ? '심층 상담이라 조금 오래 걸려요' : depth === 2 ? '심화 상담이라 조금 더 걸려요' : '잠시만 기다려 주세요') : '곧 답장이 와요';
+  const hint = master ? '루시프로 통합 상담이라 조금 오래 걸려요' : '곧 답장이 와요';
   return (
     <span data-lucy-thinking-ring role="progressbar" aria-label={`답변 준비 중 · ${hint}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)} title={hint} className="lucy-thinking-ring ml-1 inline-flex shrink-0">
       <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
@@ -818,13 +819,13 @@ function LucyThinkingRing({ isLight, depth = 1, master, progress }: { isLight: b
   );
 }
 
-function LucyThinkingIndicator({ isLight, depth, master }: { isLight: boolean; depth: LucyMasterDepth; master: boolean }) {
-  const progress = useThinkingProgress(master, depth);
+function LucyThinkingIndicator({ isLight, master }: { isLight: boolean; master: boolean }) {
+  const progress = useThinkingProgress(master);
   return (
     <>
       <LucyThinkingClover progress={progress} isLight={isLight} />
       <LucyThinkingLine isLight={isLight} master={master} />
-      <LucyThinkingRing isLight={isLight} depth={depth} master={master} progress={progress} />
+      <LucyThinkingRing isLight={isLight} master={master} progress={progress} />
     </>
   );
 }
@@ -864,26 +865,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     return 'ai';
   });
 
-  // 🔮 점술모드(Lucy Master): 빅뱅 버튼 홀드로 켜고 끈다. 접힘·펼침 모두 같은 값을 쓴다.
-  // 🔮 상담 깊이(빅뱅 홀드로 1→2→3). 바뀔 때 잠깐 안내를 띄운다.
-  const masterDepth = useLucyMasterDepth();
-  const nextMasterDepth = masterDepth === 1 ? 2 : masterDepth === 2 ? 3 : null;
-  // 배경음: 곡은 그대로, 깊이마다 소리를 한 겹씩 더한다 (켜져 있을 때만 들림)
-  useEffect(() => { setLucyMasterBgmDepth(masterDepth); }, [masterDepth]);
-  const [depthNotice, setDepthNotice] = useState<{ depth: LucyMasterDepth; changed: boolean; key: number } | null>(null);
-  useEffect(() => {
-    let timer = 0;
-    const onDepth = (e: Event) => {
-      const detail = (e as CustomEvent<{ depth: LucyMasterDepth; changed: boolean }>).detail;
-      if (!detail) return;
-      setDepthNotice({ depth: detail.depth, changed: detail.changed, key: Date.now() });
-
-      window.clearTimeout(timer);
-      timer = window.setTimeout(() => setDepthNotice(null), 2800);
-    };
-    window.addEventListener(LUCY_MASTER_DEPTH_EVENT, onDepth);
-    return () => { window.removeEventListener(LUCY_MASTER_DEPTH_EVENT, onDepth); window.clearTimeout(timer); };
-  }, []);
+  // 🔮 루시프로(점술모드): 빅뱅 홀드·탭으로 켜고 끈다. 접힘·펼침 모두 같은 값을 쓴다. 단계는 없다.
+  // 배경음: 통합 상담의 가장 깊은 겹(패드 + 저음 울림 + 먼 합창)을 한 번에 깔아 둔다.
+  useEffect(() => { setLucyMasterBgmDepth(3); }, []);
   // 홀드로 루시 마스터에 들어올 때는 루시·플러스와 같은 진입 화면을 보여 준다.
   useEffect(() => {
     if (!isMasterMode) { stopLucyMasterBgm(); return; }
@@ -1066,21 +1050,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // Both modes now send to conversationId 'lucy', so abort the same runtime.
   const abortGenerating = abortNormalGenerating;
 
-  // 🃏 2단계(사주 + 타로)에 들어서면 루시가 카드 뽑기를 권한다. 카드는 손님이 직접 섞고 고른다.
-  useEffect(() => {
-    const onDepth = (e: Event) => {
-      const detail = (e as CustomEvent<{ depth: LucyMasterDepth; changed: boolean; shallower?: boolean }>).detail;
-      // 3단계에서 2단계로 얕아질 때는 카드 권유를 다시 하지 않는다.
-      if (!detail?.changed || detail.shallower || detail.depth !== 2 || !isLucyMasterModeOn()) return;
-      const layout = isDuoUnfoldedState().unfolded ? 'unfolded' : 'folded';
-      setLucyProMessages(prev => [...prev, createDepthTwoTarotOffer(layout)]);
-    };
-    window.addEventListener(LUCY_MASTER_DEPTH_EVENT, onDepth);
-    return () => window.removeEventListener(LUCY_MASTER_DEPTH_EVENT, onDepth);
-  }, [setLucyProMessages]);
   const chatAccount = firebaseUser?.uid || safeSessionStorage.getItem('prism_auth_uid') || 'device';
   const skipConsultMemoryRef = useRef(false);
-  // 점술모드 대화는 다시 들어오면 비워지므로, 비우기 전/나갈 때 계정별 상담 기록으로 남긴다 (3단계 연결용).
+  // 루시프로 대화는 다시 들어오면 비워지므로, 비우기 전/나갈 때 계정별 상담 기록으로 남긴다 (지난 상담 이어보기용).
   const masterMessagesRef = useRef(lucyProMessages);
   masterMessagesRef.current = lucyProMessages;
   const librarySessionKey = `lucy:${chatAccount}:${chatScope}`;
@@ -1118,7 +1090,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   useEffect(() => {
     if (isMasterMode) {
       setActiveChannelsState(ALL_CHANNELS);
-      setAutoDetectedTitleState('🔮 점술모드');
+      setAutoDetectedTitleState('🔮 루시프로');
     } else if (!pro) {
       setActiveChannelsState([]);
       setAutoDetectedTitleState(null);
@@ -1137,7 +1109,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const isAutoDetect = selectedMode === 'auto';
   const [autoDetectedTitle, setAutoDetectedTitleState] = useState<string | null>(() => {
     if (selectedMode === 'casual') return '💬 수다 모드';
-    if (selectedMode === 'master') return isMasterMode ? '🔮 점술모드' : null;
+    if (selectedMode === 'master') return isMasterMode ? '🔮 루시프로' : null;
     if (selectedMode !== 'auto') {
       const cfg = SPECIAL_CHANNELS[selectedMode as SpecialChannel];
       return cfg ? cfg.name : selectedMode;
@@ -1148,12 +1120,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const setAutoDetectedTitle = useCallback((value: React.SetStateAction<string | null>) => {
     setAutoDetectedTitleState(previous => {
       const next = typeof value === 'function' ? value(previous) : value;
-      return isMasterMode ? '🔮 점술모드' : next?.includes('마스터') ? 'AI 자동 상담' : next;
+      return isMasterMode ? '🔮 루시프로' : next?.includes('마스터') ? 'AI 자동 상담' : next;
     });
   }, [isMasterMode]);
 
   const currentActiveModeConfig = useMemo(() => {
-    if (isMasterMode) return { ...LUCY_MODE_CONFIGS[0], label: '점술모드', subLabel: '🔮 점술모드', tagline: '사주 상담 · 펼치면 타로' };
+    if (isMasterMode) return { ...LUCY_MODE_CONFIGS[0], label: '루시프로', subLabel: '🔮 루시프로', tagline: '사주·타로·13대 도구 통합 상담' };
     if (activeChannels.length >= 2) {
       return {
         id: 'auto' as const,
@@ -1944,12 +1916,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     setLucyMasterLink(fromOffer ? 'linked' : 'undecided');
     setLucyProMessages([greeting]);
   }, [isMasterMode, setLucyProMessages, clearLucyProMessages, userDisplayName, chatAccount]);
-  // 📜 상담 카드: 상담에서 도달한 가장 깊은 단계를 기억해 카드에 적는다.
-  const maxDepthRef = useRef<LucyMasterDepth>(1);
-  useEffect(() => {
-    if (!isMasterMode) return;
-    if (masterDepth > maxDepthRef.current) maxDepthRef.current = masterDepth;
-  }, [isMasterMode, masterDepth]);
+  // 📜 상담 카드: 통합 상담 한 번을 한 장으로 남긴다.
   const [sessionCardOffer, setSessionCardOffer] = useState<MasterSessionCardSource | null>(null);
   const [sessionCard, setSessionCard] = useState<MasterSessionCardSource | null>(null);
   const wasMasterRef = useRef(isMasterMode);
@@ -1959,11 +1926,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       archiveMasterSession(chatAccount, messages);
       // 상담이 끝나면: 실제로 나눈 상담이 있었을 때만 "카드로 남길까?"를 한 번 묻는다.
       if (hasMeaningfulMasterSession(messages)) {
-        setSessionCardOffer({ messages, depth: maxDepthRef.current, endedAt: Date.now() });
+        setSessionCardOffer({ messages, endedAt: Date.now() });
       }
     }
     if (!wasMasterRef.current && isMasterMode) {
-      maxDepthRef.current = 1;
       setSessionCardOffer(null);
     }
     wasMasterRef.current = isMasterMode;
@@ -2395,13 +2361,13 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     };
   }, []);
 
-  // 🔮 루시 마스터 추천 질문의 깊이·주제 (렌더마다 최신값)
+  // 🔮 루시프로 추천 질문의 주제 (렌더마다 최신값)
   const masterConcernTopic = useMemo<MasterConcernTopic>(
     () => (isMasterMode ? detectMasterConcernTopic(findConcernAnchor(lucyProMessages || [])) : 'general'),
     [isMasterMode, lucyProMessages],
   );
   const masterPromptContextRef = useRef<{ depth: LucyMasterDepth; topic: MasterConcernTopic }>({ depth: 1, topic: 'general' });
-  masterPromptContextRef.current = { depth: masterDepth, topic: masterConcernTopic };
+  masterPromptContextRef.current = { depth: 1, topic: masterConcernTopic };
 
   // 🎲 차분하게 유지되는 맞춤 추천 질문 상태 (새로고침 🔄 클릭, 모드 전환, 프로필 변경 시에만 명시적으로 갱신되며 실시간 임의 변동 방지)
   const [currentPrompts, setCurrentPrompts] = useState<string[]>(() => {
@@ -2412,7 +2378,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // 🔄 루시 AI 모드 ↔ 마스터 모드 전환 시 하단 추천 질문 예시 1:1 실시간 즉시 동기화
   useEffect(() => {
     setCurrentPrompts(getCuratedPrompts(activeProfiles, selectedMode, activeChannels, masterPromptContextRef.current));
-  }, [selectedMode, activeChannels, activeProfiles, masterDepth, masterConcernTopic]);
+  }, [selectedMode, activeChannels, activeProfiles, masterConcernTopic]);
 
   useEffect(() => {
     rememberLucySuggestedQuestions(chatAccount, currentPrompts);
@@ -2833,7 +2799,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   const currentModeTitle = useMemo(() => {
     if (isCasualChat) return '가벼운 일상 수다';
     if (requireBasicAndDeep && channelCount === 0) return 'AI 심층 자동 상담';
-    if (isFullProMaster) return '🔮 점술모드';
+    if (isFullProMaster) return '🔮 루시프로';
     if (isSingleSpecial) {
       const ch = activeChannels[0];
       return (ch && SPECIAL_CHANNELS[ch]?.name) || '특화 채널';
@@ -3870,7 +3836,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     if (isMaster) {
       // 👑 점술모드: 7대 테마를 사용하고, 실제 계산·참고 상태는 질문별 기록을 따름
       setActiveChannels(ALL_CHANNELS);
-      setAutoDetectedTitle('🔮 점술모드');
+      setAutoDetectedTitle('🔮 루시프로');
     } else {
       // 💬 일반 채팅: 헤더·상태도 수다모드로 유지한다.
       setActiveChannels([]);
@@ -3897,7 +3863,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${masterContext}` : masterContext;
     }
 
-    // 🔮 점술모드(타로집): 접힘 = 사주 베이스, 펼침 = 왼쪽 타로 테이블 + 사주 베이스
+    // 🔮 루시프로(타로집): 접힘 = 사주 베이스, 펼침 = 왼쪽 점술 테이블 + 사주 베이스
     const divinationLayout: 'folded' | 'unfolded' | undefined = isMasterMode
       ? (isDuoUnfoldedState().unfolded ? 'unfolded' : 'folded')
       : undefined;
@@ -3921,8 +3887,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     // 방금 펼친 카드 풀이에 이어 묻는 말(그럼·이 카드·더 자세히 등)은 새 스프레드를 열지 않고 대화로 답한다.
     const isFollowUpOnReading = /\[TAROT:/.test(lastLucyText)
       && /(그럼|그러면|그래서|이\s*카드|그\s*카드|방금|아까|더\s*자세히|자세하게|왜|무슨\s*뜻|어떻게\s*해|뭘\s*해야)/.test(userCleanText);
-    // 1단계(사주)에서는 고민을 적어도 스프레드를 자동으로 열지 않는다. 2단계부터 타로가 테이블에 더해진다.
-    const autoSpread = hasLeftTarotTable && getLucyMasterDepth() >= 2 && !pickedTarotCards?.length && !attachedImage && !isFollowUpOnReading
+    // 통합 상담: 왼쪽 타로 테이블이 열려 있으면 고민을 적을 때 그 고민에 맞는 배열로 바로 카드를 펼친다.
+    const autoSpread = hasLeftTarotTable && !pickedTarotCards?.length && !attachedImage && !isFollowUpOnReading
       && (isTarotIntent || isAutoSpreadCandidate(userCleanText));
     if (divinationLayout && (isTarotIntent || autoSpread) && !pickedTarotCards?.length) {
       setInput('');
@@ -3944,7 +3910,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     }
     const wantsDeepEngines = Boolean(divinationLayout) && isAskingForDeepEngines(userCleanText, lastLucyText);
     const divinationMode = divinationLayout
-      ? { base: (isTarotIntent ? 'tarot_saju' : 'saju') as 'saju' | 'tarot_saju', deep: wantsDeepEngines, depth: getLucyMasterDepth() }
+      ? { base: (isTarotIntent ? 'tarot_saju' : 'saju') as 'saju' | 'tarot_saju', deep: wantsDeepEngines }
       : undefined;
 
     // 🔮 질문 의도와 활성 테마에 맞춰 도구 지침을 주입하고, 계산 근거와 상징 참고를 구분
@@ -3954,10 +3920,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         // 점술모드: 사주 메인. 7대 채널 보강·올인원 총동원 없이, 원할 때만 관련 엔진 추가
         ? selectOptimalDivinationTools(combinedContextText, [], counselingUserProfile, false, { allowMaster: false, requireBasicAndDeep, divinationMode })
         : selectOptimalDivinationTools(combinedContextText, isMaster ? ALL_CHANNELS : channels, counselingUserProfile, isMaster, { allowMaster: isMasterMode || requireBasicAndDeep, requireBasicAndDeep }));
-    // 🧭 3단계(심층): 13대 도구 계산 결과를 왼쪽 테이블에 넘긴다 (데이터만, 지시문 아님).
-    if (divinationMode?.depth === 3 && !divinationSelection.isCasualMessage) {
+    // 🧭 루시프로 통합 상담: 사주·13대 도구 계산 결과를 왼쪽 점술 테이블에 넘긴다 (데이터만, 지시문 아님).
+    if (divinationMode && !divinationSelection.isCasualMessage) {
       const concernForBoard = findConcernAnchor([...lucyMessages, { role: 'user', content: userCleanText }]) || userCleanText;
-      publishTableTools(divinationSelection.calculationAudit || [], concernForBoard, extractAllToolFacts(LUCY_MASTER_DEPTH3_TOOLS, divinationSelection.engineTools) as Record<string, ToolFact[]>, pickCalculatedToolData(LUCY_MASTER_DEPTH3_TOOLS, divinationSelection.engineTools));
+      publishTableTools(divinationSelection.calculationAudit || [], concernForBoard, extractAllToolFacts(LUCY_PRO_TOOLS, divinationSelection.engineTools) as Record<string, ToolFact[]>, pickCalculatedToolData(LUCY_PRO_TOOLS, divinationSelection.engineTools));
     }
     if (!divinationSelection.isCasualMessage && divinationSelection.promptInjection) {
       extraSystemContext = extraSystemContext
@@ -3973,13 +3939,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       }
       // 처음 꺼낸 고민을 중심에 고정해 대화가 산으로 가지 않게 한다 (아직 없으면 이번 말이 중심 고민)
       const concernAnchor = findConcernAnchor([...lucyMessages, { role: 'user', content: userCleanText }]);
-      const depthNow = getLucyMasterDepth();
-      const houseGuide = buildTarotHouseGuide(divinationLayout, isTarotIntent, wantsDeepEngines, concernAnchor, depthNow);
+      const houseGuide = buildTarotHouseGuide(divinationLayout, isTarotIntent, wantsDeepEngines, concernAnchor);
       extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${houseGuide}` : houseGuide;
-      // 같은 점술모드의 현재 대화와 지난 상담. 자동 모드 간 공유는 공통 기억 동의로 관리한다.
+      // 같은 상담의 지금까지 대화와 지난 루시프로 상담. 자동 모드 간 공유는 공통 기억 동의로 관리한다.
       const continuity = [
-        buildDepthContinuityContext(lucyMessages, depthNow),
-        depthNow >= 3 ? buildPastMasterSessionsContext(chatAccount, String(lucyMessages.find(m => m.role === 'user')?.id || '')) : '',
+        buildDepthContinuityContext(lucyMessages),
+        buildPastMasterSessionsContext(chatAccount, String(lucyMessages.find(m => m.role === 'user')?.id || '')),
       ].filter(Boolean).join('\n\n');
       if (continuity) extraSystemContext = `${extraSystemContext}\n\n${continuity}`;
     }
@@ -4358,29 +4323,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         maxWidth: '100%',
       }}
     >
-      {/* 🔮 상담 깊이 안내 (빅뱅 홀드). 시각 전용, 입력을 막지 않는다. */}
-      <AnimatePresence>
-        {isMasterMode && depthNotice && (
-          <motion.div
-            key={depthNotice.key}
-            data-lucy-master-depth-notice={depthNotice.depth}
-            role="status"
-            aria-live="polite"
-            initial={{ opacity: 0, y: -10, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.25 }}
-            className="pointer-events-none absolute left-1/2 top-16 z-[60] w-[min(92%,360px)] -translate-x-1/2 rounded-2xl border border-amber-300/50 bg-[#1e0f3a]/90 px-4 py-3 text-center shadow-[0_10px_40px_rgba(124,58,237,0.45)] backdrop-blur-md"
-          >
-            <p className="text-sm font-black text-amber-200">
-              {depthNotice.changed ? `🔮 상담 깊이 ${depthNotice.depth}단계 · ${LUCY_MASTER_DEPTH_INFO[depthNotice.depth].name}` : `🔮 이미 가장 깊은 ${LUCY_MASTER_MAX_DEPTH}단계예요`}
-            </p>
-            <p className="mt-1 text-xs leading-relaxed text-violet-100/90 break-keep">
-              {depthNotice.changed ? `다음 답부터 ${LUCY_MASTER_DEPTH_INFO[depthNotice.depth].note}` : '빅뱅 버튼을 한 번 탭하면 일반 루시로 돌아가요'}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
       {/* 🌌 Shared AI/Plus sky background; clover accents belong to Pro modes only */}
       {isMasterMode
         ? <LucyMasterTarotRoom />
@@ -4442,16 +4384,14 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   </h1>
                   {isMasterMode && (
                     <span
-                      data-lucy-master-depth={masterDepth}
-                      title="빅뱅 버튼을 꾹 누르면 상담이 한 단계 깊어져요"
-                      aria-label={`상담 깊이 ${masterDepth}, ${LUCY_MASTER_DEPTH_INFO[masterDepth].name}`}
-                      className="inline-flex h-7 shrink-0 items-center justify-center rounded-full border border-amber-300/50 bg-amber-400/15 px-2.5"
+                      data-lucy-master-depth="1"
+                      data-lucy-pro-badge="true"
+                      title="루시프로(점술모드) · 사주·타로·13대 도구·12대 양피지 통합 상담"
+                      aria-label="루시프로 점술모드 · 사주, 타로, 13대 도구, 12대 양피지를 함께 보는 통합 상담"
+                      className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full border border-amber-300/50 bg-amber-400/15 px-2.5"
                     >
-                      <span aria-hidden="true" className="inline-flex gap-[3px]">
-                        {[1, 2, 3].map(level => (
-                          <span key={level} className={`h-1.5 w-1.5 rounded-full ${level <= masterDepth ? 'bg-amber-300 shadow-[0_0_6px_rgba(252,211,77,0.8)]' : 'bg-white/20'}`} />
-                        ))}
-                      </span>
+                      <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-amber-300 shadow-[0_0_6px_rgba(252,211,77,0.8)]" />
+                      <span className="text-[10.5px] font-bold text-amber-100">통합</span>
                     </span>
                   )}
                   {/* 엔진함은 점술 도구 창(접은 화면 "도구" 버튼 · 펼친 화면 왼쪽 테이블)의 📚 엔진함 탭으로 옮겨졌다 */}
@@ -4462,7 +4402,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
           {/* Right Action Tools: 검색 · 자동 읽기 · 내보내기 */}
           <div className="lucy-header-actions flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* 🔮 접은 화면 점술모드: 펼친 화면의 왼쪽 테이블(사주·타로·추천 도구·양피지)을 창으로 본다 */}
+            {/* 🔮 접은 화면 루시프로: 펼친 화면의 왼쪽 점술 테이블(사주·타로·추천 도구·양피지)을 창으로 본다 */}
             {isMasterMode && <MasterTableSheetButton tone={isLight ? 'light' : 'dark'} />}
             {/* 📘 가이드 */}
             <PageGuideButton guide={getPageGuide(isMasterMode ? 'master' : 'lucy')} tone={isLight ? 'light' : 'dark'} />
@@ -4835,40 +4775,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                         ) : null;
 
                         if (dismissedRecommendationFor === msgId) return answerChoiceButtons;
-                        if (isMasterMode && nextMasterDepth && !isGreeting && textContent.trim()
-                          && !answerChoices.length && recentUserTexts.some(text => text.trim())
-                          && returnOfferFor !== msgId && !isConsultationClosing(recentUserTexts)) {
-                          return (
-                            <div
-                              data-lucy-master-next-depth={nextMasterDepth}
-                              className={`mt-3 rounded-xl border p-3 ${isLight ? 'border-violet-200 bg-violet-50 text-violet-950' : 'border-violet-400/40 bg-violet-950/40 text-violet-100'}`}
-                            >
-                              <p className="text-xs font-bold">{nextMasterDepth}단계 · {LUCY_MASTER_DEPTH_INFO[nextMasterDepth].name} 상담으로 이어갈까?</p>
-                              <p className="mt-1 text-xs leading-relaxed break-keep">
-                                {nextMasterDepth === 2
-                                  ? '사주에 타로를 더해서 지금 고민의 원인과 흐름을 함께 살펴볼 수 있어.'
-                                  : '지금 고민에 맞는 점술 도구를 더해 여러 관점에서 깊게 살펴볼 수 있어.'}
-                              </p>
-                              <div className="mt-2.5 flex flex-wrap gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    if (!isLucyMasterModeOn() || getLucyMasterDepth() !== masterDepth) return;
-                                    setDismissedRecommendationFor(msgId);
-                                    deepenLucyMasterDepth();
-                                    triggerHaptic('wormhole');
-                                  }}
-                                  className="rounded-full bg-violet-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-violet-800 active:scale-95"
-                                >{nextMasterDepth}단계로 이어가기</button>
-                                <button
-                                  type="button"
-                                  onClick={() => setDismissedRecommendationFor(msgId)}
-                                  className="rounded-full border border-current/25 px-3 py-1.5 text-xs font-semibold hover:bg-violet-500/10 active:scale-95"
-                                >지금 단계에서 계속</button>
-                              </div>
-                            </div>
-                          );
-                        }
 
                         const nextStepRecommendation = !isMasterMode && !msgModeInfo.isCasual && !isGreeting ? (
                           <LucyResponseRecommendation
@@ -4965,7 +4871,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                 ? 'bg-[#fffdf9]/95 border-emerald-200/80 text-emerald-950'
                 : 'bg-slate-900/90 border-emerald-500/30 text-white'
             }`}>
-              <LucyThinkingIndicator isLight={isLight} depth={masterDepth} master={isMasterMode} />
+              <LucyThinkingIndicator isLight={isLight} master={isMasterMode} />
             </div>
           )}
           

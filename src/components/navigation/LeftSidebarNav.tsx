@@ -7,10 +7,6 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'wouter';
 import {
   MessageCircle,
-  MessageCircleQuestion,
-  MessageCircleMore,
-  MessageCircleWarning,
-  MessageCirclePlus,
   Sparkles,
   KeyRound,
   User,
@@ -28,7 +24,6 @@ import {
   type BgmPublicState,
 } from '@/components/trinity/BgMusicPlayer';
 import { subscribeFoldState, useFoldState } from '@/lib/foldState';
-import { MessageCircleMinus } from '@/lib/channelMenuIcons';
 import { forceAppUpgradeAndReload } from '@/lib/prismSync';
 import { useApp } from '@/contexts/AppContext';
 import { resetAppScreen } from '@/lib/visualViewportBox';
@@ -36,12 +31,13 @@ import { markAppScreenReset } from '@/lib/appUpdateReload';
 import { showViewportDiagnostics } from '@/lib/viewportDiagnostics';
 import { startFoldRuntimeTrace } from '@/lib/foldRuntimeTrace';
 import { markPendingUpdateNotice } from '@/lib/updateNotice';
-import { isLucyMasterModeOn, setLucyMasterMode, deepenLucyMasterDepth, getLucyMasterDepth, LUCY_MASTER_MAX_DEPTH, LUCY_MASTER_MODE_EVENT, useLucyMasterDepth, getLucyBubbleMarker, setLucyBubbleMarker, isLucyMasterToolsRequested, setLucyMasterToolsRequested } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, getLucyBubbleMarker, setLucyBubbleMarker, isLucyMasterToolsRequested, setLucyMasterToolsRequested } from '@/lib/lucyMasterMode';
 import { playLucyMasterSuction } from '@/components/omniwarp/BigBangMasterSuction';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
 import { isLucyChatPath } from '@/lib/duoPaneFocus';
 import { OrbShapeIcon } from '@/components/icons/OrbShapeIcon';
+import { LucyProBubbleDotIcon } from '@/components/icons/LucyProBubbleDotIcon';
 import { setOrbCounselOpen, useOrbCounselOpen } from '@/lib/orbCounselGate';
 
 export interface NavItemConfig {
@@ -472,8 +468,8 @@ export default function LeftSidebarNav() {
   }, []);
 
   /**
-   * 💬 Folded: Lucy → Lucy− → Master 1 → 2 → 3 → Lucy.
-   * Expanded: Lucy → Lucy+ → Master 1 → 2 → 3 → Lucy.
+   * 💬 루시 말풍선: 일반 루시 ↔ 루시프로(점술모드) 두 상태만 오간다.
+   * 켜면 사주 원국·타로·13대 도구·12대 양피지가 처음부터 모두 열린 통합 상담이 된다.
    */
   const cycleLucyMode = () => {
     triggerHaptic('whitehole');
@@ -481,16 +477,6 @@ export default function LeftSidebarNav() {
       document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
     ) && isDuoUnfoldedState().unfolded;
     if (!isLucyMasterModeOn()) {
-      const marker = getLucyBubbleMarker();
-      const activeMarker = isLucyActive ? (isExpandedDuo ? 'plus' : 'minus') : marker;
-      if (isExpandedDuo && activeMarker !== 'plus') {
-        setLucyBubbleMarker('plus');
-        return;
-      }
-      if (!isExpandedDuo && activeMarker !== 'minus') {
-        setLucyBubbleMarker('minus');
-        return;
-      }
       setLucyBubbleMarker(null);
       setLucyMasterMode(true);
       setLucyMasterToolsRequested(isExpandedDuo);
@@ -498,13 +484,9 @@ export default function LeftSidebarNav() {
       if (isLucyMasterBgmPreferred()) void startLucyMasterBgm();
       return;
     }
+    // 펼친 화면: 첫 누름은 왼쪽 점술 테이블(도구)을 펼치고, 다음 누름은 일반 루시로 돌아간다.
     if (isExpandedDuo && !isLucyMasterToolsRequested()) {
       setLucyMasterToolsRequested(true);
-      return;
-    }
-    if (getLucyMasterDepth() < LUCY_MASTER_MAX_DEPTH) {
-      deepenLucyMasterDepth();
-      playLucyMasterSuction('deepen');
       return;
     }
     playLucyMasterSuction('out');
@@ -518,7 +500,7 @@ export default function LeftSidebarNav() {
   ) && isDuoUnfoldedState().unfolded;
 
   const handleNavigate = (path: string) => {
-    // Lucy already visible: the bubble switches Lucy / 점술모드 1·2·3 instead of navigating.
+    // Lucy already visible: the bubble switches Lucy / 루시프로(점술모드) instead of navigating.
     if (path === '/' && isLucyOnScreen()) {
       if (isExpandedLucyDuo() && !isLucyChatPath(location)) {
         // The Lucy bubble is also the shortcut back to its left-side tools after
@@ -603,13 +585,8 @@ export default function LeftSidebarNav() {
   }, [syncPrismDevices]);
 
   const [isLucyMaster, setIsLucyMaster] = useState<boolean>(() => isLucyMasterModeOn());
-  // 점술모드 상담 깊이마다 말풍선 기호가 바뀐다: 1단계 … / 2단계 ? / 3단계 !
-  const masterDepth = useLucyMasterDepth();
-  const MasterBubbleIcon = masterDepth >= 3 ? MessageCircleWarning : masterDepth === 2 ? MessageCircleQuestion : MessageCircleMore;
-  const displayBubbleMarker = !isLucyMaster
-    // 펼침 상태(isUnfolded)는 접기/펼치기 즉시 갱신된다. 화면 칸(DOM)이 생길 때까지 기다리지 않아 + 표시가 바로 바뀐다.
-    ? ((isUnfolded || isExpandedLucyDuo()) && isLucyActive ? 'plus' : 'minus')
-    : null;
+  // 일반 루시는 속이 빈 말풍선, 루시프로(점술모드)는 말풍선 안에 점 하나.
+  const LucyBubbleIcon = isLucyMaster ? LucyProBubbleDotIcon : MessageCircle;
   useEffect(() => {
     const sync = (e: Event) => {
       const on = (e as CustomEvent<{ on?: boolean }>).detail?.on;
@@ -619,24 +596,14 @@ export default function LeftSidebarNav() {
     return () => window.removeEventListener(LUCY_MASTER_MODE_EVENT, sync);
   }, []);
 
-  const lucyBubbleLabel = !isLucyMaster
-    ? displayBubbleMarker === 'plus'
-      ? 'Lucy Plus (+) (누르면 점술모드 1단계)'
-      : 'Lucy (−) (누르면 점술모드 1단계)'
-    : masterDepth >= LUCY_MASTER_MAX_DEPTH
-      ? '점술모드 3단계 (누르면 일반 루시로)'
-      : `점술모드 ${masterDepth}단계 (누르면 ${masterDepth + 1}단계)`;
+  // 장치 테스트와 화면 낭독이 같은 이름으로 루시 말풍선을 찾도록 'Lucy'로 시작한다.
+  const lucyBubbleLabel = isLucyMaster
+    ? 'Lucy 프로 · 루시프로(점술모드) (누르면 일반 루시로)'
+    : 'Lucy · 루시 (누르면 루시프로 점술모드)';
 
   const renderNavButton = ({ path, icon: NavIcon, label, isMainChat, isKey, isPrologue }: NavItemConfig) => {
-    // 점술모드(Lucy Master) 중에는 Lucy 말풍선 안 기호가 상담 깊이를 보여준다 (… / ? / !).
-    // 일반 모드에서는 말풍선 안에 Lucy(−) / Lucy Plus(+) 기호를 그린다.
-    const Icon = isMainChat
-      ? isLucyMaster
-        ? MasterBubbleIcon
-        : displayBubbleMarker === 'plus'
-          ? MessageCirclePlus
-          : MessageCircleMinus
-      : NavIcon;
+    // 일반 루시는 속이 빈 말풍선, 루시프로(점술모드)는 말풍선 안 점 하나.
+    const Icon = isMainChat ? LucyBubbleIcon : NavIcon;
     const isActive = isMainChat ? isLucyActive : isKey ? isKeyActive : isPrologue ? isPrologueActive
       : path === '/epilogue' ? isEpilogueActive : cleanPath === path || cleanPath.startsWith(path + '/');
     return (
@@ -646,9 +613,9 @@ export default function LeftSidebarNav() {
         <Icon
           size={22}
           aria-hidden="true"
-          data-lucy-mode-marker={isMainChat && !isLucyMaster && displayBubbleMarker ? displayBubbleMarker : undefined}
+          data-lucy-pro-bubble={isMainChat && isLucyMaster ? 'true' : undefined}
         />
-        {isMainChat && isLucyMaster && <span className="sr-only">점술모드 깊이 {masterDepth}단계</span>}
+        {isMainChat && isLucyMaster && <span className="sr-only">루시프로 점술모드 켜짐</span>}
       </button>
     );
   };

@@ -2,7 +2,7 @@ import { useState, type ReactElement, type ReactNode } from 'react';
 import type { DivinationToolId } from '@/lib/fifteenDivinationTools';
 
 /**
- * 🧭 점술모드 3단계 · 13대 도구 전용 화면.
+ * 🧭 루시프로(점술모드) · 13대 도구 전용 화면.
  * 엔진이 실제로 계산한 값만 그린다. 값이 없으면 그 부분은 그리지 않는다 (지어내지 않음).
  * 숙요·마하보테·카발라는 계산 기준 재검토 중이라 개인 값 없이 도구의 구조만 보여준다.
  */
