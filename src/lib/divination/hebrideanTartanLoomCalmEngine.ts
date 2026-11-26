@@ -7,6 +7,7 @@ export interface HebrideanTartanResult {
   hebrideanMotif: string;
   companionMotif: string;
   loomWeaveAxis: string;
+  topicBalanceHint: string;
   hebrideanInsight: string;
   tweedTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const HEBRIDEAN_SHADOWS = [
   '지나간 파도 뒤의 양분을 챙기는 데만 머무르지 말고, 다음 항해를 위한 새 돛도 제때 점검하세요.',
 ];
 
+const HEBRIDEAN_TOPIC_HINTS: Record<HebrideanTartanResult['questionTopic'], string> = {
+  '박자·직조': '나만의 발박자를 지키되 함께 호흡을 맞추어야 할 공동 일정의 속도도 나란히 살피세요.',
+  '방풍·유연': '몸을 낮춰 바람을 유연하게 넘기면서도 꼭 지켜야 할 삶의 원칙적 경계는 분명히 세우세요.',
+  '고유·양분': '내 발밑의 익숙한 재료에서 빛깔을 우려내되 새로운 배움의 창도 열어 두는 균형이 좋습니다.',
+  '트위드 전반': '거친 바람을 견디는 단단한 씨실과 내 손의 고른 박자가 어우러질 때 오래 남는 무늬가 짜입니다.',
+};
+
 function classifyHebrideanTopic(q: string): HebrideanTartanResult['questionTopic'] {
   if (/박자|속도|베틀|격자|직조/.test(q)) return '박자·직조';
   if (/바람|강풍|지붕|낮추|흘려/.test(q)) return '방풍·유연';
@@ -102,15 +110,17 @@ export function calculateHebrideanTartanLoomCalm(params: {
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const loomWeaveAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = HEBRIDEAN_TOPIC_HINTS[questionTopic];
   const shadowWarning = HEBRIDEAN_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-HEBRIDEAN-TARTAN-v2.3.0',
+    engineVersion: 'LUCKEY-HEBRIDEAN-TARTAN-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     hebrideanMotif: picked.motif,
     companionMotif: companion.motif,
     loomWeaveAxis,
+    topicBalanceHint,
     hebrideanInsight: picked.insight,
     tweedTone: picked.tone,
     reflectionFocus: `헤브리디스 트위드의 '${picked.motif}'과 동반 결 '${companion.motif}'을 함께 엮어, 내 발박자에 맞는 고유한 격자를 짜 보세요.`,
@@ -126,6 +136,7 @@ export function formatHebrideanTartanPrompt(res: HebrideanTartanResult): string 
     `[헤브리디스·타르탄 베틀 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 베틀·직조 축: ${res.loomWeaveAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 헤브리디스 모티프: ${res.hebrideanMotif} (${res.tweedTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.hebrideanInsight}`,

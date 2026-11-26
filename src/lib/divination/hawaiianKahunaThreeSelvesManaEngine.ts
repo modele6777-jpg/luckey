@@ -5,7 +5,7 @@
  * 3대 자아(우니히필리·우하네·아우마쿠아)의 삼위일체 정렬과 신성한 생명 에너지 마나(Mana) 순환을 연동합니다.
  */
 
-export const HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION = 'LUCKEY-HAWAIIAN-KAHUNA-v2.3.0';
+export const HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION = 'LUCKEY-HAWAIIAN-KAHUNA-v2.4.0';
 
 export interface KahunaSelfState {
   selfType: '우니히필리 (Unihipili - 잠재의식/내면아이)' | '우하네 (Uhane - 의식/이성적 자아)' | '아우마쿠아 (Aumakua - 초의식/신성한 고차원 자아)';
@@ -44,6 +44,11 @@ export interface KahunaManaReport {
     coreMandate: string;
     sacredBoundary: string;
     reflectiveQuestion: string;
+  };
+  kahunaCrossAxis: {
+    pikoFlow: string;
+    vitalityBalance: string;
+    dominantPiko: string;
   };
   ritualAction: string;
   reflectionFocus: string;
@@ -204,6 +209,14 @@ export function calculateHawaiianKahunaThreeSelves(params: {
 
   const ritualAction = `[${currentManaPikoState}] 오늘 4-4-4 하(Ha) 호흡을 4회 반복한 뒤 내면 아이(우니히필리)에게 다정한 안심의 한마디를 건네세요.`;
   const reflectionFocus = kahunaSynthesisMatrix.reflectiveQuestion;
+  const kahunaCrossAxis = {
+    pikoFlow: `${currentManaPikoState} ↔ ${secondaryManaPikoState} (피코 마나 순환)`,
+    vitalityBalance:
+      unihipiliVitality >= 80 && uhaneVitality >= 80
+        ? '내면 아이와 의식이 조화롭게 맞물린 고활력 상태'
+        : '감정 이완과 하(Ha) 호흡으로 마나 순환을 보강할 국면',
+    dominantPiko: `${questionFocus} · ${kahunaManaWindow}`,
+  };
 
   return {
     engineVersion: HAWAIIAN_KAHUNA_THREE_SELVES_ENGINE_VERSION,
@@ -230,6 +243,7 @@ export function calculateHawaiianKahunaThreeSelves(params: {
       pikoTimingNote,
     },
     kahunaSynthesisMatrix,
+    kahunaCrossAxis,
     ritualAction,
     reflectionFocus,
   };
@@ -248,5 +262,6 @@ export function formatHawaiianKahunaThreeSelvesPrompt(report: KahunaManaReport):
 - **마나 충전 하(Ha) 호흡법**: ${report.haBreathingPrescription}
 - **실천 의례(Ritual Action)**: ${report.ritualAction}
 - **교차 매트릭스**: ${report.kahunaSynthesisMatrix.coreMandate} | 경계: ${report.kahunaSynthesisMatrix.sacredBoundary} | 성찰 초점: "${report.reflectionFocus}"
+- **카후나 교차 축**: ${report.kahunaCrossAxis.pikoFlow} | 활력 균형: ${report.kahunaCrossAxis.vitalityBalance} | 중심 피코: ${report.kahunaCrossAxis.dominantPiko}
 - **해석 경계**: ${report.interpretiveBoundary}`;
 }
