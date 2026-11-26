@@ -2007,11 +2007,11 @@ test('Hongguk Qimen: 4-pillar numeral casting, 9-palace flight, key points, dete
   assert.deepEqual(r1, r2);
   assert(r1.calculatedAtKst?.includes('KST'));
   assert((r1.interpretiveBoundary || '').length > 0);
-  assert((r1.ritualAction || '').length > 0 && (r1.reflectionFocus || '').length > 0);
+  assert((r1.ritualAction || '').length > 0 && (r1.reflectionFocus || '').length > 0 && (r1.honggukCrossAxis || '').length > 0);
 
   // 프롬프트 포맷터
   const prompt = formatHonggukQimenPrompt(r1);
-  assert(prompt.includes(r1.ritualAction!));
+  assert(prompt.includes(r1.ritualAction!) && prompt.includes(r1.honggukCrossAxis!));
   assert(prompt.includes(HONGGUK_QIMEN_ENGINE_VERSION));
   assert(prompt.includes('세효(世爻'));
   assert(prompt.includes('응효(應爻'));
@@ -4893,7 +4893,7 @@ test('Orpheic Mysteries Engine: calculates memory well awakening and Dionysian e
   assert(rep.thresholdState.length > 0);
   assert(rep.polarityArchetype.nameKo.length > 0);
   assert.notEqual(rep.companionArchetype.nameKo, rep.polarityArchetype.nameKo);
-  assert(rep.orphicPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert(rep.orphicPhase.length > 0 && rep.orphicCrossAxis.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.divineLineageDeclaration.length > 0);
   assert(rep.practiceGuidance.length > 0 && rep.ritualAction.length > 0 && rep.boundaryNotice.length > 0);
   assertKstTimestamp(rep.calculatedAtKst);
@@ -4901,7 +4901,7 @@ test('Orpheic Mysteries Engine: calculates memory well awakening and Dionysian e
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatOrpheicMysteriesPrompt(rep);
   assert(prompt.includes('고대 그리스 오르페우스 신비주의 & 므네모시네 기억의 샘 실측 데이터'));
-  assert(prompt.includes(rep.goldTabletPassportCode));
+  assert(prompt.includes(rep.goldTabletPassportCode) && prompt.includes(rep.orphicCrossAxis));
   assert(prompt.includes('동반 교차 원형'));
   assert(prompt.includes('과잉·경계 점검'));
   assert(prompt.includes(rep.practiceGuidance));
@@ -9501,7 +9501,7 @@ test('Miguel de Cervantes Don Quixote Engine: calculates Noble Idealism, Courage
   const rep = calculateSpanishMiguelDeCervantesDonQuixote(profile);
   assert.equal(rep.engineVersion, SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION);
   assertKstTimestamp(rep.calculatedAtKst);
-  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
+  assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.cervantesCrossAxis.length > 0);
   assert(Boolean(rep.cervantesSynthesisMatrix?.integratedAction));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.nobleIdealismScore >= 0 && rep.nobleIdealismScore <= 100);
@@ -9512,7 +9512,7 @@ test('Miguel de Cervantes Don Quixote Engine: calculates Noble Idealism, Courage
   assert(rep.activeCervantesTheme.themeTitleKo.length > 0);
   const prompt = formatSpanishMiguelDeCervantesDonQuixotePrompt(rep);
   assert(prompt.includes('미겔 데 세르반테스 《돈키호테》 고결한 이상주의·풍차 앞 불굴의 용기 지표'));
-  assert(prompt.includes(rep.activeCervantesTheme.themeTitleKo));
+  assert(prompt.includes(rep.activeCervantesTheme.themeTitleKo) && prompt.includes(rep.cervantesCrossAxis));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
