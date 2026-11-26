@@ -16,7 +16,7 @@
 import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, type SajuAnalysisResult } from '../sajuAnalysis';
 
-export const FIVE_EMOTIONS_PULSE_VERSION = 'LUCKEY-FIVE-EMOTIONS-v2.3.0';
+export const FIVE_EMOTIONS_PULSE_VERSION = 'LUCKEY-FIVE-EMOTIONS-v2.4.0';
 
 export type TraditionalEmotion = '노(怒-분노/추진)' | '희(喜-환희/산만)' | '사(思-사색/번민)' | '비우(悲憂-슬픔/위축)' | '공경(恐驚-공포/불안)';
 
@@ -58,6 +58,7 @@ export interface FiveEmotionsPulseReport {
     seasonalEmotionTone: string;
     temporalGuidance: string;
   };
+  pulseCrossAxis: string;
   pulseSynthesisMatrix: {
     coreInsight: string;
     recommendedAction: string;
@@ -269,6 +270,8 @@ export function calculateFiveEmotionsPulse(
           calmingPractice: `${breathingMethod} · ${mindDirectives}`,
         };
 
+  const pulseCrossAxis = `${dominant.emotion.split('(')[0].trim()} × ${deficient.element} (${temporalPulseRhythm.organMeridianWindow.split('—')[0].trim()})`;
+
   const pulseSynthesisMatrix = {
     coreInsight: `주도 맥파 [${dominant.emotion}]와 보충 오행 [${deficient.element}]의 균형을 맞추는 것이 핵심입니다.`,
     recommendedAction: `${breathingMethod} + ${colorTherapy} + ${mindDirectives}`,
@@ -299,6 +302,7 @@ export function calculateFiveEmotionsPulse(
     },
     situationalPulseAudit,
     temporalPulseRhythm,
+    pulseCrossAxis,
     pulseSynthesisMatrix,
     boundaryNotice: '본 결과는 한의학 황제내경의 오행·칠정 상징 이론을 활용한 정성적 심신 성찰 안내이며, 의학적 진단이 아닙니다.',
     interpretiveBoundary: '본 결과는 한의학 황제내경의 오행·칠정 상징 이론을 활용한 정성적 심신 성찰 안내이며, 의학적 진단이 아닙니다.',
@@ -329,6 +333,7 @@ export function formatFiveEmotionsPulsePrompt(rep: FiveEmotionsPulseReport): str
 - 질문 맥락 감사 (${rep.situationalPulseAudit.focusTheme}): ${rep.situationalPulseAudit.emotionNote} / 처방: ${rep.situationalPulseAudit.calmingPractice}
 - KST 시공간 장부 리듬: ${rep.temporalPulseRhythm.organMeridianWindow} / ${rep.temporalPulseRhythm.seasonalEmotionTone}
   • 시공간 지침: ${rep.temporalPulseRhythm.temporalGuidance}
+- 칠정 교차 축: ${rep.pulseCrossAxis}
 - 칠정 교차 매트릭스: 핵심(${rep.pulseSynthesisMatrix.coreInsight}) | 실행(${rep.pulseSynthesisMatrix.recommendedAction}) | 주의(${rep.pulseSynthesisMatrix.cautionNotice})
 - 5대 감정 맥파 분석:
 ${pulsesStr}

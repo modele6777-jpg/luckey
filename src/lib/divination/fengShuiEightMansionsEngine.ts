@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FENG_SHUI_EIGHT_MANSIONS_VERSION = 'LUCKEY-FENG-SHUI-EIGHT-MANSIONS-v2.3.0';
+export const FENG_SHUI_EIGHT_MANSIONS_VERSION = 'LUCKEY-FENG-SHUI-EIGHT-MANSIONS-v2.4.0';
 
 export type TrigramName = '감(坎, 1궁)' | '곤(坤, 2궁)' | '진(震, 3궁)' | '손(巽, 4궁)' | '건(乾, 6궁)' | '태(兌, 7궁)' | '간(艮, 8궁)' | '이(離, 9궁)';
 
@@ -76,6 +76,7 @@ export interface FengShuiEightMansionsReport {
     seasonalSpatialTone: string;
     temporalGuidance: string;
   };
+  fengShuiCrossAxis: string;
   fengShuiSynthesisMatrix: {
     coreInsight: string;
     recommendedAction: string;
@@ -325,6 +326,8 @@ export function calculateFengShuiEightMansions(
           placementTip: prescription.remedyColorAndElement,
         };
 
+  const fengShuiCrossAxis = `${trigramName} × ${auspiciousDirections.shengChi.split('(')[0].trim()} (${temporalFengShuiRhythm.sunDirectionWindow.split('—')[0].trim()})`;
+
   const fengShuiSynthesisMatrix = {
     coreInsight: `[${trigramName} · ${mansionGroup}] 체질에 맞춘 4길방(${auspiciousDirections.shengChi} 등) 활용이 핵심입니다.`,
     recommendedAction: `업무 시 [${auspiciousDirections.shengChi}], 휴식 시 [${bedHeadDirection}] 지향 + ${prescription.remedyColorAndElement}`,
@@ -349,6 +352,7 @@ export function calculateFengShuiEightMansions(
     spatialEnergyVitalityScore,
     situationalFengShuiAudit,
     temporalFengShuiRhythm,
+    fengShuiCrossAxis,
     fengShuiSynthesisMatrix,
     spatialHarmonyGuidance,
     boundaryNotice: '본 결과는 동양 팔택명괘(八宅命卦) 방위 원리를 활용한 정성적 공간 배치 참고용이며, 확정적 길흉 판정이 아닙니다.',
@@ -374,6 +378,7 @@ export function formatFengShuiEightMansionsPrompt(report: FengShuiEightMansionsR
 - **질문 맥락 감사 (${report.situationalFengShuiAudit.focusTheme})**: ${report.situationalFengShuiAudit.spatialNote} / 팁: ${report.situationalFengShuiAudit.placementTip}
 - **KST 시공간 방위 리듬**: ${report.temporalFengShuiRhythm.sunDirectionWindow} / ${report.temporalFengShuiRhythm.seasonalSpatialTone}
   - *시공간 지침*: ${report.temporalFengShuiRhythm.temporalGuidance}
+- **팔택 교차 축**: ${report.fengShuiCrossAxis}
 - **팔택 교차 매트릭스**: 핵심(${report.fengShuiSynthesisMatrix.coreInsight}) | 실행(${report.fengShuiSynthesisMatrix.recommendedAction}) | 주의(${report.fengShuiSynthesisMatrix.cautionNotice})
 - **일상 공간 배치 처방(Spatial Arrangement)**:
   - 업무/학업 데스크 지향 방위: ${report.prescription.deskFacingDirection}
