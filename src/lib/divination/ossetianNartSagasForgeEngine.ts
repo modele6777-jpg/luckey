@@ -7,6 +7,7 @@ export interface OssetianNartResult {
   nartEmblem: string;
   companionEmblem: string;
   nartForgeAxis: string;
+  topicBalanceHint: string;
   nartInsight: string;
   caucasusTone: string;
   reflectionFocus: string;
@@ -81,6 +82,15 @@ const NART_SHADOWS = [
   '어깨를 나란히 하고 함께 추는 춤이 내 고유의 기준을 지우고 분위기나 주변 속도에 무조건 맞추는 휩쓸림이 되어서는 안 됩니다.',
 ];
 
+const NART_TOPIC_HINTS: Record<OssetianNartResult['questionTopic'], string> = {
+  '단련·수고': '뜨거운 망치질을 버티는 동안에도 쇠가 깨지지 않도록 식혀 줄 호흡의 틈을 함께 두세요.',
+  '회복·휴식': '황금 사과를 베어 무는 시간은 게으름이 아니라 다음 걸음을 위한 필수적인 재정비입니다.',
+  '진실·담백': '거창한 수사보다 있는 그대로의 솔직한 문장 하나가 결국 가장 오래 남습니다.',
+  '관찰·타이밍': '힘으로 밀어붙이기보다 안개가 걷히는 순서를 기다릴 때 매듭이 자연스럽게 풀립니다.',
+  '연대·보폭': '혼자 짊어지던 무게를 신뢰하는 동료와 나누면 발걸음이 한결 가벼워집니다.',
+  '나르트 전반': '단련과 쉼, 진실과 연대의 균형을 맞출 때 나르트 대장간의 불씨가 오래 살아납니다.',
+};
+
 function classifyNartTopic(q: string): OssetianNartResult['questionTopic'] {
   if (/수고|단련|부담|과제/.test(q)) return '단련·수고';
   if (/회복|쉼|휴식|지친/.test(q)) return '회복·휴식';
@@ -104,14 +114,16 @@ export function calculateOssetianNartSagasForge(params: {
   const picked = EMBLEMS[idx];
   const companion = EMBLEMS[(idx + companionOffset) % EMBLEMS.length];
   const nartForgeAxis = `${picked.emblem.split('(')[0].trim()} ↔ ${companion.emblem.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = NART_TOPIC_HINTS[questionTopic];
 
   return {
-    engineVersion: 'LUCKEY-OSSETIAN-NART-v2.3.0',
+    engineVersion: 'LUCKEY-OSSETIAN-NART-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     nartEmblem: picked.emblem,
     companionEmblem: companion.emblem,
     nartForgeAxis,
+    topicBalanceHint,
     nartInsight: picked.insight,
     caucasusTone: picked.tone,
     reflectionFocus: `코카서스 오세트 나르트 서사시의 '${picked.emblem}'처럼, 지금 겪는 수고와 단련은 나를 더 명료하고 단단하게 벼리는 과정입니다. (동반 결: ${companion.emblem.split('(')[0].trim()})`,
@@ -127,6 +139,7 @@ export function formatOssetianNartPrompt(res: OssetianNartResult): string {
     `[오세트 나르트 서사시·단련 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 나르트 단련 축: ${res.nartForgeAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 나르트 상징: ${res.nartEmblem} (${res.caucasusTone})`,
     `- 동반 상징: ${res.companionEmblem}`,
     `- 중심 통찰: ${res.nartInsight}`,
