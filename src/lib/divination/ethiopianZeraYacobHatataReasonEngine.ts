@@ -15,12 +15,12 @@
  * 1. 개인 점수·심리 진단·미래 예측이 아닙니다. 모든 산출은 정성적 성찰 문장입니다.
  * 2. 원전 문구를 임의로 지어 인용하지 않고 사상적 핵심 원리만 반영합니다.
  *
- * @version LUCKEY-ZERA-YACOB-HATATA-v2.3.0
+ * @version LUCKEY-ZERA-YACOB-HATATA-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ETHIOPIAN_ZERA_YACOB_VERSION = 'LUCKEY-ZERA-YACOB-HATATA-v2.3.0';
+export const ETHIOPIAN_ZERA_YACOB_VERSION = 'LUCKEY-ZERA-YACOB-HATATA-v2.4.0';
 
 export type HatataQuestionTopic = 'decision' | 'relationship' | 'healing' | 'reflection';
 
@@ -49,6 +49,7 @@ export interface EthiopianZeraYacobHatataResult {
   calculatedAt: string;
   calculatedAtKst: string;
   questionTopic: HatataQuestionTopic;
+  hatataCrossAxis: string;
   inquiryLens: string;
   companionLens: string;
   inquiryPhase: string;
@@ -215,6 +216,7 @@ export function calculateEthiopianZeraYacobHatataReason(
     conscienceAnchor: situationalHatataAudit.conscienceAlignment,
     integratedAction: `${temporalReasonPulse.inquiryMethod} (${inquiryPhase})${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
   };
+  const hatataCrossAxis = `${inquiryLens.split('—')[0].trim()} × ${inquiryPhase.split('(')[0].trim()} (${topic})`;
 
   const kst = new Date(now.getTime() + 9 * 3600 * 1000);
   const y = kst.getUTCFullYear();
@@ -229,6 +231,7 @@ export function calculateEthiopianZeraYacobHatataReason(
     calculatedAt: now.toISOString(),
     calculatedAtKst,
     questionTopic: topic,
+    hatataCrossAxis,
     inquiryLens,
     companionLens,
     inquiryPhase,
@@ -246,7 +249,7 @@ export function calculateEthiopianZeraYacobHatataReason(
 export function formatEthiopianZeraYacobHatataReasonPrompt(res: EthiopianZeraYacobHatataResult): string {
   return [
     `【에티오피아 자라 야곱 《하타타》 이성·성찰 (${res.engineVersion} | ${res.calculatedAtKst})】`,
-    `- 질문 주제 분류: ${res.questionTopic}`,
+    `- 질문 주제 분류: ${res.questionTopic} | 하타타 교차 축: ${res.hatataCrossAxis}`,
     `- 탐구 렌즈: ${res.inquiryLens}`,
     `- 동반 탐구 렌즈: ${res.companionLens}`,
     `- 탐구 국면: ${res.inquiryPhase}`,

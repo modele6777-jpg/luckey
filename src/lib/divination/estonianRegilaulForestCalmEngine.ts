@@ -7,6 +7,7 @@ export interface EstonianRegilaulResult {
   forestMotif: string;
   companionMotif: string;
   forestSongAxis: string;
+  topicBalanceHint: string;
   regilaulInsight: string;
   nordicForestTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const ESTONIAN_SHADOWS = [
   '피로를 씻어 내는 쉼이 내일 다시 움직여야 할 핵심 과제에서 물러나는 핑계가 되지 않게 하세요.',
 ];
 
+const TOPIC_BALANCE_HINTS: Record<EstonianRegilaulResult['questionTopic'], string> = {
+  '정적·호흡': '히이스 숲의 정적에서 숨을 고르되, 오늘 건네야 할 안부나 작은 마감도 함께 챙기세요.',
+  '루틴·지속': '레기라울의 같은 선율을 되풀이하며 안정감을 얻되, 필요한 작은 방향 수정은 열어 두세요.',
+  '신중·여백': '라바 습지의 나무 데크처럼 발밑을 살피되, 확인이 끝나면 다음 걸음을 망설이지 마세요.',
+  '리듬 전반': '백야의 황혼처럼 애매함을 품고 사우나 뒤의 가벼움처럼 오늘의 피로를 먼저 비워 내세요.',
+};
+
 function classifyEstonianTopic(q: string): EstonianRegilaulResult['questionTopic'] {
   if (/정적|호흡|숨|숲|쉼|피로/.test(q)) return '정적·호흡';
   if (/루틴|리듬|지속|매일|반복|일/.test(q)) return '루틴·지속';
@@ -102,15 +110,17 @@ export function calculateEstonianRegilaulForestCalm(params: {
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const forestSongAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = ESTONIAN_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-ESTONIAN-REGILAUL-v2.3.0',
+    engineVersion: 'LUCKEY-ESTONIAN-REGILAUL-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     forestMotif: picked.motif,
     companionMotif: companion.motif,
     forestSongAxis,
+    topicBalanceHint,
     regilaulInsight: picked.insight,
     nordicForestTone: picked.tone,
     reflectionFocus: `에스토니아 레기라울·숲 지혜의 '${picked.motif}'과 동반 결 '${companion.motif}'을 함께 음미하며, 복잡한 변주보다 오늘 내가 지킬 소박한 리듬과 쉼의 여백을 먼저 챙겨 보세요.`,
@@ -126,6 +136,7 @@ export function formatEstonianRegilaulPrompt(res: EstonianRegilaulResult): strin
     `[에스토니아 레기라울·숲의 정적 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 숲·선율 축: ${res.forestSongAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 북방 상징: ${res.forestMotif} (${res.nordicForestTone})`,
     `- 동반 상징: ${res.companionMotif}`,
     `- 중심 통찰: ${res.regilaulInsight}`,
