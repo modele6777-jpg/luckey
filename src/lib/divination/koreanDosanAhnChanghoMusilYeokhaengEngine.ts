@@ -8,12 +8,12 @@
  * 4. 애기애타(愛己愛他): 나 자신을 참되고 건전한 인격으로 갈고닦음으로써 타인과 공동체를 온전하게 사랑하는 상생 인격 완성.
  * 5. 주인정신(主人精神): "우리 중에 인물이 없는 것은 인물이 되려고 마음먹고 힘쓰는 사람이 없는 까닭이다", 남 탓하지 않고 스스로 역사의 주인이 되어 책임을 지는 주체적 결단력.
  *
- * @version LUCKEY-DOSAN-AHN-CHANGHO-MUSIL-YEOKHAENG-v2.0.0
+ * @version LUCKEY-DOSAN-AHN-CHANGHO-MUSIL-YEOKHAENG-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_DOSAN_AHN_CHANGHO_VERSION = 'LUCKEY-DOSAN-AHN-CHANGHO-MUSIL-YEOKHAENG-v2.3.0';
+export const KOREAN_DOSAN_AHN_CHANGHO_VERSION = 'LUCKEY-DOSAN-AHN-CHANGHO-MUSIL-YEOKHAENG-v2.4.0';
 
 export interface DosanTheme {
   themeKey: string;
@@ -44,6 +44,7 @@ export interface DosanAhnChanghoMusilYeokhaengResult {
   activeDosanTheme: DosanTheme;
   focalDosanAphorism: DosanAphorism;
   secondaryDosanAphorism: DosanAphorism;
+  dosanCrossAxis: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   dosanComprehensiveGuidance: {
@@ -177,6 +178,7 @@ export function calculateDosanAhnChanghoMusilYeokhaeng(
   const activeDosanTheme = DOSAN_THEMES[themeIndex];
   const focalDosanAphorism = DOSAN_APHORISMS[aphorismIndex];
   const secondaryDosanAphorism = DOSAN_APHORISMS[secondaryAphorismIndex];
+  const dosanCrossAxis = `${activeDosanTheme.themeTitleHanja} × ${focalDosanAphorism.sourceContext}`;
   const trimmedQuery = query?.trim();
   const reflectiveQuestion = trimmedQuery
     ? `'${trimmedQuery}'에서 남 탓이나 변명을 멈추고 내가 주인정신으로 오늘 당장 역행(力行)할 작은 실천 한 가지는 무엇인가요?`
@@ -218,6 +220,7 @@ export function calculateDosanAhnChanghoMusilYeokhaeng(
     activeDosanTheme,
     focalDosanAphorism,
     secondaryDosanAphorism,
+    dosanCrossAxis,
     reflectiveQuestion,
     interpretiveBoundary,
     dosanComprehensiveGuidance: {
@@ -244,6 +247,7 @@ export function formatDosanAhnChanghoMusilYeokhaengPrompt(res: DosanAhnChanghoMu
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
     `- 인격·실천 국면: ${describeDosanStage(avgScore)}`,
     `- 핵심 실천 테마: ${res.activeDosanTheme.themeTitleKo} [${res.activeDosanTheme.themeTitleHanja}]`,
+    `- 도산 교차 축: ${res.dosanCrossAxis}`,
     `- 실존적 통찰: ${res.activeDosanTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeDosanTheme.practicalCounsel}`,
     `- 핵심 도산 경구: "${res.focalDosanAphorism.aphorismKo}"`,

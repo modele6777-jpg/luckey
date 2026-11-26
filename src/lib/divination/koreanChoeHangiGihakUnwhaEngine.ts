@@ -10,12 +10,12 @@
  * 4. 통민(通民)과 공변된 삶: 한 사람의 앎과 덕은 홀로 닫혀 있지 않고 온 백성과 소통하여 공익을 실현해야 함.
  * 5. 대동(大同) 화협: 우주 자연과 인간 사회가 기(氣)의 막힘없는 조화 속에서 평형을 이루는 궁극의 경지.
  *
- * @version LUCKEY-CHOE-HANGI-GIHAK-UNWHA-v2.0.0
+ * @version LUCKEY-CHOE-HANGI-GIHAK-UNWHA-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const CHOE_HANGI_GIHAK_UNWHA_VERSION = 'LUCKEY-CHOE-HANGI-GIHAK-UNWHA-v2.3.0';
+export const CHOE_HANGI_GIHAK_UNWHA_VERSION = 'LUCKEY-CHOE-HANGI-GIHAK-UNWHA-v2.4.0';
 
 export interface ChoeHangiGihakPrinciple {
   principleKey: string;
@@ -45,6 +45,7 @@ export interface ChoeHangiGihakUnwhaResult {
   activeGihakPrinciple: ChoeHangiGihakPrinciple;
   focalUnwhaPractice: ChoeHangiUnwhaPractice;
   secondaryGihakPrinciple: ChoeHangiGihakPrinciple;
+  gihakCrossAxis: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   choeHangiPhilosophicalCounsel: {
@@ -155,6 +156,7 @@ export function calculateChoeHangiGihakUnwha(
   const activeGihakPrinciple = GIHAK_PRINCIPLES[principleIndex];
   const focalUnwhaPractice = UNWHA_PRACTICES[practiceIndex];
   const secondaryGihakPrinciple = GIHAK_PRINCIPLES[secondaryPrincipleIndex];
+  const gihakCrossAxis = `${activeGihakPrinciple.principleNameKo} × ${secondaryGihakPrinciple.principleNameKo} (${focalUnwhaPractice.practiceNameKo})`;
   const trimmedQuery = query?.trim();
   const reflectiveQuestion = trimmedQuery
     ? `'${trimmedQuery}'에서 관념적 억측을 걷어 내고 실제 경험과 신기통(神氣通) 소통으로 바로 확인해 볼 사실은 무엇인가요?`
@@ -196,6 +198,7 @@ export function calculateChoeHangiGihakUnwha(
     activeGihakPrinciple,
     focalUnwhaPractice,
     secondaryGihakPrinciple,
+    gihakCrossAxis,
     reflectiveQuestion,
     interpretiveBoundary,
     choeHangiPhilosophicalCounsel: {
@@ -223,6 +226,7 @@ export function formatChoeHangiGihakUnwhaPrompt(res: ChoeHangiGihakUnwhaResult):
     `- 기학 운화 국면: ${describeGihakStage(avgScore)}`,
     `- 기학 핵심 원리: ${res.activeGihakPrinciple.principleNameKo}`,
     `- 보조 교차 원리: ${res.secondaryGihakPrinciple.principleNameKo} [${res.secondaryGihakPrinciple.sourceText}]`,
+    `- 기학 교차 축: ${res.gihakCrossAxis}`,
     `- 출전: ${res.activeGihakPrinciple.sourceText}`,
     `- 우주론적 바탕: ${res.activeGihakPrinciple.coreCosmology}`,
     `- 실천적 조언: ${res.activeGihakPrinciple.practicalCounsel}`,

@@ -8,12 +8,12 @@
  * 4. 자주독립의 결단 (自主獨立): 남에게 의지하거나 외세에 휘둘리지 않고, 스스로 주인이 되어 민족과 개인의 자주적 존엄을 굳건히 세우는 주체적 자주성.
  * 5. 백범의 겸손과 서민적 사랑 (白凡 謙遜 & 愛民愛人): 가장 낮은 백정(白)과 범부(凡)의 애국심과 진정성을 품고, 모든 사람을 차별 없이 형제자매로 귀히 섬기는 대승적 사랑.
  *
- * @version LUCKEY-BAEKBEOM-KIM-GU-MY-DESIRE-CULTURE-v2.0.0
+ * @version LUCKEY-BAEKBEOM-KIM-GU-MY-DESIRE-CULTURE-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_BAEKBEOM_KIM_GU_VERSION = 'LUCKEY-BAEKBEOM-KIM-GU-MY-DESIRE-CULTURE-v2.3.0';
+export const KOREAN_BAEKBEOM_KIM_GU_VERSION = 'LUCKEY-BAEKBEOM-KIM-GU-MY-DESIRE-CULTURE-v2.4.0';
 
 export interface KimGuTheme {
   themeKey: string;
@@ -44,6 +44,7 @@ export interface BaekbeomKimGuMyDesireCultureResult {
   activeKimGuTheme: KimGuTheme;
   focalKimGuAphorism: KimGuAphorism;
   secondaryKimGuAphorism: KimGuAphorism;
+  kimGuCrossAxis: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   kimGuComprehensiveGuidance: {
@@ -177,6 +178,7 @@ export function calculateBaekbeomKimGuMyDesireCulture(
   const activeKimGuTheme = KIM_GU_THEMES[themeIndex];
   const focalKimGuAphorism = KIM_GU_APHORISMS[aphorismIndex];
   const secondaryKimGuAphorism = KIM_GU_APHORISMS[secondaryAphorismIndex];
+  const kimGuCrossAxis = `${activeKimGuTheme.themeTitleHanja} × ${focalKimGuAphorism.sourceContext}`;
   const trimmedQuery = query?.trim();
   const reflectiveQuestion = trimmedQuery
     ? `'${trimmedQuery}'에서 남과 겨루는 힘보다 나와 이웃을 함께 행복하게 하는 '높은 문화의 힘'과 답설야중거의 발자국은 무엇인가요?`
@@ -218,6 +220,7 @@ export function calculateBaekbeomKimGuMyDesireCulture(
     activeKimGuTheme,
     focalKimGuAphorism,
     secondaryKimGuAphorism,
+    kimGuCrossAxis,
     reflectiveQuestion,
     interpretiveBoundary,
     kimGuComprehensiveGuidance: {
@@ -244,6 +247,7 @@ export function formatBaekbeomKimGuMyDesireCulturePrompt(res: BaekbeomKimGuMyDes
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
     `- 문화·자주 국면: ${describeKimGuStage(avgScore)}`,
     `- 핵심 민족혼 테마: ${res.activeKimGuTheme.themeTitleKo} [${res.activeKimGuTheme.themeTitleHanja}]`,
+    `- 백범 교차 축: ${res.kimGuCrossAxis}`,
     `- 백범 정신 통찰: ${res.activeKimGuTheme.baekbeomInsight}`,
     `- 실천적 조언: ${res.activeKimGuTheme.practicalCounsel}`,
     `- 핵심 경구: "${res.focalKimGuAphorism.aphorismKo}"`,
