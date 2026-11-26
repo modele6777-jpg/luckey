@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const CONTRACT_SHIELD_VERSION = 'LUCKEY-SHIELD-v2.3.0';
+export const CONTRACT_SHIELD_VERSION = 'LUCKEY-SHIELD-v2.4.0';
 
 export interface ContractChecklistItem {
   category: string;
@@ -49,6 +49,7 @@ export interface ContractShieldResult {
 
   // 즉각 실천 액션 가이드
   actionProtocol: string;
+  shieldCrossAxis: string;
   situationalShieldAudit: {
     focusTheme: string;
     clauseAlert: string;
@@ -239,6 +240,8 @@ export function calculateContractShield(params?: {
     ? `"${q}"와 관련해 서명 전 반드시 문장으로 못 박아 두고 싶은 단 하나의 조건(범위·대금·책임 상한)은 무엇인가요?`
     : `지금 구두로만 오갔거나 암묵적으로 넘기고 있는 합의 중, 오늘 문서 한 줄로 명확히 남기고 싶은 항목은 무엇인가요?`;
 
+  const shieldCrossAxis = `${riskLevelTitle} ↔ ${ichingSongWisdom.hexagram} (${temporalShieldRhythm.negotiationWindow.split('—')[0].trim()})`;
+
   return {
     engineVersion: CONTRACT_SHIELD_VERSION,
     calculatedAtIso: now.toISOString(),
@@ -250,6 +253,7 @@ export function calculateContractShield(params?: {
     ichingSongWisdom,
     shieldChecklist: DEFAULT_SHIELD_CHECKLIST,
     actionProtocol,
+    shieldCrossAxis,
     situationalShieldAudit,
     temporalShieldRhythm,
     shieldSynthesisMatrix,
@@ -281,6 +285,7 @@ ${res.activeRiskTriggers.map(t => `  • ${t}`).join('\n')}
 ${checklistStr}
 - 질문 맥락 감사 (${res.situationalShieldAudit.focusTheme}): ${res.situationalShieldAudit.clauseAlert}
 - KST 시공간 협상 리듬: ${res.temporalShieldRhythm.negotiationWindow} / ${res.temporalShieldRhythm.seasonalContractTone}
+- 쉴드 교차 축: ${res.shieldCrossAxis}
 - 쉴드 교차 매트릭스: 핵심(${res.shieldSynthesisMatrix.coreInsight}) | 실행(${res.shieldSynthesisMatrix.recommendedAction}) | 주의(${res.shieldSynthesisMatrix.cautionNotice})
 - 액션 프로토콜: ${res.actionProtocol}
 ${res.reflectiveQuestion ? `- 성찰 질문: ${res.reflectiveQuestion}\n` : ''}- 해석 경계: ${res.boundaryNotice}

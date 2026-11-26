@@ -85,6 +85,7 @@ export interface ChronoTransitResult {
   calculatedAtUtc: string;
   calculatedAtKst: string;
   timestamp: number;
+  chronoCrossAxis: string;
   
   // 1. 오늘의 사주 일진 & 시진
   easternPillars: {
@@ -262,6 +263,8 @@ function makePillarInfo(gan: string, zhi: string): PillarInfo {
     koreanName: `${STEM_KOREAN[gan] || gan}${BRANCH_KOREAN[zhi] || zhi} (${gan}${zhi})`
   };
 }
+
+export const CHRONO_TRANSIT_VERSION = 'LUCKEY-CHRONO-TRANSIT-v2.4.0';
 
 /**
  * 실시간 크로노-트랜짓 메인 계산 함수
@@ -606,12 +609,14 @@ export function calculateChronoTransit(params: {
     recommendedAction: microAction,
     cautionNotice: retrogradeBodies.length > 0 ? `역행 천체(${retrogradeBodies.join(', ')}) 영향권에서는 재확인과 여유가 필요합니다.` : '주요 행성 순행 흐름에 맞추어 차분히 실행하십시오.',
   };
+  const chronoCrossAxis = `${dayPillar.koreanName} 일진 · ${hourPillar.koreanName} 시진 ↔ ${dominantTransitElement} 원소 · ${moonPhaseName}`;
 
   return {
-    engineVersion: 'LUCKEY-CHRONO-TRANSIT-v2.3.0',
+    engineVersion: CHRONO_TRANSIT_VERSION,
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: nowKstIso,
     timestamp: now.getTime(),
+    chronoCrossAxis,
     easternPillars: {
       year: yearPillar,
       month: monthPillar,
@@ -721,6 +726,7 @@ ${aspectsStr}
 - 지금 즉시 추천 액션: ${syn.microAction}
 - 질문 맥락 감사 (${result.situationalChronoAudit.focusTheme}): ${result.situationalChronoAudit.transitCue}
 - KST 시공간 리듬 (${result.temporalChronoRhythm.kstTimeLabel}): ${result.temporalChronoRhythm.dayHourWindow} / ${result.temporalChronoRhythm.lunarTransitTone}
+- 크로노-트랜짓 교차 축: ${result.chronoCrossAxis}
 - 교차 매트릭스: 핵심(${result.chronoSynthesisMatrix.coreInsight}) | 실행(${result.chronoSynthesisMatrix.recommendedAction}) | 주의(${result.chronoSynthesisMatrix.cautionNotice})
 - 성찰 질문: ${result.reflectiveQuestion}
 - 해석 경계: ${result.boundaryNotice}
