@@ -20,7 +20,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const HUMAN_DESIGN_BODYGRAPH_VERSION = 'LUCKEY-HUMANDESIGN-v2.3.0';
+export const HUMAN_DESIGN_BODYGRAPH_VERSION = 'LUCKEY-HUMANDESIGN-v2.4.0';
 
 export type HumanDesignType = 'Generator' | 'Manifesting Generator' | 'Projector' | 'Manifestor' | 'Reflector';
 
@@ -62,6 +62,11 @@ export interface HumanDesignBodyGraphReport {
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
+  };
+  hdCrossAxis: {
+    typeStrategyPair: string;
+    authorityProfileAxis: string;
+    definedCenterBalance: string;
   };
   boundaryNotice: string;
   interpretiveBoundary: string;
@@ -315,6 +320,11 @@ export function runHumanDesignBodyGraphEngine(
 
   const ritualAction = `[${designType.type} · ${innerAuthority.split(' ')[0]}] ${strategy} (${hdSynthesisMatrix.recommendedAction})`;
   const reflectionFocus = reflectiveQuestion;
+  const hdCrossAxis = {
+    typeStrategyPair: `${designType.type} · ${strategy}`,
+    authorityProfileAxis: `${innerAuthority.split('(')[0].trim()} ↔ ${definitionProfile.split('(')[0].trim()}`,
+    definedCenterBalance: `천골 ${isSacralDefined ? '정의' : '미정의'} · 감정 ${isSolarDefined ? '정의' : '미정의'} · 비장 ${isSpleenDefined ? '정의' : '미정의'}`,
+  };
 
   const synthesisPromptGuidance = `[LUCKEY 휴먼 디자인 9대 에너지 센터 & 바디그래프 오라 ${HUMAN_DESIGN_BODYGRAPH_VERSION}]
 - 연산 시각: ${temporalHdRhythm.kstTimeLabel}
@@ -332,6 +342,7 @@ export function runHumanDesignBodyGraphEngine(
 - KST 시공간 오라 리듬: ${temporalHdRhythm.auraWatchWindow} / ${temporalHdRhythm.seasonalDesignTone}
   * 시공간 지침: ${temporalHdRhythm.temporalGuidance}
 - 휴먼 디자인 교차 매트릭스: 핵심(${hdSynthesisMatrix.coreInsight}) | 실행(${hdSynthesisMatrix.recommendedAction}) | 주의(${hdSynthesisMatrix.cautionNotice})
+- 휴먼 디자인 교차 축: ${hdCrossAxis.typeStrategyPair} | 권위·프로파일 축: ${hdCrossAxis.authorityProfileAxis} | 센터 균형: ${hdCrossAxis.definedCenterBalance}
 - 탈조건화(De-conditioning) 행동 처방: ${deconditioningAdvice}
 - 실천 의례(Ritual Action): ${ritualAction}
 - 성찰 초점(Reflection Focus): ${reflectionFocus}
@@ -351,6 +362,7 @@ export function runHumanDesignBodyGraphEngine(
     situationalHdAudit,
     temporalHdRhythm,
     hdSynthesisMatrix,
+    hdCrossAxis,
     ritualAction,
     reflectionFocus,
     boundaryNotice,
