@@ -9,7 +9,7 @@
  * 2. 전승마다 해석이 다르므로 특정 판본의 문구를 그대로 인용하지 않고, 전승의 주제만 요약해 상징으로 씁니다.
  * 3. 개인의 길흉·점수·확률·미래 예측을 산출하지 않습니다.
  *
- * @version LUCKEY-KOREAN-YUTJEOM-FOUR-STICKS-v2.3.0
+ * @version LUCKEY-KOREAN-YUTJEOM-FOUR-STICKS-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
@@ -62,6 +62,7 @@ export interface KoreanYutjeomFourStickResult {
   activeStanceTheme: YutStanceTheme;
   situationalStanceAudit: YutStanceAudit;
   temporalYutRhythm: YutTemporalRhythm;
+  yutCrossAxis: string;
   dailyPracticeRitual: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -288,6 +289,8 @@ export function calculateKoreanYutjeomFourStickOracle(
     integratedAction: `${situationalStanceAudit.firstStepAdvice}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
   };
 
+  const yutCrossAxis = `${activeStanceTheme.stanceNameKo} × ${situationalStanceAudit.stanceNameKo} (${temporalYutRhythm.yutFocus})`;
+
   return {
     engineVersion: KOREAN_YUTJEOM_FOUR_STICK_VERSION,
     calculatedAtKst: getYutKstString(now),
@@ -296,6 +299,7 @@ export function calculateKoreanYutjeomFourStickOracle(
     activeStanceTheme,
     situationalStanceAudit,
     temporalYutRhythm,
+    yutCrossAxis,
     dailyPracticeRitual: extras.dailyPracticeRitual,
     ritualAction,
     reflectionFocus,
@@ -328,6 +332,7 @@ export function formatKoreanYutjeomFourStickPrompt(res: KoreanYutjeomFourStickRe
     `- 전승 읽기: ${res.situationalStanceAudit.traditionNote}`,
     `- 첫걸음: ${res.situationalStanceAudit.firstStepAdvice}`,
     `- KST 시공간 리듬: ${res.temporalYutRhythm.kstWindow} (${res.temporalYutRhythm.seasonTone}, ${res.temporalYutRhythm.stanceClarityStage}) — ${res.temporalYutRhythm.rhythmGuidance}`,
+    `- 윷점 교차 축: ${res.yutCrossAxis}`,
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
     `- 실천 의례: ${res.ritualAction}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
