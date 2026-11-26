@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.521",
+    "builtAt": "2026-11-26T15:50:00+09:00",
+    "summary": "LucKey PWA 아이콘을 금빛 네잎 클로버 열쇠로 완전 교체(v1.8.521)",
+    "items": [
+      "구형 초록 클로버 아이콘(app-icon·icon-192/512·apple-touch-icon·favicon)을 금빛 네잎 클로버 열쇠 아이콘으로 전면 교체",
+      "VitePWA includeAssets에 lucky-key·luckey-icon·app-icon 계열 아이콘을 등록해 설치 배너·오프라인 캐시까지 새 아이콘 반영",
+      "index.html·manifest.json·manifest-fold-test.json의 아이콘 URL에 ?v=4 캐시 무효화를 일관 적용"
+    ]
+  },
+  {
     "version": "1.8.520",
     "builtAt": "2026-11-26T15:35:00+09:00",
     "summary": "딥워크 몰입·운명 공명 에코·동적 충합 트리거 3대 핵심 엔진 심층 고도화(v1.8.520)",
