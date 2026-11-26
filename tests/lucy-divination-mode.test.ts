@@ -17,13 +17,15 @@ const profile = {
   basic: { name: '검사용', birthdate: '1990-05-17', birthtime: '14:30', gender: 'female' as const, birthCity: '서울', lunarSolar: 'solar' as const },
 } as any;
 
-test('divination mode keeps saju at the center without full mobilization', () => {
+test('divination mode keeps saju at the center and adds only the tools this concern needs', () => {
   const r = routeAndExecute({ text: '요즘 이직 고민이 많아', profile, requireBasicAndDeep: true, divinationMode: { base: 'saju' } });
   assert.equal(r.routePlan.isMasterMobilization, false);
-  // 통합 상담: 사주가 중심이고 13대 도구가 함께 계산된다. 15대 전수 동원(올인원)은 아니다.
+  // 통합 상담: 사주가 중심이고, 질문에 맞는 소수 도구만 함께 계산한다(15대 전수 동원 아님).
   assert.equal(r.routePlan.targetTools[0], 'saju');
-  assert.equal(r.routePlan.targetTools.length, 14);
+  assert.ok(r.routePlan.targetTools.length >= 1 && r.routePlan.targetTools.length <= 3, `basic tools stayed within the cap: ${r.routePlan.targetTools.length}`);
+  assert.ok(r.routePlan.targetTools.length < 14);
   assert.ok((r.routePlan.deepEngineKeys ?? []).length >= 1);
+  assert.ok((r.routePlan.deepEngineKeys ?? []).length <= 2);
 });
 
 test('unfolded tarot draw adds tarot to the saju base', () => {
@@ -39,15 +41,16 @@ test('a deep request widens the symbolic perspectives, not the tool set', () => 
   assert.equal(deep.routePlan.isMasterMobilization, false);
 });
 
-test('the unified pro mode always carries saju plus all 13 other tools', () => {
+test('the unified pro mode carries saju and only the handful of tools the concern needs', () => {
   const run = (base: 'saju' | 'tarot_saju' = 'saju') => routeAndExecute({ text: '이직 고민', profile, requireBasicAndDeep: true, divinationMode: { base } }).routePlan.targetTools;
   const plain = run();
   const withTarot = run('tarot_saju');
   assert.deepEqual(plain.slice(0, 1), ['saju']);
-  assert.equal(plain.length, 14);
-  for (const id of LUCY_PRO_TOOLS) assert.ok(plain.includes(id), id);
+  assert.ok(plain.length >= 1 && plain.length <= 3, `plain: ${plain.join(',')}`);
+  // 13대 도구를 매 턴 전부 돌리지 않는다 — 질문에 맞는 소수만 고른다.
+  assert.ok(LUCY_PRO_TOOLS.filter(id => plain.includes(id)).length <= 2, plain.join(','));
   assert.deepEqual(withTarot.slice(0, 2), ['saju', 'tarot']);
-  assert.equal(withTarot.length, 15);
+  assert.ok(withTarot.length <= 3, `withTarot: ${withTarot.join(',')}`);
   // 타로는 손님이 직접 고른 카드가 있을 때만 붙는다.
   assert.ok(!plain.includes('tarot'));
   assert.ok(plain.includes('saju'));

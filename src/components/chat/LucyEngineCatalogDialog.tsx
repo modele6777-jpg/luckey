@@ -1,7 +1,8 @@
 import { useProgressiveLibrary } from '@/hooks/useProgressiveLibrary';
 import { defaultLibrarySessionKey, useLibrarySessionState, useLibrarySessionScroll } from '@/hooks/useLibrarySessionState';
 import { DialogBackdrop } from '@/components/layout/DialogBackdrop';
-import './chat-library-layout.css';
+// 목록 스타일(chat-library-*)은 같은 번들에 항상 들어가는 PromptLibraryModal이 불러온다.
+// (여기서 CSS를 직접 임포트하면 단위 테스트에서 이 모듈을 불러올 수 없다.)
 import React, { useMemo } from 'react';
 import { Search, Sparkles, X } from 'lucide-react';
 import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
@@ -37,18 +38,30 @@ const FILTERS: { id: CatalogFilter; label: string }[] = [
 ];
 
 /** 엔진 목록 본문. 엔진함 창과 점술 도구 창의 "엔진함" 탭이 같이 쓴다. */
-function LucyEngineCatalogBody({ isOpen, isLight, sessionKey }: { isOpen: boolean; isLight: boolean; sessionKey: string }) {
+function LucyEngineCatalogBody({ isOpen, isLight, sessionKey, deepOnly = false, activeKeys }: {
+  isOpen: boolean;
+  isLight: boolean;
+  sessionKey: string;
+  /** 일반 루시 채팅 도구함: 심층 관점(deep_master)만 보여준다. */
+  deepOnly?: boolean;
+  /** 이번 대화에서 루시가 실제로 골라 쓴 심층 관점 키 — 배지로 구분한다. */
+  activeKeys?: readonly string[];
+}) {
   const [filter, setFilter] = useLibrarySessionState<CatalogFilter>(`${sessionKey}:filter`, 'all');
   const [themeFilter, setThemeFilter] = useLibrarySessionState<CatalogThemeFilter>(`${sessionKey}:theme`, 'all');
   const [query, setQuery] = useLibrarySessionState<string>(`${sessionKey}:query`, '');
   // 📖 해석 사전 보기 (엔진 목록 대신 카드 목록)
   const [showDictionary, setShowDictionary] = useLibrarySessionState<boolean>(`${sessionKey}:dictionary`, false);
+  // 일반 채팅 도구함은 심층 관점만 연다.
+  const effectiveFilter: CatalogFilter = deepOnly ? 'deep_master' : filter;
+  const dictionaryOpen = deepOnly ? false : showDictionary;
+  const activeSet = new Set(activeKeys ?? []);
 
   const catalog = useMemo(() => selectCatalogEngines({
-    category: filter,
+    category: effectiveFilter,
     theme: themeFilter,
     query,
-  }), [filter, query, themeFilter]);
+  }), [effectiveFilter, query, themeFilter]);
   const filteredEngines = catalog.engines;
 
   const groupedEngines = useMemo(() => LUCY_PRO_CHANNEL_THEMES
@@ -80,8 +93,16 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey }: { isOpen: boolea
             aria-label="엔진 목록, 세로로 스크롤할 수 있습니다" className="chat-library-scroll overflow-y-auto" aria-busy={renderedCount < filteredEngines.length}>
             <div className="chat-library-toolbar shrink-0 px-4 py-2.5 sm:px-6">
               <p id="lucy-engine-catalog-intro" className={`text-xs leading-relaxed sm:text-sm ${muted}`}>
-                <strong className={isLight ? 'text-slate-900' : 'text-white'}>{ENGINE_CATALOG_COUNTS.foundational}개 기초 도구</strong>와{' '}
-                <strong className={isLight ? 'text-slate-900' : 'text-white'}>{ENGINE_CATALOG_COUNTS.deep_master}개 심층 관점</strong>이 등록되어 있어요. 심층 관점은 전통·철학·신화·심리의 참고 렌즈이며, 각각 독립 계산기가 아닙니다.
+                {deepOnly ? (
+                  <>
+                    <strong className={isLight ? 'text-slate-900' : 'text-white'}>{ENGINE_CATALOG_COUNTS.deep_master}개 심층 관점</strong>의 뜻을 볼 수 있어요. 일반 대화에서는 이 관점들 중 지금 이야기에 맞는 1~2개만 골라 상징 참고로 써요.
+                  </>
+                ) : (
+                  <>
+                    <strong className={isLight ? 'text-slate-900' : 'text-white'}>{ENGINE_CATALOG_COUNTS.foundational}개 기초 도구</strong>와{' '}
+                    <strong className={isLight ? 'text-slate-900' : 'text-white'}>{ENGINE_CATALOG_COUNTS.deep_master}개 심층 관점</strong>이 등록되어 있어요. 심층 관점은 전통·철학·신화·심리의 참고 렌즈이며, 각각 독립 계산기가 아닙니다.
+                  </>
+                )}
               </p>
               <details className={`mt-2 rounded-xl border px-3 py-2 ${subtleSurface}`}>
                 <summary className={`cursor-pointer select-none text-[11px] font-semibold sm:text-xs ${muted}`}>관점 뜻과 답변별 상태 안내</summary>
@@ -96,7 +117,11 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey }: { isOpen: boolea
 
             {/* 엔진함은 목록과 뜻만 보여준다. 엔진은 질문마다 루시가 자동으로 고른다. */}
             <div className="chat-library-toolbar shrink-0 px-4 pt-1 sm:px-6" data-testid="lucy-engine-auto-note">
-              <p className={`rounded-xl border px-3 py-2 text-xs font-semibold ${subtleSurface}`}>루시가 질문마다 알맞은 도구와 관점을 자동으로 골라 답해요.</p>
+              <p className={`rounded-xl border px-3 py-2 text-xs font-semibold ${subtleSurface}`}>
+                {deepOnly
+                  ? '루시가 대화마다 지금 이야기에 맞는 심층 관점만 골라 답해요.'
+                  : '루시가 질문마다 알맞은 도구와 관점을 자동으로 골라 답해요.'}
+              </p>
             </div>
 
             <div className="chat-library-toolbar shrink-0 space-y-2 px-4 py-3 sm:px-6">
@@ -106,22 +131,24 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey }: { isOpen: boolea
                   type="search"
                   value={query}
                   onChange={event => { scroll.reset(); setQuery(event.target.value); }}
-                  placeholder={showDictionary ? '괘·별·문 이름이나 뜻으로 검색' : '이름이나 주제 검색'}
-                  aria-label={showDictionary ? '해석 사전 검색' : '엔진과 관점 검색'}
+                  placeholder={dictionaryOpen ? '괘·별·문 이름이나 뜻으로 검색' : '이름이나 주제 검색'}
+                  aria-label={dictionaryOpen ? '해석 사전 검색' : '엔진과 관점 검색'}
                   className={`w-full rounded-2xl bg-transparent py-2.5 pl-10 pr-3 text-sm outline-none ${isLight ? 'placeholder:text-slate-400 focus:ring-2 focus:ring-amber-400/30' : 'placeholder:text-slate-500 focus:ring-2 focus:ring-amber-400/20'}`}
                 />
               </div>
               <nav aria-label="엔진 목록 분류" className="chat-library-filters flex flex-wrap gap-2 pb-0.5">
-                <button
-                  type="button"
-                  onClick={() => { scroll.reset(); setShowDictionary(!showDictionary); }}
-                  aria-pressed={showDictionary}
-                  data-testid="knowledge-dictionary-toggle"
-                  className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${showDictionary ? 'bg-amber-400 text-slate-950' : inactivePill}`}
-                >
-                  📖 해석 사전 {KNOWLEDGE_DICTIONARY_COUNT}
-                </button>
-                {!showDictionary && FILTERS.map(item => {
+                {!deepOnly && (
+                  <button
+                    type="button"
+                    onClick={() => { scroll.reset(); setShowDictionary(!showDictionary); }}
+                    aria-pressed={showDictionary}
+                    data-testid="knowledge-dictionary-toggle"
+                    className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${showDictionary ? 'bg-amber-400 text-slate-950' : inactivePill}`}
+                  >
+                    📖 해석 사전 {KNOWLEDGE_DICTIONARY_COUNT}
+                  </button>
+                )}
+                {!dictionaryOpen && !deepOnly && FILTERS.map(item => {
                   const count = catalog.counts.categories[item.id];
                   const selected = filter === item.id;
                   return (
@@ -136,9 +163,9 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey }: { isOpen: boolea
                     </button>
                   );
                 })}
-                {!showDictionary && <span className={`ml-auto shrink-0 self-center text-[11px] ${muted}`}>{filteredEngines.length}개 표시</span>}
+                {!dictionaryOpen && <span className={`ml-auto shrink-0 self-center text-[11px] ${muted}`}>{filteredEngines.length}개 표시</span>}
               </nav>
-              {!showDictionary && <nav aria-label="Lucy 7개 채널 테마" className="chat-library-filters flex flex-wrap gap-2 pb-0.5">
+              {!dictionaryOpen && <nav aria-label="Lucy 7개 채널 테마" className="chat-library-filters flex flex-wrap gap-2 pb-0.5">
                 <button
                   type="button"
                   onClick={() => { scroll.reset(); setThemeFilter('all'); }}
@@ -165,7 +192,7 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey }: { isOpen: boolea
             </div>
 
             <div className="px-4 pb-4 sm:px-6">
-              {showDictionary ? (
+              {dictionaryOpen ? (
                 <KnowledgeDictionaryView query={query} isLight={isLight} />
               ) : filteredEngines.length > 0 && renderedCount === 0 ? (
                 <p role="status" className={`px-4 py-8 text-sm ${muted}`}>엔진 목록을 준비하고 있어요…</p>
@@ -183,19 +210,26 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey }: { isOpen: boolea
                       <ul className="space-y-2">
                         {engines.map(engine => {
                           const isFoundational = engine.category === 'foundational';
+                          const isActive = activeSet.has(engine.key);
                           return (
                             <li
                               key={engine.key}
                               data-testid="lucy-engine-catalog-entry"
                               data-engine-key={engine.key}
                               data-engine-theme={theme.id}
-                              className={`lucy-engine-catalog-entry rounded-2xl border p-3 sm:p-3.5 ${isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-white/[0.035]'}`}
+                              data-engine-active={isActive ? 'true' : undefined}
+                              className={`lucy-engine-catalog-entry rounded-2xl border p-3 sm:p-3.5 ${isActive
+                                ? 'border-amber-400/70 bg-amber-400/10'
+                                : isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-white/[0.035]'}`}
                             >
                               <div className="flex items-start gap-2.5">
                                 <span aria-hidden="true" className="pt-0.5 text-lg">{engine.icon}</span>
                                 <div className="min-w-0 flex-1">
                                   <div className="flex flex-wrap items-center gap-1.5">
                                     <h4 className="lucy-engine-catalog-entry-name text-xs font-bold leading-relaxed sm:text-sm">{engine.nameKo}</h4>
+                                    {isActive && (
+                                      <span data-engine-active-badge className="rounded-full bg-amber-400 px-2 py-0.5 text-[9px] font-black text-slate-950">이번 대화에서 쓴 관점</span>
+                                    )}
                                     <span data-engine-category={engine.category} className={`lucy-engine-catalog-entry-category rounded-full px-2 py-0.5 text-[9px] font-bold ${isFoundational ? 'bg-sky-500/15 text-sky-700 dark:text-sky-300' : 'bg-violet-500/15 text-violet-700 dark:text-violet-300'}`}>
                                       {isFoundational ? '기초 도구' : '심층 참고 관점'}
                                     </span>
@@ -274,7 +308,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
 }
 
 /** 점술 도구 창 / 펼친 화면 왼쪽 테이블의 "📚 엔진함" 탭 내용 (닫기 버튼 없이 탭 안에 들어간다). */
-export function LucyEngineCatalogPanel({ sessionKey = defaultLibrarySessionKey('engine-library') }: { sessionKey?: string }) {
+export function LucyEngineCatalogPanel({ sessionKey = defaultLibrarySessionKey('engine-library'), deepOnly = false, activeKeys }: { sessionKey?: string; deepOnly?: boolean; activeKeys?: readonly string[] }) {
   return (
     <section
       role="region"
@@ -282,10 +316,16 @@ export function LucyEngineCatalogPanel({ sessionKey = defaultLibrarySessionKey('
       data-catalog-theme="dark"
       data-theme-dark-island="true"
       data-lucy-engine-panel
+      data-lucy-engine-panel-deep-only={deepOnly ? 'true' : undefined}
       style={{ colorScheme: 'dark' }}
       className="lucy-engine-catalog-dialog lucy-engine-catalog-embedded flex min-h-0 flex-1 flex-col text-slate-100"
     >
-      <LucyEngineCatalogBody isOpen isLight={false} sessionKey={sessionKey} />
+      <LucyEngineCatalogBody isOpen isLight={false} sessionKey={sessionKey} deepOnly={deepOnly} activeKeys={activeKeys} />
     </section>
   );
+}
+
+/** 💬 일반 루시 채팅 도구함: 엔진함(심층 관점 설명)만 연다. */
+export function LucyDeepPerspectivePanel({ sessionKey = defaultLibrarySessionKey('lucy-chat-engine-library'), activeKeys }: { sessionKey?: string; activeKeys?: readonly string[] }) {
+  return <LucyEngineCatalogPanel sessionKey={sessionKey} deepOnly activeKeys={activeKeys} />;
 }

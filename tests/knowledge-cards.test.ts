@@ -62,7 +62,8 @@ test('a full Lucy Pro level-3 prompt carries the cards for its own chart', async
   assert.match(prompt, /생년 化權: [^—]*무곡/);
   assert.match(prompt, /생년 化科: [^—]*태음/);
   assert.match(prompt, /생년 化忌: [^—]*천동/);
-  assert.match(prompt, /구성학 본명성 一白水星/);
   assert.match(prompt, /자미두수 명궁 주성 자미/);
+  // 이번 질문에 고르지 않은 도구(구성학)의 카드는 붙이지 않는다 — 도구는 필요한 만큼만.
+  assert.doesNotMatch(prompt, /구성학 본명성/);
   assert.ok(prompt.length < 60000);
 });

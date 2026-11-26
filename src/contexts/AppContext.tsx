@@ -2095,9 +2095,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       options?.extraSystemContext?.includes('[이번 질문의 계산 근거 및 한계]') ||
       options?.extraSystemContext?.includes('루시 15대 운명학 마스터') ||
       options?.extraSystemContext?.includes('루시 올인원 마스터 모드 — 15대 운명학 도구 전원 총동원') ||
-      options?.extraSystemContext?.includes('선별된 도구별 맞춤 풀이 가이드');
+      options?.extraSystemContext?.includes('선별된 도구별 맞춤 풀이 가이드') ||
+      // 💬 일반 채팅의 심층 관점 주입(페이지가 이미 골라 넣은 경우 다시 돌리지 않는다)
+      options?.extraSystemContext?.includes('[🧭 이번 이야기에 고른 심층 관점');
     const activeThemeList = (options?.channels || (options?.channel ? [options.channel] : [])) as SevenThemeChannel[];
     const isMasterCall = Boolean(isLucyPro);
+    // 💬 일반 루시 채팅(점술모드 아님·채널 없음·음성 아님): 기초 도구 없이 엔진함의 심층 관점만 소수 골라 쓴다.
+    const isLucyCompanionTurn = sourcePersona === 'lucy' && !isMasterCall && activeThemeList.length === 0 && !options?.voiceTurn;
     // 💬 일반 루시 채팅(수다모드)은 기초·심층 운명학 엔진을 돌리지 않는다.
     //    점술모드(isMasterCall)나 도구 사용을 명시한 호출만 엔진을 가동한다.
     const requireBasicAndDeep = requiresBasicAndDeepForTurn({
@@ -2109,14 +2113,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       voiceTurn: Boolean(options?.voiceTurn),
     });
     const isCasualMode =
-      !options?.tarotCardMarkers && !requireBasicAndDeep && (
+      !options?.tarotCardMarkers && !requireBasicAndDeep && !isLucyCompanionTurn && (
         options?.mode === 'casual' ||
         (!options?.mode && responseLength === 'short' && activeThemeList.length === 0)
       );
     const toolSelection: SelectedDivinationToolsResult = isCasualMode
       ? { isCasualMessage: true, selectedTools: [], promptInjection: '', selectionReason: '가벼운 일상 인사', firedEngineBadges: [] }
       : !hasDivinationInjection
-      ? selectOptimalDivinationTools(effectiveUserText, isMasterCall ? (['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] as SevenThemeChannel[]) : activeThemeList, profile, isMasterCall, { allowMaster: requireBasicAndDeep, requireBasicAndDeep })
+      ? selectOptimalDivinationTools(effectiveUserText, isMasterCall ? (['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] as SevenThemeChannel[]) : activeThemeList, profile, isMasterCall, { allowMaster: requireBasicAndDeep, requireBasicAndDeep, deepOnly: isLucyCompanionTurn })
       : { isCasualMessage: false, selectedTools: [], promptInjection: '', selectionReason: '', firedEngineBadges: [] };
     const toolsIncludedInPrompt = isCasualMode
       ? []

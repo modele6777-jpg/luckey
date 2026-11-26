@@ -30,9 +30,11 @@ for (const { label, basic } of PROFILES) {
         assert.ok(prompt.length < 60000, `통합 상담 길이 ${prompt.length}`);
         for (const word of BANNED) assert.ok(!prompt.includes(word), `금지 항목 ${word}`);
         const tools = jsonOf(prompt);
+        // 🔮 절제: 이번 고민에 고른 소수 도구만 프롬프트에 들어간다(13대 전수 주입 금지).
+        assert.ok(tools.length === r.routePlan.targetTools.length, `tools in prompt ${tools.length} vs selected ${r.routePlan.targetTools.length}`);
+        assert.ok(tools.length <= 3, `통합 상담 도구 상한 ${tools.length}`);
+        assert.ok(tools.find(t => t.tool === '사주명리'), '사주는 언제나 중심이다');
         const iching = tools.find(t => t.tool === '주역');
-        // 통합 상담은 사주와 함께 13대 도구를 늘 계산한다.
-        assert.ok(iching, '13대 도구(주역)가 함께 전달된다');
         if (iching?.status === 'calculated') {
           assert.match(String(iching.scope), /지금 시각의 괘/);
           const card = findIchingCard(iching.data?.primary?.name);
@@ -40,7 +42,6 @@ for (const { label, basic } of PROFILES) {
           assert.ok(prompt.includes(`주역 본괘 ${card!.number}. ${card!.name}`), 'the attached card is the computed hexagram');
         }
         const taiyi = tools.find(t => t.tool === '태을신수');
-        assert.ok(taiyi, '태을신수도 함께 전달된다');
         if (taiyi?.status === 'calculated') assert.match(String(taiyi.scope), /올해의 연국/);
         if (!basic.birthtime) assert.ok(!prompt.includes('명궁 주성'), '생시가 없으면 자미두수 명궁 카드를 붙이지 않는다');
       }

@@ -6,12 +6,11 @@ async function openLucyMaster(page, path = '/chat') {
   await openLucy(page, path);
 }
 
-/** 엔진함은 점술 도구 창의 📚 엔진함 탭에 있다 (접은 화면: 헤더의 "도구" 버튼). */
-async function openEngineTab(page) {
+/** 일반 루시 채팅 도구함: 헤더 연필 버튼 → 엔진함(심층 관점)만 열린다. */
+async function openChatEngineBox(page) {
   await page.locator('[data-master-table-sheet-button]').first().click();
   const sheet = page.locator('[data-master-table-sheet]');
   await expect(sheet).toBeVisible();
-  await sheet.locator('[data-table-face="engines"]').click();
   const panel = page.getByRole('region', { name: 'Lucy 엔진함' });
   await expect(panel).toBeVisible();
   return { sheet, panel };
@@ -350,18 +349,16 @@ test('Lucy chat shows no per-message mode or engine badges', async ({ page, base
   await expect(page.getByRole('dialog', { name: '이번 답변에서 실제 사용한 엔진' })).toHaveCount(0);
 });
 
-test('Lucy engine box opens the 515-entry catalog with multi-select and no preset bundles', async ({ page }) => {
-  await openLucyMaster(page);
-  // 엔진함은 헤더 버튼이 아니라 점술 도구 창의 탭으로 옮겨졌다.
-  await expect(page.getByRole('button', { name: /^엔진함 열기/ })).toHaveCount(0);
-  const { panel: dialog } = await openEngineTab(page);
-  await expect(dialog).toContainText('15개 기초 도구');
+test('Lucy engine box in the general chat tool sheet lists the deep perspectives', async ({ page }) => {
+  // 엔진함은 일반 채팅 헤더의 연필 버튼 창에 있다(점술모드 도구함에는 도구 탭만 있다).
+  await openLucy(page);
+  const { panel: dialog } = await openChatEngineBox(page);
   await expect(dialog).toContainText('500개 심층 관점');
-  await expect(dialog).toContainText('각각 독립 계산기가 아닙니다');
+  await expect(dialog).toContainText('1~2개만 골라');
   // 담기·프리셋은 사용자 요청으로 제거됨: 엔진은 질문마다 자동으로 골라지고, 엔진함은 목록과 뜻만 보여 준다.
   await expect(dialog.locator('[data-engine-preset]')).toHaveCount(0);
   await expect(dialog.getByRole('button', { name: /담기$/ })).toHaveCount(0);
-  await expect(dialog).toContainText('자동으로 골라');
+  await expect(dialog).toContainText('골라 답해요');
   const nameStyle = await dialog.locator('.lucy-engine-catalog-entry-name').first().evaluate(element => {
     const dialogElement = element.closest('[data-catalog-theme]');
     const theme = dialogElement?.getAttribute('data-catalog-theme');
@@ -387,13 +384,13 @@ test('Lucy engine box opens the 515-entry catalog with multi-select and no prese
   await expect(dialog.getByRole('link')).toHaveCount(0);
 });
 
-test('Lucy groups all 515 catalog entries under the seven channel themes', async ({ page }) => {
-  await openLucyMaster(page);
-  const { panel: dialog } = await openEngineTab(page);
+test('Lucy groups every deep perspective under the seven channel themes', async ({ page }) => {
+  await openLucy(page);
+  const { panel: dialog } = await openChatEngineBox(page);
   const entries = dialog.getByTestId('lucy-engine-catalog-entry');
-  await expect(entries).toHaveCount(515);
+  await expect(entries).toHaveCount(500);
   const meaningTexts = await entries.locator('.lucy-engine-catalog-entry-meaning').allTextContents();
-  expect(meaningTexts).toHaveLength(515);
+  expect(meaningTexts).toHaveLength(500);
   for (const meaning of meaningTexts) {
     expect(meaning.trim()).not.toMatch(/^뜻\s*:/);
     expect(meaning.trim().length).toBeGreaterThan(0);
@@ -433,9 +430,9 @@ test('Lucy groups all 515 catalog entries under the seven channel themes', async
   await expect(dialog.getByTestId('lucy-engine-catalog-entry')).toHaveCount(auraCount);
 });
 
-test('Lucy engine tab fills the tool window and its list scrolls without auto-opening the keyboard', async ({ page }) => {
-  await openLucyMaster(page);
-  const { sheet, panel } = await openEngineTab(page);
+test('Lucy chat engine box fills the tool window and its list scrolls without auto-opening the keyboard', async ({ page }) => {
+  await openLucy(page);
+  const { sheet, panel } = await openChatEngineBox(page);
   const search = panel.getByRole('searchbox', { name: '엔진과 관점 검색' });
   await expect(search).not.toBeFocused();
 
@@ -728,7 +725,7 @@ test('expanded Cosmic Room starts in Lucy Plus and the bubble opens the unified 
   await expect(lucyBubble.locator('[data-lucy-pro-bubble="true"]')).toBeVisible();
   await expect(leftPane.locator('[data-duo-divination-tarot="true"]')).toBeVisible();
   await expect(lucyPane.locator('[data-lucy-name-marker="master"]')).toBeVisible();
-  for (const face of ['saju', 'tarot', 'recommended', 'scrolls', 'engines']) {
+  for (const face of ['saju', 'tarot', 'astrology', 'ziwei', 'sukuyo', 'mahabote', 'vedic', 'liuren', 'qimen', 'kabbalah', 'iching', 'thai_astrology', 'tojeong', 'kyusei', 'taiyi']) {
     await expect(leftPane.locator(`[data-table-face="${face}"]`)).toBeVisible();
   }
   expect(await page.evaluate(() => sessionStorage.getItem('lucy_master_depth'))).toBeNull();

@@ -11,7 +11,8 @@ import { LucyTtsControlBar } from '@/components/lucy/LucyTtsControlBar';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { LucyEntryScreen, type LucyEntryVariant } from '@/components/chat/LucyEntryScreen';
-import { publishTableSaju, publishTableAnswer, publishTableTools } from '@/lib/lucyTableBus';
+import { publishTableSaju, publishTableAnswer, publishTableTools, publishTableActiveEngines } from '@/lib/lucyTableBus';
+import { buildActiveEngineTray } from '@/lib/lucyActiveEngineTray';
 import { MasterTableSheetButton } from '@/components/duo/MasterTableSheet';
 import { extractAllToolFacts, pickCalculatedToolData, type ToolFact } from '@/lib/lucyMasterToolFacts';
 import { LUCY_PRO_TOOLS } from '@/lib/divination/smartAgentRouter';
@@ -3914,16 +3915,34 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       : undefined;
 
     // 🔮 질문 의도와 활성 테마에 맞춰 도구 지침을 주입하고, 계산 근거와 상징 참고를 구분
-    const divinationSelection: SelectedDivinationToolsResult = isCasual
-      ? { isCasualMessage: true, selectedTools: [], promptInjection: '', selectionReason: '가벼운 일상 인사', firedEngineBadges: [] }
-      : (divinationMode
-        // 점술모드: 사주 메인. 7대 채널 보강·올인원 총동원 없이, 원할 때만 관련 엔진 추가
-        ? selectOptimalDivinationTools(combinedContextText, [], counselingUserProfile, false, { allowMaster: false, requireBasicAndDeep, divinationMode })
-        : selectOptimalDivinationTools(combinedContextText, isMaster ? ALL_CHANNELS : channels, counselingUserProfile, isMaster, { allowMaster: isMasterMode || requireBasicAndDeep, requireBasicAndDeep }));
+    //    💬 일반 채팅은 기초 도구 없이 엔진함의 심층 관점만 소수 골라 쓴다.
+    const divinationSelection: SelectedDivinationToolsResult = divinationMode
+      // 점술모드: 기초 도구 15종 + 심층 관점을 질문·고민에 맞춰 소수만 고른다
+      ? selectOptimalDivinationTools(combinedContextText, [], counselingUserProfile, false, { allowMaster: false, requireBasicAndDeep, divinationMode })
+      : turnPlan.deepPerspectivesOnly
+        ? selectOptimalDivinationTools(combinedContextText, [], counselingUserProfile, false, { allowMaster: false, deepOnly: true })
+        : selectOptimalDivinationTools(combinedContextText, isMaster ? ALL_CHANNELS : channels, counselingUserProfile, isMaster, { allowMaster: isMasterMode || requireBasicAndDeep, requireBasicAndDeep });
     // 🧭 루시프로 통합 상담: 사주·13대 도구 계산 결과를 왼쪽 점술 테이블에 넘긴다 (데이터만, 지시문 아님).
     if (divinationMode && !divinationSelection.isCasualMessage) {
       const concernForBoard = findConcernAnchor([...lucyMessages, { role: 'user', content: userCleanText }]) || userCleanText;
-      publishTableTools(divinationSelection.calculationAudit || [], concernForBoard, extractAllToolFacts(LUCY_PRO_TOOLS, divinationSelection.engineTools) as Record<string, ToolFact[]>, pickCalculatedToolData(LUCY_PRO_TOOLS, divinationSelection.engineTools));
+      publishTableTools(
+        divinationSelection.calculationAudit || [],
+        concernForBoard,
+        extractAllToolFacts(LUCY_PRO_TOOLS, divinationSelection.engineTools) as Record<string, ToolFact[]>,
+        pickCalculatedToolData(LUCY_PRO_TOOLS, divinationSelection.engineTools),
+        buildActiveEngineTray({
+          audit: divinationSelection.calculationAudit,
+          insightKeys: divinationSelection.deepPerspectiveKeys,
+          concern: concernForBoard,
+        }),
+      );
+    }
+    // 💬 일반 채팅: 이번 대화에 고른 심층 관점을 도구함(엔진함)에 표시해 둔다.
+    if (turnPlan.deepPerspectivesOnly && !divinationSelection.isCasualMessage) {
+      publishTableActiveEngines(
+        buildActiveEngineTray({ insightKeys: divinationSelection.deepPerspectiveKeys, concern: userCleanText }),
+        userCleanText,
+      );
     }
     if (!divinationSelection.isCasualMessage && divinationSelection.promptInjection) {
       extraSystemContext = extraSystemContext
@@ -4383,7 +4402,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     </span>
                   </h1>
                   {/* 루시프로 표시는 'Lucy Pro' 이름만 남긴다 — 상단 '통합' 배지는 사용자 요청으로 제거(2026-11-26).
-                      엔진함은 점술 도구 창(접은 화면 연필 버튼 · 펼친 화면 왼쪽 테이블)의 📚 엔진함 탭에서 본다. */}
+                      엔진함은 일반 채팅 도구함(헤더 연필 버튼)에서 열린다. */}
                 </div>
               </div>
             </div>
@@ -4391,8 +4410,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
           {/* Right Action Tools: 검색 · 자동 읽기 · 내보내기 */}
           <div className="lucy-header-actions flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* ✏️ 접은 화면 루시프로: 펼친 화면의 왼쪽 점술 테이블(사주·타로·추천 도구·양피지)을 창으로 본다 */}
-            {isMasterMode && <MasterTableSheetButton tone={isLight ? 'light' : 'dark'} />}
+            {/* ✏️ 도구함: 점술모드는 15개 도구 탭, 일반 채팅은 엔진함(심층 관점 설명) — 같은 연필 버튼 */}
+            <MasterTableSheetButton tone={isLight ? 'light' : 'dark'} isMasterMode={isMasterMode} />
             {/* 📘 가이드 */}
             <PageGuideButton guide={getPageGuide(isMasterMode ? 'master' : 'lucy')} tone={isLight ? 'light' : 'dark'} />
             {/* 1. 검색 (Search Toggle) */}

@@ -2,13 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { resolveLucyPageTurn, requiresBasicAndDeepForTurn } from '../src/lib/lucyTurnMode.ts';
 
-test('일반 채팅(!isMasterMode)은 항상 수다모드 전용이다', () => {
+test('일반 채팅(!isMasterMode)은 기초 도구를 끄고 심층 관점만 쓴다', () => {
   const turn = resolveLucyPageTurn(false);
-  assert.equal(turn.mode, 'casual');
+  assert.equal(turn.mode, 'companion');
   assert.deepEqual(turn.channels, []);
   assert.equal(turn.isCasual, true);
   assert.equal(turn.isMaster, false);
   assert.equal(turn.requireBasicAndDeep, false);
+  assert.equal(turn.deepPerspectivesOnly, true);
 });
 
 test('점술모드(isMasterMode)는 7대 채널과 기초·심층 엔진을 그대로 유지한다', () => {
@@ -18,6 +19,7 @@ test('점술모드(isMasterMode)는 7대 채널과 기초·심층 엔진을 그�
   assert.equal(turn.isMaster, true);
   assert.equal(turn.isCasual, false);
   assert.equal(turn.requireBasicAndDeep, true);
+  assert.equal(turn.deepPerspectivesOnly, false);
 });
 
 test('일반 루시 채팅 턴은 AppContext에서도 운명학 엔진을 돌리지 않는다', () => {
