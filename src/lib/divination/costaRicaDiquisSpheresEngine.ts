@@ -8,6 +8,7 @@ export interface DiquisSpheresResult {
   symbolicMotif: string;
   companionMotif: string;
   sphereAlignmentAxis: string;
+  topicBalanceHint: string;
   ritualAction: string;
   shadowWarning: string;
   reflectiveQuestion: string;
@@ -69,6 +70,13 @@ const DIQUIS_SHADOWS = [
   '비바람을 견딘 단단함에 취해 새로운 조언과 부드러운 손길까지 튕겨 내지 않도록 마음을 열어 두세요.',
 ];
 
+const TOPIC_BALANCE_HINTS: Record<DiquisSpheresResult['questionTopic'], string> = {
+  '마음·유연': '모난 귀퉁이를 둥글게 다듬되 꼭 지켜야 할 내면의 중심까지 무뎌지지 않게 살피세요.',
+  '기준·방향': '숲속 돌공의 배치처럼 흔들리지 않는 기준점 하나를 세우고 변화에 맞춰 보폭을 조율하세요.',
+  '일·완성': '오랜 시간 모래로 갈아 윤을 내듯 조급함을 내려놓고 오늘 손볼 수 있는 한 면에 집중하세요.',
+  '성숙 전반': '남의 속도와 내 무게를 비교하지 않고 지금 내 자리에 맞는 둥근 균형을 먼저 세우세요.',
+};
+
 function classifyDiquisTopic(q: string): DiquisSpheresResult['questionTopic'] {
   if (/마음|둥글|감정|관계|사람|유연/.test(q)) return '마음·유연';
   if (/기준|방향|방위|선택|고민/.test(q)) return '기준·방향';
@@ -91,10 +99,11 @@ export function calculateCostaRicaDiquisSpheres(params: {
   const picked = DIQUIS_ITEMS[idx];
   const companion = DIQUIS_ITEMS[(idx + companionOffset) % DIQUIS_ITEMS.length];
   const sphereAlignmentAxis = `${picked.motif.slice(0, 14).trim()} ↔ ${companion.motif.slice(0, 14).trim()} (${questionTopic})`;
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = DIQUIS_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-DIQUIS-SPHERES-v2.3.0',
+    engineVersion: 'LUCKEY-DIQUIS-SPHERES-v2.4.0',
     calculatedAtKst: getKstTimeString(now),
     questionTopic,
     reflectionFocus: q
@@ -103,6 +112,7 @@ export function calculateCostaRicaDiquisSpheres(params: {
     symbolicMotif: picked.motif,
     companionMotif: companion.motif,
     sphereAlignmentAxis,
+    topicBalanceHint,
     ritualAction: picked.ritual,
     shadowWarning,
     reflectiveQuestion: picked.question,
@@ -116,6 +126,7 @@ export function formatDiquisSpheresPrompt(result: DiquisSpheresResult): string {
     `[디퀴스·정글 돌공 관점 (${result.engineVersion})]`,
     `- 기준 시각: ${result.calculatedAtKst}`,
     `- 질문 맥락: ${result.questionTopic} | 석구 축: ${result.sphereAlignmentAxis}`,
+    `- 맥락 균형 조언: ${result.topicBalanceHint}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 상징 모티프: ${result.symbolicMotif}`,
     `- 동반 모티프: ${result.companionMotif}`,
