@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const LIFE_DOMAIN_WHEEL_VERSION = 'LUCKEY-WHEEL-v2.3.0';
+export const LIFE_DOMAIN_WHEEL_VERSION = 'LUCKEY-WHEEL-v2.4.0';
 
 function formatWheelKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -72,6 +72,11 @@ export interface LifeDomainWheelResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  wheelCrossAxis: {
+    breakthroughToRecharge: string;
+    sourcePair: string;
+    balanceCalibration: string;
   };
   interpretiveBoundary: string;
 }
@@ -221,6 +226,11 @@ export function calculateLifeDomainWheel(params?: {
     alignmentState: `${balanceLevelTitle}`,
     integratedAction: `${primaryBreakthroughDomain.strategicAction} · ${rechargeDomain.strategicAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const wheelCrossAxis = {
+    breakthroughToRecharge: `${primaryBreakthroughDomain.titleKo} → ${rechargeDomain.titleKo}`,
+    sourcePair: `${primaryBreakthroughDomain.astrologicalSource} ↔ ${rechargeDomain.astrologicalSource}`,
+    balanceCalibration: `${balanceLevelTitle} (돌파·회복 동시 조율)`,
+  };
 
   return {
     engineVersion: LIFE_DOMAIN_WHEEL_VERSION,
@@ -236,6 +246,7 @@ export function calculateLifeDomainWheel(params?: {
     reflectionFocus: `라이프 12궁 밸런스(${primaryBreakthroughDomain.titleKo} ↔ ${rechargeDomain.titleKo}) — ${balanceLevelTitle}`,
     reflectiveQuestion,
     wheelSynthesisMatrix,
+    wheelCrossAxis,
     interpretiveBoundary: '본 라이프 12궁 밸런스 휠 리포트는 명리·자미·점성 12궁 상징에 기반한 정성적 삶의 균형 성찰 안내이며, 의학·재무적 확정 진단을 대신하지 않습니다.',
   };
 }
@@ -262,6 +273,7 @@ export function formatLifeDomainWheelPrompt(res: LifeDomainWheelResult): string 
     lines.push(
       `- 교차 매트릭스: [핵심 긴장: ${res.wheelSynthesisMatrix.dominantTension} | 조율 상태: ${res.wheelSynthesisMatrix.alignmentState}]`,
       `  • 통합 실천: ${res.wheelSynthesisMatrix.integratedAction}`,
+      `- 휠 교차 축: ${res.wheelCrossAxis.breakthroughToRecharge} | ${res.wheelCrossAxis.sourcePair} | ${res.wheelCrossAxis.balanceCalibration}`,
     );
   }
   lines.push(

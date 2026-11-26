@@ -2695,6 +2695,7 @@ test('Life Domain Wheel Engine: 6대 핵심 라이프 도메인 밸런스 휠 �
   assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.wheelSynthesisMatrix?.integratedAction));
+  assert(Boolean(res.wheelCrossAxis?.breakthroughToRecharge && res.wheelCrossAxis?.sourcePair && res.wheelCrossAxis?.balanceCalibration));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.wheelBalanceScore >= 0 && res.wheelBalanceScore <= 100);
   assert(res.primaryBreakthroughDomain.titleKo.length > 0);
@@ -2703,6 +2704,7 @@ test('Life Domain Wheel Engine: 6대 핵심 라이프 도메인 밸런스 휠 �
   const prompt = formatLifeDomainWheelPrompt(res);
   assert(prompt.includes(LIFE_DOMAIN_WHEEL_VERSION));
   assert(prompt.includes('라이프 휠 균형도'));
+  assert(prompt.includes('휠 교차 축'));
   assert(prompt.includes('1순위 돌파 도메인'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
@@ -3267,12 +3269,14 @@ test('Quantum Probabilistic Timeline Engine: 양자 다중우주 타임라인 �
   assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.quantumTimelineSynthesisMatrix?.integratedAction));
+  assert(Boolean(res.timelineCrossAxis?.trackDivergence && res.timelineCrossAxis?.bifurcationAnchor && res.timelineCrossAxis?.identityToAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.baselineTimeline.probabilityPercent + res.optimalQuantumTimeline.probabilityPercent === 100);
   assert(res.bifurcationWindow.criticalDateRange.length > 0);
   assert(res.quantumCollapseCatalyst.identityShift.length > 0);
   const prompt = formatQuantumProbabilisticTimelinePrompt(res);
   assert(prompt.includes('LUCKEY 양자 다중우주 타임라인 분기 & 퀀텀 점프'));
+  assert(prompt.includes('타임라인 교차 축'));
   assert(prompt.includes(res.optimalQuantumTimeline.projectedOutcome6Months));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
@@ -3957,10 +3961,12 @@ test('Nordic Elder Futhark Runes Engine: calculates birth rune, norns trio and b
   assert(rep.reflectionFocus.length > 0);
   assert(Boolean(rep.runesSynthesisMatrix?.secondaryRuneSummary));
   assert(Boolean(rep.runesSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.runesCrossAxis?.birthToPresent && rep.runesCrossAxis?.nornsAxis && rep.runesCrossAxis?.bindruneFocus));
   assert(rep.reflectiveQuestion.includes('새 프로젝트'));
   assert(rep.interpretiveBoundary.includes('참고용 비유'));
   const prompt = formatNordicElderFutharkRunesPrompt(rep);
   assert(prompt.includes('북유럽 24 엘더 푸사르크 룬'));
+  assert(prompt.includes('룬 교차 축'));
   assert(prompt.includes(rep.birthRune.koreanName));
   assert(prompt.includes('과잉·경계 점검'));
   assert(prompt.includes('실천 의례'));
