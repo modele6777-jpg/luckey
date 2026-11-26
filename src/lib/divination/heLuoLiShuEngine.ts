@@ -32,7 +32,7 @@ import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, SajuAnalysisResult } from '../sajuAnalysis';
 import { hexagram } from './iching';
 
-export const HELUOLISHU_ENGINE_VERSION = 'LUCKEY-HL-v2.3.0';
+export const HELUOLISHU_ENGINE_VERSION = 'LUCKEY-HL-v2.4.0';
 
 export const HELUOLISHU_METHOD =
   '하락이수(河洛理數) 정통 상수역학 산법: 사주 8자 하도낙서 천수(25)·지수(30) 치환, 선천본괘(先天本卦)·원당효(元堂爻)·후천변괘(後天變卦) 결정론적 산출, 음양 밸런스·원당효 당위성·10년 대운 주역 궤적 및 청년/장년 2대 인생 주기 지수 산출';
@@ -102,6 +102,11 @@ export interface HeLuoLiShuResult {
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
+  };
+  heLuoCrossAxis: {
+    hexagramTransition: string;
+    yinYangHarmony: string;
+    yuanTangAlignment: string;
   };
   lifeTransitionKey: string;
   reflectiveQuestion: string;
@@ -352,6 +357,11 @@ export function calculateHeLuoLiShu(params?: {
 
   const ritualAction = `[선천 ${innateGua.name} → 원당 제${yuanTangYao}효 → 후천 ${acquiredGua.name}] 오늘 15분 동안 원당효(${yuanTangDetail.alignment})의 소명을 기준으로 ${situationalHeLuoAudit.focusTheme}에 맞춘 첫 행동을 한 가지 실행하세요.`;
   const reflectionFocus = reflectiveQuestion;
+  const heLuoCrossAxis = {
+    hexagramTransition: `${innateGua.name} → 제${yuanTangYao}효 → ${acquiredGua.name}`,
+    yinYangHarmony: `${yinYangBalance.constitutionTrait} (천수 ${heavenSum} / 지수 ${earthSum})`,
+    yuanTangAlignment: `${yuanTangDetail.positionType} · ${yuanTangDetail.bitValue} · ${yuanTangDetail.alignment}`,
+  };
 
   return {
     engineVersion: HELUOLISHU_ENGINE_VERSION,
@@ -390,6 +400,7 @@ export function calculateHeLuoLiShu(params?: {
     situationalHeLuoAudit,
     temporalHeLuoRhythm,
     heLuoSynthesisMatrix,
+    heLuoCrossAxis,
     lifeTransitionKey,
     reflectiveQuestion,
     ritualAction,
@@ -423,6 +434,7 @@ export function formatHeLuoLiShuPrompt(res: HeLuoLiShuResult): string {
 - KST 시공간 하도낙서 리듬: ${res.temporalHeLuoRhythm.hetuWatchWindow} / ${res.temporalHeLuoRhythm.seasonalLuoshuTone}
   • 시공간 지침: ${res.temporalHeLuoRhythm.temporalGuidance}
 - 하락 교차 매트릭스: 핵심(${res.heLuoSynthesisMatrix.coreInsight}) | 실행(${res.heLuoSynthesisMatrix.recommendedAction}) | 주의(${res.heLuoSynthesisMatrix.cautionNotice})
+- 하락 교차 축: 괘상 전이(${res.heLuoCrossAxis.hexagramTransition}) | 음양 조화(${res.heLuoCrossAxis.yinYangHarmony}) | 원당 정위(${res.heLuoCrossAxis.yuanTangAlignment})
 - 생애 대운별 주역 궤적 (20대~60대+):
 ${dtStr}
 - 대전환 핵심 비결: ${res.lifeTransitionKey}

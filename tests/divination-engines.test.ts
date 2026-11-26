@@ -2352,10 +2352,12 @@ test('HeLuoLiShu Engine: 사주·주역 융합 선천괘·후천괘·원당효 �
   assert(res.reflectiveQuestion.includes('직장과 진로의 도약'));
   assert(res.temporalHeLuoRhythm.hetuWatchWindow.length > 0);
   assert(res.heLuoSynthesisMatrix.coreInsight.length > 0);
+  assert(Boolean(res.heLuoCrossAxis?.hexagramTransition && res.heLuoCrossAxis?.yinYangHarmony && res.heLuoCrossAxis?.yuanTangAlignment));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatHeLuoLiShuPrompt(res);
   assert(prompt.includes(HELUOLISHU_ENGINE_VERSION));
+  assert(prompt.includes('하락 교차 축'));
   assert(prompt.includes(res.ritualAction));
   assert(prompt.includes('선천본괘'));
   assert(prompt.includes('원당효'));
@@ -4798,12 +4800,13 @@ test('Hawaiian Kahuna Three Selves Engine: calculates 3 selves harmony and mana 
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.temporalKahunaRhythm.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.situationalKahunaAudit.questionFocus.length > 0);
+  assert(Boolean(rep.kahunaCrossAxis?.pikoFlow && rep.kahunaCrossAxis?.vitalityBalance && rep.kahunaCrossAxis?.dominantPiko));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHawaiianKahunaThreeSelvesPrompt(rep);
   assert(prompt.includes('고대 하와이 카후나 3대 자아 & 마나 공명 실측 데이터'));
   assert(prompt.includes(rep.unihipili.dominantNeedOrBlock));
   assert(prompt.includes(rep.ritualAction));
-  assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes('카후나 교차 축') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/ 100점'));
   assert(!prompt.includes('점 '));
 });
@@ -15468,10 +15471,10 @@ test('Pamir Wakhan Corridor Stars engine: motif, +09:00 KST, and interpretive bo
 
 test('Hebridean Tartan Loom Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateHebrideanTartanLoomCalm({ profile, now: new Date('2026-11-20T20:59:00Z'), question: '내 발박자에 맞춰 고유한 격자를 짜고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-HEBRIDEAN-TARTAN-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-HEBRIDEAN-TARTAN-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.hebrideanMotif);
-  assert.ok(rep.loomWeaveAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.loomWeaveAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatHebrideanTartanPrompt(rep);
