@@ -573,7 +573,7 @@ export function calculateEnergeticPrescription(options: {
 
     microRituals,
     lifestyleRemedy,
-    energeticCrossAxis: `${primaryLacking} 결핍 × ${therapeuticYongsin} 용신 (${questionTopic} · ${bioEnergeticAlignment.vitalityLevel || vitalityLevel})`,
+    energeticCrossAxis: `${primaryLacking} 결핍 × ${therapeuticYongsin} 용신 (${questionTopic} · ${vitalityLevel})`,
     energeticSynthesisMatrix,
     reflectiveQuestion,
     ritualAction,
