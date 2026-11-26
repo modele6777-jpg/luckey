@@ -13,6 +13,7 @@ export interface FezCobaltResult {
   kilnGlaze: string;
   companionGlaze: string;
   kilnSymmetryAxis: string;
+  topicBalanceHint: string;
   cobaltSymmetry: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -75,6 +76,13 @@ const FEZ_SHADOWS = [
   '여백을 남긴다는 이유로 꼭 채워야 할 핵심 약속과 일상의 책임까지 비워 두지 마세요.',
 ] as const;
 
+const TOPIC_BALANCE_HINTS: Record<FezCobaltResult['questionTopic'], string> = {
+  '중심·대칭': '중심점부터 또렷이 찍되, 완벽한 대칭에 매여 손으로 빚은 자연스러운 온기를 지우지 마세요.',
+  '여백·기다림': '푸른 무늬가 숨 쉴 흰 여백을 남기되, 꼭 지켜야 할 현실 약속과 마감까지 비워 두지는 마세요.',
+  '열기·완성': '가마 불길의 열기를 견디며 완성을 기다리되, 지금 바로 손봐야 할 작은 틈새는 먼저 메우세요.',
+  '공예 전반': '첫 붓질을 담백하게 내딛되, 결과물 평가보다 지금 손에 쥔 정성과 리듬을 먼저 믿으세요.',
+};
+
 function classifyFezTopic(q: string): FezCobaltResult['questionTopic'] {
   if (/중심|대칭|균형|핵심|별/.test(q)) return '중심·대칭';
   if (/여백|기다림|휴식|쉼|비움/.test(q)) return '여백·기다림';
@@ -93,15 +101,17 @@ export function calculateFezCobaltPottery(input: FezCobaltInput): FezCobaltResul
   const kilnGlaze = GLAZES[glazeIdx];
   const companionGlaze = GLAZES[(glazeIdx + companionOffset) % GLAZES.length];
   const kilnSymmetryAxis = `${kilnGlaze.slice(0, 14).trim()} ↔ ${companionGlaze.slice(0, 14).trim()} (${questionTopic})`;
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = FEZ_SHADOWS[glazeIdx];
 
   return {
-    engineVersion: 'LUCKEY-FEZ-COBALT-v2.3.0',
+    engineVersion: 'LUCKEY-FEZ-COBALT-v2.4.0',
     calculatedAtKst: toKstIso(input.now),
     questionTopic,
     kilnGlaze,
     companionGlaze,
     kilnSymmetryAxis,
+    topicBalanceHint,
     cobaltSymmetry: SYMMETRIES[(seed >>> 3) % SYMMETRIES.length],
     reflectionFocus: `모로코 페즈의 장인들이 흰 흙 위에 코발트 블루 기하학 문양을 중심에서부터 그려 가마에 구워 내는 도자기 공예처럼, 주 유약('${kilnGlaze}')과 동반 유약('${companionGlaze}')을 겹쳐 중심과 여백의 균형을 살피는 상징적 관점입니다.`,
     ritualAction: ACTIONS[glazeIdx],
@@ -116,6 +126,7 @@ export function formatFezCobaltPrompt(res: FezCobaltResult): string {
     `[페즈·코발트 도자기 가마 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
     `질문 맥락: ${res.questionTopic} | 가마·대칭 축: ${res.kilnSymmetryAxis}`,
+    `맥락 균형 조언: ${res.topicBalanceHint}`,
     `유약 빛깔: ${res.kilnGlaze}`,
     `동반 빛깔: ${res.companionGlaze}`,
     `대칭 여백: ${res.cobaltSymmetry}`,
