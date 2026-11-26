@@ -7,6 +7,7 @@ export interface IgboOfoOguResult {
   pillarSymbol: string;
   companionSymbol: string;
   ofoIkengaAxis: string;
+  topicBalanceHint: string;
   ofoInsight: string;
   villageTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const IGBO_SHADOWS = [
   '공동체와 책임을 나누는 과정에서도 내가 직접 끝맺어야 할 핵심 결정까지 남에게 미루지는 마세요.',
 ];
 
+const IGBO_TOPIC_HINTS: Record<IgboOfoOguResult['questionTopic'], string> = {
+  '진실·양심': '유리한 계산보다 내 마음이 부끄럽지 않은 오포의 정직한 기준을 먼저 세울 때 흔들리지 않는 평정이 찾아옵니다.',
+  '실행·개척': '상황이나 남의 결정을 기다리기보다 지금 내 두 손(Ikenga)으로 옮길 수 있는 작은 실행 한 가지를 먼저 시작하세요.',
+  '환대·연대': '거창한 설득보다 작은 콜라 열매 나눔 같은 따뜻한 환대로 문을 열고, 믿을 만한 동료와 기둥을 함께 세우세요.',
+  '오포·오구 전반': '맑은 양심(Ofo na Ogu)으로 중심을 잡고 오늘 내 손의 실행(Ikenga)을 이어 갈 때 공동체와 나 모두가 단단해집니다.',
+};
+
 function classifyIgboTopic(q: string): IgboOfoOguResult['questionTopic'] {
   if (/기준|진실|양심|정직|떳떳/.test(q)) return '진실·양심';
   if (/실행|개척|결정|행동|손/.test(q)) return '실행·개척';
@@ -102,15 +110,17 @@ export function calculateIgboOfoOguTruthJustice(params: {
   const picked = SYMBOLS[idx];
   const companion = SYMBOLS[(idx + companionOffset) % SYMBOLS.length];
   const ofoIkengaAxis = `${picked.symbol.split('(')[0].trim()} ↔ ${companion.symbol.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = IGBO_TOPIC_HINTS[questionTopic];
   const shadowWarning = IGBO_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-IGBO-OFO-OGU-v2.3.0',
+    engineVersion: 'LUCKEY-IGBO-OFO-OGU-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     pillarSymbol: picked.symbol,
     companionSymbol: companion.symbol,
     ofoIkengaAxis,
+    topicBalanceHint,
     ofoInsight: picked.insight,
     villageTone: picked.tone,
     reflectionFocus: `이그보 지혜의 '${picked.symbol}'처럼, 눈앞의 계산보다 내가 떳떳하게 고개 들 수 있는 기준 하나를 먼저 붙잡아 보세요. (동반 결: ${companion.symbol.split('(')[0].trim()})`,
@@ -126,6 +136,7 @@ export function formatIgboOfoOguPrompt(res: IgboOfoOguResult): string {
     `[이그보 오포·오구 진실 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 오포·이켄가 축: ${res.ofoIkengaAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 상징 기둥: ${res.pillarSymbol} (${res.villageTone})`,
     `- 동반 기둥: ${res.companionSymbol}`,
     `- 중심 통찰: ${res.ofoInsight}`,

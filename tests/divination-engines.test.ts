@@ -3092,11 +3092,13 @@ test('Ikigai Destiny Compass Engine: 이키가이 천직 4대 교집합 & 소명
   assert(res.monetizationPath.phase1Validation.length > 0);
   assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(res.ikigaiSynthesisMatrix?.integratedAction));
+  assert(Boolean(res.ikigaiCrossAxis?.passionToVocation && res.ikigaiCrossAxis?.missionToProfession && res.ikigaiCrossAxis?.alignmentStage));
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatIkigaiDestinyCompassPrompt(res);
   assert(prompt.includes('LUCKEY 이키가이 천직 4대 교집합 & 소명 나침반'));
   assert(prompt.includes(res.soulCallingTitle));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('이키가이 교차 축'));
   assert(prompt.includes(res.ritualAction));
   assert(prompt.includes(res.reflectionFocus));
   assert(!prompt.includes('/100'));
@@ -14087,10 +14089,10 @@ test('Welsh Mabinogion Awen Inspiration engine: ray, +09:00 KST, and interpretiv
 
 test('Igbo Ofo Ogu Truth Justice engine: symbol, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateIgboOfoOguTruthJustice({ profile, now: new Date('2026-11-20T07:03:00Z'), question: '떳떳한 기준을 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-IGBO-OFO-OGU-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-IGBO-OFO-OGU-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSymbol !== rep.pillarSymbol);
-  assert.ok(rep.ofoIkengaAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.ofoIkengaAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatIgboOfoOguPrompt(rep);
@@ -15423,10 +15425,10 @@ test('Cappadocian Tuff Cave Calm engine: motif, +09:00 KST, and interpretive bou
 
 test('Ifugao Banaue Rice Terrace engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateIfugaoBanaueRiceTerrace({ profile, now: new Date('2026-11-20T20:39:00Z'), question: '내 에너지의 근원인 숲을 돌보고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-IFUGAO-TERRACE-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-IFUGAO-TERRACE-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.ifugaoMotif);
-  assert.ok(rep.terraceWaterAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.terraceWaterAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatIfugaoTerracePrompt(rep);
