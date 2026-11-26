@@ -7,6 +7,7 @@ export interface NumidianCirtaResult {
   cirtaMotif: string;
   companionMotif: string;
   cirtaHorizonAxis: string;
+  topicBalanceHint: string;
   numidianInsight: string;
   plateauTone: string;
   reflectionFocus: string;
@@ -76,6 +77,15 @@ const NUMIDIAN_SHADOWS = [
   '내면의 뿌리를 내리는 고요한 시간이 밖으로 건네야 할 안부와 표현까지 막아 두는 과도한 위축이 되지 않게 주의하세요.',
 ];
 
+const NUMIDIAN_TOPIC_HINTS: Record<NumidianCirtaResult['questionTopic'], string> = {
+  '연결·다리': '연결과 다리의 질문에서는 건널 수 있는 작은 연결고리 하나를 먼저 짚되, 감당할 경계선은 함께 지켜 두세요.',
+  '경계·균형': '경계와 균형의 질문에서는 두 극단 사이에서 둘 다 숨 쉴 수 있는 중간 지점을 한 줄로 먼저 정해 보세요.',
+  '민첩·유연': '민첩과 유연의 질문에서는 완벽한 준비를 기다리기보다 가장 가벼운 첫 단계로 출발해 방향을 조율하세요.',
+  '기초·질서': '기초와 질서의 질문에서는 거대한 전체보다 오늘 발밑에 반듯하게 올려놓을 수 있는 한 단의 작업만 완수하세요.',
+  '뿌리·휴식': '뿌리와 휴식의 질문에서는 겉가지를 뻗기보다 수면과 정리처럼 기본 체력을 다지는 시간을 먼저 확보하세요.',
+  '누미디아 전반': '전반적 항해의 질문에서는 무거운 조건을 다 갖추려 하기보다 가벼운 고삐와 균형 잡힌 시야로 한 걸음을 옮기세요.',
+};
+
 function classifyNumidianTopic(q: string): NumidianCirtaResult['questionTopic'] {
   if (/연결|다리|사이|관계/.test(q)) return '연결·다리';
   if (/경계|균형|선택|맞서/.test(q)) return '경계·균형';
@@ -99,14 +109,16 @@ export function calculateNumidianCirtaHorizonPoise(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const cirtaHorizonAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = NUMIDIAN_TOPIC_HINTS[questionTopic];
 
   return {
-    engineVersion: 'LUCKEY-NUMIDIAN-CIRTA-v2.3.0',
+    engineVersion: 'LUCKEY-NUMIDIAN-CIRTA-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     cirtaMotif: picked.motif,
     companionMotif: companion.motif,
     cirtaHorizonAxis,
+    topicBalanceHint,
     numidianInsight: picked.insight,
     plateauTone: picked.tone,
     reflectionFocus: `누미디아 키르타 지평선의 '${picked.motif}'을 중심에 두고 '${companion.motif}'의 시야를 함께 엮어, 무거운 조건을 다 갖추려 애쓰기보다 가벼운 고삐와 균형 잡힌 시야로 한 걸음을 옮겨 보세요.`,
@@ -122,6 +134,7 @@ export function formatNumidianCirtaPrompt(res: NumidianCirtaResult): string {
     `[누미디아 키르타·천문 지평선 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 키르타 지평 축: ${res.cirtaHorizonAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 키르타 모티프: ${res.cirtaMotif} (${res.plateauTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.numidianInsight}`,

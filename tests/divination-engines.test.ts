@@ -8068,6 +8068,7 @@ test('David Hume Treatise of Human Nature Engine: calculates Mitigated Skepticis
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.humeSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.humeCrossAxis?.themePair && rep.humeCrossAxis?.phaseAlignment && rep.humeCrossAxis?.aphorismAnchor));
   assert(rep.reflectiveQuestion.includes('확신과 공감의 균형'));
   assert(rep.interpretiveBoundary.includes('성찰 비유'));
   const prompt = formatDavidHumeTreatiseHumanNaturePrompt(rep);
@@ -8075,7 +8076,7 @@ test('David Hume Treatise of Human Nature Engine: calculates Mitigated Skepticis
   assert(prompt.includes(rep.activeHumeTheme.themeTitleKo));
   assert(prompt.includes('보조 교차 테마'));
   assert(prompt.includes(rep.humePhase) && prompt.includes(rep.shadowWarning));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('흄 경험 교차 축'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
@@ -8098,6 +8099,7 @@ test('Manhae Han Yong-un Nimui Chimmuk Engine: calculates Transcendent Love, Gon
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.manhaeSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.manhaeCrossAxis?.themePair && rep.manhaeCrossAxis?.aphorismPair && rep.manhaeCrossAxis?.vowAnchor));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const repQ = calculateManhaeHanYongunNimuiChimmuk(profile, '침묵 속에 지키며 승화해야 할 신념');
   assert(repQ.reflectiveQuestion.includes('승화해야 할 신념'));
@@ -8106,7 +8108,7 @@ test('Manhae Han Yong-un Nimui Chimmuk Engine: calculates Transcendent Love, Gon
   assert(prompt.includes(repQ.activeHanYongunTheme.themeTitleKo));
   assert(prompt.includes(repQ.secondaryHanYongunTheme.themeTitleKo));
   assert(prompt.includes('해석 경계'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('만해 침묵·지조 교차 축'));
   assert(prompt.includes(repQ.ritualAction));
   assert(prompt.includes(repQ.reflectionFocus));
   assert(!prompt.includes('/100'));
@@ -15120,15 +15122,15 @@ test('Sigiriya Lion Rock Water Garden engine: motif, +09:00 KST, and interpretiv
 
 test('Numidian Cirta Horizon Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateNumidianCirtaHorizonPoise({ profile, now: new Date('2026-11-20T19:35:00Z'), question: '부담 없이 가벼운 첫 걸음을 내딛고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-NUMIDIAN-CIRTA-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-NUMIDIAN-CIRTA-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.cirtaMotif);
-  assert.ok(rep.cirtaHorizonAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.cirtaHorizonAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatNumidianCirtaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('누미디아') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('누미디아') && prompt.includes('동반 모티프') && prompt.includes('맥락 균형 조언') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Paracas Weave Textile Harmony engine: motif, +09:00 KST, and interpretive boundary', () => {
