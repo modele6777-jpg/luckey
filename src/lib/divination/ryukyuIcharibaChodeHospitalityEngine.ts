@@ -7,6 +7,7 @@ export interface RyukyuIcharibaChodeResult {
   islandMotif: string;
   companionMotif: string;
   icharibaBridgeAxis: string;
+  topicBalanceHint: string;
   chodeInsight: string;
   seaTone: string;
   reflectionFocus: string;
@@ -76,6 +77,15 @@ const RYUKYU_SHADOWS = [
   '숙성의 시간을 기다리는 여유가 실제로 물을 주고 손질해야 할 타이밍까지 방치하는 게으름으로 바뀌지 않게 살피세요.',
 ];
 
+const RYUKYU_TOPIC_HINTS: Record<RyukyuIcharibaChodeResult['questionTopic'], string> = {
+  '인연·환대': '작은 존중과 따뜻한 인사 한 마디가 뜻밖의 연결을 여는 열쇠가 됩니다.',
+  '생명·돌봄': '거창한 성취보다 지금 살아 숨 쉬는 내 몸과 마음의 온도를 먼저 챙겨 주세요.',
+  '품앗이·연대': '혼자 버겁게 짊어지던 일을 신뢰하는 곁과 나누면 기운이 함께 살아납니다.',
+  '첫인사·밝음': '굳어 있던 공기라도 내가 먼저 건네는 가벼운 미소가 흐름을 부드럽게 바꿉니다.',
+  '숙성·기다림': '서둘러 결실을 재촉하기보다 자연스럽게 깊어질 시간을 믿고 기다려 주세요.',
+  '류큐 전반': '나를 돌보는 온기와 곁을 환대하는 마음이 균형을 이룰 때 하루가 편안해집니다.',
+};
+
 function classifyRyukyuTopic(q: string): RyukyuIcharibaChodeResult['questionTopic'] {
   if (/인연|주변|공기|환대/.test(q)) return '인연·환대';
   if (/몸|마음|보물|휴식/.test(q)) return '생명·돌봄';
@@ -99,14 +109,16 @@ export function calculateRyukyuIcharibaChodeHospitality(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const icharibaBridgeAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = RYUKYU_TOPIC_HINTS[questionTopic];
 
   return {
-    engineVersion: 'LUCKEY-RYUKYU-ICHARIBA-v2.3.0',
+    engineVersion: 'LUCKEY-RYUKYU-ICHARIBA-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     islandMotif: picked.motif,
     companionMotif: companion.motif,
     icharibaBridgeAxis,
+    topicBalanceHint,
     chodeInsight: picked.insight,
     seaTone: picked.tone,
     reflectionFocus: `오키나와 류큐의 '${picked.motif}'을 중심에 두고 '${companion.motif}'의 온기를 함께 엮어, 오늘 만나는 사람과 나 자신에게 조금 더 부드러운 온기를 먼저 건네 보세요.`,
@@ -122,6 +134,7 @@ export function formatRyukyuIcharibaChodePrompt(res: RyukyuIcharibaChodeResult):
     `[류큐 이차리바 초데·유이마루 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 환대 유대 축: ${res.icharibaBridgeAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 섬의 모티프: ${res.islandMotif} (${res.seaTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.chodeInsight}`,

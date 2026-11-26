@@ -13676,10 +13676,10 @@ test('Javanese Kejawen Rasa Harmony engine: principles, +09:00 KST, and interpre
 
 test('Phoenician Navigator Star Compass engine: beacons, +09:00 KST, and interpretive boundary', () => {
   const rep = calculatePhoenicianNavigatorStarCompass({ profile, now: new Date('2026-11-20T05:05:00Z'), question: '방향을 잃지 않고 결정하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-PHOENICIAN-NAVIGATOR-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-PHOENICIAN-NAVIGATOR-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.backupBeacon.id !== rep.primaryBeacon.id);
-  assert.ok(rep.starCompassAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.starCompassAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('수치적 운세 점수가 아닙니다'));
   const prompt = formatPhoenicianNavigatorPrompt(rep);
@@ -14075,10 +14075,10 @@ test('Igbo Ofo Ogu Truth Justice engine: symbol, +09:00 KST, and interpretive bo
 
 test('Ryukyu Ichariba Chode Hospitality engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateRyukyuIcharibaChodeHospitality({ profile, now: new Date('2026-11-20T07:03:00Z'), question: '주변과 따뜻한 공기를 만들고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-RYUKYU-ICHARIBA-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-RYUKYU-ICHARIBA-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.islandMotif);
-  assert.ok(rep.icharibaBridgeAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.icharibaBridgeAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatRyukyuIcharibaChodePrompt(rep);
@@ -15781,10 +15781,10 @@ test('Tarahumara Raramuri Stride engine: motif, +09:00 KST, and interpretive bou
 
 test('Orkney Skara Brae Hearth engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateOrkneySkaraHearth({ profile, now: new Date('2026-11-20T22:05:00Z'), question: '마음의 중앙 화덕을 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ORKNEY-SKARA-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ORKNEY-SKARA-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.hearthMotif);
-  assert.ok(rep.skaraHearthAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.skaraHearthAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatOrkneySkaraPrompt(rep);

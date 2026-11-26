@@ -22,6 +22,7 @@ export interface PhoenicianNavigatorResult {
   primaryBeacon: PhoenicianStarBeacon;
   backupBeacon: PhoenicianStarBeacon;
   starCompassAxis: string;
+  topicBalanceHint: string;
   seaStateMetaphor: string;
   qualitativeSynthesis: string;
   reflectionFocus: string;
@@ -95,6 +96,14 @@ const PHOENICIAN_SHADOWS: readonly string[] = [
   '먼 수평선의 징조를 읽는 장기적 관찰에 몰두하다가 정작 오늘 뱃머리에 들이치는 작은 파도와 당장의 실행을 놓치지 않도록 살피세요.',
 ];
 
+const PHOENICIAN_TOPIC_HINTS: Record<PhoenicianNavigatorResult['questionTopic'], string> = {
+  '기준·결정': '수평선이 흔들릴수록 변하지 않는 북극성 원칙 하나를 먼저 손에 쥐어야 항로가 선명해집니다.',
+  '개척·실행': '안전한 항구만 맴돌기보다 작은 돛이라도 올려 첫 물살을 타 보는 용기가 길을 엽니다.',
+  '보급·정비': '항구에서 돛과 체력을 점검하는 시간은 멈춤이 아니라 먼 바다를 건너기 위한 준비입니다.',
+  '관찰·장기': '오늘의 잔물결보다 구름과 해류가 향하는 큰 방향을 함께 살필 때 흔들리지 않습니다.',
+  '항해 전반': '기준점과 보급, 개척과 관찰의 균형을 맞출 때 먼 항해도 안전하게 이어집니다.',
+};
+
 function classifyPhoenicianTopic(q: string): PhoenicianNavigatorResult['questionTopic'] {
   if (/기준|결정|방향|원칙/.test(q)) return '기준·결정';
   if (/개척|실행|시작|도전/.test(q)) return '개척·실행';
@@ -128,6 +137,7 @@ export function calculatePhoenicianNavigatorStarCompass(params: {
   const primaryBeacon = PHOENICIAN_BEACONS[primaryIdx];
   const backupBeacon = PHOENICIAN_BEACONS[backupIdx];
   const starCompassAxis = `${primaryBeacon.beaconTitle.split('(')[0].trim()} ↔ ${backupBeacon.beaconTitle.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = PHOENICIAN_TOPIC_HINTS[questionTopic];
 
   const qualitativeSynthesis =
     `고대 지중해 페니키아 항해사들의 별자리 나침반으로 비추어 보면, 지금 항해의 중심에는 ` +
@@ -146,12 +156,13 @@ export function calculatePhoenicianNavigatorStarCompass(params: {
 
   return {
     engineName: '고대 페니키아 항해 별자리 나침반 (Phoenician Star Compass)',
-    engineVersion: 'LUCKEY-PHOENICIAN-NAVIGATOR-v2.3.0',
+    engineVersion: 'LUCKEY-PHOENICIAN-NAVIGATOR-v2.4.0',
     calculatedAtKst: formatPhoenicianKstTimestamp(now),
     questionTopic,
     primaryBeacon,
     backupBeacon,
     starCompassAxis,
+    topicBalanceHint,
     seaStateMetaphor,
     qualitativeSynthesis,
     reflectionFocus,
@@ -169,6 +180,7 @@ export function formatPhoenicianNavigatorPrompt(res: PhoenicianNavigatorResult):
     `[보조 상징 관점 — ${res.engineName}]`,
     `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 별 나침반 축: ${res.starCompassAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 주된 별자리 표지: ${res.primaryBeacon.beaconTitle} (${res.primaryBeacon.navigationRole})`,
     `- 보조 항로 표지: ${res.backupBeacon.beaconTitle} (${res.backupBeacon.navigationRole})`,
     `- 바다의 흐름: ${res.seaStateMetaphor}`,

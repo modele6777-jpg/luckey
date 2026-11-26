@@ -13,6 +13,7 @@ export interface OrkneySkaraResult {
   hearthMotif: string;
   companionMotif: string;
   skaraHearthAxis: string;
+  topicBalanceHint: string;
   stoneShelterState: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -75,6 +76,14 @@ const ORKNEY_SHADOWS = [
   '두꺼운 벽 안에서 온기를 지키는 보온이 이미 밖으로 나와 움직여야 할 때에도 안전한 안쪽에만 머무르는 안주가 되어서는 안 됩니다.',
 ] as const;
 
+const ORKNEY_TOPIC_HINTS: Record<OrkneySkaraResult['questionTopic'], string> = {
+  '화덕·중심': '한가운데 불씨를 지켜 내되 주변 공기도 함께 순환하도록 틈을 열어 두세요.',
+  '질서·정돈': '소중한 것들을 제자리에 올려 두면 마음의 시선도 한결 차분해집니다.',
+  '경계·휴식': '바깥 소란을 잠시 낮추고 내 안의 온도를 지키는 시간이 꼭 필요합니다.',
+  '온기·보온': '두꺼운 돌벽 안에서도 작은 기본기를 꾸준히 지킬 때 오래 버틸 수 있습니다.',
+  '스카라 전반': '중심 화덕의 온기와 정갈한 선반의 질서가 어우러질 때 흔들리지 않습니다.',
+};
+
 function classifyOrkneyTopic(q: string): OrkneySkaraResult['questionTopic'] {
   if (/화덕|중심|불씨|구심/.test(q)) return '화덕·중심';
   if (/정돈|선반|질서|정리/.test(q)) return '질서·정돈';
@@ -96,17 +105,19 @@ export function calculateOrkneySkaraHearth(input: OrkneySkaraInput): OrkneySkara
   const hearthMotif = MOTIFS[motifIdx];
   const companionMotif = MOTIFS[(motifIdx + companionOffset) % MOTIFS.length];
   const skaraHearthAxis = `${hearthMotif.split('(')[0].trim()} ↔ ${companionMotif.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = ORKNEY_TOPIC_HINTS[questionTopic];
   const stoneShelterState = SHELTER_STATES[(h >>> 3) % SHELTER_STATES.length];
   const ritualAction = RITUALS[motifIdx];
   const reflectiveQuestion = QUESTIONS[motifIdx];
 
   return {
-    engineVersion: 'LUCKEY-ORKNEY-SKARA-v2.3.0',
+    engineVersion: 'LUCKEY-ORKNEY-SKARA-v2.4.0',
     calculatedAtKst: toKstIso(now),
     questionTopic,
     hearthMotif,
     companionMotif,
     skaraHearthAxis,
+    topicBalanceHint,
     stoneShelterState,
     reflectionFocus: `북해의 거센 바람을 흙과 돌벽으로 막고 중앙 화덕에 온기를 지킨 오크니 스카라 브레처럼, 주 모티프와 동반 모티프('${companionMotif}')가 어우러져 지금은 '${stoneShelterState}'의 아늑한 중심 잡기가 어울립니다.`,
     ritualAction,
@@ -120,6 +131,7 @@ export function formatOrkneySkaraPrompt(result: OrkneySkaraResult): string {
   return [
     `[오크니 스카라 브레 석실 (${result.engineVersion}) · ${result.calculatedAtKst}]`,
     `- 질문 맥락: ${result.questionTopic} | 석실 화덕 축: ${result.skaraHearthAxis}`,
+    `- 맥락 균형 조언: ${result.topicBalanceHint}`,
     `- 상징 모티프: ${result.hearthMotif}`,
     `- 동반 모티프: ${result.companionMotif}`,
     `- 현재 결: ${result.stoneShelterState}`,
