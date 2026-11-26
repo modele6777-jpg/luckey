@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ELEUSINIAN_MYSTERIES_VERSION = 'LUCKEY-ELEUSINIAN-MYSTERIES-v2.3.0';
+export const ELEUSINIAN_MYSTERIES_VERSION = 'LUCKEY-ELEUSINIAN-MYSTERIES-v2.4.0';
 
 export type EleusinianQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -52,6 +52,7 @@ export interface EleusinianReport {
   epoptiaRebirthScore: number;   // 내부 참조용
   rebirthPosture: string;        // 정성적 에포프테이아 부활 국면
   eleusinianPhase: string;
+  eleusinianCrossAxis: string;
   shadowWarning: string;
   sacredSymbol: string;          // 보리 이삭(Ear of Grain), 횃불(Torch), 키케온(Kykeon) 등
   oracleMessage: string;         // 신비전 오라클 전언
@@ -285,6 +286,8 @@ export function calculateEleusinianMysteries(
     ? `‘${question}’ 앞에서 '${eleusinianPhase}' 국면으로 볼 때, ${themed.reflection}`
     : `'${eleusinianPhase}' 국면에서 ${themed.reflection}`;
 
+  const eleusinianCrossAxis = `${currentGrade.gradeTitle} · ${activeStation.stationName.split('(')[0].trim()} (${telesterionWindow.split('(')[0].trim()})`;
+
   return {
     engineVersion: ELEUSINIAN_MYSTERIES_VERSION,
     calculatedAt: now.toISOString(),
@@ -295,6 +298,7 @@ export function calculateEleusinianMysteries(
     epoptiaRebirthScore,
     rebirthPosture,
     eleusinianPhase,
+    eleusinianCrossAxis,
     shadowWarning,
     sacredSymbol,
     oracleMessage,
@@ -324,6 +328,7 @@ export function formatEleusinianMysteriesPrompt(report: EleusinianReport): strin
   * 행동 미덕: ${report.activeStation.practicalVirtue}
 - 시공간 밀의 리듬 (${report.temporalEleusinianRhythm.calculatedAtKst}): ${report.temporalEleusinianRhythm.telesterionWindow} / ${report.temporalEleusinianRhythm.seasonalCycle}
   * 리듬 지침: ${report.temporalEleusinianRhythm.rhythmGuidance}
+- 입사 교차 축: ${report.eleusinianCrossAxis}
 - 입사 교차 매트릭스: ${report.eleusinianSynthesisMatrix.gradeStationNexus}
   * 문턱 긴장: ${report.eleusinianSynthesisMatrix.thresholdTension}
   * 입사 결단: ${report.eleusinianSynthesisMatrix.initiationDirective}

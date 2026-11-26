@@ -2711,14 +2711,14 @@ test('Energetic Prescription Engine: 결핍 오행 바이오 에너지 맞춤 �
   assert.equal(res.engineVersion, ENERGETIC_PRESCRIPTION_ENGINE_VERSION);
   assert(res.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.equal(res.questionTopic, 'vitality');
-  assert(res.energeticBalanceAxis.length > 0 && res.shadowWarning.length > 0);
+  assert(res.energeticBalanceAxis.length > 0 && res.energeticCrossAxis.length > 0 && res.shadowWarning.length > 0);
   assert(res.reflectiveQuestion?.includes('활력 회복'));
   assert(Boolean(res.energeticSynthesisMatrix?.integratedAction));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.microRituals.length > 0);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatEnergeticPrescriptionPrompt(res);
-  assert(prompt.includes(ENERGETIC_PRESCRIPTION_ENGINE_VERSION));
+  assert(prompt.includes(ENERGETIC_PRESCRIPTION_ENGINE_VERSION) && prompt.includes(res.energeticCrossAxis));
   assert(prompt.includes('+09:00 (KST)'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('에너지 균형 축') && prompt.includes('과잉 경계'));
@@ -4140,11 +4140,11 @@ test('Essene Communion Tree Engine: calculates morning/evening angels, tree trin
   assert(rep.eveningHeavenlyAngel.koreanName.length > 0);
   assert(rep.communionVibrationalScore >= 0 && rep.communionVibrationalScore <= 100);
   assert(rep.temporalEsseneRhythm.calculatedAtKst.endsWith('+09:00 (KST)'));
-  assert(rep.situationalEsseneAudit.questionFocus.length > 0);
+  assert(rep.situationalEsseneAudit.questionFocus.length > 0 && rep.esseneCrossAxis.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatEsseneCommunionPrompt(rep);
   assert(prompt.includes('에세네파 14대 천사 교감 & 영혼 생명나무 조화 엔진'));
-  assert(prompt.includes(rep.morningEarthlyAngel.koreanName));
+  assert(prompt.includes(rep.morningEarthlyAngel.koreanName) && prompt.includes(rep.esseneCrossAxis));
   assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
   assert(!/미토콘드리아|면역력|소화기관|폐와 뇌|혈관과 신경|자연 치유/.test(prompt));
@@ -4398,12 +4398,12 @@ test('Eleusinian Mysteries Initiation & Rebirth Engine: calculates grade, statio
   assert(rep.currentGrade.gradeTitle.length > 0);
   assert(rep.activeStation.stationName.length > 0);
   assert(rep.companionStation.stationName !== rep.activeStation.stationName);
-  assert(rep.eleusinianPhase.length > 0 && rep.shadowWarning.length > 0);
+  assert(rep.eleusinianPhase.length > 0 && rep.eleusinianCrossAxis.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.epoptiaRebirthScore >= 0 && rep.epoptiaRebirthScore <= 100);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatEleusinianMysteriesPrompt(rep);
   assert(prompt.includes('고대 그리스 엘레우시스 신비주의(Eleusinian Mysteries) 영혼 입사의례 & 페르세포네 환원 엔진'));
-  assert(prompt.includes(rep.currentGrade.gradeTitle));
+  assert(prompt.includes(rep.currentGrade.gradeTitle) && prompt.includes(rep.eleusinianCrossAxis));
   assert(prompt.includes(rep.eleusinianPhase) && prompt.includes(rep.shadowWarning));
 });
 
