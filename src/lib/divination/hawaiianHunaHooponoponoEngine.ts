@@ -28,7 +28,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HAWAIIAN_HUNA_VERSION = 'LUCKEY-HAWAIIAN-HUNA-v2.3.0';
+export const HAWAIIAN_HUNA_VERSION = 'LUCKEY-HAWAIIAN-HUNA-v2.4.0';
 
 export interface HunaPrincipleGuidance {
   code: 'IKE' | 'KALA' | 'MAKIA' | 'MANAWA' | 'ALOHA' | 'MANA' | 'PONO';
@@ -80,6 +80,11 @@ export interface HawaiianHunaReport {
     coreMandate: string;
     sacredBoundary: string;
     reflectiveQuestion: string;
+  };
+  hunaCrossAxis: {
+    principleResonance: string;
+    triadicAlignment: string;
+    dominantCleansing: string;
   };
   ritualAction: string;
   reflectionFocus: string;
@@ -272,6 +277,14 @@ export function calculateHawaiianHunaHooponopono(
 
   const ritualAction = `[${activePrinciple.hawaiianName}] 오늘 조용한 시간에 호오포노포노 4대 진언(미안합니다·용서해주세요·감사합니다·사랑합니다)을 3회 천천히 읊조리며 ${cleansingFocusTheme}을 내려놓으세요.`;
   const reflectionFocus = hunaSynthesisMatrix.reflectiveQuestion;
+  const hunaCrossAxis = {
+    principleResonance: `${activePrinciple.hawaiianName} ↔ ${secondaryPrinciple.hawaiianName} (후나 원리 교차 공명)`,
+    triadicAlignment:
+      unihipiliScore >= 85 && aumakuaScore >= 85
+        ? '내면 아이·의식·초의식 삼위일체 고차원 정렬'
+        : '우니히필리 감정 정화와 하(Ha) 호흡으로 마나를 채우는 국면',
+    dominantCleansing: `${questionFocus} · ${alohaManaWindow}`,
+  };
 
   return {
     engineVersion: HAWAIIAN_HUNA_VERSION,
@@ -302,6 +315,7 @@ export function calculateHawaiianHunaHooponopono(
       ritualTimingNote,
     },
     hunaSynthesisMatrix,
+    hunaCrossAxis,
     ritualAction,
     reflectionFocus,
   };
@@ -325,5 +339,6 @@ export function formatHawaiianHunaHooponoponoPrompt(report: HawaiianHunaReport):
 - **치유 통합 나침반**: ${report.synthesisMessage}
 - **실천 의례(Ritual Action)**: ${report.ritualAction}
 - **교차 매트릭스**: ${report.hunaSynthesisMatrix.coreMandate} | 경계: ${report.hunaSynthesisMatrix.sacredBoundary} | 성찰 초점: "${report.reflectionFocus}"
+- **후나 교차 축**: ${report.hunaCrossAxis.principleResonance} | 삼위일체: ${report.hunaCrossAxis.triadicAlignment} | 정화 중심: ${report.hunaCrossAxis.dominantCleansing}
 - **해석 경계**: ${report.interpretiveBoundary}`;
 }

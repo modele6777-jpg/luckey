@@ -7,6 +7,7 @@ export interface GoryeoCeladonResult {
   celadonCraft: string;
   companionCraft: string;
   celadonKilnAxis: string;
+  topicBalanceHint: string;
   goryeoInsight: string;
   jadeTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const GORYEO_SHADOWS = [
   '숨구멍과 완충 시간을 내는 데만 신경 쓰다 전체 그릇을 지탱하는 단단한 뼈대와 마감까지 느슨하게 두지 마세요.',
 ];
 
+const GORYEO_TOPIC_HINTS: Record<GoryeoCeladonResult['questionTopic'], string> = {
+  '여백·절제': '비워 낸 여백이 허전함이 되지 않도록 꼭 지켜야 할 핵심 약속 하나만 또렷이 남겨 두세요.',
+  '기다림·인내': '가마가 식기를 기다리는 여유 속에서도 꺼내 다듬어야 할 타이밍을 놓치지 않는 균형이 필요합니다.',
+  '유연·호흡': '부드러운 곡선으로 부딪힘을 줄이되 내 마음의 중심 선까지 흐려지지 않도록 살피세요.',
+  '비색 전반': '비우는 절제와 채우는 정성이 어우러질 때 비색의 깊이가 자연스레 살아납니다.',
+};
+
 function classifyGoryeoTopic(q: string): GoryeoCeladonResult['questionTopic'] {
   if (/여백|절제|비움|숨구멍|덧칠/.test(q)) return '여백·절제';
   if (/기다림|조바심|식힘|가마|결과/.test(q)) return '기다림·인내';
@@ -102,15 +110,17 @@ export function calculateGoryeoCeladonInlayClarity(params: {
   const picked = CRAFTS[idx];
   const companion = CRAFTS[(idx + companionOffset) % CRAFTS.length];
   const celadonKilnAxis = `${picked.craft.split('(')[0].trim()} ↔ ${companion.craft.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = GORYEO_TOPIC_HINTS[questionTopic];
   const shadowWarning = GORYEO_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-GORYEO-CELADON-v2.3.0',
+    engineVersion: 'LUCKEY-GORYEO-CELADON-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     celadonCraft: picked.craft,
     companionCraft: companion.craft,
     celadonKilnAxis,
+    topicBalanceHint,
     goryeoInsight: picked.insight,
     jadeTone: picked.tone,
     reflectionFocus: `고려 청자 비색·상감 지혜의 '${picked.craft}'처럼, 억지로 더 채우기보다 마음의 홈을 비워 여백과 숨구멍을 먼저 마련해 보세요. (동반 결: ${companion.craft.split('(')[0].trim()})`,
@@ -126,6 +136,7 @@ export function formatGoryeoCeladonPrompt(res: GoryeoCeladonResult): string {
     `[고려 청자·비색 상감 여백 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 비색·가마 축: ${res.celadonKilnAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 청자 기법: ${res.celadonCraft} (${res.jadeTone})`,
     `- 동반 기법: ${res.companionCraft}`,
     `- 중심 통찰: ${res.goryeoInsight}`,
