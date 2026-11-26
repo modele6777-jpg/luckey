@@ -7378,11 +7378,13 @@ test('G.W.F. Hegel Dialectical Aufheben Engine: calculates Dialectical synthesis
   assert(rep.situationalDialecticalAudit.focusAxisKo.length > 0);
   assert(rep.temporalMinervaRhythm.dialecticalMaturityIndex >= 0 && rep.temporalMinervaRhythm.dialecticalMaturityIndex <= 100);
   assert(rep.hegelSynthesisMatrix.overallHegelGrade.length > 0);
+  assert(rep.hegelCrossAxis.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHegelDialecticalAufhebenPrompt(rep);
   assert(prompt.includes('G.W.F. 헤겔 변증법적 지양(Aufheben) & 인륜성 지표'));
   assert(prompt.includes(rep.activeHegelTheme.themeTitleKo));
+  assert(prompt.includes(rep.hegelCrossAxis));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('질문 맥락 변증법 계기'));
 });
@@ -8083,10 +8085,12 @@ test('Gottfried Leibniz Monadology Engine: calculates Pre-established Harmony, M
   assert(rep.activeLeibnizTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.leibnizSynthesisMatrix?.integratedAction));
+  assert(rep.leibnizCrossAxis.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatGottfriedLeibnizMonadologyHarmonyPrompt(rep);
   assert(prompt.includes('라이프니츠 《단자론》 예정조화 & 최선의 세계 지표'));
   assert(prompt.includes(rep.activeLeibnizTheme.themeTitleKo));
+  assert(prompt.includes(rep.leibnizCrossAxis));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -13619,10 +13623,10 @@ test('Sami Noaidi Drum & Joik engine: drum zone, +09:00 KST, and interpretive bo
 
 test('Georgian Rustaveli Knight in the Panther’s Skin engine: virtues, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateGeorgianRustaveliKnightPanther({ profile, now: new Date('2026-11-20T04:40:00Z'), question: '품격 있는 결정을 내리고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-GEORGIAN-RUSTAVELI-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-GEORGIAN-RUSTAVELI-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionVirtue.id !== rep.primaryVirtue.id);
-  assert.ok(rep.pantherKnightAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.pantherKnightAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('확정적 미래 예측이 아닙니다'));
   const prompt = formatGeorgianRustaveliKnightPantherPrompt(rep);

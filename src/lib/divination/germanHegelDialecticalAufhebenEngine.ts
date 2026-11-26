@@ -8,12 +8,12 @@
  * 3. 미네르바의 올빼미(Die Eule der Minerva) 성찰
  * 4. 질문 맥락 변증법 감사(situationalDialecticalAudit) + KST 시공간 리듬(temporalMinervaRhythm) + 교차 검증 매트릭스(hegelSynthesisMatrix) + 순수 정성 성찰(v2.1.0)
  *
- * @version LUCKEY-GERMAN-HEGEL-DIALECTICAL-v2.1.0
+ * @version LUCKEY-GERMAN-HEGEL-DIALECTICAL-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_HEGEL_DIALECTICAL_VERSION = 'LUCKEY-GERMAN-HEGEL-DIALECTICAL-v2.3.0';
+export const GERMAN_HEGEL_DIALECTICAL_VERSION = 'LUCKEY-GERMAN-HEGEL-DIALECTICAL-v2.4.0';
 
 export interface HegelTheme {
   themeKey: string;
@@ -69,6 +69,7 @@ export interface HegelDialecticalAufhebenResult {
   situationalDialecticalAudit: HegelSituationalDialecticalAudit;
   temporalMinervaRhythm: HegelTemporalMinervaRhythm;
   hegelSynthesisMatrix: HegelSynthesisMatrix;
+  hegelCrossAxis: string;
   dailyPracticeRitual: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -309,6 +310,7 @@ export function calculateHegelDialecticalAufheben(
     `${temporalMinervaRhythm.dailySynthesisPractice}`;
 
   const dailyPracticeRitual = `오늘의 변증법적 지양 의례: ${temporalMinervaRhythm.dailySynthesisPractice} 대립하는 두 선택지 중 하나를 억누르기보다 두 입장을 함께 품는 제3의 해법을 한 줄로 적어 보십시오.`;
+  const hegelCrossAxis = `${situationalDialecticalAudit.dialecticalMoment} × ${activeHegelTheme.themeTitleKo} (${temporalMinervaRhythm.timeWindowKo})`;
   const interpretiveBoundary = '이 관점은 헤겔의 변증법적 성찰을 비유로 삼은 사유 안내일 뿐, 구체적 분쟁 조정이나 법적 판단을 대신하지 않습니다.';
 
   return {
@@ -324,6 +326,7 @@ export function calculateHegelDialecticalAufheben(
     situationalDialecticalAudit,
     temporalMinervaRhythm,
     hegelSynthesisMatrix,
+    hegelCrossAxis,
     dailyPracticeRitual,
     ritualAction: dailyPracticeRitual,
     reflectionFocus: situationalDialecticalAudit.reflectiveQuestion,
@@ -393,6 +396,7 @@ export function formatHegelDialecticalAufhebenPrompt(res: HegelDialecticalAufheb
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- KST 시공간 리듬: ${res.temporalMinervaRhythm.timeWindowKo} (${res.temporalMinervaRhythm.seasonKo}, ${temporalRhythmStage}) — ${res.temporalMinervaRhythm.dailySynthesisPractice}`,
     `- 종합 위상: ${res.hegelSynthesisMatrix.overallHegelGrade}`,
+    `- 변증법 교차 축: ${res.hegelCrossAxis}`,
     `- 핵심 변증법 테마: ${res.activeHegelTheme.themeTitleKo} [${res.activeHegelTheme.themeTitleGerman}]`,
     `- 핵심 아포리즘: "${res.focalHegelAphorism.aphorismKo}" ("${res.focalHegelAphorism.aphorismGerman}")`,
     `- 일상 실천 의례: ${res.dailyPracticeRitual}`,

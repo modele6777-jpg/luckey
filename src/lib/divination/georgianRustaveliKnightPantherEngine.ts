@@ -24,6 +24,7 @@ export interface GeorgianRustaveliResult {
   counterbalanceVirtue: RustaveliVirtue;
   companionVirtue: RustaveliVirtue;
   pantherKnightAxis: string;
+  topicBalanceHint: string;
   heartCompassPrinciple: string;
   qualitativeSynthesis: string;
   reflectionFocus: string;
@@ -101,6 +102,13 @@ const RUSTAVELI_SHADOWS: Record<RustaveliVirtueId, string> = {
   gulis_sinatle_heart_light: '아낌없이 나누는 너그러움 속에서도 나 자신의 최소한의 여력과 경계선까지 비워 버리지 마세요.',
 };
 
+const RUSTAVELI_TOPIC_HINTS: Record<GeorgianRustaveliResult['questionTopic'], string> = {
+  '연대·신의': '벗과 신의를 지키는 일만큼이나, 혼자 감당해야 할 원칙적 판단의 선을 스스로 분명히 세워 두세요.',
+  '절제·이성': '감정의 폭풍을 차분히 가라앉힌 뒤에는, 꼭 전해야 할 진심을 놓치지 않도록 작은 대화로 이어 가세요.',
+  '용기·품격': '단단한 용기를 낼 때도 잠시 호흡을 고르고 돌아볼 수 있는 여유가 진짜 품격을 지켜 줍니다.',
+  '심성 전반': '마음의 빛을 아낌없이 나누되, 나 자신의 내적 중심과 일상의 여력도 함께 돌보세요.',
+};
+
 function classifyRustaveliTopic(q: string): GeorgianRustaveliResult['questionTopic'] {
   if (/우정|신의|관계|함께|사람/.test(q)) return '연대·신의';
   if (/감정|절제|이성|슬픔|후회/.test(q)) return '절제·이성';
@@ -146,6 +154,7 @@ export function calculateGeorgianRustaveliKnightPanther(params: {
 
   const ritualAction = primaryVirtue.actionPractice;
   const pantherKnightAxis = `${primaryVirtue.koreanTitle} ↔ ${counterbalanceVirtue.koreanTitle} (${questionTopic})`;
+  const topicBalanceHint = RUSTAVELI_TOPIC_HINTS[questionTopic];
   const shadowWarning = RUSTAVELI_SHADOWS[primaryVirtue.id];
 
   const reflectiveQuestion = query
@@ -154,13 +163,14 @@ export function calculateGeorgianRustaveliKnightPanther(params: {
 
   return {
     engineName: '조지아 루스타벨리 《표범 가죽을 두른 기사》 심성 관점 (Rustaveli Knight in the Panther’s Skin)',
-    engineVersion: 'LUCKEY-GEORGIAN-RUSTAVELI-v2.3.0',
+    engineVersion: 'LUCKEY-GEORGIAN-RUSTAVELI-v2.4.0',
     calculatedAtKst: formatGeorgianKstTimestamp(now),
     questionTopic,
     primaryVirtue,
     counterbalanceVirtue,
     companionVirtue,
     pantherKnightAxis,
+    topicBalanceHint,
     heartCompassPrinciple,
     qualitativeSynthesis,
     reflectionFocus,
@@ -178,6 +188,7 @@ export function formatGeorgianRustaveliKnightPantherPrompt(res: GeorgianRustavel
     `[보조 상징 관점 — ${res.engineName}]`,
     `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 기사도·심성 축: ${res.pantherKnightAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 중심 덕목: ${res.primaryVirtue.georgianTerm} · ${res.primaryVirtue.koreanTitle} (${res.primaryVirtue.literaryMotif})`,
     `- 균형 덕목: ${res.counterbalanceVirtue.georgianTerm} · ${res.counterbalanceVirtue.koreanTitle}`,
     `- 동반 덕목: ${res.companionVirtue.georgianTerm} · ${res.companionVirtue.koreanTitle}`,

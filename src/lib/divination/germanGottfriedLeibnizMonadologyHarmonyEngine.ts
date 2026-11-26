@@ -8,12 +8,12 @@
  * 4. 최선의 가능한 세계 실존적 긍정 낙관성(The Best of All Possible Worlds / Le meilleur des mondes possibles): 어둠과 모순 속에서도 우주의 섭리가 가장 위대한 선과 조화를 향해 있음을 신뢰하는 궁극의 긍정.
  * 5. 충족이유율 인과적 의미 통찰력(Principle of Sufficient Reason / Principium rationis sufficientis): 어떤 일도 까닭 없이 일어나지 않는다는 철칙 아래 모든 사건의 근원적 의미와 교훈을 찾아내는 혜안.
  *
- * @version LUCKEY-GOTTFRIED-LEIBNIZ-MONADOLOGY-v2.1.0
+ * @version LUCKEY-GOTTFRIED-LEIBNIZ-MONADOLOGY-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_GOTTFRIED_LEIBNIZ_VERSION = 'LUCKEY-GOTTFRIED-LEIBNIZ-MONADOLOGY-v2.3.0';
+export const GERMAN_GOTTFRIED_LEIBNIZ_VERSION = 'LUCKEY-GOTTFRIED-LEIBNIZ-MONADOLOGY-v2.4.0';
 
 export interface LeibnizTheme {
   themeKey: string;
@@ -44,6 +44,7 @@ export interface GottfriedLeibnizMonadologyHarmonyResult {
   activeLeibnizTheme: LeibnizTheme;
   focalLeibnizAphorism: LeibnizAphorism;
   secondaryLeibnizAphorism: LeibnizAphorism;
+  leibnizCrossAxis: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   leibnizComprehensiveGuidance: {
@@ -181,6 +182,7 @@ export function calculateGottfriedLeibnizMonadologyHarmony(
   const activeLeibnizTheme = LEIBNIZ_THEMES[themeIndex];
   const focalLeibnizAphorism = LEIBNIZ_APHORISMS[aphorismIndex];
   const secondaryLeibnizAphorism = LEIBNIZ_APHORISMS[secondaryAphorismIndex];
+  const leibnizCrossAxis = `${activeLeibnizTheme.themeTitleKo} × ${focalLeibnizAphorism.sourceContext} ↔ ${secondaryLeibnizAphorism.sourceContext}`;
   const reflectiveQuestion = buildLeibnizReflectiveQuestion(activeLeibnizTheme, query);
   const interpretiveBoundary = '라이프니츠 단자론·예정조화 관점은 운명론적 단정이나 사건 예언이 아니라, 인과의 의미와 내적 조화를 살피는 철학적 성찰 렌즈입니다.';
 
@@ -210,6 +212,7 @@ export function calculateGottfriedLeibnizMonadologyHarmony(
     activeLeibnizTheme,
     focalLeibnizAphorism,
     secondaryLeibnizAphorism,
+    leibnizCrossAxis,
     reflectiveQuestion,
     interpretiveBoundary,
     leibnizComprehensiveGuidance: {
@@ -232,6 +235,7 @@ export function formatGottfriedLeibnizMonadologyHarmonyPrompt(res: GottfriedLeib
     `- 최선의 가능한 세계 긍정 낙관성(Best Possible World): ${describeLeibnizStage(res.bestPossibleWorldOptimismIndex)}`,
     `- 충족이유율 인과적 의미 통찰력(Sufficient Reason): ${describeLeibnizStage(res.sufficientReasonInsightScore)}`,
     `- 핵심 단자론 테마: ${res.activeLeibnizTheme.themeTitleKo} [${res.activeLeibnizTheme.themeTitleEn}]`,
+    `- 단자론 교차 축: ${res.leibnizCrossAxis}`,
     `- 실존적 통찰: ${res.activeLeibnizTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeLeibnizTheme.practicalCounsel}`,
     `- 핵심 원전 경구: "${res.focalLeibnizAphorism.aphorismKo}"`,
