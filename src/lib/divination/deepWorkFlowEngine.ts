@@ -17,7 +17,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const DEEP_WORK_FLOW_VERSION = 'LUCKEY-FLOW-v2.3.0';
+export const DEEP_WORK_FLOW_VERSION = 'LUCKEY-FLOW-v2.4.0';
 
 export type FlowArchetype = 'deep_architect' | 'furious_sprinter' | 'craftsman_polisher' | 'intuitive_explorer';
 
@@ -91,6 +91,7 @@ export interface DeepWorkFlowResult {
 
   // 최적 몰입 환경 매트릭스
   environment: FlowEnvironmentMatrix;
+  flowCrossAxis: string;
 
   // 창작 슈퍼파워 신살 (문창·학당·화개 분석)
   creativeStars: {
@@ -254,6 +255,8 @@ export function calculateDeepWorkFlow(params?: {
     ? `"${question.trim()}"에 ${archetype.optimalSprintMinutes}분 단일 몰입을 걸기 전, 지금 당장 꺼 두면 가장 먼저 시야가 맑아질 방해 요소 하나는 무엇인가요?`
     : `오늘 ${archetype.title} 리듬으로 30초 점화 리추얼을 켠 뒤 가장 먼저 끝내 보고 싶은 단 하나의 결과물은 무엇일까요?`;
 
+  const flowCrossAxis = `${archetype.title} · ${flowStateTitle} (${temporalFlowRhythm.focusWatchWindow.split('—')[0].trim()})`;
+
   return {
     engineVersion: DEEP_WORK_FLOW_VERSION,
     calculatedAtIso: now.toISOString(),
@@ -262,6 +265,7 @@ export function calculateDeepWorkFlow(params?: {
     flowFocusScore,
     flowStateTitle,
     environment,
+    flowCrossAxis,
     creativeStars,
     situationalFlowAudit,
     temporalFlowRhythm,
@@ -288,6 +292,7 @@ export function formatDeepWorkFlowPrompt(res: DeepWorkFlowResult): string {
 - 질문 맥락 감사 (${res.situationalFlowAudit.focusTheme}): ${res.situationalFlowAudit.flowNote} / 리듬: ${res.situationalFlowAudit.sprintStep}
 - KST 시공간 몰입 리듬: ${res.temporalFlowRhythm.focusWatchWindow} / ${res.temporalFlowRhythm.seasonalFlowTone}
   • 시공간 지침: ${res.temporalFlowRhythm.temporalGuidance}
+- 딥워크 교차 축: ${res.flowCrossAxis}
 - 딥워크 교차 매트릭스: 핵심(${res.flowSynthesisMatrix.coreInsight}) | 실행(${res.flowSynthesisMatrix.recommendedAction}) | 주의(${res.flowSynthesisMatrix.cautionNotice})
 - 최적 환경 매트릭스:
   • 사운드 스케이프: ${res.environment.soundscape}
