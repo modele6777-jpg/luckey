@@ -13564,11 +13564,12 @@ test('Ethiopian Zera Yacob Hatata Reason engine: conscience inquiry, +09:00 KST,
   assert.ok(rep.companionLens !== rep.inquiryLens);
   assert.ok(rep.inquiryPhase.length > 0 && rep.shadowWarning.length > 0);
   assert.equal(rep.questionTopic, 'relationship');
+  assert.ok(rep.hatataCrossAxis.includes('relationship'));
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('개인 점수·심리 진단·미래 예측이 아닙니다'));
   const prompt = formatEthiopianZeraYacobHatataReasonPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('하타타') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLens) && prompt.includes(rep.inquiryPhase) && prompt.includes(rep.shadowWarning));
+  assert.ok(prompt.includes('하타타') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLens) && prompt.includes(rep.hatataCrossAxis) && prompt.includes(rep.inquiryPhase) && prompt.includes(rep.shadowWarning));
 });
 
 test('Basque Lauburu & Basajaun Harmony engine: cycle balance, +09:00 KST, and interpretive boundary', () => {
@@ -14560,15 +14561,16 @@ test('Sherpa Sagarmatha Ridge Harmony engine: principle, +09:00 KST, and interpr
 
 test('Evenki Buga Taiga Path engine: sign, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateEvenkiBugaTaigaPath({ profile, now: new Date('2026-11-20T08:21:00Z'), question: '작은 신호를 세심히 읽으며 유연하게 가고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-EVENKI-BUGA-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-EVENKI-BUGA-v2.4.0');
+  assert.equal(rep.questionTopic, '신호·관찰');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSign !== rep.taigaSign);
-  assert.ok(rep.taigaTrailAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.taigaTrailAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatEvenkiBugaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('에벤키') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSign) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('에벤키') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSign) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
 });
 
 test('Manchu Mukun White Mountain engine: principle, +09:00 KST, and interpretive boundary', () => {
@@ -14645,15 +14647,16 @@ test('Tuareg Tagelmust Sahara Stars engine: compass, +09:00 KST, and interpretiv
 
 test('Estonian Regilaul Forest Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateEstonianRegilaulForestCalm({ profile, now: new Date('2026-11-20T08:40:00Z'), question: '오늘 지킬 소박한 리듬을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ESTONIAN-REGILAUL-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ESTONIAN-REGILAUL-v2.4.0');
+  assert.equal(rep.questionTopic, '루틴·지속');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.forestMotif);
-  assert.ok(rep.forestSongAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.forestSongAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatEstonianRegilaulPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('에스토니아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('에스토니아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
 });
 
 test('Balkan Ohrid Lake Reflection engine: symbol, +09:00 KST, and interpretive boundary', () => {
