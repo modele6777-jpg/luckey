@@ -7,12 +7,12 @@
  * 3. 《윤리형이상학 정초(Grundlegung zur Metaphysik der Sitten)》
  * 4. 질문 맥락 정언명령 감사(situationalImperativeAudit) + KST 시공간 리듬(temporalReasonRhythm) + 교차 검증 매트릭스(kantSynthesisMatrix) + 순수 정성 성찰(v2.1.0)
  *
- * @version LUCKEY-KANT-CATEGORICAL-IMPERATIVE-v2.1.0
+ * @version LUCKEY-KANT-CATEGORICAL-IMPERATIVE-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KANT_CATEGORICAL_IMPERATIVE_VERSION = 'LUCKEY-KANT-CATEGORICAL-IMPERATIVE-v2.3.0';
+export const KANT_CATEGORICAL_IMPERATIVE_VERSION = 'LUCKEY-KANT-CATEGORICAL-IMPERATIVE-v2.4.0';
 
 export interface KantImperativeFormula {
   formulaKey: string;
@@ -67,6 +67,7 @@ export interface KantCategoricalImperativeResult {
   situationalImperativeAudit: KantSituationalImperativeAudit;
   temporalReasonRhythm: KantTemporalReasonRhythm;
   kantSynthesisMatrix: KantSynthesisMatrix;
+  kantCrossAxis: string;
   dailyPracticeRitual: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -272,6 +273,7 @@ export function calculateKantCategoricalImperative(
     `${temporalReasonRhythm.dailyDutyPractice}`;
 
   const dailyPracticeRitual = `오늘의 정언명령 실천 의례: ${temporalReasonRhythm.dailyDutyPractice} 결정 전 '이 원칙이 보편 법칙이 되어도 떳떳한가'를 한 번 자문하십시오.`;
+  const kantCrossAxis = `${situationalImperativeAudit.formulaAxis} × ${activeImperativeFormula.formulaNameKo} (${temporalReasonRhythm.timeWindowKo})`;
   const ritualAction = dailyPracticeRitual;
   const reflectionFocus = situationalImperativeAudit.reflectiveQuestion;
   const interpretiveBoundary = '이 관점은 칸트의 실천이성과 도덕 법칙의 상징적 비유일 뿐, 현실의 법적·실무적 판단을 대신하지 않습니다.';
@@ -289,6 +291,7 @@ export function calculateKantCategoricalImperative(
     situationalImperativeAudit,
     temporalReasonRhythm,
     kantSynthesisMatrix,
+    kantCrossAxis,
     dailyPracticeRitual,
     ritualAction,
     reflectionFocus,
@@ -357,6 +360,7 @@ export function formatKantCategoricalImperativePrompt(res: KantCategoricalImpera
     `- 성찰 질문: ${res.situationalImperativeAudit.reflectiveQuestion}`,
     `- KST 시공간 리듬: ${res.temporalReasonRhythm.timeWindowKo} (${res.temporalReasonRhythm.seasonKo}, ${temporalRhythmStage}) — ${res.temporalReasonRhythm.dailyDutyPractice}`,
     `- 종합 위상: ${res.kantSynthesisMatrix.overallKantGrade}`,
+    `- 정언명령 교차 축: ${res.kantCrossAxis}`,
     `- 핵심 정언명령 정식: ${res.activeImperativeFormula.formulaNameKo} [${res.activeImperativeFormula.formulaNameGerman}]`,
     `- 초점 도덕적 준칙: ${res.focalMoralMaxim.maximNameKo} (${res.focalMoralMaxim.dutyDimension})`,
     `- 일상 실천 의례: ${res.dailyPracticeRitual}`,

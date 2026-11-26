@@ -8,12 +8,12 @@
  * 4. 생활세계의 식민화 방어 및 인간성 수호 지수 (Lifeworld Colonization Resistance Index): 돈과 권력, 기계적 효율성의 논리가 삶의 본질적 의미와 따뜻한 유대를 침범하지 못하도록 지켜내는 주체성.
  * 5. 숙의적 공감 및 성숙한 합의 도출력 (Deliberative Consensus & Co-Creative Synthesis Score): 성급한 타협이나 독단을 넘어 깊이 있는 숙의(Deliberation)를 통해 모두가 상생하는 차원 높은 해법을 창출하는 역량.
  *
- * @version LUCKEY-JURGEN-HABERMAS-COMMUNICATIVE-ACTION-v2.1.0
+ * @version LUCKEY-JURGEN-HABERMAS-COMMUNICATIVE-ACTION-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_JURGEN_HABERMAS_COMMUNICATIVE_ACTION_VERSION = 'LUCKEY-JURGEN-HABERMAS-COMMUNICATIVE-ACTION-v2.3.0';
+export const GERMAN_JURGEN_HABERMAS_COMMUNICATIVE_ACTION_VERSION = 'LUCKEY-JURGEN-HABERMAS-COMMUNICATIVE-ACTION-v2.4.0';
 
 export interface HabermasTheme {
   themeKey: string;
@@ -44,6 +44,7 @@ export interface GermanJurgenHabermasCommunicativeActionResult {
   activeHabermasTheme: HabermasTheme;
   focalHabermasAphorism: HabermasAphorism;
   secondaryHabermasAphorism: HabermasAphorism;
+  habermasCrossAxis: string;
   reflectiveQuestion: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -178,6 +179,7 @@ export function calculateGermanJurgenHabermasCommunicativeAction(
   const activeHabermasTheme = HABERMAS_THEMES[themeIndex];
   const focalHabermasAphorism = HABERMAS_APHORISMS[aphorismIndex];
   const secondaryHabermasAphorism = HABERMAS_APHORISMS[secondaryAphorismIndex];
+  const habermasCrossAxis = `${activeHabermasTheme.themeTitleKo} × ${focalHabermasAphorism.sourceContext} ↔ ${secondaryHabermasAphorism.sourceContext}`;
   const reflectiveQuestion = buildHabermasReflectiveQuestion(activeHabermasTheme, query);
   const ritualAction = focalHabermasAphorism.actionGuidance;
   const reflectionFocus = reflectiveQuestion;
@@ -211,6 +213,7 @@ export function calculateGermanJurgenHabermasCommunicativeAction(
     activeHabermasTheme,
     focalHabermasAphorism,
     secondaryHabermasAphorism,
+    habermasCrossAxis,
     reflectiveQuestion,
     ritualAction,
     reflectionFocus,
@@ -235,6 +238,7 @@ export function formatGermanJurgenHabermasCommunicativeActionPrompt(
     `- 생활세계의 식민화 방어 및 인간성 수호(Lifeworld Colonization Resistance): ${describeHabermasStage(res.lifeworldColonizationDefenseIndex)}`,
     `- 숙의적 공감 및 성숙한 합의 도출력(Deliberative Consensus Synthesis): ${describeHabermasStage(res.deliberativeDemocraticConsensusScore)}`,
     `- 핵심 하버마스 테마: ${res.activeHabermasTheme.themeTitleKo} [${res.activeHabermasTheme.themeTitleEn}]`,
+    `- 공론장 교차 축: ${res.habermasCrossAxis}`,
     `- 실천적 통찰: ${res.activeHabermasTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeHabermasTheme.practicalCounsel}`,
     `- 하버마스 원전 테제: "${res.focalHabermasAphorism.aphorismKo}" (${res.focalHabermasAphorism.aphorismGerman})`,
