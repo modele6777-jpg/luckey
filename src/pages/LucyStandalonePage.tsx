@@ -7,7 +7,6 @@ import { LucyModeName } from '@/components/chat/LucyModeName';
 import { useHoldToTalk } from '@/hooks/useHoldToTalk';
 import { takePendingLucyContext } from '@/lib/lucyPendingContext';
 import { buildLucyConsultMemoryBrief } from '@/lib/lucyConsultMemory';
-import { LucyConsultMemorySettings } from '@/components/lucy/LucyConsultMemorySettings';
 import { LucyTtsControlBar } from '@/components/lucy/LucyTtsControlBar';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
@@ -4524,7 +4523,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             {isMasterMode && <MasterTableSheetButton tone={isLight ? 'light' : 'dark'} />}
             {/* 📘 가이드 */}
             <PageGuideButton guide={getPageGuide(isMasterMode ? 'master' : 'lucy')} tone={isLight ? 'light' : 'dark'} />
-            <LucyConsultMemorySettings key={chatAccount} account={chatAccount} mode={isMasterMode ? 'divination' : 'chat'} light={isLight} />
             {/* 1. 검색 (Search Toggle) */}
             <button
               type="button"

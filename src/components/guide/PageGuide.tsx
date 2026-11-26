@@ -109,12 +109,11 @@ export function PageGuideButton({ guide, resolve, tone = 'dark', className = '' 
         aria-label={`${guide.title} 가이드 열기`}
         title="가이드"
         onClick={() => { triggerHaptic('whitehole'); setOpenGuide(resolve ? resolve() : guide); }}
-        className={`inline-flex h-8 items-center gap-1 rounded-full border px-2.5 text-[11px] font-bold backdrop-blur-md active:scale-95 ${tone === 'light'
+        className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border backdrop-blur-md active:scale-95 ${tone === 'light'
           ? 'border-slate-300/80 bg-white/80 text-slate-700'
           : 'border-white/20 bg-white/10 text-white/90'} ${className}`}
       >
-        <BookOpen size={13} aria-hidden="true" />
-        가이드
+        <BookOpen size={15} aria-hidden="true" />
       </button>
       {openGuide && <PageGuideDialog guide={openGuide} onClose={() => setOpenGuide(null)} />}
     </>
