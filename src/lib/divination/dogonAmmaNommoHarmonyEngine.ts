@@ -7,6 +7,7 @@ export interface DogonAmmaNommoResult {
   starPhase: string;
   companionPhase: string;
   cosmicOrderAxis: string;
+  topicBalanceHint: string;
   nommoInsight: string;
   cliffTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const DOGON_SHADOWS = [
   '감정을 절제하고 자리에 앉아 있느라 필요한 문제 제기와 건강한 경계 설정까지 참지 마세요.',
 ];
 
+const TOPIC_BALANCE_HINTS: Record<DogonAmmaNommoResult['questionTopic'], string> = {
+  '기다림·주기': '시리우스의 궤도처럼 큰 흐름을 기다리되, 지금 약속된 작은 마감은 제때 매듭지으세요.',
+  '관계·대화': '토구나의 낮은 지붕 아래 앉듯 감정을 낮추고, 전할 핵심 의사는 맑은 물처럼 분명히 건네세요.',
+  '일·실행': '카나가 가면이 하늘과 땅을 잇듯, 오늘 10분 손에 잡히는 실행과 전체 방향을 함께 챙기세요.',
+  '질서 전반': '작은 포 토로 씨앗의 밀도를 다지되, 싹을 틔워 내어 보일 때가 오면 망설이지 마세요.',
+};
+
 function classifyDogonTopic(q: string): DogonAmmaNommoResult['questionTopic'] {
   if (/기다림|주기|때|시리우스|인내/.test(q)) return '기다림·주기';
   if (/관계|대화|말|사람|화|사랑/.test(q)) return '관계·대화';
@@ -102,15 +110,17 @@ export function calculateDogonAmmaNommoHarmony(params: {
   const picked = PHASES[idx];
   const companion = PHASES[(idx + companionOffset) % PHASES.length];
   const cosmicOrderAxis = `${picked.phase.split('(')[0].trim()} ↔ ${companion.phase.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = DOGON_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-DOGON-AMMA-v2.3.0',
+    engineVersion: 'LUCKEY-DOGON-AMMA-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     starPhase: picked.phase,
     companionPhase: companion.phase,
     cosmicOrderAxis,
+    topicBalanceHint,
     nommoInsight: picked.insight,
     cliffTone: picked.tone,
     reflectionFocus: `도곤 우주관의 '${picked.phase}'와 동반 위상 '${companion.phase}'을 함께 살피며, 당장 겉모습을 재촉하기보다 내 말과 태도의 결을 먼저 고르게 다듬어 보세요.`,
@@ -126,6 +136,7 @@ export function formatDogonAmmaNommoPrompt(res: DogonAmmaNommoResult): string {
     `[도곤 암마·노모 우주 질서 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 우주 질서 축: ${res.cosmicOrderAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 별자리 위상: ${res.starPhase} (${res.cliffTone})`,
     `- 동반 위상: ${res.companionPhase}`,
     `- 중심 통찰: ${res.nommoInsight}`,
