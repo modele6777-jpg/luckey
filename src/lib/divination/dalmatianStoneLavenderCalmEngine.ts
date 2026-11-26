@@ -7,6 +7,7 @@ export interface DalmatianStoneResult {
   dalmatianMotif: string;
   companionMotif: string;
   limestoneBreezeAxis: string;
+  topicBalanceHint: string;
   dalmatianInsight: string;
   adriaticTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const DALMATIAN_SHADOWS = [
   '항구의 평온에 안주해 내일 아침 다시 닻을 올릴 준비와 점검까지 미루지 않도록 균형을 잡으세요.',
 ];
 
+const TOPIC_BALANCE_HINTS: Record<DalmatianStoneResult['questionTopic'], string> = {
+  '경계·정리': '걸림돌이던 돌을 골라 담을 세우되, 반가운 바람과 새 소식이 드나들 문은 열어 두세요.',
+  '관계·쉼': '뜨거운 한낮의 빛을 가리는 덧문처럼, 정해진 시간만큼 숨을 고른 뒤 다시 대화의 창을 여세요.',
+  '자존·회복': '척박한 돌 틈에서도 향기를 내는 라벤더처럼 이미 가진 고유한 강점을 먼저 긍정해 보세요.',
+  '평온 전반': '하루의 항해를 마친 배가 밧줄에 매여 쉬듯, 밤에는 내일의 파도 걱정을 잠시 내려놓으세요.',
+};
+
 function classifyDalmatianTopic(q: string): DalmatianStoneResult['questionTopic'] {
   if (/돌|울타리|경계|정리|일|집/.test(q)) return '경계·정리';
   if (/관계|쉼|휴식|그늘|사람|대화/.test(q)) return '관계·쉼';
@@ -102,15 +110,17 @@ export function calculateDalmatianStoneLavenderCalm(params: {
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const limestoneBreezeAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = DALMATIAN_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-DALMATIAN-STONE-v2.3.0',
+    engineVersion: 'LUCKEY-DALMATIAN-STONE-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     dalmatianMotif: picked.motif,
     companionMotif: companion.motif,
     limestoneBreezeAxis,
+    topicBalanceHint,
     dalmatianInsight: picked.insight,
     adriaticTone: picked.tone,
     reflectionFocus: `달마티아 석축의 '${picked.motif}'과 동반 결 '${companion.motif}'을 함께 헤아리며, 거친 돌멩이를 내 밭을 지키는 울타리로 바꾸고 서늘한 그늘에서 숨을 골라 보세요.`,
@@ -126,6 +136,7 @@ export function formatDalmatianStonePrompt(res: DalmatianStoneResult): string {
     `[달마티아·라벤더 석축 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 석축 축: ${res.limestoneBreezeAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 달마티아 모티프: ${res.dalmatianMotif} (${res.adriaticTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.dalmatianInsight}`,
