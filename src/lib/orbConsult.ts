@@ -10,7 +10,7 @@
 import { TAROT_DECK, getTarotCardImageUrl, type TarotCard } from '@/data/tarotData';
 import { safeLocalStorage } from '@/utils/safeStorage';
 import { randomIndex } from './orb/orbDice';
-import { deleteLucyConsultMemory, readLucyConsultMemory, saveLucyConsultMemory, setLucyConsultMemoryEnabled } from './lucyConsultMemory';
+import { deleteLucyConsultMemory, readLucyConsultMemory, saveLucyConsultMemory } from './lucyConsultMemory';
 
 export const ORB_DECK_SIZE = 78;
 export const ORB_CARD_POSITIONS = ['과거', '지금', '앞으로'] as const;
@@ -179,18 +179,23 @@ export function orbMemorySettings(account: string, now = Date.now()) {
   return { enabled: state.enabled, entries, legacyCount: loadLegacyOrbMemory(account, now).length };
 }
 
+/** 음성모드 기억은 항상 켜져 있으므로 저장된 기록을 그대로 쓴다. */
 export function loadOrbMemory(account: string, now = Date.now()): OrbMemoryEntry[] {
-  const { enabled, entries } = orbMemorySettings(account, now);
-  return enabled ? entries : [];
+  return orbMemorySettings(account, now).entries;
 }
 
-export function setOrbMemoryEnabled(account: string, enabled: boolean, now = Date.now()): void {
-  setLucyConsultMemoryEnabled(account, 'voice', enabled, now);
-  if (!enabled) return;
-  for (const entry of loadLegacyOrbMemory(account, now)) {
+/** 예전 오브 전용 저장소(orb_consult_memory_v1)의 기록을 통합 기억으로 한 번 가져온다. */
+export function importLegacyOrbMemory(account: string, now = Date.now()): number {
+  const legacy = loadLegacyOrbMemory(account, now);
+  if (!legacy.length) {
+    safeLocalStorage.removeItem(memoryKey(account));
+    return 0;
+  }
+  for (const entry of legacy) {
     saveLucyConsultMemory(account, { ...entry, id: `legacy-${entry.at}`, source: 'voice' }, now);
   }
   safeLocalStorage.removeItem(memoryKey(account));
+  return legacy.length;
 }
 
 export function deleteOrbMemory(account: string, id?: string): void {

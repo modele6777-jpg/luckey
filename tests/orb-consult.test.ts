@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   parseCardNumbers, parseSinoKorean, shuffleOrbDeck, pickOrbCards, orbCardPickMessage,
-  summarizeOrbSession, saveOrbMemory, loadOrbMemory, setOrbMemoryEnabled, buildOrbMemoryBrief, latestOrbMemoryLine, countStopWords, isStopAll,
+  summarizeOrbSession, saveOrbMemory, loadOrbMemory, buildOrbMemoryBrief, latestOrbMemoryLine, countStopWords, isStopAll,
 } from '../src/lib/orbConsult.ts';
 
 const store = new Map<string, string>();
@@ -56,7 +56,6 @@ test('a finished session is remembered per account and briefed back to the maste
   assert.equal(summary!.concern, '이직을 할지 말지 고민이에요');
   assert.equal(summary!.advice, '서두르지 말고 한 달만 준비해 보세요.');
   const now = Date.UTC(2026, 10, 23);
-  setOrbMemoryEnabled('user-a', true, now);
   saveOrbMemory('user-a', { at: now - 3 * 86400000, masterId: 'tarot', masterName: '타로', ...summary! }, now);
   assert.equal(loadOrbMemory('user-b', now).length, 0);
   const entries = loadOrbMemory('user-a', now);
