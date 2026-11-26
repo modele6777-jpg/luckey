@@ -7,12 +7,12 @@
  * 3. 불안(Angst)의 가능성과 신앙의 도약(Springet)
  * 4. 질문 맥락 실존 단계 진단(situationalStageAudit) + KST 시공간 리듬(temporalSolitudeRhythm) + 교차 검증 매트릭스(kierkegaardSynthesisMatrix)
  *
- * @version LUCKEY-KIERKEGAARD-STAGES-OF-LIFE-v2.1.0
+ * @version LUCKEY-KIERKEGAARD-STAGES-OF-LIFE-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KIERKEGAARD_STAGES_OF_LIFE_VERSION = 'LUCKEY-KIERKEGAARD-STAGES-OF-LIFE-v2.3.0';
+export const KIERKEGAARD_STAGES_OF_LIFE_VERSION = 'LUCKEY-KIERKEGAARD-STAGES-OF-LIFE-v2.4.0';
 
 function describeKierkegaardStage(score: number): string {
   if (score >= 88) return '단독자의 용기 있는 도약 단계';
@@ -63,6 +63,8 @@ export interface KierkegaardSynthesisMatrix {
 export interface KierkegaardStagesOfLifeResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계/신뢰' | '일/진로' | '재정/균형' | '내면/회복' | '전환/결정';
+  kierkegaardCrossAxis: string;
   // 5대 핵심 실존 지표 (0~100)
   existentialLeapCourageScore: number;       // 실존적 도약(Springet) 및 가치 선택 결단력
   denEnkelteAuthenticityScore: number;       // 군중 탈피 단독자(Den Enkelte) 주체성 지수
@@ -253,6 +255,15 @@ function buildTemporalSolitudeRhythm(now: Date, baseScore: number): KierkegaardT
   };
 }
 
+function classifyKierkegaardTopic(question: string): KierkegaardStagesOfLifeResult['questionTopic'] {
+  const q = question.toLowerCase();
+  if (/(사랑|연애|관계|결혼|사람|가족|친구|고독|눈치|비교|외로)/.test(q)) return '관계/신뢰';
+  if (/(일|직장|진로|이직|사업|공부|시험|성과|업무|소명)/.test(q)) return '일/진로';
+  if (/(돈|재정|투자|소비|수입|지출|저축|자산|균형)/.test(q)) return '재정/균형';
+  if (/(불안|두려|걱정|권태|지루|공허|회복|휴식|마음)/.test(q)) return '내면/회복';
+  return '전환/결정';
+}
+
 export function calculateKierkegaardStagesOfLife(
   profile: UserProfile,
   question = '',
@@ -285,6 +296,8 @@ export function calculateKierkegaardStagesOfLife(
   const focalKierkegaardAphorism = KIERKEGAARD_APHORISMS[aphorismIndex];
   const situationalStageAudit = buildSituationalStageAudit(question, absHash);
   const temporalSolitudeRhythm = buildTemporalSolitudeRhythm(now, existentialLeapCourageScore);
+  const questionTopic = classifyKierkegaardTopic(question);
+  const kierkegaardCrossAxis = `${situationalStageAudit.stageNameKo.split('(')[0].trim()} × ${temporalSolitudeRhythm.timeWindowKo.split('(')[0].trim()} (${questionTopic})`;
 
   const avgScore = Math.round(
     (existentialLeapCourageScore + denEnkelteAuthenticityScore + angstPossibilityMasteryScore) / 3
@@ -309,6 +322,8 @@ export function calculateKierkegaardStagesOfLife(
   return {
     engineVersion: KIERKEGAARD_STAGES_OF_LIFE_VERSION,
     calculatedAtKst: `${new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 19)}+09:00 (KST)`,
+    questionTopic,
+    kierkegaardCrossAxis,
     existentialLeapCourageScore,
     denEnkelteAuthenticityScore,
     angstPossibilityMasteryScore,
@@ -336,6 +351,7 @@ export function formatKierkegaardStagesOfLifePrompt(res: KierkegaardStagesOfLife
     `- 실존적 도약(Springet): ${describeKierkegaardStage(res.existentialLeapCourageScore)} | 단독자 주체성: ${describeKierkegaardStage(res.denEnkelteAuthenticityScore)}`,
     `- 불안의 승화(Angst): ${describeKierkegaardStage(res.angstPossibilityMasteryScore)} | 자기 선택 성실도: ${describeKierkegaardStage(res.ethicalSelfChoiceCommitmentScore)} | 영적 평정: ${describeKierkegaardStage(res.spiritSynthesisWholenessScore)}`,
     `- 질문 맥락 실존 단계: [${res.situationalStageAudit.stageNameKo}] ${res.situationalStageAudit.focusAxisKo}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.kierkegaardCrossAxis}`,
     `- 원전 처방: ${res.situationalStageAudit.classicalCitation} → ${res.situationalStageAudit.leapDirective}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.situationalStageAudit.reflectiveQuestion}`,

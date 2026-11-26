@@ -7264,6 +7264,8 @@ test('Chusa Kim Jeong-hui Sehando Engine: calculates Songbaek hudjo integrity, E
 test('Søren Kierkegaard Stages of Life Engine: calculates Den Enkelte authenticity, Leap of faith, and Anxiety possibility mastery', () => {
   const rep = calculateKierkegaardStagesOfLife(profile, '이직 선택과 불안 앞에서 어떻게 결단해야 할까요?', new Date('2026-11-14T06:00:00Z'));
   assert.equal(rep.engineVersion, KIERKEGAARD_STAGES_OF_LIFE_VERSION);
+  assert.equal(rep.questionTopic, '일/진로');
+  assert(rep.kierkegaardCrossAxis.includes('일/진로'));
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.existentialLeapCourageScore >= 0 && rep.existentialLeapCourageScore <= 100);
   assert(rep.denEnkelteAuthenticityScore >= 0 && rep.denEnkelteAuthenticityScore <= 100);
@@ -7278,7 +7280,7 @@ test('Søren Kierkegaard Stages of Life Engine: calculates Den Enkelte authentic
   const prompt = formatKierkegaardStagesOfLifePrompt(rep);
   assert(prompt.includes('쇠렌 키르케고르 단독자(Den Enkelte) & 실존 3단계 지표'));
   assert(prompt.includes(rep.activeKierkegaardTheme.themeTitleKo));
-  assert(prompt.includes('질문 맥락 실존 단계'));
+  assert(prompt.includes('질문 맥락 실존 단계') && prompt.includes(rep.kierkegaardCrossAxis));
   assert(prompt.includes('성찰 초점'));
 });
 
@@ -15080,15 +15082,16 @@ test('Paracas Weave Textile Harmony engine: motif, +09:00 KST, and interpretive 
 
 test('Dayak Longhouse Hornbill Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateDayakLonghouseHornbillPoise({ profile, now: new Date('2026-11-20T19:45:00Z'), question: '혼자 버티던 긴장을 풀고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-DAYAK-HORNBILL-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-DAYAK-HORNBILL-v2.4.0');
+  assert.equal(rep.questionTopic, '관계·나눔');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.dayakMotif);
-  assert.ok(rep.canopyRiverAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.canopyRiverAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatDayakHornbillPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('다약') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('다약') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
 });
 
 test('Carthaginian Tanit Harbor Compass engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15309,15 +15312,16 @@ test('Azeri Carpet Flame Poise engine: motif, +09:00 KST, and interpretive bound
 
 test('Dalmatian Stone Lavender Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateDalmatianStoneLavenderCalm({ profile, now: new Date('2026-11-20T20:24:00Z'), question: '거친 돌을 울타리로 바꾸고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-DALMATIAN-STONE-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-DALMATIAN-STONE-v2.4.0');
+  assert.equal(rep.questionTopic, '경계·정리');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.dalmatianMotif);
-  assert.ok(rep.limestoneBreezeAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.limestoneBreezeAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatDalmatianStonePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('달마티아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('달마티아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
 });
 
 test('Kuba Raffia Geometry Order engine: motif, +09:00 KST, and interpretive boundary', () => {
