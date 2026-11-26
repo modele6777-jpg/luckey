@@ -7,6 +7,7 @@ export interface HimbaOtjizeResult {
   himbaMotif: string;
   companionMotif: string;
   ochreHearthAxis: string;
+  topicBalanceHint: string;
   himbaInsight: string;
   desertTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const HIMBA_SHADOWS = [
   '묵묵한 품위가 쌓이길 기다리는 동안에도 정당하게 말하고 요구해야 할 내 몫까지 삼키지는 마세요.',
 ];
 
+const HIMBA_TOPIC_HINTS: Record<HimbaOtjizeResult['questionTopic'], string> = {
+  '보호·돌봄': '바깥의 뜨거운 햇살을 막아 내는 작은 의식 하나가 오늘 하루의 집중력을 지켜 줍니다.',
+  '기억·물줄기': '당장 겉흙이 말라 보여도 땅속에서 흐르는 꾸준한 물줄기를 믿고 한 걸음씩 이어 가세요.',
+  '가락·품위': '남의 속도에 쫓기기보다 내 일의 고유한 이름과 리듬을 차분히 부를 때 품위가 살아납니다.',
+  '사막 전반': '나를 지키는 돌봄과 소중한 뿌리에 대한 기억을 함께 챙기면 거친 날도 너끈히 건넙니다.',
+};
+
 function classifyHimbaTopic(q: string): HimbaOtjizeResult['questionTopic'] {
   if (/돌봄|보호|지키|건강|휴식/.test(q)) return '보호·돌봄';
   if (/기억|뿌리|불씨|물줄기|성과/.test(q)) return '기억·물줄기';
@@ -102,15 +110,17 @@ export function calculateHimbaOtjizeDesertPoise(params: {
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const ochreHearthAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = HIMBA_TOPIC_HINTS[questionTopic];
   const shadowWarning = HIMBA_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-HIMBA-OTJIZE-v2.3.0',
+    engineVersion: 'LUCKEY-HIMBA-OTJIZE-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     himbaMotif: picked.motif,
     companionMotif: companion.motif,
     ochreHearthAxis,
+    topicBalanceHint,
     himbaInsight: picked.insight,
     desertTone: picked.tone,
     reflectionFocus: `힘바 오트지제의 '${picked.motif}'처럼, 겉으로 성과가 드러나지 않는 날에도 나를 지키는 돌봄의 의식과 숨은 물줄기를 믿어 보세요. (동반 결: ${companion.motif.split('(')[0].trim()})`,
@@ -126,6 +136,7 @@ export function formatHimbaOtjizePrompt(res: HimbaOtjizeResult): string {
     `[나미비아 힘바·오트지제 적토 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 적토·화덕 축: ${res.ochreHearthAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 힘바 모티프: ${res.himbaMotif} (${res.desertTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.himbaInsight}`,
