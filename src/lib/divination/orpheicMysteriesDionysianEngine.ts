@@ -6,7 +6,7 @@
  * 상징적 균형을 통해 현대인의 자기 인식과 정서적 회복을 비추는 정성적 성찰 도구입니다.
  */
 
-export const ORPHEIC_MYSTERIES_ENGINE_VERSION = 'LUCKEY-ORPHEIC-MYSTERIES-v2.3.0';
+export const ORPHEIC_MYSTERIES_ENGINE_VERSION = 'LUCKEY-ORPHEIC-MYSTERIES-v2.4.0';
 
 export type OrphicQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -30,6 +30,7 @@ export interface OrphicMysteriesReport {
     dionysianAspect: string;
   };
   orphicPhase: string;
+  orphicCrossAxis: string;
   shadowWarning: string;
   goldTabletPassportCode: string; // 황금판 상징 키워드
   soulAwakeningPrescription: string; // 하위 호환용 지침
@@ -175,6 +176,7 @@ export function calculateOrpheicMysteries(params: {
   const boundaryNotice = '오르페우스 신비주의 관점은 고대 그리스 상징 철학을 빌린 정성적 성찰 참고용이며, 개인 점수나 심리 진단·미래 예언이 아닙니다.';
   const calculatedAtKst = formatOrphicKstTimestamp(now);
   const q = question.trim();
+  const orphicCrossAxis = `${polarityArchetype.nameKo} × ${companionArchetype.nameKo} (${orphicPhase.split('(')[0].trim()})`;
   const orphicSynthesisMatrix = {
     dominantTension: `${polarityArchetype.nameKo} ↔ ${companionArchetype.nameKo} (${orphicPhase})`,
     alignmentState: `${polarityArchetype.apollonianAspect} · ${companionArchetype.dionysianAspect}`,
@@ -196,6 +198,7 @@ export function calculateOrpheicMysteries(params: {
     polarityArchetype,
     companionArchetype,
     orphicPhase,
+    orphicCrossAxis,
     shadowWarning,
     goldTabletPassportCode,
     soulAwakeningPrescription: themeContent.practiceGuidance,
@@ -218,6 +221,7 @@ export function formatOrpheicMysteriesPrompt(report: OrphicMysteriesReport): str
     `- **임계 통과 상태**: ${report.thresholdState} (${report.orphicPhase})`,
     `- **상징 원형**: ${report.polarityArchetype.nameKo} (아폴론적 명료함: ${report.polarityArchetype.apollonianAspect} / 디오니소스적 생명력: ${report.polarityArchetype.dionysianAspect})`,
     `- **동반 교차 원형**: ${report.companionArchetype.nameKo} (${report.companionArchetype.dionysianAspect})`,
+    `- **오르페우스 교차 축**: ${report.orphicCrossAxis}`,
     `- **과잉·경계 점검**: ${report.shadowWarning}`,
     `- **오르페우스 황금판 패스포트 코드**: \`${report.goldTabletPassportCode}\``,
     `- **실천 조언**: ${report.practiceGuidance}`,

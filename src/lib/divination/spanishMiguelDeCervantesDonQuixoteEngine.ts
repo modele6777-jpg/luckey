@@ -8,12 +8,12 @@
  * 4. 상처와 실패를 유쾌한 웃음으로 승화하는 해학적 회복탄력성 (Satirical Wit & Compassionate Humor Resilience Index): 비극과 환멸 앞에서도 인간을 향한 따스한 해학과 연민을 잃지 않는 명랑한 힘.
  * 5. 세상의 규정을 넘어 스스로 기사가 되는 자기창조적 주체성 (Autonomous Self-Creation & Sovereign Identity Score): 늙은 시골 귀족 아론소 키하노의 무력함을 딛고 고결한 돈키호테로 다시 태어나는 주체적 결단.
  *
- * @version LUCKEY-CERVANTES-DON-QUIXOTE-v2.1.0
+ * @version LUCKEY-CERVANTES-DON-QUIXOTE-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION = 'LUCKEY-CERVANTES-DON-QUIXOTE-v2.3.0';
+export const SPANISH_MIGUEL_DE_CERVANTES_DON_QUIXOTE_VERSION = 'LUCKEY-CERVANTES-DON-QUIXOTE-v2.4.0';
 
 export interface CervantesTheme {
   themeKey: string;
@@ -43,6 +43,7 @@ export interface SpanishMiguelDeCervantesDonQuixoteResult {
   // 세부 분석
   activeCervantesTheme: CervantesTheme;
   focalCervantesAphorism: CervantesAphorism;
+  cervantesCrossAxis: string;
   cervantesComprehensiveGuidance: {
     guidanceTitle: string;
     philosophicalCounsel: string;
@@ -177,6 +178,7 @@ export function calculateSpanishMiguelDeCervantesDonQuixote(
     `${focalCervantesAphorism.actionGuidance}`;
 
   const calculatedAtKst = formatCervantesKstTimestamp(now);
+  const cervantesCrossAxis = `${activeCervantesTheme.themeTitleKo.split('—')[0].trim()} × ${focalCervantesAphorism.sourceContext}`;
   const cervantesSynthesisMatrix = {
     dominantTension: `${activeCervantesTheme.themeTitleKo} ↔ 현실의 풍차`,
     alignmentState: `${focalCervantesAphorism.sourceContext}`,
@@ -201,6 +203,7 @@ export function calculateSpanishMiguelDeCervantesDonQuixote(
     autonomousSelfCreationScore,
     activeCervantesTheme,
     focalCervantesAphorism,
+    cervantesCrossAxis,
     cervantesComprehensiveGuidance: {
       guidanceTitle,
       philosophicalCounsel,
@@ -226,6 +229,7 @@ export function formatSpanishMiguelDeCervantesDonQuixotePrompt(
     `- 원문: (${res.focalCervantesAphorism.aphorismSpanish})`,
     `- 원전 출처: [${res.focalCervantesAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalCervantesAphorism.actionGuidance}`,
+    `- 돈키호테 교차 축: ${res.cervantesCrossAxis}`,
     `- 종합 세르반테스 권면: ${res.cervantesComprehensiveGuidance.philosophicalCounsel}`,
   ];
   if (res.cervantesSynthesisMatrix) {
