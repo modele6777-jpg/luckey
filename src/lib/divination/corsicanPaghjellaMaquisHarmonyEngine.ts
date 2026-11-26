@@ -7,6 +7,7 @@ export interface CorsicanPaghjellaResult {
   corsicanVoice: string;
   companionVoice: string;
   paghjellaAxis: string;
+  topicBalanceHint: string;
   paghjellaInsight: string;
   maquisTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const CORSICAN_SHADOWS = [
   '나만의 기준을 지킨다는 이유로 외부에서 들어오는 건설적인 화음까지 차단하지 않도록 유의하세요.',
 ];
 
+const TOPIC_BALANCE_HINTS: Record<CorsicanPaghjellaResult['questionTopic'], string> = {
+  '관계·화음': '내 목소리를 선명하게 내되 상대의 성부가 들어올 여백을 남겨 둘 때 비로소 화음이 완성됩니다.',
+  '일·성실': '모든 성부를 혼자 부르기보다 지금 내 자리에서 맡은 한 음을 정확하고 맑게 지탱하세요.',
+  '균형·기준': '마키 관목의 뿌리처럼 고유한 기준을 지키면서도 산과 바다가 만나는 능선의 유연함을 잃지 마세요.',
+  '울림 전반': '혼자 크게 외치기보다 서로의 호흡을 듣는 자리에서 오래 남는 울림이 만들어집니다.',
+};
+
 function classifyCorsicanTopic(q: string): CorsicanPaghjellaResult['questionTopic'] {
   if (/관계|대화|화음|배려|사람|사랑/.test(q)) return '관계·화음';
   if (/일|직장|성실|음|자리|역할/.test(q)) return '일·성실';
@@ -102,15 +110,17 @@ export function calculateCorsicanPaghjellaMaquisHarmony(params: {
   const picked = VOICES[idx];
   const companion = VOICES[(idx + companionOffset) % VOICES.length];
   const paghjellaAxis = `${picked.voice.split('(')[0].trim()} ↔ ${companion.voice.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = CORSICAN_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-CORSICAN-PAGHJELLA-v2.3.0',
+    engineVersion: 'LUCKEY-CORSICAN-PAGHJELLA-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     corsicanVoice: picked.voice,
     companionVoice: companion.voice,
     paghjellaAxis,
+    topicBalanceHint,
     paghjellaInsight: picked.insight,
     maquisTone: picked.tone,
     reflectionFocus: `코르시카 파겔라 다성 합창의 '${picked.voice}'와 동반 성부 '${companion.voice}'가 어우러지듯, 모든 일을 나 혼자 다 해내려 하기보다 지금 내 자리의 한 음을 정확하고 맑게 내는 데 집중해 보세요.`,
@@ -126,6 +136,7 @@ export function formatCorsicanPaghjellaPrompt(res: CorsicanPaghjellaResult): str
     `[코르시카 파겔라·마키 화음 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 합창 축: ${res.paghjellaAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 합창 성부: ${res.corsicanVoice} (${res.maquisTone})`,
     `- 동반 성부: ${res.companionVoice}`,
     `- 중심 통찰: ${res.paghjellaInsight}`,
