@@ -6710,6 +6710,8 @@ test('Ancient Indian Bhagavad Gita Karma Yoga Engine: calculates Nishkama Karma,
 test('Chinese Wang Yangming Liangzhi Xinxue Engine: calculates Liangzhi intuition, Zhi-Xing unity and mind integrity', () => {
   const rep = calculateWangYangmingXinxue(profile);
   assert.equal(rep.engineVersion, WANG_YANGMING_LIANGZHI_VERSION);
+  assert.equal(rep.questionTopic, '전환/결정');
+  assert(rep.yangmingCrossAxis.includes('전환/결정'));
   assert(rep.liangzhiIntuitionScore >= 0 && rep.liangzhiIntuitionScore <= 100);
   assert(rep.zhiXingUnityPower >= 0 && rep.zhiXingUnityPower <= 100);
   assert(rep.xinZhiLiMindCoreIntegrity >= 0 && rep.xinZhiLiMindCoreIntegrity <= 100);
@@ -6719,7 +6721,7 @@ test('Chinese Wang Yangming Liangzhi Xinxue Engine: calculates Liangzhi intuitio
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatWangYangmingXinxuePrompt(rep);
   assert(prompt.includes('명나라 양명학 왕양명(王陽明) 치양지(致良知)'));
-  assert(prompt.includes(rep.activeXinxueStage.stageNameKo));
+  assert(prompt.includes(rep.activeXinxueStage.stageNameKo) && prompt.includes(rep.yangmingCrossAxis));
 });
 
 test('Ancient Greek Socratic Maieutic Daimon Engine: calculates dialogue, daimonion, docta ignorantia and soul care', () => {
@@ -14372,15 +14374,16 @@ test('Punjabi Nanak Langar Service engine: pillar, +09:00 KST, and interpretive 
 
 test('Chuvash Tura World Tree Balance engine: sign, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateChuvashTuraWorldTreeBalance({ profile, now: new Date('2026-11-20T07:56:00Z'), question: '한 땀씩 정갈하게 질서를 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CHUVASH-TURA-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CHUVASH-TURA-v2.4.0');
+  assert.equal(rep.questionTopic, '일·질서');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSign !== rep.chuvashSign);
-  assert.ok(rep.worldTreeAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.worldTreeAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatChuvashTuraPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('추바시') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSign) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('추바시') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSign) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
 });
 
 test('Kalmyk Jangar Bumba Steppe engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14789,15 +14792,16 @@ test('Yapese Rai Stone Trust engine: stone, +09:00 KST, and interpretive boundar
 
 test('Chukchi Bering Tundra Hearth engine: symbol, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateChukchiBeringTundraHearth({ profile, now: new Date('2026-11-20T09:04:00Z'), question: '거친 바람 속에서 내 안의 온기를 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CHUKCHI-BERING-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CHUKCHI-BERING-v2.4.0');
+  assert.equal(rep.questionTopic, '안식·온기');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSymbol !== rep.tundraSymbol);
-  assert.ok(rep.tundraHearthAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.tundraHearthAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatChukchiBeringPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('축치') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSymbol) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('축치') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSymbol) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
 });
 
 test('Palmyrene Oasis Colonnade engine: pillar, +09:00 KST, and interpretive boundary', () => {
