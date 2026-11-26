@@ -142,8 +142,9 @@ test('a manual choice made while folded survives the same folded screen', () => 
 });
 
 test('opening unfolded shows divination in App through the shared fold store', () => {
+  const main = readFileSync(new URL('../src/main.tsx', import.meta.url), 'utf8');
   const app = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
-  assert.match(app, /initializeLucyMasterModeForFold\(\)/, 'app start applies the fold default screen');
+  assert.match(main, /initializeLucyMasterModeForFold\(\)/, 'app start applies the fold default screen before the first render');
   assert.match(app, /applyLucyMasterModeForFoldChange\(wasUnfolded, isNowUnfolded\)/, 'fold transitions switch the default screen');
   assert.match(app, /subscribeFoldState\(/, 'the switch rides the one shared fold store');
 });
