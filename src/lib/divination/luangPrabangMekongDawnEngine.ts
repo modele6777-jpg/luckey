@@ -4,9 +4,11 @@ export interface LuangPrabangDawnResult {
   engineVersion: string;
   calculatedAtKst: string;
   questionTopic: string;
+  questionCategory: '여유·기다림' | '나눔·온기' | '합류·루틴' | '비움·계절';
   mekongMotif: string;
   companionMotif: string;
   mekongDawnAxis: string;
+  topicBalanceHint: string;
   luangPrabangInsight: string;
   dawnTone: string;
   reflectionFocus: string;
@@ -22,6 +24,20 @@ const MEKONG_DAWN_AXES = [
   '남칸·메콩 합류 · 일상과 목표의 자연스러운 연결',
   '대나무 다리 계절 · 때가 지나면 가볍게 접어두기',
 ] as const;
+
+const TOPIC_BALANCE_HINTS: Record<LuangPrabangDawnResult['questionCategory'], string> = {
+  '여유·기다림': '메콩 새벽 물안개가 걷히길 기다리되, 이미 드러난 분명한 위험 신호는 바로 챙기세요.',
+  '나눔·온기': '침묵의 탁발처럼 생색 없는 작은 친절을 건네되, 내 기본 여력까지 비우지는 마세요.',
+  '합류·루틴': '남칸 강과 메콩의 합류처럼 오늘의 작은 루틴을 큰 목표와 잇되, 속도는 무리하지 마세요.',
+  '비움·계절': '계절에 맞춰 접는 대나무 다리처럼 낡은 방식은 내려놓되, 지켜야 할 핵심 약속은 챙기세요.',
+};
+
+function classifyLuangPrabangCategory(q: string): LuangPrabangDawnResult['questionCategory'] {
+  if (/나눔|관계|사람|상대|친절|배려/.test(q)) return '나눔·온기';
+  if (/루틴|목표|일상|흐름|연결|습관/.test(q)) return '합류·루틴';
+  if (/기다림|여유|안개|불안|결정|조급/.test(q)) return '여유·기다림';
+  return '비움·계절';
+}
 
 const MOTIFS = [
   {
@@ -96,14 +112,18 @@ export function calculateLuangPrabangMekongDawn(params: {
   const questionTopic = trimmedQ
     ? trimmedQ.slice(0, 36)
     : '계절에 맞춰 놓고 거두는 고요한 호흡';
+  const questionCategory = classifyLuangPrabangCategory(trimmedQ || questionTopic);
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionCategory];
 
   return {
-    engineVersion: 'LUCKEY-LAO-MEKONG-v2.3.0',
+    engineVersion: 'LUCKEY-LAO-MEKONG-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
+    questionCategory,
     mekongMotif: picked.motif,
     companionMotif: companion.motif,
     mekongDawnAxis,
+    topicBalanceHint,
     luangPrabangInsight: `${picked.insight} (동반 모티프: ${companion.motif})`,
     dawnTone: picked.tone,
     reflectionFocus: `질문 맥락('${questionTopic}')에서 루앙프라방 메콩 새벽의 '${picked.motif}'와 메콩 새벽 축('${mekongDawnAxis}')을 함께 살피며, 안개 속에서 서두르기보다 계절에 맞춰 놓거나 거두는 고요한 호흡을 지켜 보세요.`,
@@ -118,7 +138,8 @@ export function formatLuangPrabangDawnPrompt(res: LuangPrabangDawnResult): strin
   return [
     `[루앙프라방·메콩 새벽 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
-    `- 질문 맥락: ${res.questionTopic}`,
+    `- 질문 맥락: ${res.questionTopic} (분류: ${res.questionCategory})`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 메콩 모티프: ${res.mekongMotif} (${res.dawnTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 메콩 새벽 축: ${res.mekongDawnAxis}`,

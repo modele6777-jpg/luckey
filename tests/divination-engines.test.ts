@@ -14113,15 +14113,16 @@ test('Basotho Botho Mountain Wisdom engine: sign, +09:00 KST, and interpretive b
 
 test('Tuvan Khoomei Overtones Resonance engine: layer, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateTuvanKhoomeiOvertonesResonance({ profile, now: new Date('2026-11-20T07:12:00Z'), question: '내 안의 진짜 울림을 듣고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-TUVAN-KHOOMEI-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-TUVAN-KHOOMEI-v2.4.0');
+  assert.equal(rep.questionCategory, '내면·경청');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionLayer !== rep.overtoneLayer);
-  assert.ok(rep.questionTopic.length > 0 && rep.resonanceAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.questionTopic.length > 0 && rep.resonanceAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatTuvanKhoomeiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('투바') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLayer) && prompt.includes(rep.resonanceAxis));
+  assert.ok(prompt.includes('투바') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLayer) && prompt.includes(rep.resonanceAxis) && prompt.includes(rep.topicBalanceHint));
 });
 
 test('Breton Barzaz Sea Poetry engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -14765,15 +14766,16 @@ test('Champa My Son Brick Sanctuary engine: motif, +09:00 KST, and interpretive 
 
 test('Ket Yenisei Taiga Stars engine: sign, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKetYeniseiTaigaStars({ profile, now: new Date('2026-11-20T08:58:00Z'), question: '큰 물길의 방향과 지금 내 계절을 살피고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KET-YENISEI-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-KET-YENISEI-v2.4.0');
+  assert.equal(rep.questionCategory, '방향·물길');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSign !== rep.riverStarSign);
-  assert.ok(rep.questionTopic.length > 0 && rep.taigaCycleAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.questionTopic.length > 0 && rep.taigaCycleAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKetYeniseiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('예니세이') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSign) && prompt.includes(rep.taigaCycleAxis));
+  assert.ok(prompt.includes('예니세이') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSign) && prompt.includes(rep.taigaCycleAxis) && prompt.includes(rep.topicBalanceHint));
 });
 
 test('Chachapoya Cloud Forest Kuelap engine: citadel, +09:00 KST, and interpretive boundary', () => {
@@ -15227,15 +15229,16 @@ test('Maramures Wood Gate Calm engine: motif, +09:00 KST, and interpretive bound
 
 test('Luang Prabang Mekong Dawn engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateLuangPrabangMekongDawn({ profile, now: new Date('2026-11-20T20:09:00Z'), question: '계절에 맞게 마음을 내려놓고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-LAO-MEKONG-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-LAO-MEKONG-v2.4.0');
+  assert.equal(rep.questionCategory, '비움·계절');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.mekongMotif);
-  assert.ok(rep.questionTopic.length > 0 && rep.mekongDawnAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.questionTopic.length > 0 && rep.mekongDawnAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatLuangPrabangDawnPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('루앙프라방') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.mekongDawnAxis));
+  assert.ok(prompt.includes('루앙프라방') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.mekongDawnAxis) && prompt.includes(rep.topicBalanceHint));
 });
 
 test('Mossi Earth Mural Harmony engine: motif, +09:00 KST, and interpretive boundary', () => {

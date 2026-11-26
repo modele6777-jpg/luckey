@@ -4,9 +4,11 @@ export interface KetYeniseiResult {
   engineVersion: string;
   calculatedAtKst: string;
   questionTopic: string;
+  questionCategory: '방향·물길' | '집중·흔적' | '계절·조절' | '박자·안정';
   riverStarSign: string;
   companionSign: string;
   taigaCycleAxis: string;
+  topicBalanceHint: string;
   yeniseiInsight: string;
   taigaTone: string;
   reflectionFocus: string;
@@ -22,6 +24,20 @@ const TAIGA_CYCLE_AXES = [
   '일룸 계절 호흡 · 지금 내 체력과 계절 맞추기',
   '자작나무 북 박자 · 흩어진 생각 일정하게 가라앉히기',
 ] as const;
+
+const TOPIC_BALANCE_HINTS: Record<KetYeniseiResult['questionCategory'], string> = {
+  '방향·물길': '예니세이 대하처럼 큰 방향을 믿고 조급함을 줄이되, 당장 치울 작은 걸림돌은 미루지 마세요.',
+  '집중·흔적': '일라임의 별빛 아래 발앞의 확실한 사실 하나를 짚되, 큰 여정의 맥락도 함께 확인하세요.',
+  '계절·조절': '일룸의 사계절 호흡처럼 지금 내 체력과 계절에 맞춰 강도를 조절하되, 작은 움직임은 이어 가세요.',
+  '박자·안정': '자작나무 북의 일정한 박자로 마음을 가라앉히되, 정리가 끝나면 현실 행동 하나로 연결하세요.',
+};
+
+function classifyKetCategory(q: string): KetYeniseiResult['questionCategory'] {
+  if (/집중|사실|불안|흔적|다음|걸음/.test(q)) return '집중·흔적';
+  if (/박자|호흡|잡념|마음|안정|휴식/.test(q)) return '박자·안정';
+  if (/물길|방향|결정|선택|진로/.test(q)) return '방향·물길';
+  return '계절·조절';
+}
 
 const SIGNS = [
   {
@@ -96,14 +112,18 @@ export function calculateKetYeniseiTaigaStars(params: {
   const questionTopic = trimmedQ
     ? trimmedQ.slice(0, 36)
     : '큰 물길의 방향과 지금 내 계절 살피기';
+  const questionCategory = classifyKetCategory(trimmedQ || questionTopic);
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionCategory];
 
   return {
-    engineVersion: 'LUCKEY-KET-YENISEI-v2.3.0',
+    engineVersion: 'LUCKEY-KET-YENISEI-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
+    questionCategory,
     riverStarSign: picked.sign,
     companionSign: companion.sign,
     taigaCycleAxis,
+    topicBalanceHint,
     yeniseiInsight: `${picked.insight} (동반 징표: ${companion.sign})`,
     taigaTone: picked.tone,
     reflectionFocus: `질문 맥락('${questionTopic}')에서 예니세이·케트 타이가 지혜의 '${picked.sign}'와 타이가 순환 축('${taigaCycleAxis}')을 함께 살피며, 오늘 당장 모든 답을 재촉하기보다 큰 물길의 방향과 지금 내 계절을 차분히 살피세요.`,
@@ -118,7 +138,8 @@ export function formatKetYeniseiPrompt(res: KetYeniseiResult): string {
   return [
     `[예니세이 케트·타이가 별하늘 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
-    `- 질문 맥락: ${res.questionTopic}`,
+    `- 질문 맥락: ${res.questionTopic} (분류: ${res.questionCategory})`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 북방 징표: ${res.riverStarSign} (${res.taigaTone})`,
     `- 동반 징표: ${res.companionSign}`,
     `- 타이가 순환 축: ${res.taigaCycleAxis}`,
