@@ -3125,12 +3125,14 @@ test('Human Design BodyGraph Engine: 휴먼 디자인 9대 에너지 센터 및 
   assert(res.calculatedAtKst.includes('KST'));
   assert(res.temporalHdRhythm.auraWatchWindow.length > 0);
   assert(res.hdSynthesisMatrix.coreInsight.length > 0);
+  assert(Boolean(res.hdCrossAxis?.typeStrategyPair && res.hdCrossAxis?.authorityProfileAxis && res.hdCrossAxis?.definedCenterBalance));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatHumanDesignBodyGraphPrompt(res);
   assert(prompt.includes('LUCKEY 휴먼 디자인 9대 에너지 센터 & 바디그래프 오라'));
   assert(prompt.includes(res.designType.koreanLabel));
   assert(prompt.includes(res.ritualAction));
+  assert(prompt.includes('휴먼 디자인 교차 축'));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
@@ -4165,12 +4167,14 @@ test('Huangdi Five Movements & Six Qi Engine: calculates movements, heaven/earth
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalYunqiRhythm.organWatchWindow.length > 0);
   assert(rep.yunqiSynthesisMatrix.coreInsight.length > 0);
+  assert(Boolean(rep.yunqiCrossAxis?.movementPolarityPair && rep.yunqiCrossAxis?.siTianZaiQuanSpan && rep.yunqiCrossAxis?.organCareAxis));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHuangdiFiveMovementsSixQiPrompt(rep);
   assert(prompt.includes('황제명리(黃帝命理) & 오운육기(五運六氣) 천기 기상의학 엔진'));
   assert(prompt.includes(rep.birthYearGanZhi));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes('운기 교차 축'));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
@@ -13974,10 +13978,10 @@ test('Malagasy Fihavanana Kinship engine: principle, +09:00 KST, and interpretiv
 
 test('Hungarian Taltos Tree of Life engine: realm, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateHungarianTaltosTreeOfLife({ profile, now: new Date('2026-11-20T06:30:00Z'), question: '한 단계 위로 시야를 넓히고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-HUNGARIAN-TALTOS-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-HUNGARIAN-TALTOS-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionRealm !== rep.treeRealm);
-  assert.ok(rep.worldTreeAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.worldTreeAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatHungarianTaltosPrompt(rep);
