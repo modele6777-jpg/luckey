@@ -7,6 +7,7 @@ export interface HausaKirariAladaResult {
   proverbSign: string;
   companionSign: string;
   sahelDignityAxis: string;
+  topicBalanceHint: string;
   aladaInsight: string;
   sahelTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const HAUSA_SHADOWS = [
   '지혜로운 이의 시선을 구하는 경청 뒤에는 결국 내가 직접 선택하고 책임져야 할 결단이 따릅니다.',
 ];
 
+const HAUSA_TOPIC_HINTS: Record<HausaKirariAladaResult['questionTopic'], string> = {
+  '인내·품격': '긴 호흡으로 상황을 품되 지금 바로잡아야 할 분명한 선은 놓치지 않는 균형이 필요합니다.',
+  '신뢰·약속': '작은 약속을 끝까지 지키는 성실함과 바뀐 현실을 조율하는 유연함이 함께 갈 때 신뢰가 깊어집니다.',
+  '경청·자부심': '내 강점을 당당히 세우면서도 경험 있는 이의 시선을 가볍게 여기는 열린 귀를 남겨 두세요.',
+  '알아다 전반': '인내의 품격과 성실한 실행이 조화를 이룰 때 흔들리지 않는 주도권이 세워집니다.',
+};
+
 function classifyHausaTopic(q: string): HausaKirariAladaResult['questionTopic'] {
   if (/인내|품격|호흡|조급|존중/.test(q)) return '인내·품격';
   if (/신뢰|약속|성실|책임|실행/.test(q)) return '신뢰·약속';
@@ -102,15 +110,17 @@ export function calculateHausaKirariAladaWisdom(params: {
   const picked = PROVERBS[idx];
   const companion = PROVERBS[(idx + companionOffset) % PROVERBS.length];
   const sahelDignityAxis = `${picked.sign.split('(')[0].trim()} ↔ ${companion.sign.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = HAUSA_TOPIC_HINTS[questionTopic];
   const shadowWarning = HAUSA_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-HAUSA-KIRARI-v2.3.0',
+    engineVersion: 'LUCKEY-HAUSA-KIRARI-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     proverbSign: picked.sign,
     companionSign: companion.sign,
     sahelDignityAxis,
+    topicBalanceHint,
     aladaInsight: picked.insight,
     sahelTone: picked.tone,
     reflectionFocus: `서아프리카 하우사 지혜의 '${picked.sign}'처럼, 오늘의 결정에서는 순간의 감정보다 긴 신뢰(Amana)와 내면의 품격을 먼저 세워 보세요. (동반 결: ${companion.sign.split('(')[0].trim()})`,
@@ -126,6 +136,7 @@ export function formatHausaKirariPrompt(res: HausaKirariAladaResult): string {
     `[하우사 키라리·알아다 지혜 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 사헬·품격 축: ${res.sahelDignityAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 격언 상징: ${res.proverbSign} (${res.sahelTone})`,
     `- 동반 상징: ${res.companionSign}`,
     `- 중심 통찰: ${res.aladaInsight}`,

@@ -4016,12 +4016,13 @@ test('Hawaiian Huna & Ho\'oponopono Engine: calculates active principle, three s
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.temporalHunaRhythm.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.situationalHunaAudit.questionFocus.length > 0);
+  assert(Boolean(rep.hunaCrossAxis?.principleResonance && rep.hunaCrossAxis?.triadicAlignment && rep.hunaCrossAxis?.dominantCleansing));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHawaiianHunaHooponoponoPrompt(rep);
   assert(prompt.includes('고대 하와이 호오포노포노 & 후나 7대 원리'));
   assert(prompt.includes(rep.activePrinciple.hawaiianName));
   assert(prompt.includes(rep.ritualAction));
-  assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes('후나 교차 축') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/ 100점'));
   assert.doesNotMatch(prompt, /(?:\d+\s*(?:\/\s*100|점|%)|점수\s*[:：]?\s*\d+)/);
 });
@@ -14161,10 +14162,10 @@ test('Breton Barzaz Sea Poetry engine: motif, +09:00 KST, and interpretive bound
 
 test('Hausa Kirari Alada Wisdom engine: proverb, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateHausaKirariAladaWisdom({ profile, now: new Date('2026-11-20T07:18:00Z'), question: '긴 호흡으로 신뢰를 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-HAUSA-KIRARI-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-HAUSA-KIRARI-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSign !== rep.proverbSign);
-  assert.ok(rep.sahelDignityAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.sahelDignityAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatHausaKirariPrompt(rep);
@@ -14922,10 +14923,10 @@ test('Phrygian Gordian Knot Clarity engine: symbol, +09:00 KST, and interpretive
 
 test('Goryeo Celadon Inlay Clarity engine: craft, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateGoryeoCeladonInlayClarity({ profile, now: new Date('2026-11-20T09:20:00Z'), question: '마음의 여백과 숨구멍을 마련하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-GORYEO-CELADON-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-GORYEO-CELADON-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionCraft !== rep.celadonCraft);
-  assert.ok(rep.celadonKilnAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.celadonKilnAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatGoryeoCeladonPrompt(rep);
