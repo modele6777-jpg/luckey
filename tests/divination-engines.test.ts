@@ -6744,6 +6744,8 @@ test('Ancient Greek Socratic Maieutic Daimon Engine: calculates dialogue, daimon
 test('Chinese Mencius Four Sprouts Hoyeon Jigi Engine: calculates four sprouts, Hoyeon-jigi, Bu-dong-xin and moral accumulation', () => {
   const rep = calculateMenciusFourSproutsHoyeon(profile);
   assert.equal(rep.engineVersion, MENCIUS_FOUR_SPROUTS_HOYEON_VERSION);
+  assert.equal(rep.questionTopic, '전환/결정');
+  assert(rep.menciusCrossAxis.includes('전환/결정'));
   assert(rep.hoyeonJigiGreatVitalityScore >= 0 && rep.hoyeonJigiGreatVitalityScore <= 100);
   assert(rep.fourSproutsCultivationLevel >= 0 && rep.fourSproutsCultivationLevel <= 100);
   assert(rep.buDongXinSteadfastness >= 0 && rep.buDongXinSteadfastness <= 100);
@@ -6753,7 +6755,7 @@ test('Chinese Mencius Four Sprouts Hoyeon Jigi Engine: calculates four sprouts, 
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatMenciusFourSproutsHoyeonPrompt(rep);
   assert(prompt.includes('고대 중국 맹자 사단사덕(四端四德) & 호연지기(浩然之氣) 성찰'));
-  assert(prompt.includes(rep.activeMenciusStage.stageNameKo));
+  assert(prompt.includes(rep.activeMenciusStage.stageNameKo) && prompt.includes(rep.menciusCrossAxis));
 });
 
 test('Roman Seneca Time Sovereignty Tranquility Engine: calculates time sovereignty, tranquillitas and present living', () => {
@@ -14519,15 +14521,16 @@ test('Rapa Nui Mana Moai Horizon engine: focus, +09:00 KST, and interpretive bou
 
 test('Chechen Vainakh Kovakh Honor engine: code, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateChechenVainakhKovakhHonor({ profile, now: new Date('2026-11-20T08:21:00Z'), question: '말의 무게와 내면의 절제를 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CHECHEN-VAINAKH-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CHECHEN-VAINAKH-v2.4.0');
+  assert.equal(rep.questionTopic, '내면·절제');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionCode !== rep.vainakhCode);
-  assert.ok(rep.honorBalanceAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.honorBalanceAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatChechenVainakhPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('바이나흐') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionCode) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('바이나흐') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionCode) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
 });
 
 test('Sherpa Sagarmatha Ridge Harmony engine: principle, +09:00 KST, and interpretive boundary', () => {
@@ -15433,15 +15436,16 @@ test('Hebridean Tartan Loom Calm engine: motif, +09:00 KST, and interpretive bou
 
 test('Chiloe Palafito Tide Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateChiloePalafitoTidePoise({ profile, now: new Date('2026-11-20T20:59:00Z'), question: '밀물과 썰물을 다 품는 기둥을 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CHILOE-PALAFITO-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CHILOE-PALAFITO-v2.4.0');
+  assert.equal(rep.questionTopic, '일·물때');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.chiloeMotif);
-  assert.ok(rep.tidePoiseAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.tidePoiseAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatChiloePalafitoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('치로에') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('치로에') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
 });
 
 test('Bunun Jade Mountain Song engine: motif, +09:00 KST, and interpretive boundary', () => {

@@ -7,6 +7,7 @@ export interface ChiloePalafitoResult {
   chiloeMotif: string;
   companionMotif: string;
   tidePoiseAxis: string;
+  topicBalanceHint: string;
   chiloeInsight: string;
   fjordTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const CHILOE_SHADOWS = [
   '모든 것을 한꺼번에 익히려다 지금 당장 식탁에 올려야 할 핵심 과제에 집중을 잃지 마세요.',
 ];
 
+const TOPIC_BALANCE_HINTS: Record<ChiloePalafitoResult['questionTopic'], string> = {
+  '관계·연대': '혼자 버겁게 끌기보다 밍가 공동체처럼 곁의 사람과 밧줄을 나눠 잡을 접점을 찾아보세요.',
+  '일·물때': '물이 빠진 갯벌의 시간도 다음 밀물을 준비하는 자리이니 중심 기둥부터 단단히 살피세요.',
+  '습관·기둥': '나무 비늘 지붕처럼 작은 일상 습관 한 겹을 빠뜨리지 않고 포개는 것이 비바람을 막습니다.',
+  '조화 전반': '밀물과 썰물의 변화에 맞춰 유연하게 맞물리되 흔들리지 않을 최소한의 기준은 지켜 두세요.',
+};
+
 function classifyChiloeTopic(q: string): ChiloePalafitoResult['questionTopic'] {
   if (/관계|연대|이웃|사람|함께|도움/.test(q)) return '관계·연대';
   if (/일|직장|물때|밀물|썰물|기둥/.test(q)) return '일·물때';
@@ -102,15 +110,17 @@ export function calculateChiloePalafitoTidePoise(params: {
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const tidePoiseAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = CHILOE_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-CHILOE-PALAFITO-v2.3.0',
+    engineVersion: 'LUCKEY-CHILOE-PALAFITO-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     chiloeMotif: picked.motif,
     companionMotif: companion.motif,
     tidePoiseAxis,
+    topicBalanceHint,
     chiloeInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     fjordTone: picked.tone,
     reflectionFocus: `치로에 팔라피토의 '${picked.motif}'와 동반 결 '${companion.motif}'처럼, 밀물과 썰물을 다 품는 기둥 위에서 녹슬지 않는 이음새로 하루를 지켜 보세요.`,
@@ -126,6 +136,7 @@ export function formatChiloePalafitoPrompt(res: ChiloePalafitoResult): string {
     `[치로에·팔라피토 물때 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 물때 축: ${res.tidePoiseAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 치로에 모티프: ${res.chiloeMotif} (${res.fjordTone})`,
     `- 동반 결: ${res.companionMotif}`,
     `- 중심 통찰: ${res.chiloeInsight}`,
