@@ -8,6 +8,7 @@ export interface MinangkabauGadangResult {
   symbolicMotif: string;
   companionMotif: string;
   gonjongBalanceAxis: string;
+  topicBalanceHint: string;
   ritualAction: string;
   shadowWarning: string;
   reflectiveQuestion: string;
@@ -65,6 +66,13 @@ const MINANGKABAU_SHADOWS = [
   '여유를 비축하려다 정작 지금 마음껏 써야 할 열정과 호의를 아끼지 않도록 살피세요.'
 ];
 
+const MINANGKABAU_TOPIC_HINTS: Record<MinangkabauGadangResult['questionTopic'], string> = {
+  '관계·합의': '한쪽의 양보로만 맞추지 말고 서로의 온도가 맞물리는 지점을 둥글게 조율해 보세요.',
+  '일·구조': '높이 솟는 목표만큼 기반의 대칭을 점검하면 억지 못질 없이도 단단한 구조가 됩니다.',
+  '쉼·여유': '오늘의 기운을 끝까지 소진하지 말고 내일을 위한 랑키앙 창고의 몫을 따로 남겨 두세요.',
+  '균형 전반': '자연의 이치를 스승 삼아 오늘 마주친 작은 어긋남도 균형을 맞추는 힌트로 삼아 보세요.',
+};
+
 function classifyMinangkabauTopic(q: string): MinangkabauGadangResult['questionTopic'] {
   if (/관계|합의|사람|사랑|연애|소통/.test(q)) return '관계·합의';
   if (/일|직장|진로|구조|사업|선택|홈/.test(q)) return '일·구조';
@@ -88,12 +96,13 @@ export function calculateMinangkabauRumahGadang(params: {
   const motif = MINANGKABAU_MOTIFS[idx];
   const companionMotif = MINANGKABAU_MOTIFS[(idx + companionOffset) % MINANGKABAU_MOTIFS.length];
   const gonjongBalanceAxis = `${motif.slice(0, 18)}… ↔ ${companionMotif.slice(0, 18)}… (${questionTopic})`;
+  const topicBalanceHint = MINANGKABAU_TOPIC_HINTS[questionTopic];
   const ritualAction = MINANGKABAU_ACTIONS[idx];
   const shadowWarning = MINANGKABAU_SHADOWS[idx];
   const reflectiveQuestion = MINANGKABAU_QUESTIONS[idx];
 
   return {
-    engineVersion: 'LUCKEY-MINANGKABAU-GADANG-v2.3.0',
+    engineVersion: 'LUCKEY-MINANGKABAU-GADANG-v2.4.0',
     calculatedAtKst: getKstTimeString(now),
     questionTopic,
     reflectionFocus: trimmed
@@ -102,6 +111,7 @@ export function calculateMinangkabauRumahGadang(params: {
     symbolicMotif: motif,
     companionMotif,
     gonjongBalanceAxis,
+    topicBalanceHint,
     ritualAction,
     shadowWarning,
     reflectiveQuestion,
@@ -115,6 +125,7 @@ export function formatMinangkabauGadangPrompt(result: MinangkabauGadangResult): 
     `[미낭카바우·뿔지붕 조화 관점 (${result.engineVersion})]`,
     `- 기준 시각: ${result.calculatedAtKst}`,
     `- 질문 맥락: ${result.questionTopic} | 균형 축: ${result.gonjongBalanceAxis}`,
+    `- 맥락 균형 조언: ${result.topicBalanceHint}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 상징 모티프: ${result.symbolicMotif}`,
     `- 동반 모티프: ${result.companionMotif}`,

@@ -10,13 +10,14 @@ export interface TekoPoraPrinciple {
 }
 
 export interface GuaraniTekoPoraResult {
-  engineVersion: 'LUCKEY-GUARANI-TEKOPORA-v2.3.0';
+  engineVersion: 'LUCKEY-GUARANI-TEKOPORA-v2.4.0';
   calculatedAtKst: string;
   questionTopic: '관계·나눔' | '속도·일' | '마음·그늘' | '공존 전반';
   questionFocus: string;
   primaryPrinciple: TekoPoraPrinciple;
   supportingPrinciple: TekoPoraPrinciple;
   tekoPoraCycleAxis: string;
+  topicBalanceHint: string;
   goodLivingPath: string;
   ritualAction: string;
   shadowWarning: string;
@@ -86,6 +87,13 @@ function classifyGuaraniTopic(q: string): GuaraniTekoPoraResult['questionTopic']
   return '공존 전반';
 }
 
+const GUARANI_TOPIC_HINTS: Record<GuaraniTekoPoraResult['questionTopic'], string> = {
+  '관계·나눔': '혼자 해결하려 움켜쥐기보다 열린 손으로 작은 안부를 건넬 때 관계의 물길이 트입니다.',
+  '속도·일': '남의 속도표에 맞추느라 내 토양이 메마르지 않도록 오늘의 보폭을 한 박자 늦춰 보세요.',
+  '마음·그늘': '과열된 생각을 억지로 굴리지 말고 숲의 그늘 아래에서 시야를 식히는 시간이 먼저입니다.',
+  '공존 전반': '나다움과 공존은 대립하지 않으며, 진실한 말 한마디가 두 흐름을 하나로 잇습니다.',
+};
+
 const TEKO_PORA_SHADOWS: Record<string, string> = {
   'Teko Porã (온전하고 아름다운 삶)': '내 속도를 지키려다 꼭 맞춰야 할 약속과 흐름까지 놓치지 않도록 경계하세요.',
   'Jopói (열린 손과 상호 나눔)': '나눔과 배려에 마음을 쓰다 정작 내 그릇이 비는 신호를 지나치지 마세요.',
@@ -111,16 +119,18 @@ export function calculateGuaraniTekoPoraForestHarmony(params: {
   const primaryPrinciple = TEKO_PORA_PRINCIPLES[primaryIdx];
   const supportingPrinciple = TEKO_PORA_PRINCIPLES[supportIdx];
   const tekoPoraCycleAxis = `${primaryPrinciple.koreanLabel} ↔ ${supportingPrinciple.koreanLabel} (${questionTopic})`;
+  const topicBalanceHint = GUARANI_TOPIC_HINTS[questionTopic];
   const shadowWarning = TEKO_PORA_SHADOWS[primaryPrinciple.name] ?? '조화와 속도의 균형을 과도하게 밀어붙이지 않도록 살피세요.';
 
   return {
-    engineVersion: 'LUCKEY-GUARANI-TEKOPORA-v2.3.0',
+    engineVersion: 'LUCKEY-GUARANI-TEKOPORA-v2.4.0',
     calculatedAtKst: formatKstTimestamp(now),
     questionTopic,
     questionFocus,
     primaryPrinciple,
     supportingPrinciple,
     tekoPoraCycleAxis,
+    topicBalanceHint,
     goodLivingPath: `${primaryPrinciple.koreanLabel}를 바탕으로 ${supportingPrinciple.koreanLabel}을 함께 가꾸는 테코 포랑(Teko Porã) 흐름`,
     ritualAction: primaryPrinciple.practicalStep,
     shadowWarning,
@@ -136,6 +146,7 @@ export function formatGuaraniTekoPoraPrompt(result: GuaraniTekoPoraResult): stri
     `[구아라니 테코 포랑 숲과 공동체 조화 엔진 ${result.engineVersion}]`,
     `- 연산 시각: ${result.calculatedAtKst}`,
     `- 질문 맥락: ${result.questionTopic} | 공존 축: ${result.tekoPoraCycleAxis}`,
+    `- 맥락 균형 조언: ${result.topicBalanceHint}`,
     `- 질문 초점: ${result.questionFocus}`,
     `- 중심 원리: ${result.primaryPrinciple.name} (${result.primaryPrinciple.koreanLabel}) — ${result.primaryPrinciple.coreInsight}`,
     `- 받침 원리: ${result.supportingPrinciple.name} (${result.supportingPrinciple.koreanLabel})`,

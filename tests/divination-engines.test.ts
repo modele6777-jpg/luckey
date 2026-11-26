@@ -13717,10 +13717,10 @@ test('Amazigh Desert Star Oasis engine: waypoints, +09:00 KST, and interpretive 
 
 test('Hittite Telepinu Harmony Renewal engine: phases, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateHittiteTelepinuHarmonyRenewal({ profile, now: new Date('2026-11-20T05:30:00Z'), question: '일상의 활력을 되찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-HITTITE-TELEPINU-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-HITTITE-TELEPINU-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPhase.id !== rep.activePhase.id);
-  assert.ok(rep.telepinuReturnAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.telepinuReturnAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('운세 점수가 아닙니다'));
   const prompt = formatHittiteTelepinuPrompt(rep);
@@ -13787,10 +13787,10 @@ test('Ainu Kamuy Iomante Harmony engine: aspects, +09:00 KST, and interpretive b
 
 test('Guarani Teko Pora Forest Harmony engine: principles, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateGuaraniTekoPoraForestHarmony({ profile, now: new Date('2026-11-20T05:50:00Z'), question: '나만의 속도로 공존하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-GUARANI-TEKOPORA-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-GUARANI-TEKOPORA-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.supportingPrinciple.name !== rep.primaryPrinciple.name);
-  assert.ok(rep.tekoPoraCycleAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.tekoPoraCycleAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatGuaraniTekoPoraPrompt(rep);
@@ -15640,10 +15640,10 @@ test('Moldovan Orhei Limestone engine: motif, +09:00 KST, and interpretive bound
 
 test('Minangkabau Rumah Gadang engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMinangkabauRumahGadang({ profile, now: new Date('2026-11-20T21:36:00Z'), question: '자연스럽게 홈을 맞추고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MINANGKABAU-GADANG-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-MINANGKABAU-GADANG-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.symbolicMotif);
-  assert.ok(rep.gonjongBalanceAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.gonjongBalanceAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMinangkabauGadangPrompt(rep);
