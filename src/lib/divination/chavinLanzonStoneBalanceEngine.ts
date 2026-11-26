@@ -7,6 +7,7 @@ export interface ChavinLanzonResult {
   chavinMotif: string;
   companionMotif: string;
   stoneBalanceAxis: string;
+  topicBalanceHint: string;
   chavinInsight: string;
   stoneTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const CHAVIN_SHADOWS = [
   '상승 기류를 기다리며 움직임을 미루다가 지금 내가 내디뎌야 할 작은 발걸음을 놓치지 마세요.',
 ];
 
+const TOPIC_BALANCE_HINTS: Record<ChavinLanzonResult['questionTopic'], string> = {
+  '관계·조율': '두 강물의 합류처럼 서로 다른 입장을 억지로 하나로 덮기보다 맑게 만나는 접점부터 확인하세요.',
+  '일·중심': '사방의 회랑이 교차하는 라손 석주처럼 오늘 가장 먼저 지킬 핵심 기준 한 줄을 세워 두세요.',
+  '흐름·전환': '억지로 날갯짓하기보다 이미 불어오는 상승 기류와 작은 변화의 결을 먼저 읽어 보세요.',
+  '균형 전반': '중심축을 지키는 단단함과 상황에 맞춰 숨을 고르는 유연함 사이에서 오늘의 박자를 맞추세요.',
+};
+
 function classifyChavinTopic(q: string): ChavinLanzonResult['questionTopic'] {
   if (/관계|조율|사람|사랑|대화|합류/.test(q)) return '관계·조율';
   if (/일|직장|진로|중심|기준|결정/.test(q)) return '일·중심';
@@ -102,15 +110,17 @@ export function calculateChavinLanzonStoneBalance(params: {
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const stoneBalanceAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = CHAVIN_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-CHAVIN-LANZON-v2.3.0',
+    engineVersion: 'LUCKEY-CHAVIN-LANZON-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     chavinMotif: picked.motif,
     companionMotif: companion.motif,
     stoneBalanceAxis,
+    topicBalanceHint,
     chavinInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     stoneTone: picked.tone,
     reflectionFocus: `안데스 차빈 라손의 '${picked.motif}'와 동반 결 '${companion.motif}'처럼, 사방의 갈래가 복잡할수록 내 안의 중심축을 먼저 세우고 흐름을 타 보세요.`,
@@ -126,6 +136,7 @@ export function formatChavinLanzonPrompt(res: ChavinLanzonResult): string {
     `[차빈·라손 돌기둥 균형 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 석주 축: ${res.stoneBalanceAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 차빈 모티프: ${res.chavinMotif} (${res.stoneTone})`,
     `- 동반 결: ${res.companionMotif}`,
     `- 중심 통찰: ${res.chavinInsight}`,
