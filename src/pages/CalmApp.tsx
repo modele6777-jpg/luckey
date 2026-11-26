@@ -449,10 +449,9 @@ export default function CalmApp() {
             data-key-guide-parent
             aria-label="Key 가이드 열기"
             onClick={() => { triggerHaptic('whitehole'); setGuideOpen(activeKeyTab()); }}
-            className="inline-flex h-10 items-center gap-1 rounded-full border border-[#e9dccd] bg-[#fffdf9] px-3 text-[12px] font-bold text-[#3b2f2a] shadow-sm active:scale-95"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#e9dccd] bg-[#fffdf9] text-[#c9805c] shadow-sm active:scale-95"
           >
-            <BookOpen size={14} className="text-[#c9805c]" aria-hidden="true" />
-            가이드
+            <BookOpen size={18} aria-hidden="true" />
           </button>
           <button
             type="button"
