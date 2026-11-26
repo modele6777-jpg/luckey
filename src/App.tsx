@@ -49,7 +49,7 @@ import { useFoldState, subscribeFoldState } from "./lib/foldState";
 import { isDuoDividerDoubleTap, mapDuoPaneSide, shouldResetDuoPaneSwapOnFold, type DuoDividerTap } from "./lib/duoPaneSwap";
 import { DuoCosmicAmbientRoom } from "./components/duo/DuoCosmicAmbientRoom";
 import { DuoDivinationTarotPane } from "./components/duo/DuoDivinationTarotPane";
-import { useLucyMasterMode, setLucyMasterToolsRequested } from "./lib/lucyMasterMode";
+import { useLucyMasterMode, setLucyMasterToolsRequested, initializeLucyMasterModeForFold, applyLucyMasterModeForFoldChange } from "./lib/lucyMasterMode";
 import AuroraBackground from "./components/AuroraBackground";
 import EpilogueApp from "./pages/EpilogueApp";
 
@@ -326,12 +326,22 @@ function AppContent() {
   React.useEffect(() => { setFoldedPopupPane(null); }, [location]);
 
   React.useEffect(() => {
+    // 📱 앱을 열었을 때의 기본 화면: 접힘 = 루시 채팅, 펼침 = 루시 점술모드.
+    // 같은 화면에서 남긴 선택이 있으면 그것을 그대로 쓰고, 처음 여는 화면이면 기본값으로 맞춘다.
+    initializeLucyMasterModeForFold();
+  }, []);
+
+  React.useEffect(() => {
     // Root classes are written by the fold store; here only the fold transition is handled.
     return subscribeFoldState((next, previous) => {
       const wasUnfolded = previous.unfolded;
       const isNowUnfolded = next.unfolded;
       previousUnfoldedRef.current = isNowUnfolded;
       if (wasUnfolded !== isNowUnfolded) markFoldRuntime(isNowUnfolded ? 'unfold-commit' : 'fold-commit');
+
+      // 📱 접힘 = 일반 루시 채팅, 펼침 = 루시 점술모드: 전환된 화면의 기본 화면으로 맞춘다.
+      // 이미 그 모드면 건드리지 않아 인사말이 중복 예약되지 않고, 빅뱅 버튼·사이드바로 직접 켜고 끈 상태는 유지된다.
+      if (wasUnfolded !== isNowUnfolded) applyLucyMasterModeForFoldChange(wasUnfolded, isNowUnfolded);
 
       // 펼침 → 접힘: 좌우 순서를 초기화해 다음 재펼침 때 Lucy를 오른쪽에 둔다.
       // 진행 중이던 경계 더블탭도 취소한다.
