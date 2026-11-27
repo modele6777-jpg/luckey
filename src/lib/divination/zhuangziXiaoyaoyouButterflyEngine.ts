@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ZHUANGZI_XIAOYAOYOU_BUTTERFLY_ENGINE_VERSION = '2.3.0';
+export const ZHUANGZI_XIAOYAOYOU_BUTTERFLY_ENGINE_VERSION = '2.4.0';
 
 export interface ZhuangziArchetype {
   id: string;
@@ -50,6 +50,7 @@ export interface ZhuangziXiaoyaoyouButterflyReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    zhuangziCrossAxis: string;
   };
 }
 
@@ -196,10 +197,13 @@ export function calculateZhuangziXiaoyaoyouButterfly(
   const wuSangWoEmptyRoomRitual = `어깨의 긴장을 풀고 가슴 속 모든 분별과 계산을 허공으로 내쉬며 속삭이십시오: "허실생백(虛室生白), 방을 비우면 저절로 신령한 빛이 차오르듯 나를 비우고 천지의 큰 흐름에 몸을 맡긴다."`;
 
   const trimmedQ = question.trim();
+  const alignmentState = `${describeZhuangziStage(xiaoyaoyouAbsoluteFreedomScore)} · ${describeZhuangziStage(butterflyDreamFluidityScore)}`;
+  const zhuangziCrossAxis = `[${dominantArchetype.nameKo}] × [${secondaryArchetype.nameKo}] × [${situationalZhuangziFocus}] × [${describeZhuangziStage(butterflyDreamFluidityScore).split(' — ')[0]}]`;
   const zhuangziSynthesisMatrix = {
     dominantTension: `${dominantArchetype.nameKo}(${dominantArchetype.hanja}) ↔ ${secondaryArchetype.nameKo}(${secondaryArchetype.hanja})`,
-    alignmentState: `${describeZhuangziStage(xiaoyaoyouAbsoluteFreedomScore)} · ${describeZhuangziStage(butterflyDreamFluidityScore)}`,
+    alignmentState,
     integratedAction: `${dailyPracticeRitual}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+    zhuangziCrossAxis,
   };
 
   return {
@@ -226,7 +230,7 @@ export function calculateZhuangziXiaoyaoyouButterfly(
 
 export function formatZhuangziXiaoyaoyouButterflyPrompt(rep: ZhuangziXiaoyaoyouButterflyReport): string {
   const matrixLine = rep.zhuangziSynthesisMatrix
-    ? `\n· 장자 교차 매트릭스: 핵심 긴장(${rep.zhuangziSynthesisMatrix.dominantTension}) · 조율 상태(${rep.zhuangziSynthesisMatrix.alignmentState}) · 통합 실천(${rep.zhuangziSynthesisMatrix.integratedAction})`
+    ? `\n· 장자 교차 매트릭스: 핵심 긴장(${rep.zhuangziSynthesisMatrix.dominantTension}) · 4중 교차 축(${rep.zhuangziSynthesisMatrix.zhuangziCrossAxis}) · 조율 상태(${rep.zhuangziSynthesisMatrix.alignmentState}) · 통합 실천(${rep.zhuangziSynthesisMatrix.integratedAction})`
     : '';
   return `[고대 도가 장자 소요유 붕정만리 & 제물론 호접몽 정성 관조]
 · 엔진 버전: v${rep.engineVersion} | 기준 시각(KST): ${rep.calculatedAtKst}
