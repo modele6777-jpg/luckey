@@ -51,18 +51,32 @@ test('the general Lucy chat header tool button stays a pencil for the engine box
   assert.match(SHEET, /\{isMasterMode \? <LucyOrbToolIcon size=\{16\} \/> : <Pencil size=\{15\} aria-hidden="true" \/>\}/);
 });
 
-test('the orb icon is a self-lit sphere that reads on both light and dark headers', () => {
+test('the orb icon is the side-menu orb (OrbShapeIcon) with its pedestal removed', () => {
   const markup = renderToStaticMarkup(<LucyOrbToolIcon size={16} />);
   assert.match(markup, /data-lucy-orb-tool-icon="true"/);
-  // 테마에 끌려가지 않도록 자체 금빛·보랏빛 그라디언트를 쓴다.
-  assert.match(ORB_ICON, /radialGradient/);
-  assert.match(ORB_ICON, /#fde68a/);
-  assert.match(ORB_ICON, /#6d28d9/);
-  assert.match(markup, /<circle/);
-  assert.match(markup, /fill="url\(#lucy-orb-body-/);
-  // 여러 번 렌더돼도 그라디언트 id가 겹치지 않게 useId로 만든다.
-  assert.match(ORB_ICON, /const suffix = useId\(\)/);
-  assert.doesNotMatch(ORB_ICON, /currentColor/);
+  // 사이드 메뉴 오브(OrbShapeIcon)와 같은 Lucide 선 문법을 쓴다.
+  assert.match(ORB_ICON, /viewBox="0 0 24 24"/);
+  assert.match(ORB_ICON, /strokeLinecap="round"/);
+  assert.match(ORB_ICON, /strokeLinejoin="round"/);
+  assert.match(ORB_ICON, /strokeWidth = 2/);
+  assert.match(markup, /fill="none"/);
+  // 헤더 글자색(라이트=슬레이트, 다크=앰버)을 그대로 따라간다.
+  assert.match(ORB_ICON, /color = 'currentColor'/);
+  assert.match(markup, /stroke="currentColor"/);
+  // 구성: 중앙 구체 + 상단 하이라이트 아크 + 내부 코어 점.
+  assert.match(markup, /<circle cx="12" cy="12" r="8"><\/circle>/);
+  assert.match(markup, /<path d="M8\.7 9\.3a4\.4 4\.4 0 0 1 6\.6 0"/);
+  assert.match(markup, /<circle cx="12" cy="12\.2" r="1\.2" fill="currentColor" stroke="none"><\/circle>/);
+  // 받침대 2줄은 빠진다 — 구체만 남는다.
+  assert.doesNotMatch(ORB_ICON, /M8\.7 16\.1/);
+  assert.doesNotMatch(ORB_ICON, /M7\.8 18\.8/);
+  assert.doesNotMatch(markup, /M8\.7 16\.1|M7\.8 18\.8/);
+  // 3D 그라디언트·useId는 더 이상 쓰지 않는다.
+  assert.doesNotMatch(ORB_ICON, /radialGradient/);
+  assert.doesNotMatch(ORB_ICON, /useId/);
+  assert.doesNotMatch(markup, /lucy-orb-body-/);
+  // 받침대가 없으니 viewBox 정중앙에 놓여 위아래로 치우치지 않는다.
+  assert.match(ORB_ICON, /<circle cx="12" cy="12" r="8" \/>/);
 });
 
 test('the pro-mode pencil button opens the engine box', () => {
