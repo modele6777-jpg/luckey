@@ -8,22 +8,36 @@
  * - 배너를 닫거나, 다른 곳으로 이동하거나, 도슨트 옵션을 끄면 stopGuideDouser()로 멈춘다.
  */
 import { useEffect, useState } from 'react';
-import { playTTS, stopTTS, subscribeTTS } from '@/utils/tts';
+import { getCurrentTTSState, playTTS, stopTTS, subscribeTTS } from '@/utils/tts';
 import { buildSmartGuideSpeech, type SmartGuideResult } from './smartBigBangGuide';
 
 /** 가이드 낭독 목소리 (앱의 가이드 낭독과 같은 목소리) */
 export const GUIDE_DOUSER_VOICE = 'Kore';
 export const GUIDE_DOUSER_EVENT = 'prism:guide_douser';
+/**
+ * playTTS는 시작 직전에 상태를 한 번 비우므로(stopTTS → isLoading), 그 순간을 낭독 종료로
+ * 오해하지 않도록 잠깐 기다렸다가 정말 멈춘 경우에만 표시를 내린다.
+ */
+const IDLE_GRACE_MS = 900;
 
 let active = false;
 let unsubscribe: (() => void) | null = null;
+let idleTimer: ReturnType<typeof setTimeout> | null = null;
 
 function emit(): void {
   if (typeof window === 'undefined') return;
   window.dispatchEvent(new CustomEvent(GUIDE_DOUSER_EVENT, { detail: { active } }));
 }
 
+function clearIdleTimer(): void {
+  if (idleTimer) {
+    clearTimeout(idleTimer);
+    idleTimer = null;
+  }
+}
+
 function release(): void {
+  clearIdleTimer();
   unsubscribe?.();
   unsubscribe = null;
 }
@@ -47,17 +61,27 @@ export function speakGuideDouser(guide: SmartGuideResult): void {
   const text = buildGuideDouserSpeech(guide);
   if (!text.trim()) return;
   if (!unsubscribe) {
-    // 실제 재생이 끝나거나 사용자가 TTS를 멈추면 표시도 함께 내린다.
-    // (구독은 active를 올리기 전에 건다 — 구독 직후 현재 상태가 한 번 불리기 때문)
+    // 사용자가 앱의 음성 컨트롤에서 직접 멈춘 경우에도 표시를 함께 내린다.
     unsubscribe = subscribeTTS(state => {
-      if (active && !state.isSpeaking && !state.isLoading) finish();
+      if (!active) return;
+      if (state.isSpeaking || state.isLoading) {
+        clearIdleTimer();
+        return;
+      }
+      if (idleTimer) return;
+      idleTimer = setTimeout(() => {
+        idleTimer = null;
+        const current = getCurrentTTSState();
+        if (active && !current.isSpeaking && !current.isLoading) finish();
+      }, IDLE_GRACE_MS);
     });
   }
   active = true;
   emit();
-  void playTTS(text, GUIDE_DOUSER_VOICE, false).catch(() => {
-    finish();
-  });
+  void playTTS(text, GUIDE_DOUSER_VOICE, false).then(
+    () => finish(),
+    () => finish(),
+  );
 }
 
 /** 배너 닫기·화면 이동·옵션 끄기에서 부른다. */

@@ -136,9 +136,12 @@ test('the douser reads the same reason and hint the banner shows', () => {
 });
 
 test('the douser uses the app TTS pipeline and can be stopped', () => {
-  assert.match(DOUSER, /import \{ playTTS, stopTTS, subscribeTTS \} from '@\/utils\/tts';/);
+  assert.match(DOUSER, /import \{[^}]*playTTS[^}]*stopTTS[^}]*\} from '@\/utils\/tts';/);
   assert.match(DOUSER, /playTTS\(text, GUIDE_DOUSER_VOICE, false\)/);
   assert.match(DOUSER, /stopTTS\(\)/);
+  // playTTS가 시작 직전에 상태를 비우는 순간을 '낭독 끝'으로 오해하지 않는다.
+  assert.match(DOUSER, /IDLE_GRACE_MS/);
+  assert.match(DOUSER, /\.then\(\s*\(\) => finish\(\),\s*\(\) => finish\(\),/);
   assert.match(DOUSER, /export function stopGuideDouser/);
   // 배너 닫기·다른 화면 이동·옵션 끄기에서 멈춘다.
   assert.match(BANNER, /stopGuideDouser\(\)/);

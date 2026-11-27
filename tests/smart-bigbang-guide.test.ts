@@ -247,6 +247,10 @@ test('the Big Bang hold always opens the orb page and keeps working when already
   // 홀드 안내 미리보기도 오브페이지를 가리킨다.
   assert.match(BIGBANG, /previewLabel: '\[홀드\] 오브페이지로'/);
   assert.match(BIGBANG, /destinationPath: '\/voice'/);
+  // 화면 읽기 안내도 새 제스처를 따른다.
+  assert.match(BIGBANG, /길게 누름: 오브\(음성 상담\) 페이지 열기/);
+  assert.doesNotMatch(BIGBANG, /길게 누름: 루시프로/);
+  assert.match(BIGBANG, /탭: 지금 가장 추천되는 곳으로 스마트 가이드 이동/);
 });
 
 test('a single tap runs the smart guide and shows its banner, without touching other gestures', () => {
