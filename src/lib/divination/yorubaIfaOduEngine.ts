@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const YORUBA_IFA_ODU_ENGINE_VERSION = '2.3.0';
+export const YORUBA_IFA_ODU_ENGINE_VERSION = '2.4.0';
 
 export interface YorubaIfaOduReport {
   engineVersion: string;
@@ -29,6 +29,7 @@ export interface YorubaIfaOduReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    ifaCrossAxis: string;
   };
 }
 
@@ -265,10 +266,12 @@ export function calculateYorubaIfaOdu(options?: {
   const reflectionFocus = `${odu.name} (${odu.orisha}) · ${situationalIfaFocus.focusTheme}`;
 
   const trimmedQ = (options?.question || '').trim();
+  const ifaCrossAxis = `[${odu.name}] × [${odu.orisha}] × [${odu.blessing}] × [${situationalIfaFocus.focusTheme}]`;
   const ifaSynthesisMatrix = {
     dominantTension: `${odu.name} (${odu.orisha}) ↔ ${situationalIfaFocus.focusTheme}`,
     alignmentState: `${alignmentStage} · ${odu.blessing}`,
     integratedAction: `${dailyPracticeRitual}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+    ifaCrossAxis,
   };
 
   const synthesisPrompt = `
@@ -294,6 +297,7 @@ export function calculateYorubaIfaOdu(options?: {
    - 해석 경계: ${interpretiveBoundary}
 4. 🧭 [이파 교차 매트릭스]:
    - 핵심 긴장: ${ifaSynthesisMatrix.dominantTension}
+   - 4중 교차 축: ${ifaSynthesisMatrix.ifaCrossAxis}
    - 조율 상태: ${ifaSynthesisMatrix.alignmentState}
    - 통합 실천: ${ifaSynthesisMatrix.integratedAction}
 ======================================================================

@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MAORI_MAURI_HAUORA_ENGINE_VERSION = '2.3.0';
+export const MAORI_MAURI_HAUORA_ENGINE_VERSION = '2.4.0';
 
 export interface HauoraPillar {
   id: 'taha_tinana' | 'taha_hinengaro' | 'taha_whanau' | 'taha_wairua';
@@ -49,6 +49,7 @@ export interface MaoriMauriHauoraReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    maoriCrossAxis: string;
   };
 }
 
@@ -161,10 +162,13 @@ export function calculateMaoriMauriHauora(options?: {
   const interpretiveBoundary = '이 지표는 뉴질랜드 마오리(Māori) 웰빙 철학 〈테 화레 타파 화〉와 마우리(Mauri)·마나(Mana) 개념을 전인적 균형 성찰의 거울로 해석한 것이며, 의학적 진단이나 미래의 구체적 성패를 단정하는 예언이 아닙니다.';
   const ritualAction = `${kaitiakitangaPrescription} 오늘 '${dominantPillar.nameKo}'의 여유를 빌려 '${vulnerablePillar.nameKo}'을 10분간 먼저 돌보세요.`;
   const reflectionFocus = `테 화레 타파 화 '${dominantPillar.nameMaori}' ↔ '${vulnerablePillar.nameMaori}' — 네 벽이 고르게 서는 마우리(생명력)의 균형`;
+  const alignmentState = describeMaoriStage(mauriVitalityIndex);
+  const maoriCrossAxis = `[${dominantPillar.nameMaori}] × [${vulnerablePillar.nameMaori}] × [${alignmentState.split('—')[0].trim()}] × [${question || '테 화레 4대 기둥 균형'}]`;
   const maoriSynthesisMatrix = {
     dominantTension: `${dominantPillar.nameKo} ↔ ${vulnerablePillar.nameKo}`,
-    alignmentState: describeMaoriStage(mauriVitalityIndex),
+    alignmentState,
     integratedAction: `${kaitiakitangaPrescription}${question ? ` [질문 맥락: ${question}]` : ''}`,
+    maoriCrossAxis,
   };
 
   return {
@@ -211,6 +215,7 @@ export function formatMaoriMauriHauoraPrompt(rep: MaoriMauriHauoraReport): strin
   if (rep.maoriSynthesisMatrix) {
     lines.push(
       `· 교차 매트릭스 [핵심 긴장: ${rep.maoriSynthesisMatrix.dominantTension} | 조율 상태: ${rep.maoriSynthesisMatrix.alignmentState}]`,
+      `· 4중 교차 축: ${rep.maoriSynthesisMatrix.maoriCrossAxis}`,
       `· 통합 실천: ${rep.maoriSynthesisMatrix.integratedAction}`,
     );
   }
