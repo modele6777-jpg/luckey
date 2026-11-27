@@ -3500,12 +3500,12 @@ html.duo-unfolded-portrait .sites-pinned-sidebar .refined-nav-item {
   flex-shrink: 0 !important;
 }
 
+/* 펼친 화면에서도 클로버를 접을 수 있게 높이를 고정하지 않는다(접힘 애니메이션 통과). */
 html.duo-unfolded-portrait .sites-pinned-sidebar .refined-prism-icons {
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
   gap: 4px !important;
-  height: 100% !important;
 }
 
 html.duo-unfolded-portrait .sites-pinned-sidebar .refined-menu-footer {
