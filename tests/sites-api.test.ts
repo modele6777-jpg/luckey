@@ -158,6 +158,20 @@ test('instructions-only speech is rejected before synthesis', async () => {
   assert.equal(response?.status, 400);
 });
 
+test('Sites Gemini TTS maps provider authentication and permission failures to safe app-level codes', async () => {
+  for (const scenario of [
+    { status: 401, code: 'GEMINI_API_KEY_INVALID' },
+    { status: 403, code: 'GEMINI_TTS_ACCESS_DENIED' },
+  ]) {
+    const response = await handleSitesApi(request('/api/ai/tts', { text: '안녕하세요.' }), env, async () =>
+      Response.json({ error: { message: 'private provider response' } }, { status: scenario.status }));
+    assert.equal(response?.status, 503);
+    const result = await response!.json();
+    assert.equal(result.code, scenario.code);
+    assert.doesNotMatch(JSON.stringify(result), /private provider response|test-private-key/);
+  }
+});
+
 test('Sites reports a rejected speech provider without retrying it or exposing its response', async () => {
   let calls = 0;
   const synthesize = createTTSHandler(async () => {

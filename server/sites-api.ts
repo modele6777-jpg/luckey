@@ -221,7 +221,16 @@ export async function handleSitesApi(request: Request, env: Runtime, fetchApi: F
       const speech = required(stripInternalSpeechDirectives(required(body.text, '낭독할 문장', 4000)), '낭독할 문장', 4000);
       if (!synthesize) {
         try { return json(await synthesizeGeminiSpeech(speech, body.voice, env, fetchApi, request.signal)); }
-        catch (error: any) { throw new ApiError(error.status || 502, error.message || 'Gemini 음성 생성에 실패했습니다.'); }
+        catch (error: any) {
+          const status = Number(error?.status);
+          if (status === 401 || error?.code === 'GEMINI_API_KEY_INVALID') {
+            throw new ApiError(503, 'Gemini 음성 API 키 인증이 거부되었습니다. 서버의 API 키 설정을 확인해 주세요.', undefined, 'GEMINI_API_KEY_INVALID');
+          }
+          if (status === 403 || error?.code === 'GEMINI_TTS_ACCESS_DENIED') {
+            throw new ApiError(503, 'Gemini 음성 모델 접근 권한이 거부되었습니다. API 키의 프로젝트와 모델 권한을 확인해 주세요.', undefined, 'GEMINI_TTS_ACCESS_DENIED');
+          }
+          throw new ApiError(status || 502, error.message || 'Gemini 음성 생성에 실패했습니다.');
+        }
       }
 
       try {

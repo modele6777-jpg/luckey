@@ -5,6 +5,7 @@ import { startGeminiLiveVoice } from '../src/lib/geminiLiveSession.ts';
 
 const component = readFileSync(new URL('../src/components/lucy/LucyOrbCounsel.tsx', import.meta.url), 'utf8');
 const css = readFileSync(new URL('../src/components/lucy/lucy-orb-counsel.css', import.meta.url), 'utf8');
+const liveSession = readFileSync(new URL('../src/lib/geminiLiveSession.ts', import.meta.url), 'utf8');
 
 // 컴포넌트 파일은 JSX라 직접 import하지 않고, 순수 함수 두 개만 잘라 실행한다.
 function pureFunction(name: string) {
@@ -50,7 +51,11 @@ test('reconnecting passes the recent conversation as reference and keeps cards a
   assert.match(recap, /손님: 말 8\n마스터: 말 9$/);
   assert.match(component, /const executor = resume && executorRef\.current \? executorRef\.current : createOrbToolExecutor/);
   assert.match(component, /if \(!resume\) \{\n    \/\/ 🔮 마스터 한 명이/);
+  assert.match(component, /if \(resume\) \{\s*if \(userBuf\.current\.trim\(\)\) take\('나', userBuf\);\s*if \(lucyBuf\.current\.trim\(\)\) take\('루시', lucyBuf\);/);
+  assert.match(component, /begin\(master, Promise\.resolve\(stream\), false, true\)/);
   assert.match(component, /error\.code === 'live-closed' && navigator\.onLine !== false && reconnectTries\.current < 2/);
+  assert.match(component, /begin\(next, null, false, true\)/, 'automatic reconnect must pass an explicit no-mic sentinel');
+  assert.match(liveSession, /if \(handlers\.micStream === null\)[\s\S]*?onNotice\(message\)/, 'the no-mic sentinel must not start getUserMedia');
   assert.match(component, /window\.addEventListener\('online', onOnline\)/);
 });
 

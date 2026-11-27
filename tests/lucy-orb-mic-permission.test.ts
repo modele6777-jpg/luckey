@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const source = readFileSync(new URL('../src/components/lucy/LucyOrbCounsel.tsx', import.meta.url), 'utf8');
+const standaloneSource = readFileSync(new URL('../src/pages/LucyStandalonePage.tsx', import.meta.url), 'utf8');
 
 test('Orb offers a direct microphone permission request from a user tap', () => {
   assert.match(source, /onClick=\{\(\) => void requestMicPermission\(\)\}/);
@@ -25,7 +26,7 @@ test('Orb explains denied microphone permission and can reconnect during the liv
   assert.match(source, /브라우저 주소창의 사이트 설정에서 마이크를 허용/);
   assert.match(source, /onNotice: \(message\) => \{\s*setNotice\(message\);\s*setMicUnavailable\(true\);\s*\}/);
   assert.match(source, /onClick=\{\(\) => void retryLiveMic\(\)\}/);
-  assert.match(source, /begin\(master, Promise\.resolve\(stream\), false\)/);
+  assert.match(source, /begin\(master, Promise\.resolve\(stream\), false, true\)/);
   assert.match(source, /마이크 다시 연결/);
 });
 
@@ -34,4 +35,15 @@ test('Orb distinguishes an installed home-screen app microphone state error from
   assert.match(source, /name === 'InvalidStateError'/);
   assert.match(source, /권한 거부는 아니므로 설정을 다시 확인할 필요는 없습니다/);
   assert.doesNotMatch(source, /Safari에서 사이트를 직접 열었는지 확인/);
+});
+
+test('standalone Lucy requests and primes microphone permission inside the voice-toggle gesture', () => {
+  const handler = standaloneSource.slice(
+    standaloneSource.indexOf('const handleToggleVoiceMode'),
+    standaloneSource.indexOf('// 빅뱅버튼 홀드 시 별도 말풍선 없이 루시채팅 자체 음성 모드 즉시 토글'),
+  );
+  assert.match(handler, /setMicCaptureActive\(true\)/);
+  assert.match(handler, /navigator\.mediaDevices\.getUserMedia\(\{ audio: true \}\)/);
+  assert.match(handler, /track\.enabled = false/);
+  assert.match(handler, /micStream,/);
 });

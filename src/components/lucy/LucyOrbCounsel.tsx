@@ -205,6 +205,7 @@ export function LucyOrbCounsel({
   const pressStart = useRef<{ x: number; y: number } | null>(null);
   const talkingRef = useRef(false);
   const pttToken = useRef(0);
+  const voiceModeGeneration = useRef(0);
   const pttBgmWasPlaying = useRef(false);
   const pressHandlers = useRef<{ begin: (x: number, y: number) => void; end: (tapFocus?: boolean) => void }>({ begin: () => undefined, end: () => undefined });
   const [ready, setReady] = useState(false);
@@ -338,6 +339,8 @@ export function LucyOrbCounsel({
 
   useEffect(() => {
     if (!open) return;
+    let permissionQueryDisposed = false;
+    let micPermissionStatus: PermissionStatus | null = null;
     closedRef.current = false;
     linesRef.current = [];
     userBuf.current = '';
@@ -361,8 +364,10 @@ export function LucyOrbCounsel({
     try {
       void navigator.permissions?.query({ name: 'microphone' as PermissionName })
         .then(status => {
+          if (permissionQueryDisposed) return;
+          micPermissionStatus = status;
           if (status.state === 'granted') setMicGranted(true);
-          status.onchange = () => setMicGranted(status.state === 'granted');
+          status.onchange = () => { if (!permissionQueryDisposed) setMicGranted(status.state === 'granted'); };
         })
         .catch(() => undefined);
     } catch { /* Permissions API unavailable */ }
@@ -400,6 +405,8 @@ export function LucyOrbCounsel({
     setBedOn(on);
     if (on) void bed?.resume().then(() => bed.setAudible(document.visibilityState !== 'hidden', false));
     return () => {
+      permissionQueryDisposed = true;
+      if (micPermissionStatus) micPermissionStatus.onchange = null;
       window.clearTimeout(appear);
       if (flashTimer.current) window.clearTimeout(flashTimer.current);
       if (dieTimer.current) window.clearTimeout(dieTimer.current);
@@ -603,6 +610,10 @@ export function LucyOrbCounsel({
     setSpeaking(false);
     if (!resume) reconnectTries.current = 0;
     // 다시 연결: 카드·도구 결과·대화는 그대로 두고, 직전 대화를 참고 자료로 넘겨 이어 간다.
+    if (resume) {
+      if (userBuf.current.trim()) take('나', userBuf);
+      if (lucyBuf.current.trim()) take('루시', lucyBuf);
+    }
     const recap = resume ? buildResumeRecap(linesRef.current) : '';
     if (!resume) {
     // 🔮 마스터 한 명이 15가지 도구를 함께 쓴다. 카드는 미리 뽑지 않고 더미만 섞어 둔다 (타로를 부르면 손님이 고른다).
@@ -782,7 +793,7 @@ export function LucyOrbCounsel({
     }
     try {
       const stream = await request;
-      begin(master, Promise.resolve(stream), false);
+      begin(master, Promise.resolve(stream), false, true);
     } catch (error) {
       setMicUnavailable(true);
       setNotice(describeMicPermissionError(error));
@@ -792,20 +803,27 @@ export function LucyOrbCounsel({
   };
 
   const chooseVoiceMode = (next: OrbVoiceMode) => {
+    if (voiceModeRef.current === next) return;
+    voiceModeRef.current = next;
+    const generation = ++voiceModeGeneration.current;
+    pttToken.current += 1;
     setVoiceMode(next);
     setTalkPressed(false);
     const session = sessionRef.current;
     if (!session) return;
+    session.setMuted(true);
     if (next === 'hold') {
       // 기본(누르고 말하기)으로 돌아오면 마이크를 완전히 닫는다.
-      session.setMuted(true);
       session.releaseMic();
     } else {
       // 실시간 대화는 마이크를 계속 열어 둔다.
       void session.acquireMic().then(ok => {
-        if (sessionRef.current !== session) return;
+        if (generation !== voiceModeGeneration.current || voiceModeRef.current !== 'realtime' || sessionRef.current !== session) return;
         if (ok) session.setMuted(false);
-        else { setMicUnavailable(true); setNotice('마이크를 열지 못했어요. 설정에서 마이크를 허용해 주세요.'); }
+        else {
+          setMicUnavailable(true);
+          setNotice(current => current || '마이크를 열지 못했어요. 권한을 허용한 뒤 다시 연결해 주세요.');
+        }
       });
     }
   };
@@ -1645,8 +1663,9 @@ export function LucyOrbCounsel({
                 }}
                 onPointerDown={(event) => { if (event.pointerType === 'mouse') beginInputPress(event.clientX, event.clientY); }}
                 onPointerUp={(event) => { if (event.pointerType === 'mouse') endInputPress(); }}
-                onPointerLeave={(event) => { if (event.pointerType === 'mouse' && talkingRef.current) endInputPress(); }}
-                onBlur={() => { if (talkingRef.current) endInputPress(); }}
+                onPointerLeave={(event) => { if (event.pointerType === 'mouse') endInputPress(); }}
+                onPointerCancel={(event) => { if (event.pointerType === 'mouse') endInputPress(); }}
+                onBlur={() => endInputPress()}
                 onContextMenu={(event) => event.preventDefault()}
                 placeholder={talkPressed ? '' : '누르고 말한 뒤 떼면 전송 · 탭해 입력'}
                 aria-label="오브 상담 입력. 누르고 말한 뒤 떼면 음성을 전송합니다"

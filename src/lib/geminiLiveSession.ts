@@ -113,6 +113,8 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   let ready = false;
   let socket: WebSocket | null = null;
   let stream: MediaStream | null = null;
+  let micGeneration = 0;
+  let micAcquire: { generation: number; promise: Promise<boolean> } | null = null;
   let processor: { onaudioprocess: ((event: AudioProcessingEvent) => void) | null; connect: (node: AudioNode) => void; disconnect: () => void } | null = null;
   let speakTimer: ReturnType<typeof setTimeout> | null = null;
   let setupTimer: ReturnType<typeof setTimeout> | null = null;
@@ -320,12 +322,16 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   const stop = () => {
     if (stopped) return;
     stopped = true;
+    micGeneration += 1;
+    micAcquire = null;
     setMicCaptureActive(false);
     if (speakTimer) clearTimeout(speakTimer);
     if (setupTimer) clearTimeout(setupTimer);
     handlers.onAudioLevel?.(0);
     stopPlayback();
+    if (processor) processor.onaudioprocess = null;
     try { processor?.disconnect(); } catch { /* ignore */ }
+    try { micSource?.disconnect(); } catch { /* ignore */ }
     if (!stream) void primedMic?.then(value => value.getTracks().forEach(track => track.stop())).catch(() => undefined);
     try { socket?.close(); } catch { /* ignore */ }
     stream?.getTracks().forEach(track => track.stop());
@@ -365,6 +371,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       silent.connect(capture.destination);
   };
   const detachStream = () => {
+    if (processor) processor.onaudioprocess = null;
     try { processor?.disconnect(); } catch { /* ignore */ }
     try { micSource?.disconnect(); } catch { /* ignore */ }
     stream?.getTracks().forEach(track => track.stop());
@@ -406,21 +413,30 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     }
     if (stopped) return;
 
-    try {
-      setMicCaptureActive(true);
-      stream = await (primedMic || navigator.mediaDevices.getUserMedia({
-        audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-      }));
-      stream.getAudioTracks().forEach(track => { track.enabled = !muted; });
-    } catch {
-      stream = null;
+    if (handlers.micStream === null) {
       setMicCaptureActive(false);
-      if (!handlers.onNotice) {
-        fail('mic-denied', '마이크 권한이 차단되어 있습니다. 브라우저 설정에서 마이크를 허용해 주세요.');
-        return;
+      const message = handlers.orb
+        ? '마이크는 아직 연결되지 않았어요. 개인정보 보호를 위해 아래 마이크 권한/다시 연결 버튼을 눌러 주세요. 글로 상담은 계속할 수 있어요.'
+        : '마이크를 사용할 수 없어요. 브라우저의 Luckey 마이크 권한을 허용한 뒤 음성 모드를 다시 시작해 주세요.';
+      if (!handlers.onNotice) { fail('mic-denied', message); return; }
+      handlers.onNotice(message);
+    } else {
+      try {
+        setMicCaptureActive(true);
+        stream = await (primedMic || navigator.mediaDevices.getUserMedia({
+          audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        }));
+        stream.getAudioTracks().forEach(track => { track.enabled = !muted; });
+      } catch {
+        stream = null;
+        setMicCaptureActive(false);
+        if (!handlers.onNotice) {
+          fail('mic-denied', '마이크 권한이 차단되어 있습니다. 브라우저 설정에서 마이크를 허용해 주세요.');
+          return;
+        }
+        // 마이크 없이도 상담은 이어 간다: 글로 보내면 마스터가 목소리로 답한다.
+        handlers.onNotice('마이크를 쓸 수 없어 글로 상담해요. 브라우저의 이 사이트에 대한 마이크 권한과 기기의 브라우저 마이크 권한을 확인해 주세요.');
       }
-      // 마이크 없이도 상담은 이어 간다: 글로 보내면 마스터가 목소리로 답한다.
-      handlers.onNotice('마이크를 쓸 수 없어 글로 상담해요. 브라우저의 이 사이트에 대한 마이크 권한과 기기의 브라우저 마이크 권한을 확인해 주세요.');
     }
     if (stopped) {
       stream?.getTracks().forEach(track => track.stop());
@@ -495,28 +511,50 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     interrupt: stopPlayback,
     outputLevel,
     releaseMic: () => {
-      if (!stream) return;
-      detachStream();
+      micGeneration += 1;
+      micAcquire = null;
+      if (stream) detachStream();
       setMicCaptureActive(false);
     },
     acquireMic: async () => {
       if (stopped) return false;
       if (stream) return true;
+      if (micAcquire?.generation === micGeneration) return micAcquire.promise;
+      const generation = ++micGeneration;
+      // iOS는 녹음 가능한 오디오 세션에서만 마이크를 연다. getUserMedia는 이 호출 안에서 바로 시작해 사용자 동작을 유지한다.
+      setMicCaptureActive(true);
+      let request: Promise<MediaStream>;
       try {
-        // iOS는 녹음 가능한 오디오 세션에서만 마이크를 연다.
-        setMicCaptureActive(true);
-        const next = await navigator.mediaDevices.getUserMedia({
+        request = navigator.mediaDevices.getUserMedia({
           audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
         });
-        if (stopped) { next.getTracks().forEach(track => track.stop()); return false; }
-        next.getAudioTracks().forEach(track => { track.enabled = !muted; });
-        void capture.resume();
-        attachStream(next);
-        return true;
       } catch {
-        setMicCaptureActive(false);
+        if (!stopped && generation === micGeneration) setMicCaptureActive(false);
         return false;
       }
+      const promise = request.then(next => {
+        if (stopped || generation !== micGeneration) {
+          next.getTracks().forEach(track => track.stop());
+          return false;
+        }
+        try {
+          next.getAudioTracks().forEach(track => { track.enabled = !muted; });
+          void capture.resume().catch(() => undefined);
+          attachStream(next);
+          return true;
+        } catch {
+          next.getTracks().forEach(track => track.stop());
+          if (!stopped && generation === micGeneration) setMicCaptureActive(false);
+          return false;
+        }
+      }, () => {
+        if (!stopped && generation === micGeneration) setMicCaptureActive(false);
+        return false;
+      }).finally(() => {
+        if (micAcquire?.generation === generation) micAcquire = null;
+      });
+      micAcquire = { generation, promise };
+      return promise;
     },
     sendText: (text: string, measureTurn = false) => {
       const line = text.replace(/\s+/g, ' ').trim().slice(0, 500);

@@ -7,8 +7,7 @@ import { calculateDetailedSaju } from '../sajuAnalysis.ts';
 import type { UserProfile } from '../sharedState.ts';
 import { extractConciseSummary, groundTarotSummaryParts, stripSummaryFromTarotText } from '../tarotSummaryUtils.ts';
 import { getTarotCardDetails } from '../dailyTarotOracle.ts';
-import { getCardSoulBlessing, getCardDailyAffirmation } from '../tarotBlessings.ts';
-import { getEffectiveTarotKeywords, getTarotReversedData, getTarotCardCaution } from '../../data/tarotData.ts';
+import { getEffectiveTarotKeywords, getTarotReversedData } from '../../data/tarotData.ts';
 
 // ✨ Constants
 export const HS = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
@@ -1278,11 +1277,12 @@ export function buildTarotContextPromptAddon(opts: {
   const basic = profile?.basic;
   const saju = profile ? calculateDetailedSaju(profile) : null;
 
-  if (basic?.name || basic?.birthdate || saju || opts.sajuData?.trim()) {
+  if (basic?.name || basic?.nickname || basic?.birthdate || saju || opts.sajuData?.trim()) {
     const profileLines: string[] = [];
     if (basic?.name || basic?.nickname) {
       const preferredName = basic.nickname?.trim() || basic.name?.trim() || '질문자';
-      profileLines.push(`· 질문자 호칭 (반드시 부를 이름): ${preferredName}`);
+      profileLines.push(`· 질문자 호칭 (필요할 때만 사용): ${preferredName}`);
+      profileLines.push(`· 호칭 표기 규칙: 닉네임을 줄이거나 일부만 부르지 마십시오. '제제'라면 반드시 '제제님'으로 그대로 표기하고 '제님'이라고 부르지 마십시오.`);
       if (basic.nickname?.trim() && basic.name?.trim() && basic.nickname.trim() !== basic.name.trim()) {
         profileLines.push(`· 호칭 절대 주의: 본명(${basic.name.trim()}) 대신 사용자가 설정한 닉네임 '${basic.nickname.trim()}'(으)로만 다정하고 정중하게 부를 것.`);
       }
@@ -1316,8 +1316,8 @@ export function buildTarotContextPromptAddon(opts: {
       `[👤 질문자 프로필 & 사주 명리학 배경지식 (Personal Identity & Saju Context)]\n` +
       profileLines.join('\n') +
       `\n[프로필 & 사주 배경지식 융합 필수 지침]\n` +
-      `1. 질문자의 이름/호칭과 생년월일, 성향, 그리고 타고난 사주 본원(${saju ? saju.dayMaster.symbolName : '기운'})과 오행 균형을 타로 리딩의 깊은 내면 배경지식(Context)으로 삼으십시오.\n` +
-      `2. 단순히 프로필을 읊는 데 그치지 않고, 뽑힌 카드가 질문자의 타고난 기운(${saju ? `${saju.dayMaster.symbolName}, ${saju.elements.lacking.name} 보완` : '기질'})과 어떻게 공명하고 상호작용하는지 1단계(상황 진단)부터 5단계(행동 계획), 6단계(결단)까지 질문자 한 사람만을 위한 맞춤형 조언으로 자연스럽게 녹여내십시오.`
+      `1. 프로필은 필요한 경우에만 참고하고, 호칭을 사용할 때는 위 닉네임 전체를 그대로 사용하십시오.\n` +
+      `2. 뽑힌 카드가 질문자의 타고난 기운(${saju ? `${saju.dayMaster.symbolName}, ${saju.elements.lacking.name} 보완` : '기질'})과 어떻게 연결되는지 필요한 만큼만 간결하게 설명하십시오.`
     );
   }
 
@@ -1330,11 +1330,10 @@ export function buildTarotContextPromptAddon(opts: {
     const dOrient = dCard.reversed ? '역방향' : '정방향';
     const dEffKw = getEffectiveTarotKeywords(dCard);
     const dKw = dEffKw.length ? dEffKw.join(', ') : '';
-    const dCaution = dCard.reversed ? getTarotCardCaution(dCard) : '';
     const dDiag = dCard.diagnosis || dCard.summary || '';
     blocks.push(
       `[🌟 오늘의 지배 오라클 카드 (Daily Cosmic Anchor)]\n` +
-      `· 카드: ${dLabel} (${dOrient})${dKw ? ` — 핵심 키워드: ${dKw}` : ''}${dCaution ? ` | 역방향 주의점 1가지: ${dCaution}` : ''}\n` +
+      `· 카드: ${dLabel} (${dOrient})${dKw ? ` — 핵심 키워드: ${dKw}` : ''}\n` +
       `${dDiag ? `· 오늘 하루의 운명적 기조: ${dDiag.slice(0, 140)}...\n` : ''}` +
       `[오늘의 지배 카드 연계 필수 지침]\n` +
       `질문자의 이번 고민은 오늘 하루를 관통하는 [${dLabel}]의 에너지 장(Field) 안에서 전개되고 있습니다. 1단계(상황 진단), 4단계(카드 해독), 5단계(행동 계획), 6단계(결단)에서 오늘의 지배 카드의 기운이 이번 고민에 미치는 영향과 인과적 연결고리를 자연스럽고 깊이 있게 융합하여 서술하십시오.`
@@ -1348,15 +1347,14 @@ export function buildTarotContextPromptAddon(opts: {
         const d = getTarotCardDetails(card);
         const effKws = getEffectiveTarotKeywords(card);
         const revData = card.reversed ? getTarotReversedData(card) : null;
-        const caution = card.reversed ? getTarotCardCaution(card) : '';
         const detailStr = d
-          ? ` — 키워드: ${effKws.join(', ')} | 원형: ${d.archetype} | 상징: ${d.symbolWord} | ${card.reversed ? `역방향 고유 뜻(정방향 뜻 적용 금지): ${revData?.meaning || d.reversedCore} | ⚠️ 이 카드의 주의점 1가지: ${caution}` : `정방향 본래 뜻: ${d.uprightCore}`}`
-          : (effKws.length ? ` — 키워드: ${effKws.join(', ')}${caution ? ` | ⚠️ 주의점 1가지: ${caution}` : ''}` : '');
+          ? ` — 키워드: ${effKws.join(', ')} | 원형: ${d.archetype} | 상징: ${d.symbolWord} | ${card.reversed ? `역방향 고유 뜻(정방향 뜻 적용 금지): ${revData?.meaning || d.reversedCore}` : `정방향 본래 뜻: ${d.uprightCore}`}`
+          : (effKws.length ? ` — 키워드: ${effKws.join(', ')}` : '');
         return `· ${label} (${orient})${detailStr}`;
       })
       .join('\n');
     blocks.push(
-      `[★ 뽑힌 카드의 고유한 상징과 정/역방향 본래 뜻 해독 가이드]\n${lines}\n- [필수 규칙 1 - 역방향 카드 정방향 오해석 절대 금지]: 역방향(Reversed)으로 뽑힌 카드는 절대로 정방향의 긍정적 뜻이나 정방향 키워드로 풀이하지 마십시오. 반드시 위에 제시된 '역방향 고유 뜻'과 역방향 키워드로만 명확하게 해석하십시오.\n- [필수 규칙 2 - 역방향 카드별 주의점 1가지 필수 안내]: 역방향 카드가 나왔을 때는 해당 카드 풀이 시 본문 속에 그 카드와 관련된 **주의점 1가지**를 자연스럽게 녹여 설명하고, 동시에 **⚠️ [카드명 역방향 주의점 1가지]: (핵심 주의점 문장)** 형태로 한 줄 강조하여 명확히 알려주십시오. (정방향 카드에는 주의점 강조 줄을 붙이지 마십시오.)`,
+      `[★ 뽑힌 카드의 고유한 상징과 정/역방향 본래 뜻 해독 가이드]\n${lines}\n- 역방향 카드는 제공된 역방향 고유 뜻으로 해석하고 정방향 의미를 섞지 마십시오.\n- 화면에 대표 주의 안내가 별도로 한 번 표시되므로, 본문과 카드별 해설에는 주의점을 넣지 마십시오.`,
     );
   }
   if (!blocks.length) return '';
@@ -1401,9 +1399,8 @@ export function buildTarotSpreadPromptAddon(
             const d = getTarotCardDetails(card);
             const effKws = getEffectiveTarotKeywords(card);
             const revData = card.reversed ? getTarotReversedData(card) : null;
-            const caution = card.reversed ? getTarotCardCaution(card) : '';
             const detailStr = d
-              ? ` (키워드: ${effKws.slice(0, 3).join(', ')}, 상징: ${d.symbolWord}, ${card.reversed ? `역방향 고유 뜻: ${revData?.meaning || d.reversedCore}, ⚠️ 주의점 1가지: ${caution}` : `정방향 본래 뜻: ${d.uprightCore}`})`
+              ? ` (키워드: ${effKws.slice(0, 3).join(', ')}, 상징: ${d.symbolWord}, ${card.reversed ? `역방향 고유 뜻: ${revData?.meaning || d.reversedCore}` : `정방향 본래 뜻: ${d.uprightCore}`})`
               : (effKws.length ? ` (${effKws.slice(0, 3).join(', ')})` : '');
             return `· ${spread.positions[i] || `${i + 1}번`}: **${card.nameKo || card.name || `카드 ${i + 1}`}**${orient}${detailStr}`;
           },
@@ -1438,10 +1435,11 @@ ${cardLines}
 
 [마스터 리딩 필수 규칙]
 1. [★ 최우선 필수: 카드의 상징과 정/역방향 본래 뜻 중심 해독] 카드 이름만 언급하고 지나가는 단순한 수박 겉핥기식 해석을 엄격히 금지합니다. 해당 위치(${spread.positions.join(' → ')})에 놓인 각 카드의 도상학적 상징(그림 속 인물, 도구, 배경 색채, 원소)과 정방향/역방향의 깊은 뜻을 중심 근거로 삼아, 질문자의 고민과 밀접하게 결합하여 해독하십시오.
-2. [★ 역방향 카드 해독 및 주의점 1가지 필수 제시] 역방향([역방향])으로 뽑힌 카드는 정방향 뜻으로 풀이하지 말고 반드시 **역방향 고유의 뜻(에너지의 과잉·결핍·지연·내면의 그림자)**으로 풀이하십시오. 또한 해당 역방향 카드를 풀이할 때 반드시 그 카드와 관련된 **주의점 1가지**를 본문 속에 자연스럽게 녹여 설명하고, 동시에 **⚠️ [카드명 역방향 주의점 1가지]: (핵심 주의점 한 줄)** 형태로 별도 강조하여 알려주십시오. (정방향 카드에는 주의점 줄을 추가하지 마십시오.)
+2. 역방향 카드는 반드시 역방향 고유의 뜻으로 해석하고 정방향 의미와 섞지 마십시오. 화면에서 역방향 주의 문구를 한 번 별도로 표시하므로, 본문과 카드별 해설에는 주의점을 다시 쓰지 마십시오.
 3. 각 카드는 실제 타로 상담실에서 1:1로 카드를 짚어가며 들려주듯 생생한 대화체로 풀이하십시오.
-4. 딱딱한 나열식이 아니라, 카드들의 상징과 위치가 서로 말을 건네며 엮이는 하나의 생생한 운명 스토리로 해독하십시오.
-5. 타로의 점괘는 고정된 숙명이 아니라 현재의 흐름을 비추는 나침반임을 자연스럽게 일깨우며, 내담자 본인의 의지와 주체적 실천이 미래를 바꾼다는 긍정적 자율성과 용기를 북돋워 주십시오.${themeSpecificDirective}`;
+4. 반드시 '핵심 판단', '카드별 흐름', '종합과 실천'의 세 소제목으로 보고서처럼 구성하십시오. 첫 항목에서 질문에 바로 답하고, 카드별 흐름에서는 위치와 연결을 간결히 설명하며, 마지막에는 실행 항목 하나만 제안하십시오.
+5. 카드마다 새로운 근거만 덧붙이고 같은 결론·상징·조언을 반복하거나 과장된 운명 서사를 만들지 마십시오. 별도의 3줄 요약을 본문에 복사하지 마십시오.
+6. 타로는 현재를 돌아보는 참고로 설명하고, 현실에서 실행할 수 있는 제안 하나로 마무리하십시오.${themeSpecificDirective}`;
 }
 
 /** 양자택일/결정형 질문일 때 타로 시스템 프롬프트에 붙이는 추가 지침 */
@@ -1911,7 +1909,7 @@ export function buildLocalTarotReading(
   const leadCard = cards[0];
   const leadName = leadCard?.nameKo || leadCard?.kr || '첫 번째 카드';
 
-  const cardStories = cards
+    const cardStories = cards
     .map((c, i) => {
       const pos = spread.positions[i] || `${i + 1}번 자리`;
       const name = c?.nameKo || c?.kr || `카드 ${i + 1}`;
@@ -1919,37 +1917,14 @@ export function buildLocalTarotReading(
       const orient = isRev ? ' (역방향)' : ' (정방향)';
       const d = getTarotCardDetails(c);
       const revData = isRev ? getTarotReversedData(c) : null;
-      const caution = isRev ? getTarotCardCaution(c) : '';
-      const meaningCore = isRev ? (revData?.meaning || d.reversedCore) : d.uprightCore;
-      const effKws = getEffectiveTarotKeywords(c);
-
-      let storyBody = '';
-      if (i === 0 || pos.includes('현재') || pos.includes('마음') || pos.includes('상태') || pos.includes('원인')) {
-        storyBody = isRev
-          ? `현재 당신의 내면에서는 정방향과는 다른 역방향의 기운인 **${meaningCore}**의 흐름이 작용하고 있습니다. 도상 속 [${d.symbolWord}]이 말하듯 조급해하기보다 깊은 호흡으로 내면을 먼저 정돈해야 할 때입니다. 특히 이 카드에서 꼭 기억해야 할 주의점 한 가지는 **"${caution}"**입니다.`
-          : `지금 당신의 현실은 **${meaningCore}**의 맑고 역동적인 파동 위에 놓여 있습니다. [${d.symbolWord}]의 상징처럼 직관이 가리키는 방향을 신뢰하고 차분하게 흐름을 타세요.`;
-      } else if (i === 1 || pos.includes('장애') || pos.includes('과정') || pos.includes('상황') || pos.includes('도전')) {
-        storyBody = isRev
-          ? `상황 속에서 역방향의 의미인 **${meaningCore}**와 관련된 불안이나 과열된 집착을 내려놓을 필요가 있습니다. [${d.archetype}]의 지혜처럼 시야를 넓게 열어두면 막혔던 해답이 자연스럽게 모습을 드러냅니다. 특히 이 카드와 관련된 핵심 주의점 한 가지는 **"${caution}"**입니다.`
-          : `당신을 둘러싼 환경은 **${meaningCore}**의 깊은 통찰을 통해 새로운 돌파구를 제시하고 있습니다. [${d.symbolWord}]이 주는 유연한 태도가 상황을 당신의 편으로 이끕니다.`;
-      } else if (i === 2 || pos.includes('미래') || pos.includes('결과') || pos.includes('조언') || pos.includes('결실')) {
-        storyBody = isRev
-          ? `가까운 시기에 살펴볼 수 있는 한 가지 관점은 역방향의 **${meaningCore}**가 성찰과 균형을 권한다는 점입니다. 이는 결과의 예언이 아니라 점검을 돕는 상징입니다. 특히 주의점 한 가지는 **"${caution}"**입니다.`
-          : `이 카드의 정방향 상징인 **${meaningCore}**는 가까운 선택에서 참고할 수 있는 가능성을 비춥니다. [${d.symbolWord}]의 의미를 현실의 조건과 함께 살펴보되, 성취나 보장을 약속하는 예측으로 받아들이지는 마세요.`;
-      } else {
-        storyBody = isRev
-          ? `이 자리는 [${d.archetype}]의 역방향 상징인 **${meaningCore}**를 통해, 성급함을 멈추고 내실을 먼저 다질 것을 권고합니다. 특히 이 카드의 주의점 한 가지는 **"${caution}"**입니다.`
-          : `이 자리는 [${d.archetype}]의 원형과 **${meaningCore}**의 상징을 통해, 삶의 중심을 지키며 지혜롭게 적응하는 것이 당신의 길을 비추는 나침반이 됨을 암시합니다.`;
-      }
-
-      const cautionLine = isRev ? `\n  ⚠️ **[${name} 역방향 주의점 1가지]**: ${caution}` : '';
-      return `· **${pos} — [${name}${orient}]**\n  _키워드: ${effKws.join(', ')} | 원형: ${d.archetype} | 상징: ${d.symbolWord}_\n  _${isRev ? '역방향 고유 뜻' : '정방향 본래 뜻'}: ${meaningCore}_\n  ${storyBody}${cautionLine}`;
+      const meaningCore = (isRev ? (revData?.meaning || d.reversedCore) : d.uprightCore).replace(/[.!?]\s*$/u, '');
+      const symbol = d?.symbolWord ? `; 상징 ${d.symbolWord}` : '';
+      return `- **${pos} — ${name}${orient}:** ${meaningCore}${symbol ? ` (상징: ${d.symbolWord})` : ''}.`;
     })
     .join('\n\n');
 
   const groundedSummary = groundTarotSummaryParts(cards, concern);
   let decisionText = '';
-  let decisionSummary = groundedSummary.decision;
   if (analysis.kind === 'binary_choice') {
     const optionA = analysis.optionA?.trim() || '첫 번째 선택지';
     const optionB = analysis.optionB?.trim() || '두 번째 선택지';
@@ -1966,7 +1941,6 @@ export function buildLocalTarotReading(
 - **[${optionB}]**: ${describeCard(cards[2])}
 
 이 카드는 객관적인 승자나 각 선택의 미래 결과를 판정하지 않습니다. 조건·비용·위험·되돌릴 수 있는 정도처럼 현실에서 확인할 기준을 비교해 보세요.`;
-    decisionSummary = `앱에서 뽑힌 카드의 상징은 [${optionA}]와 [${optionB}]를 각각 살펴볼 관점을 제공하지만, 어느 한쪽의 승자나 결과를 확정하지 않습니다.`;
   } else if (analysis.kind === 'yes_no') {
     const finalCard = cards[cards.length - 1] || leadCard;
     const finalCardName = finalCard?.nameKo || finalCard?.kr || '마지막으로 펼쳐진 카드';
@@ -1975,36 +1949,21 @@ export function buildLocalTarotReading(
       ? getTarotReversedData(finalCard)?.meaning || details.reversedCore
       : details.uprightCore;
     decisionText = `### 🔮 3. 선택을 돕는 상징적 참고
-실제로 뽑힌 [${finalCardName}${finalCard?.reversed ? ' 역방향' : ' 정방향'}]의 상징은 **${meaning}**입니다. 이는 성찰을 위한 한 가지 관점일 뿐, 현실의 결과에 대한 YES/NO 판정이나 보장이 아닙니다. 실행 여부를 정하기 전 지금 확인할 조건과 위험을 살펴보세요.`;
-    decisionSummary = `실제 카드의 상징(${meaning})은 참고 관점이며 결과를 확정하지 않으므로, 실행 조건과 위험을 직접 확인하세요.`;
+상징적 참고로, 실제로 뽑힌 [${finalCardName}${finalCard?.reversed ? ' 역방향' : ' 정방향'}]의 카드 의미는: **${meaning}** 이는 성찰을 위한 한 가지 관점일 뿐, 현실의 결과에 대한 YES/NO 판정이나 보장이 아닙니다. 실행 여부를 정하기 전 지금 확인할 조건과 위험을 살펴보세요.`;
   } else {
     decisionText = `### 🔮 3. 현재 흐름을 위한 상징적 참고
 실제 앱에서 펼쳐진 [${leadName}]의 의미는 현재 상황을 돌아보는 한 관점을 제공합니다. 이는 미래의 확정 예언이 아니며, 질문자가 확인할 수 있는 조건과 선택이 우선입니다.`;
   }
 
-  return `[핵심 3줄 요약]
-- [현재 에너지] ${groundedSummary.energy}
-- [방향과 결단] ${decisionSummary}
-- [실천 행동] ${groundedSummary.action}
+  const photoNote = photoMode ? '\n\n*비전 포털에서 인식된 카드의 상징을 참고했습니다.*' : '';
+  return `### 핵심 판단
+${decisionText.replace(/^###\s*[^\n]+\n?/, '').trim()}
 
-### 🕯️ 1. 카드가 비추는 당신의 마음과 현재 에너지
-어서 오세요. 카드를 조용히 마주하니, 당신께서 가슴속에 품고 계신 **"${concern}"**에 대한 깊은 고민과 복잡한 마음결이 그대로 느껴집니다.
-
-현재 당신의 에너지는 중요한 갈림길 위에 서 있으며, 가장 먼저 모습을 드러낸 **[${leadName}]** 카드는 당신이 더 이상 혼자서 불안해하지 않아도 된다는 다정한 위로와 함께 변화의 신호를 건네고 있습니다.
-
-### 🎴 2. 펼쳐진 카드들이 들려주는 이야기
-_${spread.name} (${spread.cardCount}장 배열)_
-
+### 카드별 흐름 — ${spread.name}
 ${cardStories}
 
-${decisionText}
-
-### 🌿 4. 운의 흐름을 바꿀 마스터의 실천 처방
-- **마음의 정돈**: 오늘 하루만큼은 타인의 시선이나 과거의 후회에 얽매이지 말고, 당신 자신의 직관에 집중해 보세요.
-- **실천 한 걸음**: 가슴속으로만 맴돌던 생각을 밖으로 꺼내어 작은 실천(메모, 가벼운 대화, 정리 정돈)으로 연결해 보세요. 작은 파동이 큰 대운을 불러옵니다.
-
-${isDailyTarotConcern(concern) || (concern && /오늘|하루|데일리|daily/i.test(concern)) ? '### ✨ 5. 오늘 하루를 지켜줄 황금빛 축복과 확언' : '### ✨ 5. 당신의 길을 축복하는 영혼의 한마디'}
-> _"${getCardSoulBlessing(cards[cards.length - 1] || leadCard, concern)}"_${photoMode ? '\n\n*(비전 포털 — 인식된 카드의 신비로운 에너지가 함께 투영되었습니다)*' : ''}${isDailyTarotConcern(concern) || (concern && /오늘|하루|데일리|daily/i.test(concern)) ? `\n\n- **오늘의 황금빛 확언**: "${getCardDailyAffirmation(cards[cards.length - 1] || leadCard, concern)}"` : ''}`;
+### 종합과 실천
+${groundedSummary.action}${photoNote}`;
 }
 
 /**

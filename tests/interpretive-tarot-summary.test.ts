@@ -16,6 +16,16 @@ test('a separate interpretation receives the entire body and question, without t
  assert.deepEqual(result, ['[현재 에너지] '+output.energy,'[방향과 주의점] '+output.direction,'[실천 행동] '+output.action]);
  for(const line of Object.values(output))assert(!received.includes(line));
 });
+test('Trinity summary omits a second warning when the UI already shows one separately', async () => {
+ let includeCaution: boolean | undefined;
+ const bullets = await generateInterpretiveTarotSummary(body, '이직할까요?', async (_source, _concern, include) => {
+  includeCaution = include;
+  return output;
+ }, false);
+ assert.equal(includeCaution, false);
+ assert.deepEqual(bullets.map(line => line.match(/^\[([^\]]+)\]/)?.[1]), ['현재 에너지', '방향과 결단', '실천 행동']);
+ assert.throws(() => validateInterpretiveSummary({ ...output, direction: '주의할 위험을 먼저 확인하고, 현실 조건을 비교해 판단하는 편이 좋습니다.' }, body, false), /경고 문구/);
+});
 test('copied sentences, duplicates and incomplete model output are rejected', () => {
  assert.throws(()=>validateInterpretiveSummary({...output,energy:'당신은 새 직장의 제안을 받았지만 업무 범위를 확인하지 못해 선택을 망설이고 있습니다.'},body));
  assert.throws(()=>validateInterpretiveSummary({...output,action:output.energy},body));

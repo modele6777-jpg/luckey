@@ -63,6 +63,12 @@ test('Orb defaults to hold-to-talk on the input itself; a short Orb tap still sw
   assert.match(component, /if \(voiceMode === 'hold'\) chooseVoiceMode\('realtime'\)/);
   assert.match(component, /aria-pressed=\{voiceMode === 'realtime'\}[\s\S]*?aria-pressed=\{voiceMode === 'hold'\}/);
   assert.match(liveSession, /if \(!ready \|\| muted \|\| socket\?\.readyState !== WebSocket\.OPEN\) \{/);
+  assert.match(component, /const generation = \+\+voiceModeGeneration\.current/);
+  assert.match(component, /generation !== voiceModeGeneration\.current \|\| voiceModeRef\.current !== 'realtime'/);
+  assert.match(component, /session\.releaseMic\(\)/);
+  assert.match(component, /onPointerLeave=\{\(event\) => \{ if \(event\.pointerType === 'mouse'\) endInputPress\(\); \}\}/);
+  assert.match(component, /onPointerCancel=\{\(event\) => \{ if \(event\.pointerType === 'mouse'\) endInputPress\(\); \}\}/);
+  assert.match(component, /onBlur=\{\(\) => endInputPress\(\)\}/);
 });
 
 test('current app version has public changelog details for the generated version endpoint', () => {

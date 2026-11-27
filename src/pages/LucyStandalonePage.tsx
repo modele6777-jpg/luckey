@@ -1,5 +1,6 @@
 import { collectSpeechTranscript, createEndOfSpeechWatcher, type EndOfSpeechWatcher } from '@/lib/speechAutoSend';
 import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
+import { setMicCaptureActive } from '@/lib/audioMixingPolicy';
 import { LucyModeName } from '@/components/chat/LucyModeName';
 import { useHoldToTalk } from '@/hooks/useHoldToTalk';
 import { takePendingLucyContext } from '@/lib/lucyPendingContext';
@@ -2228,12 +2229,27 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       setVoiceState('listening');
       voiceStateRef.current = 'listening';
       liveVoiceRef.current?.stop();
+      let micStream: Promise<MediaStream> | null = null;
+      try {
+        if (navigator.mediaDevices?.getUserMedia) {
+          // Ask in the toggle gesture; keep the granted stream disabled until the live session owns it.
+          setMicCaptureActive(true);
+          micStream = navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+            stream.getAudioTracks().forEach(track => { track.enabled = false; });
+            return stream;
+          });
+          void micStream.catch(() => setMicCaptureActive(false));
+        }
+      } catch {
+        setMicCaptureActive(false);
+      }
       const spread = drawLucyTarotCards(3).map((card, index) => `${index + 1}번 ${card.nameKo} ${card.orientationKo}`).join(', ');
       const session = startGeminiLiveVoice({
         nickname: userDisplayName,
         chart: sajuInfo?.systemPromptSummary || '',
         cards: spread,
         notes: buildLucyConsultMemoryBrief(chatAccount, 'voice'),
+        micStream,
         onState: (state) => {
           if (!isVoiceModeRef.current || liveVoiceRef.current !== session) return;
           setVoiceState(state);

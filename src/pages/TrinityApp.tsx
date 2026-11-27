@@ -1719,6 +1719,7 @@ function playDailyCardChimeAsync() {
     tarotResult,
     isDailyTarotConcern(tarotConcern) ? '오늘의 타로 리딩' : tarotConcern,
     !isTarotGenerating && !isDailyOracleLoading,
+    false,
   );
   const conciseSummaryBullets = interpretiveSummary.bullets;
 
@@ -2626,10 +2627,9 @@ function playDailyCardChimeAsync() {
               const d = getTarotCardDetails(c);
               const effKws = getEffectiveTarotKeywords(c);
               const revData = c.reversed ? getTarotReversedData(c) : null;
-              const caution = c.reversed ? getTarotCardCaution(c) : "";
               const detailStr = d
-                ? ` (키워드: ${effKws.slice(0, 3).join(', ')}, 원형: ${d.archetype}, 상징: ${d.symbolWord}, ${c.reversed ? `역방향 고유 뜻(정방향 뜻 적용 금지): ${revData?.meaning || d.reversedCore}, ⚠️ 주의점 1가지: ${caution}` : `정방향 본래 뜻: ${d.uprightCore}`})`
-                : (effKws.length ? ` (키워드: ${effKws.slice(0, 3).join(', ')}${caution ? `, ⚠️ 주의점 1가지: ${caution}` : ''})` : '');
+                ? ` (키워드: ${effKws.slice(0, 3).join(', ')}, 원형: ${d.archetype}, 상징: ${d.symbolWord}, ${c.reversed ? `역방향 고유 뜻(정방향 뜻 적용 금지): ${revData?.meaning || d.reversedCore}` : `정방향 본래 뜻: ${d.uprightCore}`})`
+                : (effKws.length ? ` (키워드: ${effKws.slice(0, 3).join(', ')})` : '');
               return `${pos}: ${c.nameKo} (${c.name})${orient}${detailStr}`;
             })
             .join(", ");
@@ -2643,7 +2643,7 @@ function playDailyCardChimeAsync() {
 ${dailyCard ? `오늘의 참고 카드: ${dailyCard.nameKo}. 이번 배열의 핵심 카드 해석에 도움이 될 때만 짧게 연결하세요.` : ''}
 ${binaryChoicePromptAddon}${contextPromptAddon}
 ${buildTarotInterpretationGuidance({ question: tarotConcern, hasAppDraw: true })}
-카드 목록을 그대로 사용하고 임의로 추가하거나 바꾸지 마세요. 역방향은 해당 카드의 막힘·과잉·내면화 중 질문에 맞는 뜻으로 읽고, 주의점은 한 번만 자연스럽게 설명하세요.
+카드 목록을 그대로 사용하고 임의로 추가하거나 바꾸지 마세요. 역방향은 해당 카드의 고유한 뜻으로 해석하되 정방향 의미와 섞지 마세요. 화면에 역방향 주의 문구가 한 번 별도로 표시되므로 본문에서는 주의점을 되풀이하지 마세요.
 ${TAROT_READING_VOICE}`;
         }
 
@@ -3007,7 +3007,7 @@ ${TAROT_READING_VOICE}`;
 [답변 규정]
 1. 모호한 미사여구나 불필요한 장설, 뜬구름 잡는 우주적 추상주의는 완전히 지양하십시오.
 2. 질문자가 던진 구체적인 질문에 대하여, 새로 뽑힌 추가 카드의 상징과 정/역방향 에너지를 직관적으로 관통하여 날카롭고 똑부러지게 답변하십시오.
-3. [★ 역방향 카드 해독 및 주의점 1가지 필수 제시] 새로 뽑힌 카드가 '역방향'이라면 절대로 정방향 뜻으로 풀이하지 말고 반드시 역방향 고유의 뜻(${revData?.meaning || '내면의 그림자와 재정비'})으로 풀이하며, 본문 속에 해당 카드와 관련된 주의점 1가지("${revCaution}")를 자연스럽게 녹여 설명하고 **⚠️ [${cardNameKo} 역방향 주의점 1가지]: ${revCaution}** 형태로 한 줄 강조하여 알려주십시오.
+3. 역방향 카드는 정방향과 섞지 말고 역방향 고유의 뜻(${revData?.meaning || '내면의 그림자와 재정비'})으로 풀이하세요. 핵심 주의점은 본문에서 한 번만 짧게 언급하고, 별도 강조 줄로 다시 쓰지 마세요.
 4. 최초 질문 및 초기 리딩의 맥락을 완벽히 계승하되 중복 설명을 피하고, 이번 질문에 대한 즉각적이고 실천 가능한 현실적 해결책과 행동 지침을 제시하십시오.
 5. 한국어로 품격 있고 신뢰감 넘치는 마스터의 어조를 유지하십시오.${profileContext}`,
         },
@@ -4153,40 +4153,36 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                             </div>
                                           )}
 
-                                          {/* ⚠️ 역방향 카드 주의점 1가지 별도 강조 배너 (역방향 카드가 뽑혔을 때만 표시) */}
+                                          {/* 역방향 주의는 여러 장이 나와도 대표 안내 한 번만 표시 */}
                                           {(() => {
                                             const activeReadingCards = (drawnCards && drawnCards.length > 0)
                                               ? drawnCards
                                               : (dailyResult?.drawnCard ? [dailyResult.drawnCard] : (dailyDrawnCard ? [dailyDrawnCard] : []));
-                                            const reversedCards = activeReadingCards.filter((c: any) => Boolean(c?.reversed));
-                                            if (reversedCards.length === 0) return null;
+                                            const reversedIndex = activeReadingCards.findIndex((c: any) => Boolean(c?.reversed));
+                                            if (reversedIndex < 0) return null;
+                                            const c = activeReadingCards[reversedIndex];
+                                            const revData = getTarotReversedData(c);
+                                            const cautionText = getTarotCardCaution(c);
+                                            const posLabel = tarotSpreadRecommendation?.positions?.[reversedIndex] || `${reversedIndex + 1}번 카드`;
                                             return (
-                                              <div className="mb-4 space-y-2">
-                                                {activeReadingCards.map((c: any, idx: number) => {
-                                                  if (!c?.reversed) return null;
-                                                  const revData = getTarotReversedData(c);
-                                                  const cautionText = getTarotCardCaution(c);
-                                                  const posLabel = tarotSpreadRecommendation?.positions?.[idx] || `${idx + 1}번 카드`;
-                                                  return (
-                                                    <div
-                                                      key={`trinity-rev-caution-${c.id || idx}-${idx}`}
-                                                      className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-rose-950/55 via-rose-900/25 to-black/45 border border-rose-400/45 shadow-md space-y-1 text-xs"
-                                                    >
-                                                      <div className="duo-workspace-actions flex items-center justify-between gap-2 flex-wrap">
-                                                        <span className="font-bold text-rose-300 flex items-center gap-1.5">
-                                                          <span>⚠️ [{c.nameKo || c.name} (역방향) 주의점 1가지]</span>
-                                                          <span className="text-[10px] font-normal text-rose-200/75">· {posLabel}</span>
-                                                        </span>
-                                                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-200 border border-rose-400/30 font-medium">
-                                                          역방향 키워드: {revData.keywords.slice(0, 3).join(', ')}
-                                                        </span>
-                                                      </div>
-                                                      <p className="text-rose-100 font-semibold leading-snug break-keep">
-                                                        {cautionText}
-                                                      </p>
-                                                    </div>
-                                                  );
-                                                })}
+                                              <div className="mb-4">
+                                                <div
+                                                  key={`trinity-rev-caution-${c.id || reversedIndex}`}
+                                                  className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-rose-950/55 via-rose-900/25 to-black/45 border border-rose-400/45 shadow-md space-y-1 text-xs"
+                                                >
+                                                  <div className="duo-workspace-actions flex items-center justify-between gap-2 flex-wrap">
+                                                    <span className="font-bold text-rose-300 flex items-center gap-1.5">
+                                                      <span>⚠️ 역방향 주의 안내</span>
+                                                      <span className="text-[10px] font-normal text-rose-200/75">· {posLabel}: {c.nameKo || c.name}</span>
+                                                    </span>
+                                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-200 border border-rose-400/30 font-medium">
+                                                      역방향 키워드: {revData.keywords.slice(0, 3).join(', ')}
+                                                    </span>
+                                                  </div>
+                                                  <p className="text-rose-100 font-semibold leading-snug break-keep">
+                                                    {cautionText}
+                                                  </p>
+                                                </div>
                                               </div>
                                             );
                                           })()}

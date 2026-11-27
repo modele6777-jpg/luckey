@@ -195,7 +195,7 @@ export function LucyTarotAdviceCard({
               </span>
             </div>
             <h4 className="text-xs sm:text-sm font-bold text-white mt-0.5 font-sans">
-              {nickname} 님을 위한 1:1 영혼 가이드
+              {nickname}님을 위한 1:1 맞춤 조언
             </h4>
           </div>
         </div>
