@@ -69,7 +69,7 @@ export function DivinationTableBody({ table, onClose, compact = false }: {
     window.addEventListener(LUCY_DIVINATION_TOOL_EVENT, onRequest);
     return () => window.removeEventListener(LUCY_DIVINATION_TOOL_EVENT, onRequest);
   }, []);
-  const views = useMemo(() => resolveToolTabViews(table), [table]);
+  const views = useMemo(() => resolveToolTabViews(table, true), [table]);
   // 루시가 이번 질문에 쓰지 않은 도구는 잠겨 있으므로, 잠긴 탭이 골라져 있으면 첫 열린 탭으로 돌린다.
   const activeTab = useMemo<DivinationToolId>(
     () => pickActiveDivinationTab(views, tab, requestedTab),
@@ -84,7 +84,7 @@ export function DivinationTableBody({ table, onClose, compact = false }: {
           <button type="button" onClick={onClose} aria-label="도구 창 닫기" className="flex h-8 w-8 items-center justify-center rounded-full text-slate-300 hover:bg-white/10"><X size={18} /></button>
         )}
       </div>
-      <DivinationToolTabBar table={table} activeTab={activeTab} onSelect={(id) => { setRequestedTab(null); setTab(id); }} compact={compact} />
+      <DivinationToolTabBar table={table} unlockCosmicProTools activeTab={activeTab} onSelect={(id) => { setRequestedTab(null); setTab(id); }} compact={compact} />
       <div className="flex min-h-0 flex-1 flex-col">
         {activeTab === 'saju' ? (
           <MasterSajuBoard saju={table.saju} lastAnswer={table.lastAnswer} />

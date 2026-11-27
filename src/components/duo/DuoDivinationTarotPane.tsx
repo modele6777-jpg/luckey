@@ -39,7 +39,7 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
   // 통합 상담: 들어오면 사주 원국에서 시작하고, 그 뒤에는 사용자가 탭으로 고른 화면을 유지한다.
   const [tab, setTab] = useState<DivinationToolId>('saju');
   const [table, setTable] = useState<LucyTableState>(() => getLucyTableState());
-  const tabViews = resolveToolTabViews(table);
+  const tabViews = resolveToolTabViews(table, true);
   const activeTab = tabViews.find(view => view.id === tab && !view.locked)?.id
     ?? (tabViews.find(view => !view.locked)?.id ?? 'saju') as DivinationToolId;
   const tts = useTTSState();
@@ -92,6 +92,7 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
         {/* 도구 탭: 15개를 가로 스크롤로 (낭독은 루시가 읽는 동안에만) */}
         <DivinationToolTabBar
           table={table}
+          unlockCosmicProTools
           activeTab={showReading ? 'reading' : activeTab}
           onSelect={id => { setReadingDismissed(reading); setTab(id); }}
           readingTab={reading ? { active: showReading, onSelect: () => setReadingDismissed(false) } : undefined}

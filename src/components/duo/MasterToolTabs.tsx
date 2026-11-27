@@ -14,16 +14,19 @@ export interface DivinationToolTabView extends DivinationToolTabMeta {
 
 /**
  * 15대 도구 탭의 열림/잠금.
- * - 이번 질문에서 루시가 실제로 활용한 도구만 열린다(계산 완료·부분 계산·상징 참고).
- * - 활용하지 않은 도구는 잠근다(🔒). 질문을 보내기 전에는 사주 원국·타로가 기본으로 열려 있다.
+ * - 기본값은 이번 질문에서 루시가 실제로 활용한 도구만 열린다(계산 완료·부분 계산·상징 참고).
+ * - Cosmic Pro는 사주·타로 외 13개 도구를 설명/결과 화면으로 직접 열 수 있다.
  */
-export function resolveToolTabViews(table: LucyTableState): DivinationToolTabView[] {
+export function resolveToolTabViews(table: LucyTableState, unlockCosmicProTools = false): DivinationToolTabView[] {
   const hasSelection = table.activeEngines.total > 0 || table.tools.length > 0;
   const views = DIVINATION_TOOL_TABS.map(meta => {
     const state = toolTabState(table, meta.id);
     const active = state === 'calculated' || state === 'partial' || state === 'symbolic';
     const defaultOpen = !hasSelection && (meta.id === 'saju' || meta.id === 'tarot');
-    return { ...meta, state, active: active || defaultOpen, locked: hasSelection ? !active : !defaultOpen };
+    const locked = unlockCosmicProTools
+      ? false
+      : hasSelection ? !active : !defaultOpen;
+    return { ...meta, state, active: active || defaultOpen, locked };
   });
   // 활성 도구를 앞으로 모은다(그 안에서는 기존 도구 순서 유지).
   const rank = (view: DivinationToolTabView) => (view.active ? 0 : 1);
@@ -43,15 +46,17 @@ export function lockedToolTabNote(view: DivinationToolTabView): string {
 }
 
 /** 점술모드 도구함의 가로 스크롤 도구 탭 바 (접힌 창·펼친 테이블 공용). */
-export function DivinationToolTabBar({ table, activeTab, onSelect, compact = false, readingTab }: {
+export function DivinationToolTabBar({ table, activeTab, onSelect, compact = false, unlockCosmicProTools = false, readingTab }: {
   table: LucyTableState;
   activeTab: DivinationToolId | 'reading';
   onSelect: (id: DivinationToolId) => void;
   compact?: boolean;
+  /** Cosmic Pro에서 사주·타로 외 13개 도구도 직접 열 수 있게 한다. */
+  unlockCosmicProTools?: boolean;
   /** 낭독 중일 때만 붙는 낭독 탭 */
   readingTab?: { active: boolean; onSelect: () => void };
 }) {
-  const views = resolveToolTabViews(table);
+  const views = resolveToolTabViews(table, unlockCosmicProTools);
   return (
     <div
       className="flex shrink-0 items-stretch gap-1 overflow-x-auto px-3 pb-1.5 pt-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"

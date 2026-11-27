@@ -14,7 +14,7 @@ import { isLightConcern, resolveLucyToolBudget, LUCY_TOOL_BUDGETS } from '../src
 import { buildToolBoard } from '../src/lib/lucyMasterToolBoard';
 import { DivinationTableBody, MasterTableSheetBody } from '../src/components/duo/MasterTableSheet';
 import { MasterToolTabPanel } from '../src/components/duo/MasterToolTabPanel';
-import { LOCKED_TOOL_TAB_NOTE, resolveToolTabViews } from '../src/components/duo/MasterToolTabs';
+import { DivinationToolTabBar, LOCKED_TOOL_TAB_NOTE, resolveToolTabViews } from '../src/components/duo/MasterToolTabs';
 import { DIVINATION_TOOL_TABS } from '../src/lib/divination/trayTabs';
 import type { LucyTableState } from '../src/lib/lucyTableBus';
 import type { CalculationAuditItem } from '../src/lib/divination/calculationAudit';
@@ -185,7 +185,7 @@ test('only the tools Lucy used this turn stay open; the rest are locked tabs', (
   // 활성 도구가 탭 앞쪽에 모인다.
   assert.deepEqual(views.slice(0, 3).map(view => view.id), ['saju', 'ziwei', 'qimen']);
 
-  const html = renderToStaticMarkup(<DivinationTableBody table={table} />);
+  const html = renderToStaticMarkup(<DivinationToolTabBar table={table} activeTab="saju" onSelect={() => {}} />);
   assert.match(html, /data-table-face="ziwei" data-tool-tab-active="true" data-locked="false"/);
   assert.match(html, /aria-disabled="true" disabled=""[^>]*data-table-face="sukuyo" data-tool-tab-active="false" data-locked="true"/);
   assert.match(html, /이번 질문에서는 활용되지 않아 잠겨 있어요/);
@@ -195,6 +195,19 @@ test('before any question the basic table is open and the other tools wait locke
   const views = resolveToolTabViews(emptyTable());
   assert.deepEqual(views.filter(view => !view.locked).map(view => view.id).sort(), ['saju', 'tarot']);
   assert.equal(views.filter(view => view.locked).length, 13);
+});
+
+test('Cosmic Pro opens all 13 additional tools without changing their calculation state', () => {
+  const table = emptyTable();
+  const views = resolveToolTabViews(table, true);
+  assert.equal(views.length, 15);
+  assert.equal(views.filter(view => view.locked).length, 0);
+  assert.deepEqual(views.map(view => view.id).sort(), [
+    'astrology', 'iching', 'kabbalah', 'kyusei', 'liuren', 'mahabote', 'qimen',
+    'saju', 'sukuyo', 'taiyi', 'tarot', 'thai_astrology', 'tojeong', 'vedic', 'ziwei',
+  ]);
+  assert.equal(views.find(view => view.id === 'ziwei')?.state, 'unused');
+  assert.equal(views.find(view => view.id === 'ziwei')?.active, false);
 });
 
 test('a tool tab shows the tool’s own explanation and never invents a result', () => {
