@@ -1766,13 +1766,6 @@ export function LucyOrbCounsel({
         <div className="lucy-orb-copy">
           {phase === 'live' && <p>{speaking ? `${masterTitle(master)}가 말하고 있습니다` : `${masterTitle(master)} · ${master?.tone}. 말씀하셔도 되고, 적으셔도 됩니다`}</p>}
           {notice && <p role="status">{notice}</p>}
-          {phase === 'pick' && !micGranted && (
-            <div className="lucy-orb-permission-actions">
-              <button type="button" className="lucy-orb-permission" disabled={micPermissionBusy || rolling} onClick={() => void requestMicPermission()}>
-                {micPermissionBusy ? '권한 확인 중…' : '마이크 권한 요청'}
-              </button>
-            </div>
-          )}
           {phase === 'live' && micUnavailable && (
             <div className="lucy-orb-permission-actions">
               <button type="button" className="lucy-orb-permission" disabled={micPermissionBusy} onClick={() => void retryLiveMic()}>
@@ -1796,6 +1789,13 @@ export function LucyOrbCounsel({
               </div>
               <small className="lucy-orb-master-best">🎙 {ORB_MASTERS[0].tone} · 이럴 때: {ORB_MASTERS[0].bestFor}</small>
               {memory[0] && <small className="lucy-orb-master-memory">📒 지난번 상담 · {latestOrbMemoryLine(memory)}</small>}
+            </div>
+          )}
+          {phase === 'pick' && !micGranted && (
+            <div className="lucy-orb-permission-actions">
+              <button type="button" className="lucy-orb-permission" disabled={micPermissionBusy || rolling} onClick={() => void requestMicPermission()}>
+                {micPermissionBusy ? '권한 확인 중…' : '마이크 권한 요청'}
+              </button>
             </div>
           )}
           {phase === 'live' && master && (
