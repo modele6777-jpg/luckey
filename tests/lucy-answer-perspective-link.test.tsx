@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import React, { act } from 'react';
 import { Window } from 'happy-dom';
 import { ALL_DCE_ENGINES } from '../src/lib/divination/deterministicEngine.ts';
@@ -78,13 +79,33 @@ test('every foundational tool from the audit can open its own divination tab', (
   assert.deepEqual(engines.tools.map(tool => tool.toolId), ['astrology', 'kyusei']);
 });
 
-test('the buttons stay hidden for user messages, greetings, streaming and empty answers', () => {
+test('the badges stay hidden for user messages, greetings and answers with no tools or perspectives', () => {
   const engines = resolveMessagePerspectives({ deepPerspectiveKeys: [DEEP_KEY] });
   assert.equal(shouldShowAnswerEngines({ role: 'model', engines }), true);
   assert.equal(shouldShowAnswerEngines({ role: 'user', engines }), false);
+  assert.equal(shouldShowAnswerEngines({ role: 'system', engines }), false);
   assert.equal(shouldShowAnswerEngines({ role: 'model', isGreeting: true, engines }), false);
-  assert.equal(shouldShowAnswerEngines({ role: 'model', isGenerating: true, engines }), false);
   assert.equal(shouldShowAnswerEngines({ role: 'model', engines: resolveMessagePerspectives({}) }), false);
+});
+
+test('an answer that already carries its tools and perspectives shows the badges from its first moment', () => {
+  const engines = resolveMessagePerspectives({
+    deepPerspectiveKeys: [DEEP_KEY],
+    calculationAudit: [{ toolId: 'saju', name: '사주명리', status: 'calculated', sentToModel: true }],
+  });
+
+  // 답변 메시지는 관점·도구 메타데이터를 들고 시작하므로 생성 중에도 맨 처음에 배지가 먼저 뜬다.
+  assert.equal(shouldShowAnswerEngines({ role: 'model', isGenerating: true, engines }), true);
+});
+
+test('the badges sit above Lucy\'s first bubble, not after the last one', () => {
+  const page = readFileSync(new URL('../src/pages/LucyStandalonePage.tsx', import.meta.url), 'utf8');
+  const barIndex = page.indexOf('<LucyAnswerEngineBar');
+  const bubbleIndex = page.indexOf('<LucyKakaoBubbleGroup');
+
+  assert.ok(barIndex > 0, 'the standalone chat renders the answer badges');
+  assert.ok(bubbleIndex > barIndex, 'the badges come before the bubble group they belong to');
+  assert.equal(page.indexOf('<LucyAnswerEngineBar', barIndex + 1), -1, 'the badges are drawn once per answer');
 });
 
 test('an engine box opened from an answer does not restore an old scroll position over the perspective', () => {
@@ -166,6 +187,21 @@ test('the answer bar renders tools and perspectives separately and reports each 
     ));
     assert.ok(host.querySelector('[data-lucy-answer-tools]'), 'divination mode shows the used tools');
     assert.ok(host.querySelector('[data-lucy-answer-perspectives]'), 'perspectives are shown too');
+    assert.match(
+      (host.querySelector('[data-lucy-answer-engines]') as any).className,
+      /mb-1\.5/,
+      'the badge row keeps a small gap above the bubble it sits on',
+    );
+    assert.match(
+      (host.querySelector('[data-lucy-answer-tool="saju"]') as any).className,
+      /rounded-full/,
+      'each used tool is a small pill badge',
+    );
+    assert.match(
+      (host.querySelector(`[data-lucy-answer-perspective="${DEEP_KEY}"]`) as any).className,
+      /rounded-full/,
+      'each perspective is a small pill badge',
+    );
     await act(async () => {
       (host.querySelector('[data-lucy-answer-tool="saju"]') as any).dispatchEvent(new win.MouseEvent('click', { bubbles: true, detail: 1 }));
       (host.querySelector(`[data-lucy-answer-perspective="${DEEP_KEY}"]`) as any).dispatchEvent(new win.MouseEvent('click', { bubbles: true, detail: 1 }));

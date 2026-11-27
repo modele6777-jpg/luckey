@@ -4743,6 +4743,26 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     </>
                   ) : (
                     <>
+                      {/* ✨ 이 답변의 도구(점술모드)·관점 배지 — 답변 맨 처음(첫 말풍선 위)에 얹혀 각각의 함으로 열린다 */}
+                      {(() => {
+                        const answerEngines = resolveMessagePerspectives(msg);
+                        const showAnswerEngines = shouldShowAnswerEngines({
+                          role: msg.role,
+                          isGreeting,
+                          isGenerating: isLucyGenerating && index === filteredMessages.length - 1,
+                          engines: answerEngines,
+                        });
+                        return (
+                          <LucyAnswerEngineBar
+                            engines={answerEngines}
+                            isLight={isLight}
+                            isMasterMode={isMasterMode}
+                            show={showAnswerEngines}
+                            onOpenPerspective={handleOpenAnswerPerspective}
+                            onOpenTool={handleOpenAnswerTool}
+                          />
+                        );
+                      })()}
                       <LucyKakaoBubbleGroup
                       msgId={msgId}
                       verifiedTarotMarkers={msg.tarotDraw?.source === 'app-random' ? msg.tarotDraw.markers : undefined}
@@ -4832,26 +4852,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                         );
                       }}
                     />
-                    {/* ✨ 이 답변의 도구(점술모드)·관점 버튼 — 누르면 각각의 함이 그 항목으로 열린다 */}
-                    {(() => {
-                      const answerEngines = resolveMessagePerspectives(msg);
-                      const showAnswerEngines = shouldShowAnswerEngines({
-                        role: msg.role,
-                        isGreeting,
-                        isGenerating: isLucyGenerating && index === filteredMessages.length - 1,
-                        engines: answerEngines,
-                      });
-                      return (
-                        <LucyAnswerEngineBar
-                          engines={answerEngines}
-                          isLight={isLight}
-                          isMasterMode={isMasterMode}
-                          show={showAnswerEngines}
-                          onOpenPerspective={handleOpenAnswerPerspective}
-                          onOpenTool={handleOpenAnswerTool}
-                        />
-                      );
-                    })()}
                     </>
                   )}
                 </div>
