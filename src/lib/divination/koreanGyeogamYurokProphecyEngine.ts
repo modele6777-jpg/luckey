@@ -21,7 +21,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GYEOGAM_YUROK_VERSION = '2.3.0';
+export const GYEOGAM_YUROK_VERSION = '2.4.0';
 
 export interface GyeogamYurokReport {
   engineVersion: string;
@@ -61,6 +61,7 @@ export interface GyeogamYurokReport {
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
+    gyeogamCrossAxis: string;
   };
   namSagoMasterAdvice: string;
   boundaryNotice: string;
@@ -228,10 +229,12 @@ export function calculateGyeogamYurokProphecy(
           sanctuaryPractice: '조용한 시간 동안 마음의 소음을 가라앉히고 본래의 중심을 점검하십시오.',
         };
 
+  const gyeogamCrossAxis = `[${primaryGyeogamChapter.titleKo}] × [${haeinTalismanType.nameKo}] × [${situationalGyeogamAudit.focusTheme}] × [${temporalGyeogamRhythm.sipseungWatchWindow.split(' — ')[0]}]`;
   const gyeogamSynthesisMatrix = {
     coreInsight: `[${primaryGyeogamChapter.titleKo}]와 신령 인장 [${haeinTalismanType.nameKo}]가 ${situationalGyeogamAudit.focusTheme}을 비춥니다.`,
     recommendedAction: `${namSagoMasterAdvice} (${situationalGyeogamAudit.sanctuaryPractice})`,
     cautionNotice: '외적 요행이나 세속의 소문에 기대어 내면의 덕과 원칙을 소홀히 하지 않도록 경계하십시오.',
+    gyeogamCrossAxis,
   };
 
   const ritualAction = `[${primaryGyeogamChapter.titleKo} · ${haeinTalismanType.nameKo}] ${situationalGyeogamAudit.sanctuaryPractice}`;
@@ -276,7 +279,7 @@ export function formatGyeogamYurokProphecyPrompt(report: GyeogamYurokReport): st
 - **질문 맥락 감사 (${report.situationalGyeogamAudit.focusTheme})**: ${report.situationalGyeogamAudit.sajungGusaengNote} / 실천: ${report.situationalGyeogamAudit.sanctuaryPractice}
 - **KST 시공간 십승 리듬**: ${report.temporalGyeogamRhythm.sipseungWatchWindow} / ${report.temporalGyeogamRhythm.seasonalSampungTone}
   - *시공간 지침*: ${report.temporalGyeogamRhythm.temporalGuidance}
-- **격암 교차 매트릭스**: 핵심(${report.gyeogamSynthesisMatrix.coreInsight}) | 실행(${report.gyeogamSynthesisMatrix.recommendedAction}) | 주의(${report.gyeogamSynthesisMatrix.cautionNotice})
+- **격암 교차 매트릭스**: 핵심(${report.gyeogamSynthesisMatrix.coreInsight}) | 4중 교차 축(${report.gyeogamSynthesisMatrix.gyeogamCrossAxis}) | 실행(${report.gyeogamSynthesisMatrix.recommendedAction}) | 주의(${report.gyeogamSynthesisMatrix.cautionNotice})
 - **격암 남사고 선생 심법 처방**:
   - "${report.namSagoMasterAdvice}"
 - **실천 의례(Ritual Action)**: ${report.ritualAction}

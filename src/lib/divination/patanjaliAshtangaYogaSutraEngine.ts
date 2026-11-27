@@ -22,7 +22,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PATANJALI_ASHTANGA_YOGA_ENGINE_VERSION = '2.3.0';
+export const PATANJALI_ASHTANGA_YOGA_ENGINE_VERSION = '2.4.0';
 
 export interface YogaLimb {
   id: string;
@@ -53,6 +53,7 @@ export interface PatanjaliAshtangaYogaReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    yogaCrossAxis: string;
   };
   reflectiveQuestion?: string;
   interpretiveBoundary: string;
@@ -230,10 +231,13 @@ export function calculatePatanjaliAshtangaYoga(
     (cittaVrittiNirodhaScore + kleshaPurificationRate + purushaConsciousnessAwakening + pranayamaVitalityBalance) / 4
   );
   const q = contextText.trim();
+  const alignmentState = describePatanjaliStage(composite);
+  const yogaCrossAxis = `[${dominantYogaLimb.nameKo}] × [${secondaryYogaLimb.nameKo}] × [${dominantYogaLimb.focusRealm}] × [${alignmentState.split(' — ')[0]}]`;
   const yogaSynthesisMatrix = {
     dominantTension: `${dominantYogaLimb.nameKo} ↔ ${secondaryYogaLimb.nameKo}`,
-    alignmentState: describePatanjaliStage(composite),
+    alignmentState,
     integratedAction: `${dharanaFocusPrescription}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    yogaCrossAxis,
   };
   const reflectiveQuestion = q
     ? `지금 "${q}" 앞에서 제${dominantYogaLimb.level}지칙 '${dominantYogaLimb.nameKo}'의 치타 브리티 니로다(마음의 동요 소멸)를 비추어 볼 때, 내가 내려놓아야 할 번뇌의 파동 한 가지는 무엇인가요?`
@@ -280,6 +284,7 @@ export function formatPatanjaliAshtangaYogaPrompt(
   if (report.yogaSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스 [핵심 긴장: ${report.yogaSynthesisMatrix.dominantTension} | 조율 상태: ${report.yogaSynthesisMatrix.alignmentState}]`,
+      `- 4중 교차 축: ${report.yogaSynthesisMatrix.yogaCrossAxis}`,
       `- 통합 실천: ${report.yogaSynthesisMatrix.integratedAction}`,
     );
   }
