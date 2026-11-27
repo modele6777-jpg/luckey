@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ALCHEMICAL_TRANSMUTATION_VERSION = 'LUCKEY-ALCHEM-TRANSMUTE-v2.4.0';
+export const ALCHEMICAL_TRANSMUTATION_VERSION = 'LUCKEY-ALCHEM-TRANSMUTE-v2.5.0';
 
 export type AlchemicalQuestionFocus = 'career' | 'relationship' | 'anxiety' | 'change' | 'spiritual';
 
@@ -56,6 +56,7 @@ export interface OpusSynthesisMatrix {
   elementalEquilibrium: string;
   coagulatioReadiness: string;
   synthesizedVerdict: string;
+  alchemyCrossAxis: string;
 }
 
 export interface AlchemicalTransmutationReport {
@@ -326,6 +327,7 @@ export function calculateAlchemicalTransmutation(
   const situationalAlchemicalAudit = buildSituationalAlchemicalAudit(questionFocus, currentStage, currentPhase);
   const temporalOpusRhythm = buildTemporalOpusRhythm(targetDate, currentStage);
 
+  const alchemyCrossAxis = `[${currentStage.nameKo}] × [${currentPhase.phaseName}] × [${currentStage.element}] × [${questionFocus}]`;
   const opusSynthesisMatrix: OpusSynthesisMatrix = {
     primaMateriaClarity: `현재 도가니의 원재료는 [${primaMateria}]이며, ${currentPhase.phaseName}의 정화 과정을 거치고 있습니다.`,
     elementalEquilibrium: `${currentStage.element} 원소와 ${temporalOpusRhythm.seasonalElement}가 교차하며 내면의 불균형을 조율합니다.`,
@@ -333,6 +335,7 @@ export function calculateAlchemicalTransmutation(
       ? '내적 통찰이 충분히 숙성되어 현실의 구체적 행동과 결실로 굳어질 수 있는 상태입니다.'
       : '성급한 현실화보다 낡은 집착을 녹이고 본질을 가려내는 내면 정련이 우선되는 상태입니다.',
     synthesizedVerdict: `${currentStage.nameKo}와 ${temporalOpusRhythm.alchemicalHourWindow}이 맞물려, [${currentStage.transmutationTask}]을 실행할 때 현자의 돌(${lapisPhilosophorum})로 나아갑니다.`,
+    alchemyCrossAxis,
   };
 
   const opusMagnumGuidance = `현재 내담자는 연금술의 [${currentStage.nameKo}] 국면에 머물러 있습니다. 이 시기의 난관은 저주나 불운이 아니라, 당신 안에 잠든 순금(純金)을 제련하기 위한 필연적인 [${currentPhase.phaseName}]의 정화 과정입니다. [${currentStage.transmutationTask}]을/를 삶의 나침반으로 삼을 때, 원초적 고통은 궁극의 [${lapisPhilosophorum}]으로 완벽히 승화됩니다.`;
@@ -384,7 +387,7 @@ export function formatAlchemicalTransmutationPrompt(report: AlchemicalTransmutat
   - 화후 상태: ${report.temporalOpusRhythm.crucibleHeatState}
   - 계절 원소: ${report.temporalOpusRhythm.seasonalElement}
   - 시의성 지침: ${report.temporalOpusRhythm.timingGuidance}
-- **연금술 교차 매트릭스**: ${report.opusSynthesisMatrix.synthesizedVerdict} (${report.opusSynthesisMatrix.coagulatioReadiness})
+- **연금술 교차 매트릭스**: ${report.opusSynthesisMatrix.synthesizedVerdict} (${report.opusSynthesisMatrix.coagulatioReadiness}) · 4중 교차 축(${report.opusSynthesisMatrix.alchemyCrossAxis})
 - **대업(Opus Magnum) 완수 지침**: ${report.opusMagnumGuidance}
 - **일일 연금술 정화 리추얼**: ${report.dailyAlchemicalRitual}
 - **실천 의례**: ${report.ritualAction}
