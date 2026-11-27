@@ -3670,13 +3670,14 @@ test('Saju Twelve Stages & Tomb Unlock Engine: calculates lifecycle vitality and
   assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.tombSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.tombCrossAxis?.dayMaster && rep.tombCrossAxis?.peakStage && typeof rep.tombCrossAxis?.storageCount === 'number' && rep.tombCrossAxis?.primaryStorage));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.pillarsVitality.length === 4);
   assert(rep.peakVitalityStage.length > 0);
   const prompt = formatSajuTwelveStagesTombPrompt(rep);
   assert(prompt.includes(rep.peakVitalityStage) || prompt.includes('사주 12운성'));
   assert(prompt.includes('2026 병오년'));
-  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('12운성·묘고 교차 축') && prompt.includes('해석 경계'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
 });
 
@@ -14893,15 +14894,15 @@ test('Chukchi Bering Tundra Hearth engine: symbol, +09:00 KST, and interpretive 
 
 test('Palmyrene Oasis Colonnade engine: pillar, +09:00 KST, and interpretive boundary', () => {
   const rep = calculatePalmyreneOasisColonnade({ profile, now: new Date('2026-11-20T09:04:00Z'), question: '사막 한가운데서도 단정한 질서를 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-PALMYRENE-OASIS-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-PALMYRENE-OASIS-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPillar !== rep.oasisPillar);
-  assert.ok(rep.colonnadeAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.colonnadeAxis.length > 0 && rep.shadowWarning.length > 0 && rep.topicBalanceHint.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatPalmyreneOasisPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('팔미라') && prompt.includes('동반 기둥') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('팔미라') && prompt.includes('동반 기둥') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계') && prompt.includes('맥락 균형 조언'));
 });
 
 test('Sicilian Majolica Etna Balance engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -16025,16 +16026,16 @@ test('Bajau Laut Tide engine: anchor, +09:00 KST, and interpretive boundary', ()
 
 test('Wodaabe Gerewol engine: gathering, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateWodaabeGerewol({ profile, now: new Date('2026-11-20T22:55:00Z'), question: '힘든 상황에서도 품위를 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-WODAABE-GEREWOL-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-WODAABE-GEREWOL-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionGathering !== rep.desertGathering);
-  assert.ok(rep.munyaPoiseAxis.length > 0 && rep.shadowWarning.length > 0 && rep.questionTopic.length > 0);
+  assert.ok(rep.munyaPoiseAxis.length > 0 && rep.shadowWarning.length > 0 && rep.questionTopic.length > 0 && rep.topicBalanceHint.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatWodaabeGerewolPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('우다베') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionGathering));
-  assert.ok(prompt.includes('과잉 경계') && prompt.includes('질문 맥락'));
+  assert.ok(prompt.includes('과잉 경계') && prompt.includes('질문 맥락') && prompt.includes('맥락 균형 조언'));
 });
 
 test('Badakhshan Lapis Vein engine: vein, +09:00 KST, and interpretive boundary', () => {
