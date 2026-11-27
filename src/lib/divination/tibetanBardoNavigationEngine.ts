@@ -22,7 +22,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TIBETAN_BARDO_VERSION = 'LUCKEY-TIBETAN-BARDO-v2.3.0';
+export const TIBETAN_BARDO_VERSION = 'LUCKEY-TIBETAN-BARDO-v2.4.0';
 
 export type BardoQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
 
@@ -66,6 +66,12 @@ export interface TibetanBardoReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  bardoCrossAxis: {
+    currentNo: number;
+    nextNo: number;
+    phase: string;
+    topic: BardoQuestionTopic;
   };
 }
 
@@ -217,6 +223,12 @@ export function calculateTibetanBardoNavigation(
     alignmentState: `${bardoPhase} · 다음 전환(${secondaryBardoState.nameKo})`,
     integratedAction: `${dailyZenAnchor}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const bardoCrossAxis = {
+    currentNo: currentBardoState.stateNo,
+    nextNo: secondaryBardoState.stateNo,
+    phase: bardoPhase.split(' — ')[0],
+    topic: questionTopic,
+  };
 
   return {
     engineVersion: TIBETAN_BARDO_VERSION,
@@ -236,12 +248,13 @@ export function calculateTibetanBardoNavigation(
     ritualAction,
     reflectionFocus,
     bardoSynthesisMatrix,
+    bardoCrossAxis,
   };
 }
 
 export function formatTibetanBardoNavigationPrompt(report: TibetanBardoReport): string {
   const matrixLine = report.bardoSynthesisMatrix
-    ? `\n- **바르도 교차 매트릭스**: 핵심 긴장(${report.bardoSynthesisMatrix.dominantTension}) · 조율 상태(${report.bardoSynthesisMatrix.alignmentState}) · 통합 실천(${report.bardoSynthesisMatrix.integratedAction})`
+    ? `\n- **바르도 교차 매트릭스**: 핵심 긴장(${report.bardoSynthesisMatrix.dominantTension}) · 조율 상태(${report.bardoSynthesisMatrix.alignmentState}) · 통합 실천(${report.bardoSynthesisMatrix.integratedAction})\n- **바르도 교차 축**: ${report.bardoCrossAxis.currentNo}→${report.bardoCrossAxis.nextNo}단계 (${report.bardoCrossAxis.phase} · ${report.bardoCrossAxis.topic})`
     : '';
   return `### ☸️ 티베트 불교 바르도(Bardo) 6대 환생 상태 & 전환기 의식 항해 엔진 (${TIBETAN_BARDO_VERSION} | ${report.calculatedAtKst})
 - **질문 맥락**: ${report.questionTopic} | **바르도 각성 국면**: ${report.bardoPhase}

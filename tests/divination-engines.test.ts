@@ -3862,6 +3862,7 @@ test('Tibetan Bardo Navigation Engine: maps 6 bardo states and clear light insig
   assert.equal(rep.questionTopic, 'decision');
   assert(rep.bardoPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(Boolean(rep.bardoSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.bardoCrossAxis?.currentNo && rep.bardoCrossAxis?.nextNo && rep.bardoCrossAxis?.phase && rep.bardoCrossAxis?.topic));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.currentBardoState.stateNo >= 1 && rep.currentBardoState.stateNo <= 6);
   assert(rep.secondaryBardoState.stateNo >= 1 && rep.secondaryBardoState.stateNo <= 6);
@@ -3876,7 +3877,7 @@ test('Tibetan Bardo Navigation Engine: maps 6 bardo states and clear light insig
   assert(prompt.includes('바르도 각성 국면') && prompt.includes('과잉 경계'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('바르도 교차 축'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -14047,15 +14048,15 @@ test('Kyrgyz Manas Oral Epic Courage engine: chapter, +09:00 KST, and interpreti
 
 test('Shona Mbira Ancestral Resonance engine: cycle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateShonaMbiraAncestralResonance({ profile, now: new Date('2026-11-20T06:40:00Z'), question: '마음의 리듬을 되찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SHONA-MBIRA-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SHONA-MBIRA-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionCycle !== rep.mbiraCycle);
-  assert.ok(rep.mbiraResonanceAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.mbiraResonanceAxis.length > 0 && rep.shadowWarning.length > 0 && rep.topicBalanceHint.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatShonaMbiraPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('쇼나') && prompt.includes('동반 순환') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('쇼나') && prompt.includes('동반 순환') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계') && prompt.includes('맥락 균형 조언'));
 });
 
 test('Tongan Kava Circle Tauhi Va engine: practice, +09:00 KST, and interpretive boundary', () => {
@@ -15027,16 +15028,16 @@ test('Goguryeo Samjoko Mural Spirit engine: motif, +09:00 KST, and interpretive 
 
 test('Silla Emille Cheomseongdae engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSillaEmilleCheomseongdae({ profile, now: new Date('2026-11-20T19:15:00Z'), question: '조급함을 내려놓고 고요히 관찰하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SILLA-EMILLE-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SILLA-EMILLE-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.gyeongjuMotif);
-  assert.ok(rep.gyeongjuResonanceAxis.length > 0 && rep.shadowWarning.length > 0 && rep.questionTopic.length > 0);
+  assert.ok(rep.gyeongjuResonanceAxis.length > 0 && rep.shadowWarning.length > 0 && rep.questionTopic.length > 0 && rep.topicBalanceHint.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSillaEmillePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('신라') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)'));
-  assert.ok(prompt.includes('과잉 경계') && prompt.includes('질문 맥락'));
+  assert.ok(prompt.includes('과잉 경계') && prompt.includes('질문 맥락') && prompt.includes('맥락 균형 조언'));
 });
 
 test('Omani Frankincense Falaj Water engine: symbol, +09:00 KST, and interpretive boundary', () => {
