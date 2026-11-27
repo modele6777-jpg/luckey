@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION = '2.3.0';
+export const PLUM_BLOSSOM_MEIHUA_ORACLE_ENGINE_VERSION = '2.4.0';
 
 export type MeihuaTrigram = {
   num: number;
@@ -63,6 +63,7 @@ export interface PlumBlossomMeihuaReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    meihuaCrossAxis: string;
   };
   ritualAction: string;
   reflectionFocus: string;
@@ -205,10 +206,12 @@ export function calculatePlumBlossomMeihuaOracle(options?: {
     `호괘(${huGua.fullName})의 과정을 거쳐 종국에는 변괘(${bianGua.fullName})로 귀결되니, ${shaoYongJudgment}`;
 
   const calculatedAtKst = formatMeihuaKstTimestamp(now);
+  const meihuaCrossAxis = `[${benGua.fullName}] × [제${movingLine}효] × [${tiYongRelation}] × [${bianGua.fullName}]`;
   const meihuaSynthesisMatrix = {
     dominantTension: `체괘 ${tiGua.name}(${tiGua.element}) ↔ 용괘 ${yongGua.name}(${yongGua.element})`,
     alignmentState: `${tiYongRelation} — 본괘 ${benGua.fullName} → 변괘 ${bianGua.fullName}`,
     integratedAction: `${shaoYongJudgment}${question ? ` [질문 맥락: ${question}]` : ''}`,
+    meihuaCrossAxis,
   };
   const reflectiveQuestion = question
     ? `지금 "${question}" 앞에서 본괘 ${benGua.fullName}·${movingLine}효 동(${tiYongRelation})의 조짐을 살필 때, 내가 주체(${tiGua.name}·${tiGua.element})로서 지켜야 할 시중(時中)의 처신은 무엇인가요?`
@@ -250,6 +253,7 @@ export function formatPlumBlossomMeihuaOraclePrompt(rep: PlumBlossomMeihuaReport
   if (rep.meihuaSynthesisMatrix) {
     lines.push(
       `· 교차 매트릭스 [핵심 긴장: ${rep.meihuaSynthesisMatrix.dominantTension} | 조율 상태: ${rep.meihuaSynthesisMatrix.alignmentState}]`,
+      `· 4중 교차 축: ${rep.meihuaSynthesisMatrix.meihuaCrossAxis}`,
       `· 통합 실천: ${rep.meihuaSynthesisMatrix.integratedAction}`,
     );
   }

@@ -1493,6 +1493,8 @@ test('Vedic engine: determinism, null-safe noon fallback, safe skip and prompt f
   assert(prompt.includes('다샤 행성 조화'));
   assert(prompt.includes('켄드라·트리코나 번영'));
   assert(prompt.includes('4대 푸루샤르타 인생 목적'));
+  assert(Boolean(r1.vedicSynthesisMatrix?.vedicCrossAxis.includes(r1.nakshatra!.name)));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes(VEDIC_ENGINE_VERSION));
   assert(prompt.includes('빔쇼타리'));
   assert(prompt.includes('나크샤트라'));
@@ -5194,6 +5196,7 @@ test('Plum Blossom Meihua Oracle Engine: calculates ben/hu/bian gua and ti-yong 
   assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.meihuaSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.meihuaSynthesisMatrix?.meihuaCrossAxis.includes(rep.benGua.fullName)));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.movingLine >= 1 && rep.movingLine <= 6);
   assert(rep.auspiciousScore >= 0 && rep.auspiciousScore <= 100);
@@ -5203,7 +5206,7 @@ test('Plum Blossom Meihua Oracle Engine: calculates ben/hu/bian gua and ti-yong 
   assert(prompt.includes('송대 소강절 선생 매화역수(梅花易數) 체용생극 선천 작괘 실측 데이터'));
   assert(prompt.includes(rep.tiYongRelation));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
-  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -5366,13 +5369,14 @@ test('Norse Volva Seidr Nine Realms Engine: calculates nine realms resonance and
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(Boolean(rep.volvaSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.volvaSynthesisMatrix?.volvaCrossAxis.includes(rep.dominantRealm.nameKo)));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatNorseVolvaSeidrNineRealmsPrompt(rep);
   assert(prompt.includes('고대 북유럽 볼바 세이드 직관 & 위그드라실 9대 세계 실측 데이터'));
   assert(prompt.includes(rep.dominantRealm.nameKo));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
-  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

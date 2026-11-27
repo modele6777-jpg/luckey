@@ -46,7 +46,7 @@ import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 import { calculateNatalChart, ZODIAC_SIGNS } from '../astrologyAnalysis';
 
-export const VEDIC_ENGINE_VERSION = 'LUCKEY-VD-v2.3.0';
+export const VEDIC_ENGINE_VERSION = 'LUCKEY-VD-v2.4.0';
 
 export type VedicQuestionTopic = 'dasha' | 'career' | 'wealth' | 'relation' | 'general';
 
@@ -191,6 +191,7 @@ export interface VedicResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    vedicCrossAxis: string;
   };
   note?: string;
 }
@@ -667,12 +668,14 @@ export function calculateVedicAdvanced(params: {
     ? `현재 ${currentDasha.mahadasha.lord}-${currentDasha.antardasha.lord} 다샤 흐름에 맞추어 ${purusharthaAlignment.primarySpiritualAim}을 뒷받침하는 핵심 과제를 하루 15분 차분히 점검하십시오.`
     : `${nakshatra.name} 나크샤트라의 상징(${nakshatra.symbol})을 떠올리며 ${purusharthaAlignment.primarySpiritualAim}에 닿는 작은 실천을 시작하십시오.`;
   const reflectionFocus = `찬드라 ${chandra.name}와 수리야 ${surya.name} 사이에서 ${purusharthaAlignment.primarySpiritualAim}을 지키는 삶의 중심축`;
+  const vedicCrossAxis = `[${nakshatra.name}] × [${chandra.name}] × [${currentDasha ? `${currentDasha.mahadasha.lord}-${currentDasha.antardasha.lord}` : nakshatra.lord}] × [${questionTopic}]`;
   const vedicSynthesisMatrix = {
     dominantTension: currentDasha
       ? `${currentDasha.mahadasha.lord} 마하다샤 ↔ ${currentDasha.antardasha.lord} 안타르다샤`
       : `${nakshatra.name} 나크샤트라 ↔ ${chandra.name} 라시`,
     alignmentState: `${nakshatra.gana} · ${nakshatra.tattva} · ${purusharthaAlignment.primarySpiritualAim}`,
     integratedAction: `${kendraTrikonaProsperity.lifePillarAdvice}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    vedicCrossAxis,
   };
 
   return {
@@ -759,7 +762,7 @@ export function formatVedicPrompt(result: VedicResult): string {
     : '';
 
   const matrixLine = result.vedicSynthesisMatrix
-    ? `\n- 베딕 조티시 교차 매트릭스: 핵심 긴장(${result.vedicSynthesisMatrix.dominantTension}) · 조율 상태(${result.vedicSynthesisMatrix.alignmentState}) · 통합 실천(${result.vedicSynthesisMatrix.integratedAction})`
+    ? `\n- 베딕 조티시 교차 매트릭스: 핵심 긴장(${result.vedicSynthesisMatrix.dominantTension}) · 4중 교차 축(${result.vedicSynthesisMatrix.vedicCrossAxis}) · 조율 상태(${result.vedicSynthesisMatrix.alignmentState}) · 통합 실천(${result.vedicSynthesisMatrix.integratedAction})`
     : '';
   const secondaryLine = result.secondaryAxis
     ? `\n- 보조 교차 축: ${result.secondaryAxis}`
