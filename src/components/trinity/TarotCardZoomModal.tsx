@@ -102,7 +102,7 @@ export function TarotCardZoomModal({
             exit={{ opacity: 0, scale: 0.78, y: 15 }}
             transition={{ type: 'spring', damping: 25, stiffness: 320 }}
             onClick={(e) => e.stopPropagation()}
-            className="duo-dialog-panel relative w-full max-w-md max-w-[94vw] bg-[#0e0c18] border border-yellow-500/40 p-3.5 sm:p-6 rounded-[28px] sm:rounded-[32px] shadow-[0_25px_80px_rgba(0,0,0,0.9)] text-white max-h-[92vh] sm:max-h-[94vh] overflow-y-auto custom-scrollbar flex flex-col space-y-3 sm:space-y-4"
+            className="duo-dialog-panel relative w-full max-w-md bg-[#0e0c18] border border-yellow-500/40 p-3 sm:p-6 rounded-2xl sm:rounded-[32px] shadow-[0_25px_80px_rgba(0,0,0,0.9)] text-white max-h-[calc(100dvh-1rem)] overflow-y-auto custom-scrollbar flex flex-col space-y-3 sm:space-y-4"
           >
             {/* Subtle Ambient Cosmic Aura */}
             <motion.div
@@ -258,12 +258,12 @@ export function TarotCardZoomModal({
                   transition={{ duration: 0.35, delay: 0.1 }}
                   className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-br from-rose-950/40 via-purple-950/20 to-black/60 border border-rose-500/40 shadow-inner space-y-2.5 text-left"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5 text-rose-300 font-bold text-xs">
-                      <Sparkles size={13} className="text-rose-400 animate-pulse" />
-                      <span>🔄 역방향 핵심 뜻 &amp; 그림자 통찰</span>
+                  <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                    <div className="flex items-center gap-1.5 text-rose-300 font-bold text-xs min-w-0">
+                      <Sparkles size={13} className="text-rose-400 animate-pulse shrink-0" />
+                      <span className="min-w-0 break-keep">🔄 역방향 핵심 뜻 &amp; 그림자 통찰</span>
                     </div>
-                    <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-200 border border-rose-500/30">
+                    <span className="shrink-0 whitespace-nowrap text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-200 border border-rose-500/30">
                       역방향 적용됨
                     </span>
                   </div>

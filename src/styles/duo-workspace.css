@@ -91,7 +91,18 @@
   max-width: 100%;
 }
 .duo-portal > .fixed.inset-0 {
-  padding: max(.75rem, env(safe-area-inset-top, 0px)) max(1rem, env(safe-area-inset-right, 0px)) max(.75rem, env(safe-area-inset-bottom, 0px)) max(1rem, env(safe-area-inset-left, 0px));
+  padding: max(.5rem, env(safe-area-inset-top, 0px)) max(.75rem, env(safe-area-inset-right, 0px)) max(.5rem, env(safe-area-inset-bottom, 0px)) max(.75rem, env(safe-area-inset-left, 0px));
+}
+@media (min-width: 640px) {
+  .duo-portal > .fixed.inset-0 {
+    padding: max(.75rem, env(safe-area-inset-top, 0px)) max(1rem, env(safe-area-inset-right, 0px)) max(.75rem, env(safe-area-inset-bottom, 0px)) max(1rem, env(safe-area-inset-left, 0px));
+  }
+}
+/* A dialog fills the visible canvas beside the rail, never a narrower box. */
+.duo-portal[data-overlay-scope='canvas'] > .fixed.inset-0 {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0;
 }
 .duo-dialog-panel {
   display: flex;
@@ -418,5 +429,16 @@ html:root:root :is(.screen-portal, .duo-portal) :is(.bottom-safe-fab-center, .bo
 /* Page guide: keep the floating Big Bang orb from covering the open guide. */
 body:has([data-page-guide]) .bottom-safe-fab-center {
   visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* An open popup owns the screen. Popup layers live inside the app shell, whose
+   stacking level is below the floating orb's own level, so the orb would paint
+   over dialog content (deck names, hashtags) and swallow taps meant for it.
+   The orb steps aside while a layer holds a dialog and returns when it empties. */
+body:has([data-screen-overlay-layer]:not(:empty)) .bottom-safe-fab-center,
+body:has(.duo-portal > *, .screen-portal > *) .bottom-safe-fab-center {
+  visibility: hidden !important;
+  opacity: 0 !important;
   pointer-events: none !important;
 }
