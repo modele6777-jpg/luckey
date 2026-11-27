@@ -17,7 +17,7 @@ import {
   configureAmbientAudioSession,
 } from '../lib/audio';
 import { playAiResultNotification } from '../lib/audioHaptics';
-import { preloadCompletionChime } from '../lib/completionChime';
+import { preloadCompletionBowl } from '../lib/completionBowl';
 import { setTTSSessionActive, clearTTSSession, initTTSSessionHandlers, pauseTTSSession, resumeTTSSession } from '../lib/ttsMediaSession';
 import { acquireScreenWakeLock, releaseScreenWakeLock } from '../lib/wakeLock';
 import { prepareNaturalSpeechText } from './speechText';
@@ -447,7 +447,7 @@ export const playTTS = async (
     // Synchronously unlock audio during user gesture (required for mobile iOS/Android WebAudio playback)
     try {
       unlockAudioPlayback();
-      preloadCompletionChime(getSharedAudioContext());
+      preloadCompletionBowl(getSharedAudioContext());
     } catch (e) {
       console.warn("[TTS] Failed to warm up audio systems:", e);
     }
@@ -804,7 +804,7 @@ export const playTTSInChunks = async (
       if (ctx.state === 'suspended') {
         ctx.resume().catch(() => {});
       }
-      preloadCompletionChime(ctx);
+      preloadCompletionBowl(ctx);
       primeTTSAudioElement();
     } catch (_) {}
 
