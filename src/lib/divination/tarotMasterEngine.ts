@@ -29,7 +29,7 @@
 import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 
-export const TAROT_MASTER_ENGINE_VERSION = 'LUCKEY-TAROT-v2.3.0';
+export const TAROT_MASTER_ENGINE_VERSION = 'LUCKEY-TAROT-v2.4.0';
 
 function formatTarotMasterKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -142,6 +142,7 @@ export interface TarotMasterResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    tarotCrossAxis: string;
   };
   interpretiveBoundary: string;
 }
@@ -390,10 +391,12 @@ export function calculateTarotMaster(params?: {
   const reflectiveQuestion = q
     ? `'${q}'라는 질문 앞에서, 내 영혼의 본질(${soulCard.name})과 현재의 과제(${presentCard.name})를 잇기 위해 '${suitManifestation.suitName}'의 힘으로 오늘 당장 실행할 한 가지는 무엇인가요?`
     : `지금 '${presentCard.name}'의 국면에서 내 소울 카드(${soulCard.name})의 진실에 가장 가깝게 응답하기 위해 오늘 선택할 행동은 무엇인가요?`;
+  const tarotCrossAxis = `[${soulCard.name}] × [${presentCard.name}] × [${dominantElement}] × [${soulSephira.sephiraName}]`;
   const tarotSynthesisMatrix = {
     dominantTension: `${soulCard.name} ↔ ${presentCard.name}`,
     alignmentState: `주도 원소(${dominantElement}) · 세피라(${soulSephira.sephiraName})`,
     integratedAction: `${suitManifestation.actionProtocol}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    tarotCrossAxis,
   };
 
   const ritualAction = `${suitManifestation.suitName} 실천 의례 — ${suitManifestation.dailyPractice}`;
@@ -439,7 +442,7 @@ export function calculateTarotMaster(params?: {
  */
 export function formatTarotMasterPrompt(res: TarotMasterResult): string {
   const matrixLine = res.tarotSynthesisMatrix
-    ? `\n- 타로 교차 매트릭스: 핵심 긴장(${res.tarotSynthesisMatrix.dominantTension}) · 조율 상태(${res.tarotSynthesisMatrix.alignmentState}) · 통합 실천(${res.tarotSynthesisMatrix.integratedAction})`
+    ? `\n- 타로 교차 매트릭스: 핵심 긴장(${res.tarotSynthesisMatrix.dominantTension}) · 조율 상태(${res.tarotSynthesisMatrix.alignmentState}) · 통합 실천(${res.tarotSynthesisMatrix.integratedAction})\n- 4중 교차 축: ${res.tarotSynthesisMatrix.tarotCrossAxis}`
     : '';
   return `[타로(Tarot) 78 아르카나 수비학·소울/퍼스널리티 & 타임라인 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst})]
 - 생애 소울 카드 (영혼의 본질): ${res.soulCard.name} [${res.soulCard.element} 원소] - ${res.soulCard.keywords.join(', ')}

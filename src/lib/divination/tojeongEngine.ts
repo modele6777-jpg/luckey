@@ -24,7 +24,7 @@
 import type { UserProfile } from '../sharedState';
 import { convertLunarToSolar, convertSolarToLunar, resolveEffectiveSolarDate } from '../lunarCalendar';
 
-export const TOJEONG_ENGINE_VERSION = 'LUCKEY-TJ-v2.3.0';
+export const TOJEONG_ENGINE_VERSION = 'LUCKEY-TJ-v2.4.0';
 
 export const TOJEONG_METHOD =
   '조선 정통 이지함 토정비결 수리 산법(태세수·월건수·일진수 작괘) 기반 144괘문 결정론적 계산';
@@ -91,6 +91,7 @@ export interface TojeongResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    tojeongCrossAxis: string;
   };
   reflectiveQuestion?: string;
   ritualAction?: string;
@@ -593,10 +594,12 @@ export function calculateTojeong(params: { profile?: UserProfile | null; targetY
 
   const { utc, kst } = kstTimestamps(now);
   const q = (params.question || '').trim();
+  const tojeongCrossAxis = `[${hexagramName}(${hexagramCode})] × [${trigramAnalysis.elementRelation}] × [${moving.label}] × [${trigramAnalysis.seasonalFlow.peakSeason}]`;
   const tojeongSynthesisMatrix = {
     dominantTension: `${hexagramName}(${hexagramCode}괘) · ${moving.label}`,
     alignmentState: `${trigramAnalysis.elementRelation} · 성운기(${trigramAnalysis.seasonalFlow.peakSeason})`,
     integratedAction: `${trigramAnalysis.hexagramEssenceAdvice}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    tojeongCrossAxis,
   };
   const reflectiveQuestion = q
     ? `지금 "${q}" 앞에서 ${targetYear}년 토정 ${hexagramName}(${hexagramCode}괘 · ${moving.label})의 뜻을 헤아려 내가 지키고 나아갈 자리는 어디인가요?`
@@ -768,7 +771,7 @@ export function formatTojeongPrompt(result: TojeongResult): string {
     .join('\n');
 
   const matrixBlock = result.tojeongSynthesisMatrix
-    ? `\n- 토정비결 교차 매트릭스: 핵심 긴장(${result.tojeongSynthesisMatrix.dominantTension}) · 조율 상태(${result.tojeongSynthesisMatrix.alignmentState}) · 통합 실천(${result.tojeongSynthesisMatrix.integratedAction})`
+    ? `\n- 토정비결 교차 매트릭스: 핵심 긴장(${result.tojeongSynthesisMatrix.dominantTension}) · 조율 상태(${result.tojeongSynthesisMatrix.alignmentState}) · 통합 실천(${result.tojeongSynthesisMatrix.integratedAction})\n- 4중 교차 축: ${result.tojeongSynthesisMatrix.tojeongCrossAxis}`
     : '';
 
   return `[🔮 토정비결(土亭秘訣) ${result.targetYear}년 ${result.hexagramCode}괘 산출 참고값 (Tojeong 144-Hexagram Core)]

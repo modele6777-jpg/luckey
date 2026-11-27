@@ -627,7 +627,8 @@ test('Tojeong reference example: lunar 1990-05-20 birth viewed in 丙午 2026 ca
   assert.equal(r.hexagramCode,'551');assert.equal(r.hexagramName,'손위풍');
   assert.equal(r.monthlyFortunes.length,12);
   assert(r.monthlyFortunes.every(m=>m.fortune.length>10&&m.tip.length>5));
-  assert(formatTojeongPrompt(r).includes('551괘'));
+  assert(Boolean(r.tojeongSynthesisMatrix?.tojeongCrossAxis.includes(r.hexagramName)));
+  assert(formatTojeongPrompt(r).includes('551괘')&&formatTojeongPrompt(r).includes('4중 교차 축'));
   const again=calculateTojeong({profile:{basic:{birthdate:'1990-05-20',lunarSolar:'lunar' as const}},targetYear:2026});
   assert.equal(again.hexagramCode,r.hexagramCode);assert.equal(again.annualSummary,r.annualSummary);
 });
@@ -786,6 +787,8 @@ test('Samjae/GyoUn skips without birthdate, degrades without gender, and renders
   assert(r.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(prompt.includes(r.reflectionFocus!));
   assert(Boolean(r.samjaeGyoUnSynthesisMatrix?.integratedAction));
+  assert(Boolean(r.samjaeGyoUnSynthesisMatrix?.samjaeCrossAxis.length));
+  assert(prompt.includes('4중 교차 축'));
   assert(Boolean(r.interpretiveBoundary?.length));
   assert.equal(formatSamjaeGyoUnPrompt(skipped),'');
   const noGender=calculateSamjaeGyoUn({profile:{basic:{birthdate:'2000-08-16'}},targetYear:2026});
@@ -2273,6 +2276,7 @@ test('Tarot Master Engine: 78 아르카나 수비학 소울·퍼스널리티·�
   assert.equal(res.engineVersion, TAROT_MASTER_ENGINE_VERSION);
   assertKstTimestamp(res.calculatedAtKst);
   assert(Boolean(res.tarotSynthesisMatrix?.integratedAction));
+  assert(Boolean(res.tarotSynthesisMatrix?.tarotCrossAxis.includes(res.soulCard.name)));
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.interpretiveBoundary.length > 0);
   assert(res.soulCard.number >= 1 && res.soulCard.number <= 9);
@@ -2293,7 +2297,7 @@ test('Tarot Master Engine: 78 아르카나 수비학 소울·퍼스널리티·�
   assert(prompt.includes('3카드 타임라인 스프레드'));
   assert(prompt.includes('카발라 생명나무 세피라 조응'));
   assert(prompt.includes('마이너 아르카나 수트 실천 지침'));
-  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축') && prompt.includes('해석 경계'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
