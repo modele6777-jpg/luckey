@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AYURVEDIC_TRIDOSHA_VERSION = 'LUCKEY-AYURVEDIC-TRIDOSHA-v2.5.0';
+export const AYURVEDIC_TRIDOSHA_VERSION = 'LUCKEY-AYURVEDIC-TRIDOSHA-v2.6.0';
 
 export type AyurvedicQuestionFocus = 'stress' | 'relationship' | 'career' | 'health' | 'spiritual';
 
@@ -68,6 +68,7 @@ export interface TridoshaSynthesisMatrix {
   subtleEnergyBalance: string;
   ojasImmunityState: string;
   synthesizedVerdict: string;
+  tridoshaCrossAxis: string;
 }
 
 export interface AyurvedicTridoshaReport {
@@ -335,11 +336,13 @@ export function calculateAyurvedicTridoshaPrana(params: {
         ? '테자스(지적 광채)가 뚜렷하게 살아 있어 결단과 집중력이 돋보이는 흐름'
         : '오자스(면역 저장고)가 든든하게 받쳐 주어 회복과 지구력이 안정적인 흐름';
 
+  const tridoshaCrossAxis = `[${dominantDosha}] × [${temporalDinacharyaRhythm.doshaClockWindow}] × [${temporalDinacharyaRhythm.ritucharyaSeason.split('—')[0].trim()}] × [${questionFocus}]`;
   const tridoshaSynthesisMatrix: TridoshaSynthesisMatrix = {
     prakritiVikritiGap: `선천 체질 [${dominantDosha}]에 현재 계절 기운(${temporalDinacharyaRhythm.ritucharyaSeason})이 더해져 균형 조율이 진행 중입니다.`,
     subtleEnergyBalance,
     ojasImmunityState: overallVitalityScore >= 82 ? '오자스(면역·회복 정수)가 충만하여 무리 없는 조율 가능' : '과로를 줄이고 따뜻한 수면과 섭생으로 오자스 보충 필요',
     synthesizedVerdict: `${temporalDinacharyaRhythm.doshaClockWindow}에 맞춰 [${dinacharya.pranayamaBreathing}]을 실천할 때 심신의 리듬이 가장 맑아집니다.`,
+    tridoshaCrossAxis,
   };
 
   const tridoshaHarmonizationGuidance = `당신의 선천 체질은 [${prakritiConstitution.dominantDosha}] (${prakritiConstitution.constitutionType})이며, 현재 ${subtleEnergyBalance}을 보이고 있습니다. ${dinacharya.pranayamaBreathing}을 통해 몸과 마음의 조화를 지키십시오.`;
@@ -398,7 +401,7 @@ export function formatAyurvedicTridoshaPranaPrompt(report: AyurvedicTridoshaRepo
   - 섭생 지침: ${report.dinacharya.dietaryGuidance}
   - 프라나야마 호흡: ${report.dinacharya.pranayamaBreathing}
   - 저녁 이완: ${report.dinacharya.eveningRestoration}
-- **교차 매트릭스 종합**: ${report.tridoshaSynthesisMatrix.synthesizedVerdict}
+- **교차 매트릭스 종합**: ${report.tridoshaSynthesisMatrix.synthesizedVerdict} · 4중 교차 축(${report.tridoshaSynthesisMatrix.tridoshaCrossAxis})
 - **심신 조화 지침**: ${report.tridoshaHarmonizationGuidance}
 - **일상 실천 의례**: ${report.ritualAction}
 - **성찰 초점**: ${report.reflectionFocus}

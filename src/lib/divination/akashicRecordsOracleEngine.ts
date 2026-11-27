@@ -14,7 +14,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const AKASHIC_RECORDS_VERSION = 'LUCKEY-AKASHIC-v2.4.0';
+export const AKASHIC_RECORDS_VERSION = 'LUCKEY-AKASHIC-v2.5.0';
 
 export interface SoulOriginDetails {
   originSystem: string;          // 영혼 기원 항성계 / 아키타입
@@ -47,6 +47,7 @@ export interface AkashicSynthesisMatrix {
   clarityState: '명료' | '숙성' | '정화중';
   originContractLink: string;
   nextContractStep: string;
+  akashicCrossAxis: string;
 }
 
 export interface AkashicRecordsOracleReport {
@@ -235,10 +236,12 @@ export function runAkashicRecordsOracleEngine(
   const temporalAkashicRhythm = buildAkashicTemporalRhythm(targetDate);
   const clarityState: AkashicSynthesisMatrix['clarityState'] =
     soulClarityIndex >= 93 ? '명료' : soulClarityIndex >= 87 ? '숙성' : '정화중';
+  const akashicCrossAxis = `[${originSystem}] × [${clarityState}] × [${temporalAkashicRhythm.libraryTempo}] × [${question.trim() || '본질 정렬'}]`;
   const akashicSynthesisMatrix: AkashicSynthesisMatrix = {
     clarityState,
     originContractLink: `${originSystem}의 파동이 ${temporalAkashicRhythm.akashicAccessWindow} (${temporalAkashicRhythm.libraryTempo}) 리듬과 이어집니다.`,
     nextContractStep: situationalAkashicAudit.groundingPractice,
+    akashicCrossAxis,
   };
 
   const kst = new Date(targetDate.getTime() + 9 * 3600 * 1000);
@@ -264,7 +267,7 @@ export function runAkashicRecordsOracleEngine(
   * 그라운딩 실천: ${situationalAkashicAudit.groundingPractice}
 - KST 시공간 리듬 (${temporalAkashicRhythm.kstHour}시): ${temporalAkashicRhythm.akashicAccessWindow} · ${temporalAkashicRhythm.seasonalEvolutionPhase} (${temporalAkashicRhythm.libraryTempo})
   * 시간대 지침: ${temporalAkashicRhythm.timingGuidance}
-- 아카식 교차 매트릭스: ${akashicSynthesisMatrix.originContractLink}
+- 아카식 교차 매트릭스: ${akashicSynthesisMatrix.originContractLink} · 4중 교차 축(${akashicSynthesisMatrix.akashicCrossAxis})
 - 아카식 접속 만트라: "${akashicAccessMantra}"
 - 실천 의례: ${ritualAction}
 - 성찰 초점: ${reflectionFocus}
