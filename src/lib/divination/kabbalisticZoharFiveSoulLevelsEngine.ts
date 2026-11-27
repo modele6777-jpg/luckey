@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KABBALISTIC_ZOHAR_SOUL_ENGINE_VERSION = '2.3.0';
+export const KABBALISTIC_ZOHAR_SOUL_ENGINE_VERSION = '2.4.0';
 
 export interface KabbalisticSoulLevel {
   id: string;
@@ -54,6 +54,7 @@ export interface KabbalisticZoharSoulReport {
     primarySecondaryNexus: string;
     ascensionPosture: string;
     tikkunDirective: string;
+    zoharCrossAxis: string;
   };
   zoharKabbalahGuidance: string; // 조하르 지혜 지침
   einSofLightAscensionRitual: string; // 에인 소프 무한의 빛 상승 리추얼
@@ -199,12 +200,14 @@ export function calculateKabbalisticZoharSoul(
     rhythmGuidance: `${sephirothWatchWindow}과 ${shabbatCycle}이 교차합니다. 거창한 도약보다 오늘 마음의 그릇을 맑게 닦는 한 걸음에 집중하세요.`,
   };
 
+  const zoharCrossAxis = `[${dominantSoulLevel.nameKo}] × [${secondarySoulLevel.nameKo}] × [${questionTheme}] × [${sephirothWatchWindow.split('(')[0].trim()}]`;
   const zoharSynthesisMatrix = {
     primarySecondaryNexus: `${dominantSoulLevel.nameKo} × ${secondarySoulLevel.nameKo}`,
     ascensionPosture: tikkunSoulCorrectionProgress >= 75
       ? '내면의 그림자 껍질이 얇아져 높은 영혼 층위의 직관이 일상과 자연스럽게 이어지는 국면'
       : '네페쉬·루아흐의 생활 리듬을 다지며 티쿤의 기반을 차분히 회복하는 국면',
     tikkunDirective: dominantSoulLevel.divineIllumination,
+    zoharCrossAxis,
   };
 
   const zoharKabbalahGuidance = `당신의 영혼은 단순한 육체적 한계를 넘어 거룩한 신성의 빛줄기로 연결되어 있습니다. 현재 강력히 진동하는 층위는 [${dominantSoulLevel.nameKo}]입니다. ${dominantSoulLevel.divineIllumination}의 은총을 자각하십시오. 껍질(클리포트)의 두려움을 벗어던질 때 영혼의 참된 그릇(Kelim)이 완성됩니다.`;
@@ -252,6 +255,7 @@ export function formatKabbalisticZoharSoulPrompt(rep: KabbalisticZoharSoulReport
 · 시공간 세피로트 리듬 (${rep.temporalZoharRhythm.calculatedAtKst}): ${rep.temporalZoharRhythm.sephirothWatchWindow} / ${rep.temporalZoharRhythm.shabbatCycle}
   - 리듬 지침: ${rep.temporalZoharRhythm.rhythmGuidance}
 · 영혼 교차 매트릭스: ${rep.zoharSynthesisMatrix.primarySecondaryNexus} — ${rep.zoharSynthesisMatrix.ascensionPosture}
+· 4중 교차 축: ${rep.zoharSynthesisMatrix.zoharCrossAxis}
 · 조하르 카발라 지혜 지침: ${rep.zoharKabbalahGuidance}
 · 에인 소프 빛의 상승 리추얼: ${rep.einSofLightAscensionRitual}
 · 실천 의례(Ritual Action): ${rep.ritualAction}
