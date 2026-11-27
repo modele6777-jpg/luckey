@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION = 'LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v2.4.0';
+export const AUSTRIAN_ALFRED_ADLER_INDIVIDUAL_PSYCHOLOGY_VERSION = 'LUCKEY-ADLER-INDIVIDUAL-PSYCHOLOGY-v2.5.0';
 
 export type AdlerQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -71,6 +71,7 @@ export interface AustrianAlfredAdlerIndividualPsychologyResult {
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
+    adlerCrossAxis: string;
   };
   adlerComprehensiveGuidance: {
     guidanceTitle: string;
@@ -283,10 +284,12 @@ export function calculateAustrianAlfredAdlerIndividualPsychology(
     taskSeparationCue: temporalAdlerRhythm.courageTone,
     tacticalStep: topicGuidance.ritualAction,
   };
+  const adlerCrossAxis = `[${activeAdlerTheme.themeTitleKo.split('—')[0].trim()}] × [${questionTopic}] × [${temporalAdlerRhythm.timeWindowKo}] × [${focalAdlerAphorism.aphorismKey}]`;
   const adlerSynthesisMatrix = {
     coreInsight: activeAdlerTheme.themeTitleKo,
     recommendedAction: topicGuidance.practiceGuidance,
     cautionNotice: '타인의 과제까지 내 어깨에 짊어지거나 완벽해야 사랑받는다는 불안에 갇히지 마십시오.',
+    adlerCrossAxis,
   };
   const trimmedQ = (query ?? '').trim();
   const reflectiveQuestion = trimmedQ
@@ -336,7 +339,7 @@ export function formatAustrianAlfredAdlerIndividualPsychologyPrompt(
     `- 질문 맞춤 실천 가이드: ${res.practiceGuidance}`,
     `- 일상 실천 의례: ${res.ritualAction}`,
     `- 핵심 성찰 질문: ${res.reflectiveQuestion}`,
-    `- 교차 매트릭스: 핵심(${res.adlerSynthesisMatrix.coreInsight}) | 실행(${res.adlerSynthesisMatrix.recommendedAction}) | 주의(${res.adlerSynthesisMatrix.cautionNotice})`,
+    `- 교차 매트릭스: 핵심(${res.adlerSynthesisMatrix.coreInsight}) | 실행(${res.adlerSynthesisMatrix.recommendedAction}) | 4중 교차 축(${res.adlerSynthesisMatrix.adlerCrossAxis}) | 주의(${res.adlerSynthesisMatrix.cautionNotice})`,
     `- 아들러 원전 명언: "${res.focalAdlerAphorism.aphorismKo}"`,
     `- 원문 인용: "${res.focalAdlerAphorism.aphorismEn}"`,
     `- 원전 출처: [${res.focalAdlerAphorism.sourceContext}]`,

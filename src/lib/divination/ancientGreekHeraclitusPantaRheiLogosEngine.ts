@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HERACLITUS_PANTA_RHEI_VERSION = 'LUCKEY-HERACLITUS-PANTA-RHEI-v2.4.0';
+export const HERACLITUS_PANTA_RHEI_VERSION = 'LUCKEY-HERACLITUS-PANTA-RHEI-v2.5.0';
 
 export interface HeraclitusStage {
   stageLevel: number;
@@ -84,6 +84,7 @@ export interface HeraclitusPantaRheiResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    heraclitusCrossAxis: string;
   };
   ritualAction: string;
   reflectionFocus: string;
@@ -300,10 +301,12 @@ export function calculateHeraclitusPantaRhei(
   };
 
   const trimmedQ = (question || '').trim();
+  const heraclitusCrossAxis = `[${activeHeraclitusStage.stageNameGreek.split(' ')[0]}] × [${dialecticPolarityMatrix.dominantTensionPair}] × [${temporalFluxContext.fluxAttitude}] × [${situationalReflection.fragmentRef}]`;
   const heraclitusSynthesisMatrix = {
     dominantTension: `${dialecticPolarityMatrix.dominantTensionPair} · ${situationalReflection.fragmentRef}`,
     alignmentState: `${activeHeraclitusStage.stageNameGreek} · ${temporalFluxContext.fluxAttitude}`,
     integratedAction: `${situationalReflection.dialecticShift}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+    heraclitusCrossAxis,
   };
 
   const interpretiveBoundary = '본 리포트는 헤라클레이토스 단편 철학에 기반한 정성적 변화 성찰 안내이며, 확정적 미래 예단이 아닙니다.';
@@ -337,7 +340,7 @@ export function calculateHeraclitusPantaRhei(
 
 export function formatHeraclitusPantaRheiPrompt(result: HeraclitusPantaRheiResult): string {
   const matrixLine = result.heraclitusSynthesisMatrix
-    ? `\n- 헤라클레이토스 교차 매트릭스: 핵심 긴장(${result.heraclitusSynthesisMatrix.dominantTension}) · 조율 상태(${result.heraclitusSynthesisMatrix.alignmentState}) · 통합 실천(${result.heraclitusSynthesisMatrix.integratedAction})`
+    ? `\n- 헤라클레이토스 교차 매트릭스: 핵심 긴장(${result.heraclitusSynthesisMatrix.dominantTension}) · 조율 상태(${result.heraclitusSynthesisMatrix.alignmentState}) · 4중 교차 축(${result.heraclitusSynthesisMatrix.heraclitusCrossAxis}) · 통합 실천(${result.heraclitusSynthesisMatrix.integratedAction})`
     : '';
   return `[🌊 고대 그리스 에페소스 헤라클레이토스 만물유전(Panta Rhei) & 로고스 대립물 조화 리포트]
 - 엔진 버전: ${result.engineVersion} | 연산 시각: ${result.calculatedAtKst}
