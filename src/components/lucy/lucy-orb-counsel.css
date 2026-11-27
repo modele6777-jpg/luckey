@@ -1465,7 +1465,7 @@ input[type="file"].lucy-orb-attach-input { display: none; }
 .lucy-orb-master-actions button:active { transform: scale(.97); }
 .lucy-orb-master-actions button:disabled { opacity: .55; cursor: default; }
 .lucy-orb-master-best { margin-top: 7px; font-size: 11px; color: rgba(247, 244, 238, .62); text-align: center; }
-.lucy-orb-master-memory { margin-top: 4px; font-size: 11px; line-height: 1.4; color: rgba(243, 207, 134, .78); text-align: center; }
+.lucy-orb-master-memory { margin-top: 4px; max-width: 100%; font-size: 11px; line-height: 1.4; color: rgba(243, 207, 134, .78); text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .lucy-charm {
   position: relative;
   width: min(300px, 86%);
