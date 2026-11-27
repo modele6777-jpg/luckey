@@ -599,7 +599,7 @@ test('Big Bang center double tap opens the Key channel without firing a single-t
   expect(await page.evaluate(() => (window as any).__bigBangNormalTapCount)).toBe(0);
 });
 
-test('Big Bang center single tap enters Lucy with the shared transition, without triggering the recommended warp', async ({ page }) => {
+test('Big Bang center single tap follows the smart guide and shows its banner', async ({ page }) => {
   await openPrologue(page);
   const button = page.locator('#bigbang-omnibutton');
   await expect(button).toBeVisible();
@@ -623,59 +623,106 @@ test('Big Bang center single tap enters Lucy with the shared transition, without
     target.dispatchEvent(new PointerEvent('pointerup', { ...common, buttons: 0 }));
   }, { x, y });
 
-  await expect.poll(() => page.evaluate(() => `${window.location.pathname}${window.location.search}`)).toBe('/?mode=ai');
-  // Folded Lucy entry uses Lucy's own entry screen, not the generic wormhole overlay.
-  await expect(page.getByTestId('bigbang-transition-overlay')).toHaveCount(0);
+  // 생년월일이 없는 새 브라우저에서는 프로필부터 안내한다. 어느 쪽이든 지금 화면(/prologue)은 아니다.
+  const banner = page.getByTestId('bigbang-smart-guide');
+  await expect(banner).toBeVisible();
+  const guidePath = await banner.getAttribute('data-smart-guide-path');
+  expect(guidePath).toBeTruthy();
+  expect(guidePath).not.toBe('/prologue');
+  await expect.poll(() => new URL(page.url()).pathname).toBe(guidePath);
+  await expect(page.getByText('🧭 지금 추천:')).toBeVisible();
+  // 홀드와 달리 한 번 탭은 예전의 고정 전환(추천 워프)을 일으키지 않는다.
   const commits = await page.evaluate(() => (window as any).__bigBangSingleTapCommits);
-  expect(commits).toHaveLength(1);
-  expect(commits[0].target.destinationPath).toBe('/chat?mode=ai');
-  expect(commits[0].phase).toBe('wormhole');
-  expect(commits[0].isDoubleTapSuction).toBe(false);
+  expect(commits).toHaveLength(0);
+  // 배너는 탭하면 닫힌다.
+  await banner.click({ position: { x: 8, y: 8 } });
+  await expect(banner).toHaveCount(0);
 });
 
-test('Big Bang hold toggles the unified Lucy Pro, and a single tap leaves', async ({ page }) => {
+test('Big Bang hold always opens the orb page, from any screen', async ({ page }) => {
+  const hold = async (target = page.locator('#bigbang-omnibutton')) => {
+    await target.evaluate((element) => {
+      const box = element.getBoundingClientRect();
+      const pointer = {
+        bubbles: true, cancelable: true, pointerId: 7, pointerType: 'touch', isPrimary: true, button: 0,
+        clientX: box.x + box.width / 2, clientY: box.y + box.height / 2,
+      };
+      const now = performance.now;
+      let gestureTime = now.call(performance);
+      try {
+        performance.now = () => gestureTime;
+        element.dispatchEvent(new PointerEvent('pointerdown', { ...pointer, buttons: 1 }));
+        gestureTime += 650;
+        element.dispatchEvent(new PointerEvent('pointerup', { ...pointer, buttons: 0 }));
+      } finally {
+        performance.now = now;
+      }
+    });
+  };
+
+  // 루시 채팅에서 홀드 → 오브
   await openLucy(page);
+  await expect(page.locator('#bigbang-omnibutton')).toBeVisible();
+  await hold();
+  await expect.poll(() => new URL(page.url()).pathname).toBe('/voice');
+  // 홀드는 점술모드를 켜지 않는다.
+  expect(await page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBeNull();
+
+  // 다른 페이지(럭키)에서 홀드 → 오브
+  await page.goto('/lucky');
+  await expect(page.locator('#bigbang-omnibutton')).toBeVisible();
+  await hold();
+  await expect.poll(() => new URL(page.url()).pathname).toBe('/voice');
+});
+
+test('the question-mark header button opens the smart guide settings on every page', async ({ page }) => {
+  for (const path of ['/lucky', '/key', '/voice', '/profile']) {
+    await page.goto(path);
+    const button = page.locator('[data-smart-guide-settings-button="true"]').first();
+    await expect(button).toBeVisible();
+    await button.click();
+    const sheet = page.locator('[data-smart-guide-settings="true"]');
+    await expect(sheet).toBeVisible();
+    await expect(sheet.getByRole('switch', { name: '스마트 가이드' })).toBeVisible();
+    await expect(sheet.getByRole('switch', { name: '가이드 도슨트' })).toBeVisible();
+    // 켜고 끈 결과가 저장된다.
+    const before = await page.evaluate(() => localStorage.getItem('luckey_smart_guide_settings_v1'));
+    await sheet.getByRole('switch', { name: '스마트 가이드' }).click();
+    const after = await page.evaluate(() => localStorage.getItem('luckey_smart_guide_settings_v1'));
+    expect(after).not.toBe(before);
+    await sheet.getByRole('button', { name: '설정 닫기' }).click();
+    await expect(sheet).toHaveCount(0);
+    // 다음 페이지 검사에 영향이 없도록 다시 켜 둔다.
+    await page.evaluate(() => localStorage.setItem('luckey_smart_guide_settings_v1', JSON.stringify({ guide: true, douser: false })));
+  }
+});
+
+test('with the smart guide off the tap still moves, without banner or douser', async ({ page }) => {
+  await page.goto('/lucky');
+  await page.evaluate(() => localStorage.setItem('luckey_smart_guide_settings_v1', JSON.stringify({ guide: false, douser: false })));
+  await page.reload();
   const button = page.locator('#bigbang-omnibutton');
   await expect(button).toBeVisible();
-  const press = (duration: number) => button.evaluate((target, elapsed) => {
-    const box = target.getBoundingClientRect();
+  await button.evaluate((element) => {
+    const box = element.getBoundingClientRect();
     const pointer = {
-      bubbles: true, cancelable: true, pointerId: 7, pointerType: 'touch', isPrimary: true, button: 0,
+      bubbles: true, cancelable: true, pointerId: 21, pointerType: 'touch', isPrimary: true, button: 0,
       clientX: box.x + box.width / 2, clientY: box.y + box.height / 2,
     };
     const now = performance.now;
     let gestureTime = now.call(performance);
     try {
       performance.now = () => gestureTime;
-      target.dispatchEvent(new PointerEvent('pointerdown', { ...pointer, buttons: 1 }));
-      gestureTime += elapsed;
-      target.dispatchEvent(new PointerEvent('pointerup', { ...pointer, buttons: 0 }));
+      element.dispatchEvent(new PointerEvent('pointerdown', { ...pointer, buttons: 1 }));
+      gestureTime += 40;
+      element.dispatchEvent(new PointerEvent('pointerup', { ...pointer, buttons: 0 }));
     } finally {
       performance.now = now;
     }
-  }, duration);
-  const hold = () => press(650);
-
-  await hold();
-  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
-  await expect(page).not.toHaveURL(/\/key$/);
-  await expect(page.locator('.lucy-master-room')).toBeVisible();
-  await expect(page.locator('[data-lucy-name-marker="master"]')).toBeVisible();
-
-  // 루시프로 안에서 다시 홀드: 단계 없이 일반 루시로 돌아온다.
-  await page.waitForTimeout(400);
-  await hold();
-  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBeNull();
-  await expect(page.locator('.lucy-master-room')).toHaveCount(0);
-  expect(await page.evaluate(() => sessionStorage.getItem('lucy_master_depth'))).toBeNull();
-
-  // 다시 홀드로 켜고, 한 번 탭으로 일반 루시로 나온다.
-  await expect(page.getByTestId('lucy-master-suction')).toBeHidden();
-  await hold();
-  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBe('on');
-  await page.waitForTimeout(400);
-  await press(50);
-  await expect.poll(() => page.evaluate(() => sessionStorage.getItem('lucy_master_mode'))).toBeNull();
+  });
+  // 이동은 그대로 (결정된 추천 경로로), 배너는 없음
+  await expect.poll(() => new URL(page.url()).pathname).not.toBe('/lucky');
+  await expect(page.getByTestId('bigbang-smart-guide')).toHaveCount(0);
 });
 
 test('Lucy Plus selection survives left pane navigation and returns with the cosmic room', async ({ page }) => {

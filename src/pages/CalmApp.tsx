@@ -12,6 +12,7 @@ import { playAudioHaptic } from "@/lib/audioHaptics";
 import { useTheme } from "@/contexts/ThemeContext";
 import { readSafeAreaInsets } from "@/lib/visualViewportBox";
 import { PageGuideDialog } from "@/components/guide/PageGuide";
+import { SmartGuideSettingsButton } from "@/components/guide/SmartGuideSettings";
 import { resolveKeyTabGuide } from "@/lib/pageGuides";
 import { BookOpen, Search } from "lucide-react";
 import { triggerHaptic } from "@/lib/omniWarp/omniWarpHaptics";
@@ -444,6 +445,8 @@ export default function CalmApp() {
       />
       {actionsTop !== null && !keyOverlayOpen && (
         <div className="key-parent-actions absolute right-3 z-[45] flex items-center gap-1.5" style={{ top: actionsTop }}>
+          {/* 🧭 스마트 가이드 설정 (물음표) — Key 헤더 */}
+          <SmartGuideSettingsButton tone="key" className="h-10 w-10" />
           <button
             type="button"
             data-key-guide-parent
