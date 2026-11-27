@@ -23,7 +23,7 @@ import { ACIM_SACRED_QUOTES, ACIM_CORE_CANON } from '../acimWisdom';
 import { NIKAYA_SACRED_QUOTES, EARLY_BUDDHISM_CORE_CANON } from '../earlyBuddhismWisdom';
 import { GNOSTIC_SACRED_QUOTES, GNOSTIC_CORE_CANON } from '../gnosticWisdom';
 
-export const SUPREME_WISDOM_TRINITY_VERSION = 'LUCKEY-TRINITY-WISDOM-v2.3.0';
+export const SUPREME_WISDOM_TRINITY_VERSION = 'LUCKEY-TRINITY-WISDOM-v2.4.0';
 
 function formatTrinityKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -75,6 +75,12 @@ export interface SupremeWisdomTrinityReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  trinityCrossAxis: {
+    acimSource: string;
+    nikayaSource: string;
+    gnosticSource: string;
+    elementAnchor: string;
   };
   ritualAction: string;
   reflectionFocus: string;
@@ -172,6 +178,12 @@ export function runSupremeWisdomTrinityEngine(
     alignmentState: `오행: ${element} (${dayMaster}${dayBranch}) · 그노시스 원천: ${gnosticQuoteObj.source}`,
     integratedAction: `${gnosisAction.slice(0, 60)}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const trinityCrossAxis = {
+    acimSource: acimQuoteObj.source,
+    nikayaSource: nikayaQuoteObj.source,
+    gnosticSource: gnosticQuoteObj.source,
+    elementAnchor: `${element} (${dayMaster}${dayBranch})`,
+  };
 
   const interpretiveBoundary = '본 영적 3위1체 마스터 지혜 리포트는 기적수업·초기불교·영지주의 문헌과 사주 오행 상징을 결합한 내면 성찰 안내이며, 종교적 교리 강요나 의학적 치료를 대체하지 않습니다.';
   const ritualAction = `[사티·용서·그노시스 · ${element}] ${satiMindfulnessPrescription}`;
@@ -207,6 +219,7 @@ export function runSupremeWisdomTrinityEngine(
 ■ 4. 3위1체 교차 매트릭스:
   * 핵심 긴장: ${trinitySynthesisMatrix.dominantTension}
   * 조율 상태: ${trinitySynthesisMatrix.alignmentState}
+  * 3위1체 교차 축: ${trinityCrossAxis.acimSource} × ${trinityCrossAxis.nikayaSource} × ${trinityCrossAxis.gnosticSource}
   * 통합 실천: ${trinitySynthesisMatrix.integratedAction}
   * 실천 의례: ${ritualAction}
   * 성찰 초점: ${reflectionFocus}
@@ -249,6 +262,7 @@ ${lucyWisdomGuidance}
     lucyWisdomGuidance,
     synthesisPromptGuidance,
     trinitySynthesisMatrix,
+    trinityCrossAxis,
     ritualAction,
     reflectionFocus,
     reflectiveQuestion,
