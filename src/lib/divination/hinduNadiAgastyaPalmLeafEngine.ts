@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION = '2.3.0';
+export const HINDU_NADI_AGASTYA_PALM_LEAF_ENGINE_VERSION = '2.4.0';
 
 export interface HinduNadiAgastyaPalmLeafReport {
   engineVersion: string;
@@ -24,6 +24,7 @@ export interface HinduNadiAgastyaPalmLeafReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    nadiCrossAxis: string;
   };
 }
 
@@ -212,10 +213,13 @@ export function calculateHinduNadiAgastyaPalmLeaf(options?: {
     ? `'${trimmedQuestion}'에서 제${kandam.kandamNum}칸담(${kandam.name})의 가르침을 따라 지금 가장 부드럽게 내려놓아야 할 인과의 매듭은 무엇인가요?`
     : `지금 내 일상에서 제${kandam.kandamNum}칸담(${kandam.name})의 샨티 실천으로 가장 먼저 다스려야 할 마음의 걸림은 무엇인가요?`;
   const interpretiveBoundary = '남인도 나디 아가스티야 야자잎 관점은 결정론적 숙명 예단이 아니라, 내면의 소명과 성찰적 실천을 비추는 상징적 카르마 렌즈입니다.';
+  const alignmentState = describeNadiStage(dharmaFulfillmentIndex);
+  const nadiCrossAxis = `[제${kandam.kandamNum}칸담 ${kandam.name}] × [보조 제${secondaryKandam.kandamNum}칸담 ${secondaryKandam.name}] × [${thumbPattern.split('(')[0].trim()}] × [${alignmentState.split('—')[0].trim()}]`;
   const nadiSynthesisMatrix = {
     dominantTension: `제${kandam.kandamNum}칸담 ${kandam.name} ↔ ${thumbPattern}`,
-    alignmentState: describeNadiStage(dharmaFulfillmentIndex),
+    alignmentState,
     integratedAction: `${kandam.remedy}${trimmedQuestion ? ` [질문 맥락: ${trimmedQuestion}]` : ''}`,
+    nadiCrossAxis,
   };
 
   const ritualAction = `[제${kandam.kandamNum}칸담 · ${kandam.name}] ${kandam.remedy}`;
@@ -240,6 +244,7 @@ export function calculateHinduNadiAgastyaPalmLeaf(options?: {
    - 다르마(Dharma) 성찰 단계(상징): **${describeNadiStage(dharmaFulfillmentIndex)}**
 4. 🧭 [교차 매트릭스]:
    - 핵심 긴장: ${nadiSynthesisMatrix.dominantTension} | 조율 상태: ${nadiSynthesisMatrix.alignmentState}
+   - 4중 교차 축: ${nadiSynthesisMatrix.nadiCrossAxis}
    - 통합 실천: ${nadiSynthesisMatrix.integratedAction}
    - 실천 의례(Ritual Action): ${ritualAction}
    - 성찰 질문: ${reflectionFocus}
