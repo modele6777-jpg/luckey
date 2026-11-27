@@ -28,11 +28,12 @@ export interface AinuKamuyAspect {
 }
 
 export interface AinuKamuyResult {
-  engineVersion: 'LUCKEY-AINU-KAMUY-v2.4.0';
+  engineVersion: 'LUCKEY-AINU-KAMUY-v2.5.0';
   calculatedAtKst: string;
   questionFocus: string;
   questionTopic: AinuQuestionTopic;
   kamuyBalanceAxis: string;
+  kamuyCrossAxis: string;
   primaryAspect: AinuKamuyAspect;
   companionAspect: AinuKamuyAspect;
   seasonalBreath: string;
@@ -133,13 +134,15 @@ export function calculateAinuKamuyIomanteHarmony(params: {
   const seasonalBreath = SEASONAL_BREATHS[(breathSeed + now.getUTCHours()) % SEASONAL_BREATHS.length];
   const shadowWarning = questionTopic === 'general' ? SHADOW_WARNINGS[primaryIdx] : AINU_TOPIC_WARNINGS[questionTopic];
   const kamuyBalanceAxis = `${primaryAspect.koreanLabel} ↔ ${companionAspect.koreanLabel} (${seasonalBreath})`;
+  const kamuyCrossAxis = `[${primaryAspect.koreanLabel}] × [${companionAspect.koreanLabel}] × [${questionTopic}] × [${seasonalBreath.split(' ')[0]}]`;
 
   return {
-    engineVersion: 'LUCKEY-AINU-KAMUY-v2.4.0',
+    engineVersion: 'LUCKEY-AINU-KAMUY-v2.5.0',
     calculatedAtKst: formatKstTimestamp(now),
     questionFocus,
     questionTopic,
     kamuyBalanceAxis,
+    kamuyCrossAxis,
     primaryAspect,
     companionAspect,
     seasonalBreath,
@@ -158,7 +161,7 @@ export function formatAinuKamuyPrompt(result: AinuKamuyResult): string {
     `[아이누 카무이·이오만테 존중과 순환 엔진 ${result.engineVersion}]`,
     `- 연산 시각: ${result.calculatedAtKst} | 질문 맥락: ${result.questionTopic}`,
     `- 질문 초점: ${result.questionFocus}`,
-    `- 균형 축: ${result.kamuyBalanceAxis}`,
+    `- 균형 축: ${result.kamuyBalanceAxis} | 4중 교차 축: ${result.kamuyCrossAxis}`,
     `- 중심 결: ${result.primaryAspect.name} (${result.primaryAspect.koreanLabel}) — ${result.primaryAspect.coreInsight}`,
     `- 이어지는 결: ${result.companionAspect.name} (${result.companionAspect.koreanLabel})`,
     `- 순환 호흡 국면: ${result.seasonalBreath}`,

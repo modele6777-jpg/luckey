@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SPINOZA_CONATUS_AMORDEI_VERSION = 'LUCKEY-SPINOZA-CONATUS-AMORDEI-v2.4.0';
+export const SPINOZA_CONATUS_AMORDEI_VERSION = 'LUCKEY-SPINOZA-CONATUS-AMORDEI-v2.5.0';
 
 function describeSpinozaStage(score: number): string {
   if (score >= 88) return '지적 사랑(Amor Dei)의 고요한 충만 단계';
@@ -48,6 +48,7 @@ export interface SpinozaEthicaSynthesisMatrix {
   causalUnderstandingDepth: number;
   amorDeiEquanimity: number;
   overallSynthesis: number;
+  spinozaCrossAxis: string;
 }
 
 export interface BaruchSpinozaEthicaConatusResult {
@@ -254,11 +255,13 @@ export function calculateBaruchSpinozaEthicaConatus(
   const amorDeiEquanimity = Math.min(99, Math.round((subSpecieAeternitatisScore + amorDeiIntellectualisScore) / 2));
   const overallSynthesis = Math.round((passiveToActiveTransition + causalUnderstandingDepth + amorDeiEquanimity) / 3);
 
+  const spinozaCrossAxis = `[${activeAffectState.affectKey}] × [${focalEpistemicLevel.levelNameLatin.split('(')[0].trim()}] × [${questionTopic}] × [${temporalConatusRhythm.kstWindow.split(' ')[0]}]`;
   const ethicaSynthesisMatrix: SpinozaEthicaSynthesisMatrix = {
     passiveToActiveTransition,
     causalUnderstandingDepth,
     amorDeiEquanimity,
     overallSynthesis,
+    spinozaCrossAxis,
   };
 
   const practiceGuidance = `${activeAffectState.actionCounsel} ${SPINOZA_TOPIC_PRACTICE[questionTopic]}`;
@@ -310,7 +313,7 @@ export function formatBaruchSpinozaEthicaConatusPrompt(res: BaruchSpinozaEthicaC
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- KST 코나투스 리듬 (${res.calculatedAtKst}): ${res.temporalConatusRhythm.kstWindow} (${res.temporalConatusRhythm.epistemicFocus}, ${describeSpinozaStage(res.temporalConatusRhythm.conatusClarityIndex)}) — ${res.temporalConatusRhythm.rhythmDirective}`,
-    `- 에티카 매트릭스: 능동 정념 전환(${describeSpinozaStage(res.ethicaSynthesisMatrix.passiveToActiveTransition)}) / 인과 이해 깊이(${describeSpinozaStage(res.ethicaSynthesisMatrix.causalUnderstandingDepth)}) / 영원의 상 평정(${describeSpinozaStage(res.ethicaSynthesisMatrix.amorDeiEquanimity)}) → 종합(${describeSpinozaStage(res.ethicaSynthesisMatrix.overallSynthesis)})`,
+    `- 에티카 매트릭스: 능동 정념 전환(${describeSpinozaStage(res.ethicaSynthesisMatrix.passiveToActiveTransition)}) / 인과 이해 깊이(${describeSpinozaStage(res.ethicaSynthesisMatrix.causalUnderstandingDepth)}) / 영원의 상 평정(${describeSpinozaStage(res.ethicaSynthesisMatrix.amorDeiEquanimity)}) · 4중 교차 축(${res.ethicaSynthesisMatrix.spinozaCrossAxis}) → 종합(${describeSpinozaStage(res.ethicaSynthesisMatrix.overallSynthesis)})`,
     `- 해석 경계: ${res.boundaryNotice}`,
   ].join('\n');
 }

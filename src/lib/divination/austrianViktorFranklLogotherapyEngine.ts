@@ -6,7 +6,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_VIKTOR_FRANKL_VERSION = 'LUCKEY-VIKTOR-FRANKL-LOGOTHERAPY-v2.5.0';
+export const AUSTRIAN_VIKTOR_FRANKL_VERSION = 'LUCKEY-VIKTOR-FRANKL-LOGOTHERAPY-v2.6.0';
 
 function getFranklKstString(now?: Date): string {
   const base = now ?? new Date();
@@ -84,6 +84,7 @@ export interface ViktorFranklLogotherapyResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    franklCrossAxis: string;
   };
 }
 
@@ -351,10 +352,12 @@ export function calculateViktorFranklLogotherapy(
   const reflectiveQuestion = trimmedQ
     ? `지금 마주한 "${trimmedQ}"라는 상황 속에서 바꿀 수 없는 현실 너머로 내가 여전히 스스로 선택할 수 있는 최후의 태도는 무엇인가요?`
     : reflectionFocus;
+  const franklCrossAxis = `[${activeFranklTheme.themeKey}] × [${temporalMeaningRhythm.valuePathFocus.split('(')[0].trim()}] × [${questionTopic}] × [${temporalMeaningRhythm.kstWindow.split(' ')[0]}]`;
   const franklSynthesisMatrix = {
     dominantTension: `${situationalMeaningAudit.existentialVacuumTrap} ↔ ${activeFranklTheme.themeTitleKo}`,
     alignmentState: `${temporalMeaningRhythm.valuePathFocus} · ${questionTopic}`,
     integratedAction: `${situationalMeaningAudit.attitudeShiftAction}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+    franklCrossAxis,
   };
 
   return {
@@ -386,7 +389,7 @@ export function calculateViktorFranklLogotherapy(
 
 export function formatViktorFranklLogotherapyPrompt(res: ViktorFranklLogotherapyResult): string {
   const matrixLine = res.franklSynthesisMatrix
-    ? `- 빅터 프랭클 교차 매트릭스: 핵심 긴장(${res.franklSynthesisMatrix.dominantTension}) · 조율 상태(${res.franklSynthesisMatrix.alignmentState}) · 통합 실천(${res.franklSynthesisMatrix.integratedAction})`
+    ? `- 빅터 프랭클 교차 매트릭스: 핵심 긴장(${res.franklSynthesisMatrix.dominantTension}) · 조율 상태(${res.franklSynthesisMatrix.alignmentState}) · 4중 교차 축(${res.franklSynthesisMatrix.franklCrossAxis}) · 통합 실천(${res.franklSynthesisMatrix.integratedAction})`
     : '';
   return [
     `【빅터 프랭클 《죽음의 수용소에서》 시련 속 최후의 자유 & 의미치료 지표 (${res.engineVersion} | ${res.calculatedAtKst})】`,

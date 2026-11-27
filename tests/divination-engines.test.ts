@@ -7059,10 +7059,12 @@ test('Spinoza Ethica Conatus Engine: calculates Conatus vitality, Sub Specie Aet
   assert(rep.adequateIdeaIntellectScore >= 0 && rep.adequateIdeaIntellectScore <= 100);
   assert(rep.amorDeiIntellectualisScore >= 0 && rep.amorDeiIntellectualisScore <= 100);
   assert(rep.activeAffectState.affectNameLatin.length > 0);
+  assert(Boolean(rep.ethicaSynthesisMatrix.spinozaCrossAxis.includes(rep.questionTopic)));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatBaruchSpinozaEthicaConatusPrompt(rep);
   assert(prompt.includes('스피노자 에티카 코나투스 & 신즉자연 관조 지표'));
   assert(prompt.includes(rep.activeAffectState.affectNameKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
 });
 
@@ -8072,10 +8074,12 @@ test('Viktor Frankl Logotherapy Engine: calculates The Last Human Freedom, Will 
   assert(rep.selfTranscendenceDedicationScore >= 0 && rep.selfTranscendenceDedicationScore <= 100);
   assert(rep.lifeResponsibilityIntegrityIndex >= 0 && rep.lifeResponsibilityIntegrityIndex <= 100);
   assert(rep.activeFranklTheme.themeTitleKo.length > 0);
+  assert(Boolean(rep.franklSynthesisMatrix?.franklCrossAxis.includes(rep.questionTopic)));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatViktorFranklLogotherapyPrompt(rep);
   assert(prompt.includes('빅터 프랭클 《죽음의 수용소에서》 시련 속 최후의 자유 & 의미치료 지표'));
   assert(prompt.includes(rep.activeFranklTheme.themeTitleKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
 });
 
@@ -13955,9 +13959,9 @@ test('Etruscan Templum Sky Division engine: sectors, +09:00 KST, and interpretiv
 
 test('Ainu Kamuy Iomante Harmony engine: aspects, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAinuKamuyIomanteHarmony({ profile, now: new Date('2026-11-20T05:50:00Z'), question: '일상의 감사와 순환을 회복하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-AINU-KAMUY-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-AINU-KAMUY-v2.5.0');
   assert.equal(rep.questionTopic, 'gratitude');
-  assert.ok(rep.kamuyBalanceAxis.length > 0);
+  assert.ok(rep.kamuyBalanceAxis.length > 0 && rep.kamuyCrossAxis.includes('gratitude'));
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionAspect.name !== rep.primaryAspect.name);
   assert.ok(rep.seasonalBreath.length > 0 && rep.shadowWarning.length > 0);
@@ -13965,7 +13969,7 @@ test('Ainu Kamuy Iomante Harmony engine: aspects, +09:00 KST, and interpretive b
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatAinuKamuyPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('아이누') && prompt.includes('균형 축') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.seasonalBreath) && prompt.includes(rep.reflectionFocus));
+  assert.ok(prompt.includes('아이누') && prompt.includes('균형 축') && prompt.includes('4중 교차 축') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.seasonalBreath) && prompt.includes(rep.reflectionFocus));
 });
 
 test('Guarani Teko Pora Forest Harmony engine: principles, +09:00 KST, and interpretive boundary', () => {
