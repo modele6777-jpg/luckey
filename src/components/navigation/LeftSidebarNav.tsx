@@ -36,6 +36,12 @@ import { playLucyMasterSuction } from '@/components/omniwarp/BigBangMasterSuctio
 import { isLucyMasterBgmPreferred, startLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
 import { isLucyChatPath } from '@/lib/duoPaneFocus';
+import {
+  cloverOpenAfterClick,
+  cloverOpenAfterExit,
+  cloverOpenAfterFoldOrPathChange,
+  initialCloverOpen,
+} from '@/lib/cloverChannels';
 import { OrbShapeIcon } from '@/components/icons/OrbShapeIcon';
 import { LucyProBubbleDotIcon } from '@/components/icons/LucyProBubbleDotIcon';
 import { setOrbCounselOpen, useOrbCounselOpen } from '@/lib/orbCounselGate';
@@ -192,21 +198,21 @@ export default function LeftSidebarNav() {
   const screenUnfolded = useFoldState().unfolded;
   const unfoldedRef = useRef(screenUnfolded);
   unfoldedRef.current = screenUnfolded;
-  // 🍀 펼친 화면은 목록을 닫지 않는다. 접힌 화면만 럭키에서 나갈 때 접힌다.
-  // 접힌 화면: Lucky 채널(Lucky·7대 앱)에 있으면 클로버 목록이 펼쳐지고, 그 밖(루시·키·오브 등)에서는 접혀 있다.
-  // 펼친 화면은 늘 펼쳐져 있다.
+  // 🍀 클로버 목록은 접힘·펼침 화면 모두 클로버 버튼으로 접고 펼 수 있다(기본값: 펼친 화면=펼침).
+  // 접힌 화면: Lucky 채널(Lucky·7대 앱)에 있으면 펼쳐지고, 그 밖(루시·키·오브 등)에서는 접혀 있다.
   const [isChannelsOpen, setIsChannelsOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return isDualPaneLayout() || isLuckyListPath(window.location.pathname || '/');
+    return initialCloverOpen(isDualPaneLayout(), isLuckyListPath(window.location.pathname || '/'));
   });
   useEffect(() => {
     const openForLucky = () => setIsChannelsOpen(true);
     const closeForExit = () => {
-      if (unfoldedRef.current || document.documentElement.classList.contains('duo-unfolded-mode')) {
-        setIsChannelsOpen(true);
-        return;
-      }
-      setIsChannelsOpen(false);
+      // 펼친 화면에서 강제로 다시 열지 않는다 — 사용자가 접어 둔 상태를 그대로 둔다.
+      const next = cloverOpenAfterExit(
+        unfoldedRef.current || document.documentElement.classList.contains('duo-unfolded-mode')
+      );
+      if (next === null) return;
+      setIsChannelsOpen(next);
     };
     window.addEventListener('prism:open-lucky-channels', openForLucky);
     window.addEventListener('prism:close-lucky-channels', closeForExit);
@@ -262,12 +268,17 @@ export default function LeftSidebarNav() {
     };
   }, []);
 
+  const layoutUnfoldedRef = useRef<boolean | null>(null);
   useEffect(() => {
     const handleLayoutChange = () => {
       if (typeof window === 'undefined') return;
       const unfolded = isDualPaneLayout();
       setIsUnfolded(unfolded);
-      if (unfolded) setIsChannelsOpen(true);
+      // 접힘→펼침 진입에서만 기본값(펼침)을 적용한다.
+      // 펼친 화면에서 클로버로 접어 둔 상태를 화면 크기 변화가 덮어쓰지 않게 한다.
+      const wasUnfolded = layoutUnfoldedRef.current;
+      layoutUnfoldedRef.current = unfolded;
+      if (unfolded && wasUnfolded !== true) setIsChannelsOpen(true);
     };
     handleLayoutChange();
     // Same fold snapshot as the App frame, including late WebKit size updates.
@@ -293,7 +304,8 @@ export default function LeftSidebarNav() {
   }, []);
   const luckyPathRef = useRef(cleanPath);
   const revealEpilogueRef = useRef<() => void>(() => {});
-  const channelsVisible = screenUnfolded || isChannelsOpen;
+  // 펼친 화면에서도 사용자가 접어 둘 수 있도록 강제 펼침을 두지 않는다.
+  const channelsVisible = isChannelsOpen;
   useEffect(() => {
     if (!channelsVisible) return;
     const list = document.querySelector<HTMLElement>('#main-sidebar-navigation .refined-menu-list');
@@ -322,17 +334,21 @@ export default function LeftSidebarNav() {
     };
   }, [channelsVisible, screenUnfolded]);
   useEffect(() => {
-    if (screenUnfolded) {
-      setIsChannelsOpen(true);
-      return;
-    }
     // 접힌 화면: 다른 화면으로 옮기거나 펼쳤다 접을 때, Lucky 채널이면 펼치고 아니면 접는다.
     // 같은 화면에서 클로버로 직접 열고 닫은 것은 그대로 둔다.
     const pathChanged = luckyPathRef.current !== cleanPath;
-    const justFolded = unfoldedBeforeRef.current;
+    const unfoldedBefore = unfoldedBeforeRef.current;
+    const justFolded = unfoldedBefore;
     luckyPathRef.current = cleanPath;
-    if (!pathChanged && !justFolded) return;
     const open = isLuckyListPath(cleanPath);
+    if (screenUnfolded) {
+      // 펼친 화면: 접힘→펼침 진입에만 기본값(펼침)을 적용하고,
+      // 사용자가 클로버로 접어 둔 상태는 경로가 바뀌어도 다시 열지 않는다.
+      const next = cloverOpenAfterFoldOrPathChange({ unfoldedBefore, unfolded: true, pathIsLucky: open });
+      if (next !== null) setIsChannelsOpen(next);
+      return;
+    }
+    if (!pathChanged && !justFolded) return;
     // 펼쳤다 접을 때는 화면 크기가 자리 잡은 뒤 접어서, 아이콘이 하나씩 들어가는 모습이 보이게 한다.
     if (justFolded && !open && !reduceMotionRef.current) {
       const timer = window.setTimeout(() => setIsChannelsOpen(false), 420);
@@ -664,11 +680,10 @@ export default function LeftSidebarNav() {
                     title="Luckey"
                     onClick={() => {
                       triggerHaptic('whitehole');
-                      if (!screenUnfolded && channelsVisible) {
-                        setIsChannelsOpen(false);
-                        return;
-                      }
-                      setIsChannelsOpen(true);
+                      // 펼친 화면에서도 같은 토글: 펼쳐져 있으면 접고, 접혀 있으면 펼치며 럭키로 간다.
+                      const next = cloverOpenAfterClick(channelsVisible);
+                      setIsChannelsOpen(next.open);
+                      if (!next.navigate) return;
                       if (cleanPath !== '/lucky') handleNavigate('/lucky');
                     }}
                   >
