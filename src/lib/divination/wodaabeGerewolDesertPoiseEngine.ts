@@ -17,6 +17,7 @@ export interface WodaabeGerewolResult {
   reflectionFocus: string;
   ritualAction: string;
   shadowWarning: string;
+  topicBalanceHint: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -49,6 +50,14 @@ function classifyWodaabeTopic(q: string): WodaabeGerewolResult['questionTopic'] 
   if (/회복|축하|휴식|수고|산책/.test(q)) return '회복·축하';
   return '우다베 전반';
 }
+
+const WODAABE_TOPIC_HINTS: Record<WodaabeGerewolResult['questionTopic'], string> = {
+  '만남·연결': '인연을 기다리는 시간에도 혼자 걸을 오늘의 준비를 미루지 마세요.',
+  '인내·품위': '단정한 인내와 함께 꼭 말해야 할 정당한 경계도 또렷이 세우세요.',
+  '중심·태도': '흔들리지 않는 품위 속에서도 믿는 이에게는 솔직한 마음을 열어 두세요.',
+  '회복·축하': '숨을 고른 뒤에는 다시 출발할 작은 실행 한 가지를 바로 이어 붙이세요.',
+  '우다베 전반': '사헬의 고요한 인내와 재회의 온기를 오늘의 태도에 담아 보세요.',
+};
 
 const POISES = [
   '진정한 매력과 설득력은 요란한 과시가 아니라 힘든 상황에서도 표정과 태도를 잃지 않는 인내(무냐)에서 나옵니다.',
@@ -100,9 +109,10 @@ export function calculateWodaabeGerewol(input: WodaabeGerewolInput): WodaabeGere
   const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (GATHERINGS.length - 1));
   const desertGathering = GATHERINGS[gatheringIdx];
   const companionGathering = GATHERINGS[(gatheringIdx + companionOffset) % GATHERINGS.length];
+  const topicBalanceHint = WODAABE_TOPIC_HINTS[questionTopic];
 
   return {
-    engineVersion: 'LUCKEY-WODAABE-GEREWOL-v2.3.0',
+    engineVersion: 'LUCKEY-WODAABE-GEREWOL-v2.4.0',
     calculatedAtKst: toKstIso(input.now),
     questionTopic,
     desertGathering,
@@ -112,6 +122,7 @@ export function calculateWodaabeGerewol(input: WodaabeGerewolInput): WodaabeGere
     reflectionFocus: `사헬 유목민 우다베 족이 긴 건기를 지나 우기에 모여 인내와 품위(무냐)를 나누는 게레월 축제에서 주 만남('${desertGathering}')과 동반 만남('${companionGathering}')을 겹쳐 태도와 회복을 읽는 상징적 관점입니다.`,
     ritualAction: ACTIONS[gatheringIdx],
     shadowWarning: SHADOW_WARNINGS[gatheringIdx],
+    topicBalanceHint,
     reflectiveQuestion: QUESTIONS[gatheringIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
@@ -128,6 +139,7 @@ export function formatWodaabeGerewolPrompt(res: WodaabeGerewolResult): string {
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
     `과잉 경계: ${res.shadowWarning}`,
+    `맥락 균형 조언: ${res.topicBalanceHint}`,
     `성찰 질문: ${res.reflectiveQuestion}`,
     `경계: ${res.interpretiveBoundary}`,
   ].join('\n');

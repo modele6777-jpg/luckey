@@ -12,6 +12,7 @@ export interface PalmyreneOasisResult {
   reflectionFocus: string;
   ritualAction: string;
   shadowWarning: string;
+  topicBalanceHint: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -85,6 +86,15 @@ function classifyPalmyreneTopic(q: string): PalmyreneOasisResult['questionTopic'
   return '팔미라 전반';
 }
 
+const PALMYRENE_TOPIC_HINTS: Record<PalmyreneOasisResult['questionTopic'], string> = {
+  '질서·원칙': '단정한 기준을 세우되 상황 변화에 필요한 유연한 예외도 한 줄 남겨 두세요.',
+  '생기·호기심': '작은 호기심의 생기를 오늘 매듭지을 핵심 과제 하나와 나란히 두세요.',
+  '관점·교차로': '낯선 시선을 받아들이되 최종 결정의 중심 기준은 내 손에 쥐고 가세요.',
+  '중심·담대함': '담대한 한 걸음을 내딛을 때 주변의 현실적 조언 한 줄도 함께 살피세요.',
+  '여백·다정함': '다정한 여백 속에서도 꼭 지켜야 할 경계와 거절은 분명히 남기세요.',
+  '팔미라 전반': '열주의 단정한 질서와 오아시스 샘의 생기를 오늘 균형 있게 엮어 보세요.',
+};
+
 export function calculatePalmyreneOasisColonnade(params: {
   profile: UserProfile;
   now?: Date;
@@ -99,9 +109,10 @@ export function calculatePalmyreneOasisColonnade(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (PILLARS.length - 1));
   const companion = PILLARS[(idx + companionOffset) % PILLARS.length];
   const colonnadeAxis = `${picked.pillar.split('(')[0].trim()} ↔ ${companion.pillar.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = PALMYRENE_TOPIC_HINTS[questionTopic];
 
   return {
-    engineVersion: 'LUCKEY-PALMYRENE-OASIS-v2.3.0',
+    engineVersion: 'LUCKEY-PALMYRENE-OASIS-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     oasisPillar: picked.pillar,
@@ -112,6 +123,7 @@ export function calculatePalmyreneOasisColonnade(params: {
     reflectionFocus: `고대 팔미라 오아시스 지혜의 '${picked.pillar}'을 중심에 두고 '${companion.pillar}'의 결을 곁들여, 불확실한 사막 한가운데서도 나만의 단정한 질서와 낯선 시선을 함께 품어 보세요.`,
     ritualAction: picked.action,
     shadowWarning: PALMYRENE_SHADOWS[idx],
+    topicBalanceHint,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '고대 팔미라(Palmyra) 오아시스의 대열주랑 질서·교차로 개방성 지혜를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -128,6 +140,7 @@ export function formatPalmyreneOasisPrompt(res: PalmyreneOasisResult): string {
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 과잉 경계: ${res.shadowWarning}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
