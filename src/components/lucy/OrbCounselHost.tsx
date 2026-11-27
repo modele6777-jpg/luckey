@@ -3,10 +3,9 @@ import { LucyOrbCounsel } from '@/components/lucy/LucyOrbCounsel';
 import { getPersistentUserProfile, useApp } from '@/contexts/AppContext';
 import { setOrbCounselOpen } from '@/lib/orbCounselGate';
 import { calculateDetailedSaju } from '@/lib/sajuAnalysis';
-import { requestLucyAction } from '@/lib/duoLucyActionRouting';
+import { queueLucyAction } from '@/lib/duoLucyActionRouting';
 import { setPendingLucyContext } from '@/lib/lucyPendingContext';
-import { useEffect, useMemo } from 'react';
-import { useLocation } from 'wouter';
+import { useEffect, useMemo, useState } from 'react';
 
 /** 루시가 오브 상담을 요약 보고서로 쓰도록 넘기는 참고 자료 (채팅에는 보이지 않는다). */
 function buildOrbReportRequestContext(record: string): string {
@@ -21,8 +20,9 @@ function buildOrbReportRequestContext(record: string): string {
 
 /** Orb is a page, not a popup. Only this route is active while it is open. */
 export function OrbPage() {
-  const [, navigate] = useLocation();
   const { sharedState, firebaseUser } = useApp();
+  // 상담을 마치면 루시 채팅으로 넘어가지 않고 오브 메인화면(마스터 선택)으로 새로 돌아간다.
+  const [resetKey, setResetKey] = useState(0);
   // 단골 기억(지난 상담 기록)은 계정별로 나눠 둔다.
   const account = firebaseUser?.uid || safeSessionStorage.getItem('prism_auth_uid') || 'device';
   const persistentProfile = getPersistentUserProfile();
@@ -44,24 +44,23 @@ export function OrbPage() {
 
   return (
     <LucyOrbCounsel
+      key={`orb-session-${resetKey}`}
       open
       nickname={nickname}
       chart={chart}
       profile={profile}
       account={account}
       onFinish={(summary) => {
-        // 채팅에 남기기: 상담 기록은 보이지 않는 참고 자료로 넘기고, 루시가 요약 보고서를 써 준다.
+        // 채팅에 남기기: 상담 기록은 보이지 않는 참고 자료로 보관하고, 요약 보고서 요청도 보관만 한다.
+        // 화면은 루시 채팅으로 옮기지 않는다 — 사용자가 채팅을 열 때 루시가 요약 보고서를 쓴다.
         // (부적은 채팅에 남기지 않는다.)
         if (summary) {
           const masterName = /마스터:\s*(.+)/.exec(summary)?.[1]?.trim() || '오브';
           setPendingLucyContext(buildOrbReportRequestContext(summary));
-          requestLucyAction({ prompt: `🔮 오브에서 ${masterName} 마스터와 상담을 마쳤어. 상담 내용을 요약 보고서로 정리해 줘.` });
+          queueLucyAction({ prompt: `🔮 오브에서 ${masterName} 마스터와 상담을 마쳤어. 상담 내용을 요약 보고서로 정리해 줘.` });
         }
-        // 접힌 화면은 requestLucyAction이 루시 채팅으로 이동한다. 펼친 화면(또는 보고서 없음)은 예전처럼 처음 화면으로 돌아간다.
-        if (!summary || document.getElementById('duo-lucy-viewport')) {
-          navigate('/');
-          window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/' } }));
-        }
+        // 닫기·채팅에 남기기 모두 오브 메인화면(phase === 'pick')으로 돌아간다. /chat이나 /로 나가지 않는다.
+        setResetKey(key => key + 1);
       }}
     />
   );
