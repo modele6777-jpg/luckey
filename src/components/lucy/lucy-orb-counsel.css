@@ -1423,7 +1423,7 @@ input[type="file"].lucy-orb-attach-input { display: none; }
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 15px 18px 13px;
+  padding: 13px 16px 12px;
   border: 1px solid rgba(243, 207, 134, .4);
   border-radius: 24px;
   background: linear-gradient(160deg, rgba(255, 255, 255, .14), rgba(120, 140, 255, .1));
@@ -1434,7 +1434,7 @@ input[type="file"].lucy-orb-attach-input { display: none; }
 }
 .lucy-orb-master-eyebrow { font-size: 10.5px; letter-spacing: .16em; color: rgba(243, 207, 134, .92); }
 .lucy-orb-master-name { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -.02em; color: #fff; }
-.lucy-orb-master-intro { margin: 2px 0 0; font-size: 12.5px; line-height: 1.5; color: rgba(247, 244, 238, .84); text-align: center; }
+.lucy-orb-master-intro { margin: 2px 0 0; font-size: 12.5px; line-height: 1.45; color: rgba(247, 244, 238, .84); text-align: center; }
 .lucy-orb-master-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 5px; }
 .lucy-orb-master-tags i {
   font-style: normal;
@@ -1464,7 +1464,8 @@ input[type="file"].lucy-orb-attach-input { display: none; }
 }
 .lucy-orb-master-actions button:active { transform: scale(.97); }
 .lucy-orb-master-actions button:disabled { opacity: .55; cursor: default; }
-.lucy-orb-master-best { margin-top: 8px; font-size: 11px; color: rgba(247, 244, 238, .62); text-align: center; }
+.lucy-orb-master-best { margin-top: 7px; font-size: 11px; color: rgba(247, 244, 238, .62); text-align: center; }
+.lucy-orb-master-memory { margin-top: 4px; font-size: 11px; line-height: 1.4; color: rgba(243, 207, 134, .78); text-align: center; }
 .lucy-charm {
   position: relative;
   width: min(300px, 86%);
@@ -2062,4 +2063,24 @@ html.duo-unfolded-mode .lucy-orb-stage.is-live .lucy-orb-ritual { width: min(62%
   .lucy-orb-stage[data-orb-state] .lucy-orb-energy { animation: none !important; }
   .lucy-orb-stage[data-orb-state="speaking"] .lucy-orb-aura,
   .lucy-orb-stage[data-orb-state="listening"] .lucy-orb-aura { transform: translate(-50%, 0); }
+}
+
+/* 넓은 화면(데스크톱·듀오 펼침)에서는 상담을 열기 전 화면을 탁자 옆에 마스터 카드로 둔다 —
+   카드가 입력창에 가려지거나 스크롤해야 보이지 않게. 상담 중·보고서 화면은 그대로 둔다. */
+@media (min-width: 720px) and (min-height: 620px) {
+  .lucy-orb-stage:not(.is-live):not(.is-report) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 72px 22px 96px;
+  }
+  .lucy-orb-stage:not(.is-live):not(.is-report) .lucy-orb-ritual { width: min(50%, 430px); }
+  .lucy-orb-stage:not(.is-live):not(.is-report) .lucy-orb-copy {
+    margin-top: 0;
+    margin-bottom: 0;
+    max-height: 100%;
+    width: min(46%, 430px);
+    padding-bottom: 8px;
+  }
 }

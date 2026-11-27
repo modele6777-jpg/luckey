@@ -1764,7 +1764,6 @@ export function LucyOrbCounsel({
           )}
         </div>
         <div className="lucy-orb-copy">
-          {phase === 'pick' && <p>탁자 위 주사위를 굴리거나, 마스터 루시와 바로 상담을 시작하세요</p>}
           {phase === 'live' && <p>{speaking ? `${masterTitle(master)}가 말하고 있습니다` : `${masterTitle(master)} · ${master?.tone}. 말씀하셔도 되고, 적으셔도 됩니다`}</p>}
           {notice && <p role="status">{notice}</p>}
           {phase === 'pick' && !micGranted && (
@@ -1781,9 +1780,6 @@ export function LucyOrbCounsel({
               </button>
             </div>
           )}
-          {phase === 'pick' && memory[0] && (
-            <p className="lucy-orb-regular">📒 다시 오셨네요 · {latestOrbMemoryLine(memory)}</p>
-          )}
           {phase === 'pick' && (
             <div className="lucy-orb-master-hero">
               <span className="lucy-orb-master-eyebrow">사주 · 타로 통합 마스터</span>
@@ -1799,6 +1795,7 @@ export function LucyOrbCounsel({
                 </button>
               </div>
               <small className="lucy-orb-master-best">🎙 {ORB_MASTERS[0].tone} · 이럴 때: {ORB_MASTERS[0].bestFor}</small>
+              {memory[0] && <small className="lucy-orb-master-memory">📒 지난번 상담 · {latestOrbMemoryLine(memory)}</small>}
             </div>
           )}
           {phase === 'live' && master && (
