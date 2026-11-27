@@ -6,7 +6,7 @@
  * 질문 맥락에 반응하는 정성적 성찰과 유연한 위기 전환 지침으로 연결합니다.
  */
 
-export const MESOAMERICAN_POPOL_VUH_ENGINE_VERSION = 'LUCKEY-POPOL-VUH-HERO-TWINS-v2.3.0';
+export const MESOAMERICAN_POPOL_VUH_ENGINE_VERSION = 'LUCKEY-POPOL-VUH-HERO-TWINS-v2.4.0';
 
 export type PopolVuhQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -56,6 +56,7 @@ export interface PopolVuhReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    popolVuhCrossAxis: string;
   };
   interpretiveBoundary: string;
 }
@@ -243,10 +244,12 @@ export function calculatePopolVuhHeroTwins(params: {
   const underworldVictoryRule = qualitative.practice;
 
   const calculatedAtKst = formatPopolVuhKstTimestamp(now);
+  const popolVuhCrossAxis = `[${activeTrialHouse.houseNameKo}] × [${companionTrialHouse.houseNameKo}] × [${twinArchetype.twinName}] × [${questionTheme}]`;
   const popolVuhSynthesisMatrix = {
     dominantTension: `${activeTrialHouse.houseNameKo} ↔ ${companionTrialHouse.houseNameKo} · ${twinArchetype.twinName}`,
     alignmentState: describePopolVuhStage(transformationPhase),
     integratedAction: `${qualitative.practice} (${heroicPhase})${question ? ` [질문 맥락: ${question}]` : ''}`,
+    popolVuhCrossAxis,
   };
 
   const reflectiveQuestion = question
@@ -301,6 +304,7 @@ export function formatPopolVuhHeroTwinsPrompt(report: PopolVuhReport): string {
   if (report.popolVuhSynthesisMatrix) {
     lines.push(
       `- **교차 매트릭스**: [핵심 긴장: ${report.popolVuhSynthesisMatrix.dominantTension} | 조율 상태: ${report.popolVuhSynthesisMatrix.alignmentState}]`,
+      `- **4중 교차 축**: ${report.popolVuhSynthesisMatrix.popolVuhCrossAxis}`,
       `- **통합 실천**: ${report.popolVuhSynthesisMatrix.integratedAction}`,
     );
   }
