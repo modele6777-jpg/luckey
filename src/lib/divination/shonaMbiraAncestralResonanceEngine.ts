@@ -12,6 +12,7 @@ export interface ShonaMbiraResult {
   reflectionFocus: string;
   ritualAction: string;
   shadowWarning: string;
+  topicBalanceHint: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -85,6 +86,15 @@ function classifyShonaTopic(q: string): ShonaMbiraResult['questionTopic'] {
   return '음비라 전반';
 }
 
+const SHONA_TOPIC_HINTS: Record<ShonaMbiraResult['questionTopic'], string> = {
+  '첫선율·실행': '마음이 끌리는 첫 선율을 열되 순서대로 챙겨야 할 기본 의무도 함께 짚어 두세요.',
+  '화답·대화': '상대에게 부드럽게 화답하면서도 내가 전하려는 핵심 메시지 한 줄은 또렷이 남기세요.',
+  '정적·휴식': '고요한 정적으로 숨을 고른 뒤에는 필요한 솔직한 말과 경계도 제때 건네세요.',
+  '리듬·순환': '반복되는 고민을 곱씹는 데 머물지 말고 오늘 실행할 한 줄 결론으로 리듬을 매듭지으세요.',
+  '엇박·전환': '엇박자에서 새 대안을 찾되 이미 약속한 기본 일정과 신뢰의 뼈대는 지켜 가세요.',
+  '음비라 전반': '음비라의 맑은 첫 음과 화답의 리듬을 오늘 하루의 호흡에 자연스레 얹어 보세요.',
+};
+
 export function calculateShonaMbiraAncestralResonance(params: {
   profile: UserProfile;
   now?: Date;
@@ -99,9 +109,10 @@ export function calculateShonaMbiraAncestralResonance(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (CYCLES.length - 1));
   const companion = CYCLES[(idx + companionOffset) % CYCLES.length];
   const mbiraResonanceAxis = `${picked.cycle.split('(')[0].trim()} ↔ ${companion.cycle.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = SHONA_TOPIC_HINTS[questionTopic];
 
   return {
-    engineVersion: 'LUCKEY-SHONA-MBIRA-v2.3.0',
+    engineVersion: 'LUCKEY-SHONA-MBIRA-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     mbiraCycle: picked.cycle,
@@ -112,6 +123,7 @@ export function calculateShonaMbiraAncestralResonance(params: {
     reflectionFocus: `음비라의 '${picked.cycle}' 선율을 중심에 두고 '${companion.cycle}'의 울림을 곁들여, 어긋난 마음을 억지로 고치려 하기보다 내 호흡의 리듬부터 다시 맞추어 보세요.`,
     ritualAction: picked.action,
     shadowWarning: SHONA_SHADOWS[idx],
+    topicBalanceHint,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '짐바브웨 쇼나 음비라(Mbira) 공명과 순환 미학을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -128,6 +140,7 @@ export function formatShonaMbiraPrompt(res: ShonaMbiraResult): string {
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 과잉 경계: ${res.shadowWarning}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

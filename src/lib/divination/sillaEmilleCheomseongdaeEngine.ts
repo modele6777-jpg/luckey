@@ -12,6 +12,7 @@ export interface SillaEmilleResult {
   reflectionFocus: string;
   ritualAction: string;
   shadowWarning: string;
+  topicBalanceHint: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -73,6 +74,15 @@ function classifySillaTopic(q: string): SillaEmilleResult['questionTopic'] {
   return '경주 전반';
 }
 
+const SILLA_TOPIC_HINTS: Record<SillaEmilleResult['questionTopic'], string> = {
+  '관찰·절기': '흐름을 충분히 살폈다면 결정할 타이밍이 왔을 때 한 걸음 내딛는 결단도 놓치지 마세요.',
+  '여운·진심': '은은한 여운을 남기되 지금 분명히 짚어야 할 핵심 요구 한 가지는 또렷이 전하세요.',
+  '수면·평정': '마음의 물결을 가라앉힌 뒤에는 작게라도 몸을 움직여 실행의 첫 물꼬를 트세요.',
+  '아치·연대': '서로 무게를 나누되 내 몫의 판단과 책임만큼은 스스로 단단히 쥐고 가세요.',
+  '우회·여유': '한 굽이 돌아 숨을 고르면서도 결국 마주해야 할 정면 과제의 시선은 놓지 마세요.',
+  '경주 전반': '첨성대의 차분한 관찰과 에밀레종의 깊은 여운을 오늘의 균형으로 삼아 보세요.',
+};
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   return `${kst.toISOString().slice(0, 16).replace('T', ' ')} +09:00 (KST)`;
@@ -100,9 +110,10 @@ export function calculateSillaEmilleCheomseongdae(params: {
   const picked = MOTIFS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const topicBalanceHint = SILLA_TOPIC_HINTS[questionTopic];
 
   return {
-    engineVersion: 'LUCKEY-SILLA-EMILLE-v2.3.0',
+    engineVersion: 'LUCKEY-SILLA-EMILLE-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     gyeongjuMotif: picked.motif,
@@ -113,6 +124,7 @@ export function calculateSillaEmilleCheomseongdae(params: {
     reflectionFocus: `신라 첨성대·에밀레 여명 지혜의 '${picked.motif}'을 중심에 두고 '${companion.motif}'의 결을 곁들여, 겉의 조급함을 내려놓고 고요한 관찰과 길고 맑은 여운의 호흡을 회복해 보세요.`,
     ritualAction: picked.action,
     shadowWarning: picked.shadow,
+    topicBalanceHint,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '한국 신라의 첨성대 천문 관찰·에밀레종 여운·안압지 수면 지혜를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -129,6 +141,7 @@ export function formatSillaEmillePrompt(res: SillaEmilleResult): string {
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 과잉 경계: ${res.shadowWarning}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
