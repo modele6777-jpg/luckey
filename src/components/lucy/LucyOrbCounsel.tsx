@@ -20,13 +20,17 @@ import {
   orbCardPickMessage, parseCardNumbers, pickOrbCards, saveOrbMemory, shuffleOrbDeck, summarizeOrbSession,
   type OrbDeckCard, type OrbMemoryEntry, type OrbPickedCard,
 } from '@/lib/orbConsult';
-import { Clover, KeyRound, MessageCirclePlus, Send, type LucideIcon } from 'lucide-react';
+import { Clover, KeyRound, MessageCirclePlus, Camera, Paperclip, Send, X, type LucideIcon } from 'lucide-react';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
 import { setMicCaptureActive } from '@/lib/audioMixingPolicy';
 import { rememberBgmBeforeMic, resumeBgmAfterMicSoon } from '@/lib/micBgmResume';
 import { drawTalisman, pickTalisman, saveTalismanImage, type TalismanSpec } from '@/lib/orbTalisman';
 import { buildOrbMasterRules } from '@/lib/orb/orbTools';
+import {
+  ORB_ATTACHMENT_ACCEPT, classifyOrbAttachment, orbAttachmentPayload, orbAttachmentSizeLabel, orbAttachmentSizeProblem,
+  readOrbAttachmentFile, type OrbAttachment,
+} from '@/lib/orb/orbAttachment';
 import { CAPTION_CHAR_MS, captionSteps } from '@/lib/orb/orbCaption';
 import { drawOrbTarotPositions, randomIndex, rollOrbDice } from '@/lib/orb/orbDice';
 import { createOrbToolExecutor, type OrbToolExecutor } from '@/lib/orb/orbToolExecutor';
@@ -128,6 +132,8 @@ const DIE_END = [
 type Line = { who: '나' | '루시'; text: string };
 type Phase = 'pick' | 'live' | 'report';
 type OrbVoiceMode = 'realtime' | 'hold';
+/** 메인화면에서 바로 상담을 시작할 때 함께 건네는 것 (적은 말 · 붙인 사진/파일). */
+type OrbCompose = { text?: string; attachment?: OrbAttachment };
 
 function mergeTranscript(previous: string, next: string): string {
   const line = next.replace(/\s+/g, ' ').trim();
@@ -220,6 +226,11 @@ export function LucyOrbCounsel({
   const captionStepTimers = useRef<number[]>([]);
   useEffect(() => () => { for (const timer of captionStepTimers.current) window.clearTimeout(timer); }, []);
   const [draft, setDraft] = useState('');
+  // 📷 메인화면 입력창의 사진·파일 첨부 (전송하면 상담이 시작되며 마스터에게 그대로 건넨다).
+  const [attachment, setAttachment] = useState<OrbAttachment | null>(null);
+  const attachmentRef = useRef<OrbAttachment | null>(null);
+  attachmentRef.current = attachment;
+  const attachInputRef = useRef<HTMLInputElement | null>(null);
   const [lucyQuestions, setLucyQuestions] = useState(() => readLucySuggestedQuestions(account));
   useEffect(() => { if (open) setLucyQuestions(readLucySuggestedQuestions(account)); }, [account, open]);
   const [notice, setNotice] = useState('');
@@ -359,6 +370,7 @@ export function LucyOrbCounsel({
     setCaption('');
     captionPageRef.current = '';
     setDraft('');
+    setAttachment(null);
     setNotice('');
     setMicPermissionBusy(false);
     setMicUnavailable(false);
@@ -592,7 +604,7 @@ export function LucyOrbCounsel({
     }
   };
 
-  const begin = (next: OrbMaster, micStreamOverride?: Promise<MediaStream> | null, shouldGreet = true, resume = false) => {
+  const begin = (next: OrbMaster, micStreamOverride?: Promise<MediaStream> | null, shouldGreet = true, resume = false, compose?: OrbCompose) => {
     sessionRef.current?.stop();
     const metrics = metricsRef.current ??= createOrbSessionMetrics();
     metrics.dropPending();
@@ -762,19 +774,42 @@ export function LucyOrbCounsel({
     if (resume) {
       session.sendText('연결이 잠깐 끊겼다가 다시 이어졌습니다. 인사를 새로 하지 말고 "다시 연결됐어요" 정도로 아주 짧게 말한 뒤, 직전 대화에서 이어 가세요. 이 지시 문장은 읽지 마세요.');
     } else if (shouldGreet) {
-      const typed = draft.trim();
-      const cue = typed
-        ? `먼저 존댓말로 두 문장만 인사한 뒤, 이어서 이 말씀에 답하세요. 이 지시 문장은 읽지 마세요. 사용자의 말: ${typed}`
-        : memoryBrief
-          ? '다시 찾아오신 손님입니다. 사용자가 말씀하시기 전에 존댓말로 먼저 인사하고, 지난 상담 이야기를 한 문장으로 안부 삼아 물어보세요. 모두 세 문장을 넘기지 마세요. 이 지시 문장은 읽지 마세요.'
-          : '지금 막 도착하셨습니다. 사용자가 말씀하시기 전에 존댓말로 두 문장만 먼저 인사하세요. 이 지시 문장은 읽지 마세요.';
-      session.sendText(cue);
-      if (typed) {
-        userBuf.current = typed;
+      const typed = (compose?.text ?? draft).trim();
+      const note = compose?.attachment;
+      if (note) {
+        // 사진·파일과 함께 시작: 인사 지시와 자료를 한 차례에 건넨다 (손님 차례는 한 번).
+        const payload = orbAttachmentPayload(note, typed);
+        const instruction = typed
+          ? '먼저 존댓말로 두 문장만 인사한 뒤, 이어서 이 말씀과 함께 보낸 자료를 살펴보고 답하세요. 이 지시 문장은 읽지 마세요.'
+          : '지금 막 도착하신 손님이 자료를 함께 보냈습니다. 존댓말로 두 문장만 인사한 뒤 자료를 살펴보고, 무엇이 궁금한지 한 문장으로 물어보세요. 이 지시 문장은 읽지 마세요.';
+        const guidance = `${instruction} ${payload.caption}`;
+        session.sendAttachment(payload.kind === 'image'
+          ? { kind: 'image', dataUrl: payload.dataUrl, caption: guidance }
+          : { kind: 'text', text: payload.text, caption: guidance });
+        userBuf.current = typed || `📎 ${note.name}`;
         take('나', userBuf);
-        setDraft('');
+        if (typed) setDraft('');
+        setAttachment(null);
+      } else {
+        const cue = typed
+          ? `먼저 존댓말로 두 문장만 인사한 뒤, 이어서 이 말씀에 답하세요. 이 지시 문장은 읽지 마세요. 사용자의 말: ${typed}`
+          : memoryBrief
+            ? '다시 찾아오신 손님입니다. 사용자가 말씀하시기 전에 존댓말로 먼저 인사하고, 지난 상담 이야기를 한 문장으로 안부 삼아 물어보세요. 모두 세 문장을 넘기지 마세요. 이 지시 문장은 읽지 마세요.'
+            : '지금 막 도착하셨습니다. 사용자가 말씀하시기 전에 존댓말로 두 문장만 먼저 인사하세요. 이 지시 문장은 읽지 마세요.';
+        session.sendText(cue);
+        if (typed) {
+          userBuf.current = typed;
+          take('나', userBuf);
+          setDraft('');
+        }
       }
     }
+  };
+
+  // 메인화면에서 마스터를 고르지 않고 보냈을 때: 최근 상담 마스터, 없으면 첫 마스터로 시작한다.
+  const pickStartMaster = (): OrbMaster => {
+    const recentId = memory[0]?.masterId;
+    return ORB_MASTERS.find(item => item.id === recentId) || ORB_MASTERS[0];
   };
 
   const retryLiveMic = async () => {
@@ -865,6 +900,14 @@ export function LucyOrbCounsel({
     talkingRef.current = false;
     pressTimer.current = window.setTimeout(() => {
       pressTimer.current = null;
+      if (!sessionRef.current && phase === 'pick') {
+        // 메인화면에서 길게 누르면 최근·기본 마스터로 조용히 시작하고 바로 목소리를 받는다 (인사 없이).
+        if (micPermissionBusy || micUnavailable || rolling) return;
+        begin(pickStartMaster(), undefined, false);
+        talkingRef.current = true;
+        startPushToTalk();
+        return;
+      }
       if (!canHoldToTalk()) return;
       talkingRef.current = true;
       startPushToTalk();
@@ -1176,12 +1219,61 @@ export function LucyOrbCounsel({
     }, reduced ? 700 : 2300);
   };
 
+  // 📷 사진·파일 첨부: 고른 사진은 입력창 위에 미리보기로 두고, 전송할 때 마스터에게 건넨다.
+  const chooseAttachment = () => {
+    attachInputRef.current?.click();
+  };
+  const clearAttachment = () => {
+    setAttachment(null);
+    if (attachInputRef.current) attachInputRef.current.value = '';
+  };
+  const onAttachmentPicked = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    const problem = orbAttachmentSizeProblem(file.size);
+    if (problem) { setNotice(problem); return; }
+    const kind = classifyOrbAttachment(file.name, file.type);
+    if (!kind) { setNotice('사진이나 글 파일(.txt·.md·.csv·.json)·PDF만 첨부할 수 있어요.'); return; }
+    try {
+      setAttachment(await readOrbAttachmentFile(file));
+      setNotice(kind === 'pdf'
+        ? 'PDF는 이 음성 상담에서 내용을 읽지 못해 파일 이름만 전해져요. 사진으로 찍어 보내거나 중요한 내용을 적어 주세요.'
+        : '');
+    } catch {
+      setAttachment(null);
+      setNotice('파일을 읽지 못했어요. 다른 파일로 다시 시도해 주세요.');
+    }
+  };
+
   const sendDraft = () => {
     const text = draft.trim();
-    if (!text) return;
-    if (!sessionRef.current) return;
+    const note = attachmentRef.current;
+    if (!text && !note) return;
+    const session = sessionRef.current;
+    if (!session) {
+      // 메인화면: 마스터를 고르지 않았으므로 최근·기본 마스터로 바로 상담을 시작한다.
+      if (micPermissionBusy || rolling) return;
+      begin(pickStartMaster(), undefined, true, false, { text, attachment: note ?? undefined });
+      return;
+    }
+    if (note) {
+      const payload = orbAttachmentPayload(note, text);
+      const sent = session.sendAttachment(payload.kind === 'image'
+        ? { kind: 'image', dataUrl: payload.dataUrl, caption: payload.caption }
+        : { kind: 'text', text: payload.text, caption: payload.caption });
+      if (!sent) { setNotice('사진·파일을 보내지 못했어요. 잠시 뒤 다시 시도해 주세요.'); return; }
+      executorRef.current?.newTurn();
+      setThinkingOn(true);
+      captionPageRef.current = '';
+      userBuf.current = text || `📎 ${note.name}`;
+      take('나', userBuf);
+      setDraft('');
+      setAttachment(null);
+      return;
+    }
     executorRef.current?.newTurn();
-    if (!sessionRef.current.sendText(text, true)) return;
+    if (!session.sendText(text, true)) return;
     setThinkingOn(true);
     captionPageRef.current = '';
     userBuf.current = text;
@@ -1532,7 +1624,7 @@ export function LucyOrbCounsel({
                 flashOrb();
                 if (phase === 'live') {
                   if (voiceMode === 'hold') chooseVoiceMode('realtime');
-                  if (draft.trim()) sendDraft();
+                  if (draft.trim() || attachmentRef.current) sendDraft();
                 }
               }}
             >
@@ -1584,18 +1676,6 @@ export function LucyOrbCounsel({
         <div className="lucy-orb-copy">
           {phase === 'pick' && <p>탁자 위 주사위를 누르거나 마스터를 고르시면 상담이 시작됩니다</p>}
           {phase === 'live' && <p>{speaking ? `${master?.name} 마스터가 말하고 있습니다` : `${master?.name} · ${master?.tone}. 말씀하셔도 되고, 적으셔도 됩니다`}</p>}
-          {(phase === 'pick' || phase === 'live') && (
-            <div className="lucy-orb-voice-controls">
-              <span className="lucy-orb-voice-label">음성 대화 방식</span>
-              <div className="lucy-orb-voice-options" role="group" aria-label="음성 대화 방식">
-                <button type="button" aria-pressed={voiceMode === 'realtime'} onClick={() => chooseVoiceMode('realtime')}>실시간 대화</button>
-                <button type="button" aria-pressed={voiceMode === 'hold'} onClick={() => chooseVoiceMode('hold')}>누르고 말하기</button>
-              </div>
-              <p className="lucy-orb-voice-description">
-                {voiceMode === 'realtime' ? '마이크가 계속 켜져 있어 자연스럽게 대화해요.' : '입력창을 누르고 말한 뒤 떼면 전송돼요. 오브를 짧게 누르면 실시간 대화로 바뀌어요.'}
-              </p>
-            </div>
-          )}
           {notice && <p role="status">{notice}</p>}
           {phase === 'pick' && !micGranted && (
             <div className="lucy-orb-permission-actions">
@@ -1640,11 +1720,25 @@ export function LucyOrbCounsel({
             </div>
           )}
         </div>
-        {/* 입력창은 마스터가 정해진 뒤(상담 중)에만 보인다. */}
-        {phase === 'live' && (
+        {/* 입력창: 메인화면(마스터를 고르기 전)에도 바로 보이고, 적어 보내면 그 말로 상담이 시작된다. */}
+        {(phase === 'pick' || phase === 'live') && (
           <div className="lucy-orb-dock lucy-orb-composer">
             {!talkPressed && (
               <OrbQuestionMarquee questions={lucyQuestions} onSelect={setDraft} />
+            )}
+            {attachment && (
+              <div className="lucy-orb-attach" role="status">
+                {attachment.kind === 'image' && attachment.dataUrl
+                  ? <img src={attachment.dataUrl} alt={`첨부 사진 미리보기: ${attachment.name}`} />
+                  : <span className="lucy-orb-attach-icon" aria-hidden="true"><Paperclip size={16} /></span>}
+                <span className="lucy-orb-attach-text">
+                  <b>{attachment.name}</b>
+                  <small>{attachment.kind === 'image' ? '사진' : attachment.kind === 'pdf' ? 'PDF' : '글 파일'} · {orbAttachmentSizeLabel(attachment.size)}</small>
+                </span>
+                <button type="button" className="lucy-orb-attach-remove" onClick={clearAttachment} aria-label="첨부 삭제" title="첨부 삭제">
+                  <X size={14} aria-hidden="true" />
+                </button>
+              </div>
             )}
             <div className="lucy-orb-composer-row">
             <div className="lucy-orb-input-wrap">
@@ -1678,7 +1772,19 @@ export function LucyOrbCounsel({
               )}
               {talkPressed && <span className="lucy-orb-hold-hint" role="status">듣고 있어요 · 손을 떼면 전송</span>}
             </div>
-              <button type="button" className="lucy-orb-send" onClick={sendDraft} disabled={rolling || micPermissionBusy || talkPressed || (!draft.trim())} aria-label="상담 메시지 보내기">
+              <input
+                ref={attachInputRef}
+                type="file"
+                accept={ORB_ATTACHMENT_ACCEPT}
+                className="lucy-orb-attach-input"
+                onChange={(event) => void onAttachmentPicked(event)}
+                aria-hidden="true"
+                tabIndex={-1}
+              />
+              <button type="button" className="lucy-orb-camera" onClick={chooseAttachment} aria-label="사진·파일 첨부" title="사진·파일 첨부">
+                <Camera size={18} aria-hidden="true" />
+              </button>
+              <button type="button" className="lucy-orb-send" onClick={sendDraft} disabled={rolling || micPermissionBusy || talkPressed || (!draft.trim() && !attachment)} aria-label="상담 메시지 보내기">
                 <Send size={18} aria-hidden="true" />
               </button>
             </div>

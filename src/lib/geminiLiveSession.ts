@@ -5,11 +5,18 @@ import { parseOrbLivePrices, type OrbLivePrices } from './orb/orbSessionMetrics'
 
 export type LiveVoiceState = 'listening' | 'speaking';
 
+/** 손님이 입력창에 붙인 사진·파일 (사진은 data URL, 글 파일은 읽은 글자). */
+export type LiveAttachment =
+  | { kind: 'image'; dataUrl: string; caption?: string }
+  | { kind: 'text'; text: string; caption?: string };
+
 export type LiveVoiceSession = {
   stop: () => void;
   setMuted: (muted: boolean, measureTurn?: boolean) => void;
   interrupt: () => void;
   sendText: (text: string, measureTurn?: boolean) => boolean;
+  /** 사진·글 파일을 손님 한 차례로 보낸다. 연결 전이면 연결되는 순간 보낸다. */
+  sendAttachment: (attachment: LiveAttachment, measureTurn?: boolean) => boolean;
   /** 마이크를 완전히 닫는다 (아이폰 마이크 표시도 꺼진다). 연결은 그대로 둔다. */
   releaseMic: () => void;
   /** 닫힌 마이크를 다시 연다. 열렸으면 true. */
@@ -221,7 +228,11 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     return { start: startAt, end: nextAt };
   };
 
-  let pendingText: { line: string; measureTurn: boolean } | null = null;
+  // 연결이 끝나기 전에 보낸 말·첨부는 보낸 순서대로 보관했다가 setupComplete 에서 그대로 보낸다.
+  const pendingSends: Array<
+    | { kind: 'text'; line: string; measureTurn: boolean }
+    | { kind: 'attachment'; attachment: LiveAttachment; measureTurn: boolean }
+  > = [];
 
   const sendTyped = (text: string, measureTurn = false) => {
     const line = text.replace(/\s+/g, ' ').trim().slice(0, 500);
@@ -236,6 +247,41 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     if (measureTurn) handlers.onInputSent?.('text');
     handlers.onState?.('listening');
     return true;
+  };
+
+  // 사진은 inlineData, 글 파일은 글자로 손님 한 차례에 담아 보낸다 (caption 은 자료 설명).
+  const sendAttachmentNow = (attachment: LiveAttachment, measureTurn = true) => {
+    if (stopped || socket?.readyState !== WebSocket.OPEN) return false;
+    const caption = String(attachment.caption || '').replace(/\s+/g, ' ').trim().slice(0, 1200);
+    const parts: Array<Record<string, unknown>> = [];
+    if (attachment.kind === 'image') {
+      const match = /^data:([^;,]+);base64,(.+)$/.exec(String(attachment.dataUrl || ''));
+      if (!match) return false;
+      parts.push({ inlineData: { mimeType: match[1], data: match[2] } });
+      if (caption) parts.push({ text: caption });
+    } else {
+      const body = String(attachment.text || '').trim().slice(0, 8000);
+      if (!body) return false;
+      parts.push({ text: caption ? `${body}\n\n${caption}` : body });
+    }
+    stopPlayback();
+    socket.send(JSON.stringify({
+      clientContent: {
+        turns: [{ role: 'user', parts }],
+        turnComplete: true,
+      },
+    }));
+    if (measureTurn) handlers.onInputSent?.('text');
+    handlers.onState?.('listening');
+    return true;
+  };
+
+  const flushPendingSends = () => {
+    const queued = pendingSends.splice(0, pendingSends.length);
+    for (const item of queued) {
+      if (item.kind === 'text') sendTyped(item.line, item.measureTurn);
+      else sendAttachmentNow(item.attachment, item.measureTurn);
+    }
   };
 
   const cancelledCalls = new Set<string>();
@@ -285,11 +331,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       ready = true;
       if (setupTimer) clearTimeout(setupTimer);
       handlers.onState?.('listening');
-      if (pendingText) {
-        const queued = pendingText;
-        pendingText = null;
-        sendTyped(queued.line, queued.measureTurn);
-      }
+      if (pendingSends.length) flushPendingSends();
       return;
     }
     const toolCall = message.toolCall || message.tool_call;
@@ -336,6 +378,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   const stop = () => {
     if (stopped) return;
     stopped = true;
+    pendingSends.length = 0;
     setMicCaptureActive(false);
     if (speakTimer) clearTimeout(speakTimer);
     if (setupTimer) clearTimeout(setupTimer);
@@ -545,10 +588,18 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       const line = text.replace(/\s+/g, ' ').trim().slice(0, 500);
       if (!line || stopped) return false;
       if (!ready || socket?.readyState !== WebSocket.OPEN) {
-        pendingText = { line, measureTurn };
+        pendingSends.push({ kind: 'text', line, measureTurn });
         return true;
       }
       return sendTyped(line, measureTurn);
+    },
+    sendAttachment: (attachment: LiveAttachment, measureTurn = true) => {
+      if (stopped) return false;
+      if (!ready || socket?.readyState !== WebSocket.OPEN) {
+        pendingSends.push({ kind: 'attachment', attachment, measureTurn });
+        return true;
+      }
+      return sendAttachmentNow(attachment, measureTurn);
     },
   };
 }

@@ -1017,19 +1017,13 @@ html.duo-unfolded-mode .lucy-orb-figure { width: 34%; }
   min-height: 0;
   overflow: auto;
   text-align: center;
-  padding: 0 24px 88px;
+  /* 메인화면에서도 입력창이 보이므로, 마스터 카드가 입력창에 가리지 않게 그 높이만큼 비운다. */
+  padding: 0 24px max(88px, calc(var(--orb-dock-clear, 0px) + 16px));
   width: min(560px, 100%);
 }
 html.duo-unfolded-mode .lucy-orb-copy { width: min(720px, 92%); }
 .lucy-orb-copy p { margin: 0; font-size: 15px; line-height: 1.6; color: rgba(247,244,238,.86); }
 .lucy-orb-permission-actions { display: flex; justify-content: center; margin: 10px auto 0; }
-.lucy-orb-voice-controls { display: flex; flex-direction: column; align-items: center; gap: 8px; margin: 14px auto 0; }
-.lucy-orb-voice-label { color: rgba(247,244,238,.72); font-size: 12px; font-weight: 700; }
-.lucy-orb-voice-options { display: flex; gap: 4px; padding: 4px; border: 1px solid rgba(243,207,134,.36); border-radius: 999px; background: rgba(10,12,28,.42); }
-.lucy-orb-voice-options button { border: 0; border-radius: 999px; padding: 8px 13px; background: transparent; color: rgba(251,247,255,.78); font-size: 13px; font-weight: 700; white-space: nowrap; }
-.lucy-orb-voice-options button[aria-pressed="true"] { background: linear-gradient(180deg, #fff6dc, #f3cf86); color: #3a2410; box-shadow: 0 3px 10px rgba(255,200,120,.24); }
-.lucy-orb-voice-options button:focus-visible, .lucy-orb-ptt:focus-visible { outline: 2px solid #fff6dc; outline-offset: 3px; }
-.lucy-orb-voice-description { margin: 0 !important; font-size: 12px !important; color: rgba(247,244,238,.74) !important; }
 .lucy-orb-ptt { min-height: 46px; padding: 11px 22px; border: 1px solid rgba(255,244,210,.8); border-radius: 999px; background: linear-gradient(180deg, #fff6dc, #f3cf86); color: #3a2410; font-size: 14px; font-weight: 800; box-shadow: 0 6px 18px rgba(255,200,120,.3), inset 0 1px 0 #fff; touch-action: none; -webkit-user-select: none; user-select: none; }
 .lucy-orb-ptt.is-pressed { transform: scale(.97); background: linear-gradient(180deg, #f3cf86, #e8b95f); box-shadow: 0 2px 8px rgba(255,200,120,.24), inset 0 2px 5px rgba(58,36,16,.18); }
 .lucy-orb-ptt:disabled { opacity: .45; box-shadow: none; }
@@ -1095,6 +1089,47 @@ html.duo-unfolded-mode .lucy-orb-copy { width: min(720px, 92%); }
 }
 .lucy-orb-dock .lucy-orb-send { display: grid; place-items: center; padding: 0; flex: 0 0 44px; }
 .lucy-orb-send:disabled { opacity: .42; }
+/* 📷 입력창 옆 사진·파일 버튼: 입력창과 같은 유리 알약, 아이콘만. */
+.lucy-orb-dock .lucy-orb-camera {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  flex: 0 0 44px;
+  border-radius: 999px;
+  background: rgba(240, 232, 255, .14);
+  color: #fff6dc;
+  box-shadow: inset 0 0 0 1.5px rgba(214, 196, 255, .28);
+}
+.lucy-orb-dock .lucy-orb-camera:active { transform: scale(.94); background: rgba(240, 232, 255, .22); }
+.lucy-orb-attach-input { display: none; }
+/* 첨부 미리보기: 입력창 바로 위에 썸네일(또는 파일 아이콘)·이름·삭제 */
+.lucy-orb-attach {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 5px 6px 5px 7px;
+  border-radius: 14px;
+  background: rgba(14, 11, 34, .55);
+  box-shadow: inset 0 0 0 1px rgba(214, 196, 255, .26);
+}
+.lucy-orb-attach img { width: 34px; height: 34px; border-radius: 9px; object-fit: cover; flex: 0 0 auto; }
+.lucy-orb-attach-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 9px; background: rgba(255, 240, 210, .14); color: #fff6dc; flex: 0 0 auto; }
+.lucy-orb-attach-text { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; text-align: left; }
+.lucy-orb-attach-text b { font-size: 12px; font-weight: 700; color: #fff6dc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lucy-orb-attach-text small { font-size: 11px; color: rgba(247, 244, 238, .7); }
+.lucy-orb-dock .lucy-orb-attach-remove {
+  display: grid;
+  place-items: center;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(240, 232, 255, .16);
+  color: #fbf7ff;
+  box-shadow: none;
+}
 
 .lucy-orb-input-wrap { position: relative; flex: 1 1 auto; min-width: 0; }
 .lucy-orb-dock input {
