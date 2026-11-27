@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const LAOZI_DAODEJING_VERSION = 'LUCKEY-LAOZI-DAODEJING-v2.6.0';
+export const LAOZI_DAODEJING_VERSION = 'LUCKEY-LAOZI-DAODEJING-v2.7.0';
 
 export interface DaodejingStage {
   stageLevel: number;
@@ -85,6 +85,7 @@ export interface LaoziDaodejingResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    laoziCrossAxis: string;
   };
   ritualAction: string;
   reflectionFocus: string;
@@ -304,10 +305,12 @@ export function calculateLaoziDaodejing(
   };
 
   const trimmedQ = (question || '').trim();
+  const laoziCrossAxis = `[${activeDaodejingStage.stageNameHanja.split(' ')[0]}] × [${chapterResonance.chapterTitle}] × [${seasonalWaterFlow.shichenName.split('(')[0]}] × [${primaryDaoPrinciple.hanjaMotto.split(' ')[0]}]`;
   const laoziSynthesisMatrix = {
     dominantTension: `${chapterResonance.chapterTitle} ↔ ${describeDaodejingWaterStage(nonContentionHarmonyScore)}`,
     alignmentState: `${activeDaodejingStage.stageNameHanja} · ${seasonalWaterFlow.shichenName}`,
     integratedAction: `${chapterResonance.wuweiUnburdeningTip}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+    laoziCrossAxis,
   };
 
   const reflectiveQuestion = trimmedQ
@@ -338,7 +341,7 @@ export function calculateLaoziDaodejing(
 
 export function formatLaoziDaodejingPrompt(result: LaoziDaodejingResult): string {
   const matrixLine = result.laoziSynthesisMatrix
-    ? `\n- 노자 도덕경 교차 매트릭스: 핵심 긴장(${result.laoziSynthesisMatrix.dominantTension}) · 조율 상태(${result.laoziSynthesisMatrix.alignmentState}) · 통합 실천(${result.laoziSynthesisMatrix.integratedAction})`
+    ? `\n- 노자 도덕경 교차 매트릭스: 핵심 긴장(${result.laoziSynthesisMatrix.dominantTension}) · 조율 상태(${result.laoziSynthesisMatrix.alignmentState}) · 4중 교차 축(${result.laoziSynthesisMatrix.laoziCrossAxis}) · 통합 실천(${result.laoziSynthesisMatrix.integratedAction})`
     : '';
   return `[☯️ 고대 중국 노자(老子) 《도덕경(道德經)》 상선약수 & 무위자연 리포트]
 - 엔진 버전: ${result.engineVersion} | 연산 시각: ${result.calculatedAtKst}
