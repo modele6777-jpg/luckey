@@ -26,7 +26,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SRI_YANTRA_ENGINE_VERSION = '2.3.0';
+export const SRI_YANTRA_ENGINE_VERSION = '2.4.0';
 
 export interface SriYantraSacredGeometryReport {
   engineVersion: string;
@@ -73,6 +73,7 @@ export interface SriYantraSacredGeometryReport {
     coreMandate: string;
     sacredBoundary: string;
     reflectiveQuestion: string;
+    sriYantraCrossAxis: string;
   };
   ritualAction: string;
   reflectionFocus: string;
@@ -237,12 +238,14 @@ export function calculateHinduSriYantraSacredGeometry(
   const yantraFocusNote = `${brahmaMuhurtaWindow}과 ${seasonalShaktiPhase}가 교차하므로, ${primaryAvaranaChakra.blessingAdvice}`;
 
   const interpretiveBoundary = '힌두 탄트라 스리 얀트라 관점은 초자연적 예단이나 심리 진단이 아니라, 이성(시바)과 수용성(샤크티)의 중심 균형을 비추는 기하학 명상 렌즈입니다.';
+  const sriYantraCrossAxis = `[제${primaryAvaranaChakra.level}층 ${primaryAvaranaChakra.sanskritName}] × [제${secondaryAvaranaChakra.level}층 ${secondaryAvaranaChakra.sanskritName}] × [${brahmaMuhurtaWindow.split('(')[0].trim()}] × [${questionFocus}]`;
   const sriYantraSynthesisMatrix = {
     coreMandate: `[제${primaryAvaranaChakra.level}층 ${primaryAvaranaChakra.sanskritName}] 회랑을 중심으로 ${questionFocus}을 수행하십시오.`,
     sacredBoundary: '시바(이성)와 샤크티(감성) 중 한쪽으로 치우친 극단적 판단을 경계하고, 바인두 중심의 고요에서 답을 구하십시오.',
     reflectiveQuestion: question
       ? `'${question}'의 소용돌이 속에서 제${primaryAvaranaChakra.level}층(${primaryAvaranaChakra.sanskritName})과 바인두가 비추는 흔들리지 않는 중심은 어디에 있나요?`
       : `지금 내 삶의 소용돌이 한가운데서 흔들리지 않는 고요한 중심점(바인두)은 어디에 있나요?`,
+    sriYantraCrossAxis,
   };
 
   const ritualAction = `[제${primaryAvaranaChakra.level}층 ${primaryAvaranaChakra.sanskritName} · 바인두 응시] ${primaryAvaranaChakra.blessingAdvice}`;
@@ -292,6 +295,7 @@ export function formatHinduSriYantraSacredGeometryPrompt(report: SriYantraSacred
     `- 시공간 리듬: ${report.temporalSriYantraRhythm.brahmaMuhurtaWindow} · ${report.temporalSriYantraRhythm.seasonalShaktiPhase}`,
     `- 신성 기하학 명상 지침: ${report.sacredGeometryMeditationGuidance}`,
     `- 교차 매트릭스: ${report.sriYantraSynthesisMatrix.coreMandate} | 경계: ${report.sriYantraSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.sriYantraSynthesisMatrix.reflectiveQuestion}"`,
+    `- 4중 교차 축: ${report.sriYantraSynthesisMatrix.sriYantraCrossAxis}`,
     `- 실천 의례(Ritual Action): ${report.ritualAction}`,
     `- 성찰 초점(Reflection Focus): ${report.reflectionFocus}`,
     `- 해석 경계: ${report.interpretiveBoundary}`,

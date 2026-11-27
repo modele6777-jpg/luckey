@@ -4590,10 +4590,12 @@ test('Hindu Nadi Agastya Palm Leaf Engine: calculates 14 Kandams and Shanti Pari
   assert(rep.dharmaFulfillmentIndex >= 0 && rep.dharmaFulfillmentIndex <= 100);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.nadiSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.nadiSynthesisMatrix?.nadiCrossAxis?.includes(rep.kandamName)));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHinduNadiAgastyaPalmLeafPrompt(rep);
   assert(prompt.includes('남인도 나디 점성술(Nadi Astrology) & 아가스티야 야자잎 14 칸담 상징 성찰 자료'));
   assert(prompt.includes(rep.kandamName));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes(rep.ritualAction));
   assert(prompt.includes(rep.reflectionFocus));
   assert(prompt.includes('교차 매트릭스'));
@@ -5208,10 +5210,12 @@ test('Greek Moirai Ananke Fate Engine: calculates Clotho, Lachesis, Atropos powe
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.temporalMoiraiRhythm.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.situationalMoiraiAudit.questionFocus.length > 0);
+  assert(rep.moiraiSynthesisMatrix.moiraiCrossAxis.includes(rep.dominantGoddess));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatGreekMoiraiAnankeFatePrompt(rep);
   assert(prompt.includes('고대 그리스 델포이 삼여신 모이라이(Moirai)'));
   assert(prompt.includes(rep.dominantGoddess));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('실천 의례:') && prompt.includes('성찰 초점:'));
   assert(!prompt.includes('/100'));
 });
@@ -6011,10 +6015,12 @@ test('Hindu Sri Yantra Sacred Geometry Engine: calculates Shiva-Shakti polaritie
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.temporalSriYantraRhythm.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.situationalSriYantraAudit.questionFocus.length > 0);
+  assert(rep.sriYantraSynthesisMatrix.sriYantraCrossAxis.includes(rep.primaryAvaranaChakra.sanskritName));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHinduSriYantraSacredGeometryPrompt(rep);
   assert(prompt.includes('힌두 탄트라 스리 얀트라(Sri Yantra) 9대 나바요니 & 바인두 신성기하학'));
   assert(prompt.includes(rep.primaryAvaranaChakra.sanskritName));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes(rep.ritualAction));
   assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('%'));

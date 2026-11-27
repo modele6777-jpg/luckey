@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GREEK_MOIRAI_ANANKE_FATE_ENGINE_VERSION = '2.3.0';
+export const GREEK_MOIRAI_ANANKE_FATE_ENGINE_VERSION = '2.4.0';
 
 export interface MoiraiGoddessAspect {
   name: string;
@@ -55,6 +55,7 @@ export interface GreekMoiraiAnankeFateReport {
     coreMandate: string;
     sacredBoundary: string;
     reflectiveQuestion: string;
+    moiraiCrossAxis: string;
   };
 }
 
@@ -202,12 +203,14 @@ export function calculateGreekMoiraiAnankeFate(options?: {
   const kairosActionNote = `현재 ${olympianHourWindow}과 ${seasonalSpindlePhase}가 교차하므로, ${kairosTimingGuidance}`;
 
   const interpretiveBoundary = '고대 그리스 모이라이·아낭케 관점은 피할 수 없는 숙명을 선고하는 도구가 아니라, 현재 국면의 시작·조율·매듭을 주체적으로 분별하는 신화적 성찰 렌즈입니다.';
+  const moiraiCrossAxis = `[${dominantGoddess}] × [${threadStage}] × [${olympianHourWindow.split('(')[0].trim()}] × [${questionFocus}] — 아낭케의 물레와 에르의 신화가 현재 선택의 매듭을 교차 조율합니다.`;
   const moiraiSynthesisMatrix = {
     coreMandate: `${dominantGoddess}의 축에서 ${questionFocus}을 수행하며 주체적으로 실타래를 쥐십시오.`,
     sacredBoundary: `아낭케의 물레가 전하는 경계: ${spindleWarning}`,
     reflectiveQuestion: question
       ? `'${question}'에서 ${dominantGoddess}의 흐름 속에 새로 잣거나 단호히 매듭지어야 할 한 가닥은 무엇인가요?`
       : `지금 내 손에 쥔 실타래 중 클로토처럼 새로 잣아야 할 것과 아트로포스처럼 단호히 끊어야 할 것은 무엇인가요?`,
+    moiraiCrossAxis,
   };
 
   return {
@@ -257,6 +260,7 @@ export function formatGreekMoiraiAnankeFatePrompt(rep: GreekMoiraiAnankeFateRepo
 · 카이로스 타이밍 돌파 지침: ${rep.kairosTimingGuidance}
 · 에르의 신화 영혼 처방: ${rep.mythOfErSoulChoice}
 · 교차 매트릭스 핵심 지침: ${rep.moiraiSynthesisMatrix.coreMandate}
+· 4중 교차 축: ${rep.moiraiSynthesisMatrix.moiraiCrossAxis}
 · 신성 경계 및 성찰 질문: ${rep.moiraiSynthesisMatrix.sacredBoundary} | "${rep.moiraiSynthesisMatrix.reflectiveQuestion}"
 · 실천 의례: ${rep.ritualAction}
 · 성찰 초점: ${rep.reflectionFocus}
