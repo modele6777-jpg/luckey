@@ -42,7 +42,7 @@
 import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate, convertSolarToLunar } from '../lunarCalendar';
 
-export const SUKUYO_ENGINE_VERSION = 'LUCKEY-SY-v2.3.0';
+export const SUKUYO_ENGINE_VERSION = 'LUCKEY-SY-v2.4.0';
 
 export type SukuyoQuestionTopic = 'relation' | 'career' | 'timing' | 'mindset' | 'general';
 
@@ -177,6 +177,7 @@ export interface SukuyoResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    sukuyoCrossAxis: string;
   };
   ritualAction?: string;
   reflectionFocus?: string;
@@ -645,10 +646,12 @@ function calculateSanKyuCycle(mansion: SukuyoMansionInfo): SukuyoSanKyuCycle {
   const questionTopic = classifySukuyoTopic(q);
   const shadowWarning = SUKUYO_SHADOW_WARNINGS[questionTopic];
 
+  const sukuyoCrossAxis = `[${mansion.fullName}] × [${shukgukMeta.hanja}] × [${planetaryGuard.dominantLuminary}] × [${sanKyuCycle.nineMansionPhase}]`;
   const sukuyoSynthesisMatrix = {
     dominantTension: `${mansion.fullName} (${shukgukMeta.hanja}) ↔ ${celestialQuadrant.quadrant}`,
     alignmentState: `${planetaryGuard.dominantLuminary} 수호 · ${sanKyuCycle.nineMansionPhase}`,
     integratedAction: `${sanKyuCycle.actionCompass}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    sukuyoCrossAxis,
   };
 
   const reflectiveQuestion = q
@@ -725,7 +728,7 @@ export function formatSukuyoPrompt(result: SukuyoResult): string {
   }
   if (result.sukuyoSynthesisMatrix) {
     deepLines.push(
-      `- 교차 매트릭스: [핵심 긴장: ${result.sukuyoSynthesisMatrix.dominantTension} | 조율 상태: ${result.sukuyoSynthesisMatrix.alignmentState}]\n  * 통합 실천: ${result.sukuyoSynthesisMatrix.integratedAction}`,
+      `- 교차 매트릭스: [핵심 긴장: ${result.sukuyoSynthesisMatrix.dominantTension} | 조율 상태: ${result.sukuyoSynthesisMatrix.alignmentState}]\n  * 4중 교차 축: ${result.sukuyoSynthesisMatrix.sukuyoCrossAxis}\n  * 통합 실천: ${result.sukuyoSynthesisMatrix.integratedAction}`,
     );
   }
   if (result.ritualAction) {
