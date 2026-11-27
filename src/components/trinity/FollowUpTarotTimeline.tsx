@@ -14,7 +14,7 @@ import {
   ArrowRight,
   RefreshCw
 } from 'lucide-react';
-import { TarotCard, getTarotCardImageUrl, getEffectiveTarotKeywords, getTarotCardCaution } from '@/data/tarotData';
+import { TarotCard, getTarotCardImageUrl, getEffectiveTarotKeywords } from '@/data/tarotData';
 import { Streamdown } from '@/components/Streamdown';
 import { playTTSInChunks, stopTTS, useTTSState } from '@/utils/tts';
 import { playSuccessHaptic } from '@/lib/audioHaptics';
@@ -207,13 +207,6 @@ export const FollowUpTarotTimeline: React.FC<FollowUpTarotTimelineProps> = ({
                       <p className="text-[11px] sm:text-xs text-white/70 line-clamp-2 break-keep font-sans">
                         {entry.card ? getEffectiveTarotKeywords({ ...entry.card, reversed: entry.reversed }).join(' · ') : ''}
                       </p>
-
-                      {entry.reversed && entry.card && (
-                        <div className="mt-1.5 px-2.5 py-1.5 rounded-lg bg-rose-500/15 border border-rose-400/35 text-[11px] text-rose-100 leading-snug break-keep">
-                          <span className="font-bold text-rose-300 mr-1">⚠️ [{entry.card.nameKo || entry.card.name} 역방향 주의점 1가지]</span>
-                          <span>{getTarotCardCaution({ ...entry.card, reversed: true })}</span>
-                        </div>
-                      )}
 
                       <div className="text-[10px] text-amber-400/80 font-sans pt-1 flex items-center gap-1">
                         <Sparkles size={11} />

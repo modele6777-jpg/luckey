@@ -32,7 +32,8 @@ import {
   extractOracleConciseSummary,
   extractGivenName,
   formatKoreanVocative,
-  formatKoreanToTarget
+  formatKoreanToTarget,
+  deduplicateReadingText,
 } from '@/lib/tarotSummaryUtils';
 import { type TarotShareData } from '@/utils/todayTarotExporter';
 import { getTarotCardDetails } from '@/lib/dailyTarotOracle';
@@ -432,6 +433,21 @@ export function resolvePrescribedArtForCards(
  * 🌟 오라클 힐링타로 5단계 심층 총평 마크다운 본문 폴백 및 안전 생성 함수
  * AI 응답에서 본문(message)이 비어있거나 누락되었을 때도 100% 온전한 대서사 리딩을 렌더링
  */
+
+function onceCaution(cards: Array<{ nameKo?: string; name?: string; reversed?: boolean } | null | undefined>): string {
+  const seen = new Set<string>();
+  const lines: string[] = [];
+  for (const card of cards) {
+    if (!card?.reversed) continue;
+    const text = String(getTarotCardCaution(card as TarotCard) || '').trim();
+    const key = text.replace(/\s+/g, '');
+    if (!text || seen.has(key)) continue;
+    seen.add(key);
+    lines.push(`- **${card.nameKo || card.name}**: ${text}`);
+  }
+  return lines.length ? `\n\n## 주의\n${lines.join('\n')}` : '';
+}
+
 export function buildFallbackHealingMessage(
   cards: SelectedTarotCardEntry[],
   saju: any,
@@ -459,9 +475,9 @@ export function buildFallbackHealingMessage(
   const c1Keywords = c1 ? getEffectiveTarotKeywords(c1).slice(0, 3).join(', ') : '원형적 상징';
   const c2Keywords = c2 ? getEffectiveTarotKeywords(c2).slice(0, 3).join(', ') : '현실의 흐름';
   const c3Keywords = c3 ? getEffectiveTarotKeywords(c3).slice(0, 3).join(', ') : '해결의 열쇠';
-  const c1RevNote = c1?.reversed ? `\n\n역방향으로 발현된 이 카드의 본래 뜻은 "${getTarotReversedData(c1).meaning}"이며, 특히 이 카드와 관련하여 꼭 기억해야 할 **주의점 1가지**는 **"${getTarotCardCaution(c1)}"**입니다.` : '';
-  const c2RevNote = c2?.reversed ? `\n\n역방향으로 발현된 이 카드의 본래 뜻은 "${getTarotReversedData(c2).meaning}"이며, 특히 이 카드와 관련하여 꼭 기억해야 할 **주의점 1가지**는 **"${getTarotCardCaution(c2)}"**입니다.` : '';
-  const c3RevNote = c3?.reversed ? `\n\n역방향으로 발현된 이 카드의 본래 뜻은 "${getTarotReversedData(c3).meaning}"이며, 특히 이 카드와 관련하여 꼭 기억해야 할 **주의점 1가지**는 **"${getTarotCardCaution(c3)}"**입니다.` : '';
+  const c1RevNote = c1?.reversed ? ` 역방향입니다.` : '';
+  const c2RevNote = c2?.reversed ? ` 역방향입니다.` : '';
+  const c3RevNote = c3?.reversed ? ` 역방향입니다.` : '';
 
   const todayCardStr = `[${todayCard.nameKo}] (${todayCard.name}${todayCard.reversed ? ' · 역방향' : ' · 정방향'})`;
   const inquiryFocus = effectiveInquiry ? `현재 마주하신 "${effectiveInquiry}" 고민` : '지금 마주하신 삶의 화두와 내면의 질문';
@@ -513,7 +529,7 @@ ${stage3Text}
 ${stage4Text}
 
 ### 🌿 5. 운명을 바꾸는 일상 개운 처방과 마스터의 영혼 축복
-${stage5Text}`;
+${stage5Text}${onceCaution(cards)}`;
 }
 
 /**
@@ -540,9 +556,9 @@ export function buildFallbackGrowthMessage(
   const c1Name = c1 ? `${c1.nameKo || c1.name}${c1.reversed ? ' (역방향)' : ' (정방향)'}` : '1번 카드';
   const c2Name = c2 ? `${c2.nameKo || c2.name}${c2.reversed ? ' (역방향)' : ' (정방향)'}` : '2번 카드';
   const c3Name = c3 ? `${c3.nameKo || c3.name}${c3.reversed ? ' (역방향)' : ' (정방향)'}` : '3번 실행 카드';
-  const c1GrowthRev = c1?.reversed ? ` 이 카드는 역방향으로 나와 "${getTarotReversedData(c1).meaning}"을(를) 뜻하며, 특히 **주의점 1가지**는 **"${getTarotCardCaution(c1)}"**입니다.` : '';
-  const c2GrowthRev = c2?.reversed ? ` 이 카드는 역방향으로 나와 "${getTarotReversedData(c2).meaning}"을(를) 뜻하며, 특히 **주의점 1가지**는 **"${getTarotCardCaution(c2)}"**입니다.` : '';
-  const c3GrowthRev = c3?.reversed ? ` 이 카드는 역방향으로 나와 "${getTarotReversedData(c3).meaning}"을(를) 뜻하며, 특히 **주의점 1가지**는 **"${getTarotCardCaution(c3)}"**입니다.` : '';
+  const c1GrowthRev = c1?.reversed ? ` 역방향입니다.` : '';
+  const c2GrowthRev = c2?.reversed ? ` 역방향입니다.` : '';
+  const c3GrowthRev = c3?.reversed ? ` 역방향입니다.` : '';
 
   const stage1 = `${recipientName} 님, 안녕하세요! 당신의 잠재 역량을 최고조로 끌어올리는 퍼포먼스 라이프 코치 루시입니다. 2026 병오년(丙午年)의 도약 타이밍 속에서, 오늘 당신의 하루를 지배하는 일일 타로 [${todayCard.nameKo}](${todayCard.reversed ? '역방향' : '정방향'})와 사주 본원 [${dayMasterStr}] 기질의 결합은 강력한 현실 돌파의 기저 에너지를 형성하고 있습니다. ${effectiveInquiry ? `당신이 마주한 "${effectiveInquiry}" 과제 앞에서, ` : ''}${macroFocus || '생각의 과부하를 멈추고 사주 본원 추진력과 타로 실행 에너지를 동기화할 때입니다.'}`;
 
@@ -568,7 +584,7 @@ ${stage3}
 ${stage4}
 
 ### 🛠️ 5. 오늘의 1% 마이크로 실행 시스템과 루시의 단호한 멘토링
-${stage5}`;
+${stage5}${onceCaution(cards)}`;
 }
 
 /**
@@ -597,9 +613,9 @@ export function buildFallbackMiracleMessage(
   const c1Keywords = c1 ? getEffectiveTarotKeywords(c1).slice(0, 3).join(', ') : '두려움의 투사';
   const c2Keywords = c2 ? getEffectiveTarotKeywords(c2).slice(0, 3).join(', ') : '지각의 전환';
   const c3Keywords = c3 ? getEffectiveTarotKeywords(c3).slice(0, 3).join(', ') : '참된 용서와 평화';
-  const c1MiracleRev = c1?.reversed ? `\n\n역방향으로 발현된 이 카드의 본래 뜻은 "${getTarotReversedData(c1).meaning}"이며, 특히 이 카드와 관련하여 꼭 기억해야 할 **주의점 1가지**는 **"${getTarotCardCaution(c1)}"**입니다.` : '';
-  const c2MiracleRev = c2?.reversed ? `\n\n역방향으로 발현된 이 카드의 본래 뜻은 "${getTarotReversedData(c2).meaning}"이며, 특히 이 카드와 관련하여 꼭 기억해야 할 **주의점 1가지**는 **"${getTarotCardCaution(c2)}"**입니다.` : '';
-  const c3MiracleRev = c3?.reversed ? `\n\n역방향으로 발현된 이 카드의 본래 뜻은 "${getTarotReversedData(c3).meaning}"이며, 특히 이 카드와 관련하여 꼭 기억해야 할 **주의점 1가지**는 **"${getTarotCardCaution(c3)}"**입니다.` : '';
+  const c1MiracleRev = c1?.reversed ? ` 역방향입니다.` : '';
+  const c2MiracleRev = c2?.reversed ? ` 역방향입니다.` : '';
+  const c3MiracleRev = c3?.reversed ? ` 역방향입니다.` : '';
 
   const todayCardStr = `[${todayCard.nameKo}] (${todayCard.name}${todayCard.reversed ? ' · 역방향' : ' · 정방향'})`;
   const inquiryFocus = effectiveInquiry ? `현재 마음을 어지럽히는 "${effectiveInquiry}" 사안` : '지금 마주하신 현실의 갈등과 불안';
@@ -658,7 +674,7 @@ ${stage3Text}
 ${stage4Text}
 
 ### 🌿 5. 오늘의 기적수업 워크북 선언과 제제의 평화 축복
-${stage5Text}`;
+${stage5Text}${onceCaution(cards)}`;
 }
 
 
@@ -1384,7 +1400,7 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
     if (oracleMode === 'healing') {
       const msg = healingResult?.message?.trim();
       const hasAllStages = Boolean(msg && msg.includes('1.') && msg.includes('2.') && msg.includes('3.') && msg.includes('4.') && msg.includes('5.'));
-      if (msg && msg.length >= 1000 && hasAllStages) return msg;
+      if (msg && msg.length >= 240 && hasAllStages) return deduplicateReadingText(msg);
       if (healingResult) {
         return buildFallbackHealingMessage(
           drawnCards,
@@ -1401,7 +1417,7 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
     } else if (oracleMode === 'miracle') {
       const msg = miracleResult?.message?.trim();
       const hasAllStages = Boolean(msg && msg.includes('1.') && msg.includes('2.') && msg.includes('3.') && msg.includes('4.') && msg.includes('5.'));
-      if (msg && msg.length >= 1000 && hasAllStages) return msg;
+      if (msg && msg.length >= 240 && hasAllStages) return deduplicateReadingText(msg);
       if (miracleResult) {
         return buildFallbackMiracleMessage(
           drawnCards,
@@ -1417,7 +1433,7 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
       return '';
     } else {
       const msg = growthResult?.message?.trim() || growthResult?.macro_focus?.trim();
-      if (msg && msg.length >= 50) return msg;
+      if (msg && msg.length >= 50) return deduplicateReadingText(msg);
       if (growthResult) {
         return buildFallbackGrowthMessage(
           drawnCards,
@@ -1536,7 +1552,7 @@ export function TrinityOracleSection({ onNavigateToTarot }: TrinityOracleSection
 
 [답변 규정]
 1. 질문자의 구체적인 추가 질문에 대하여, 새로 뽑힌 잔여 덱 추가 카드의 도상 상징과 정/역방향 에너지를 직관적으로 관통하여 날카롭고 똑부러지게 답변하십시오.
-2. [★ 역방향 카드 해석 및 주의점 1가지 필수 반영] 만약 새로 뽑힌 카드가 '역방향'이라면 절대로 정방향의 긍정적 뜻으로 풀이하지 말고 반드시 역방향 고유의 뜻(${revData?.meaning || '내면의 그림자와 재정비'})으로 풀이하며, 본문 속에 해당 카드와 관련된 주의점 1가지("${revCaution}")를 자연스럽게 녹여 설명하고 **⚠️ [${cardNameKo} 역방향 주의점 1가지]: ${revCaution}** 형태로 한 줄 강조하여 알려주십시오.
+2. 역방향이면 정방향 뜻으로 풀지 마십시오. 주의 문장은 답변 맨 끝 한 줄만 쓰고, 본문에서 반복하지 마십시오.
 3. 질문자의 사주 원국 본원 기운과 이번 ${modeKorean}의 핵심 지혜(${oracleMode === 'healing' ? '정서 치유와 수용' : oracleMode === 'miracle' ? '에고의 환영 해체와 평화의 지각전환' : '현실적 성장과 4원소 실행력'})를 결합하여 지금 당장 실천할 수 있는 구체적 행동 지침을 제시하십시오.
 4. 한국어로 품격 있고 신뢰감 넘치는 정통 마스터의 어조를 유지하십시오.`,
         },
@@ -1780,8 +1796,8 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
 1. 오라클 타로는 일반 타로보다 훨씬 더 길고 자세하며, 방대하고 정밀한 영적/운명적 청사진을 제공하는 상위 오라클입니다.
 2. 질문자가 오늘 마주한 기저 운기는 오늘의 타로([${todayAnchorCard.nameKo}])의 상징과 진단 내용에 의해 이미 첫 단추가 채워져 있습니다.
 3. 이번에 새로 뽑힌 3장의 오라클 카드(1번: ${cards[0]?.nameKo}, 2번: ${cards[1]?.nameKo}, 3번: ${cards[2]?.nameKo})는 오늘의 타로가 던진 일일 운명의 화두를 심층적으로 확장하고 해결하는 직접적인 연계 카드입니다.
-4. [★ 역방향 카드 해독 및 주의점 1가지 필수 규칙] 뽑힌 3장의 카드 중 '역방향 [Reversed]'으로 나온 카드는 절대로 정방향의 긍정적 뜻으로 풀이하지 마십시오! 반드시 제시된 '역방향 고유 뜻'으로 풀이하고, 해당 카드 단계 본문 속에 그 카드와 관련된 **주의점 1가지**를 자연스럽게 녹여 설명하며 **⚠️ [카드명 역방향 주의점 1가지]: (핵심 주의점 한 줄)**을 명시하십시오. (정방향 카드에는 주의점 강조 줄을 붙이지 마십시오.)
-5. 따라서 리딩의 첫 시작(### 1단계)부터 오늘의 타로 결과와 사주 본원 기운(${saju?.dayMaster?.symbolName || '본원 기운'})의 상호작용을 명확하게 짚어내고, 3장의 오라클 카드가 오늘의 타로 에너지를 어떻게 조율하고 더 높은 차원의 해법으로 이끄는지 반드시 유기적으로 연결하여 900~1500자 안팎의 압도적 대서사로 전개하십시오.
+4. 역방향은 정방향 뜻으로 풀지 마십시오. 주의 문장은 맨 끝 ## 주의에 카드당 한 줄만 쓰고, 본문에서 반복하지 마십시오.
+5. 따라서 리딩의 첫 시작(### 1단계)부터 오늘의 타로 결과와 사주 본원 기운(${saju?.dayMaster?.symbolName || '본원 기운'})의 상호작용을 명확하게 짚어내고, 3장의 오라클 카드가 오늘의 타로 에너지를 어떻게 조율하고 더 높은 차원의 해법으로 이끄는지 반드시 유기적으로 연결하여 짧은 보고서 안팎의 압도적 대서사로 전개하십시오.
 `
       : '';
 
@@ -1793,8 +1809,8 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
 # 핵심 사명 (Core Oracle Mission):
 오라클 타로는 일반 타로보다 훨씬 더 길고 자세하며, 방대하고 정밀한 영적/운명적 대서사를 제공하는 최상위 오라클입니다.
 이 리딩의 목적은 질문자가 털어놓은 【구체적인 고민의 근원적 치유, 내면의 무의식적 피로 해소, 사주 원국과 카드의 깊은 공명, 현실적이고 따뜻한 실천 개운 처방】을 사주 일간 본원(${saju?.dayMaster?.symbolName || '본원 기운'}) 기질과 오늘의 일일 타로([${todayAnchorCard.nameKo}])의 배경 파동, 그리고 3장의 오라클 카드(1번: ${cards[0]?.nameKo}, 2번: ${cards[1]?.nameKo}, 3번: ${cards[2]?.nameKo})와 정교하게 교차 융합하여, 압도적으로 풍성하고 깊이 있는 '5단계 심층 총평 대서사 본문'으로 온전히 전달하는 것입니다.
-- 형식적인 단문이나 요약식 서술을 철저히 배제합니다.
-- 자기계발 오라클 타로와 동등하거나 그 이상의 풍성하고 디테일한 분량(900~1,500자 안팎의 장문 대서사)으로 본문('message')을 서술하십시오.
+- 같은 문장을 단계마다 반복하지 마십시오. 역방향 주의는 맨 끝 ## 주의에 한 줄만 쓰십시오.
+- 자기계발 오라클 타로와 동등하거나 그 이상의 풍성하고 디테일한 분량(짧은 보고서 안팎의 장문 대서사)으로 본문('message')을 서술하십시오.
 - 오직 질문자의 구체적인 고민("${effectiveInquiry || '삶의 균형과 심리적 치유'}")과 오늘의 일일 타로([${todayAnchorCard.nameKo}])의 배경 에너지를 서두부터 결말까지 관통시키며, 3장의 카드를 돋보기로 들여다보듯 도상 상징과 사주 오행(목화토금수), 용신을 결합해 깊이 있는 1:1 심층 상담을 전개하십시오.
 - 유치한 반말, 편지 형식의 사적인 독백("안녕... 네 작은 친구 제제야" 등)을 일절 배제합니다.
 - 성과 경쟁 채찍질이 아닌, 질문자의 타고난 기질과 카드의 흐름을 존중하는 깊이 있는 통찰과 심리적 해원(解冤), 명쾌한 방향성을 선물해야 합니다.
@@ -1809,7 +1825,7 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
 - 어설픈 쉼표 중간 끊기나 줄임말 없이, 주어와 서술어가 갖추어진 완성도 높은 정통 경어체 문맥으로 작성하십시오.
 
 # message (사주 ✕ 타로 콜라보 심층 총평 본문 — 5단계 대서사 구조, 각 단계당 서로 다른 내용을 담은 짧은 단락 필수):
-반드시 다음 5개의 소제목(### 마크다운 헤더)을 갖추고, 각 단계는 필요한 만큼만의 깊고 풍성한 단락들(총 900~1,500자 안팎)을 전개하십시오:
+반드시 다음 5개의 소제목(### 마크다운 헤더)을 갖추고, 각 단계는 필요한 만큼만의 깊고 풍성한 단락들(총 짧은 보고서 안팎)을 전개하십시오:
 - ### 🌌 1. 2026 오늘의 일일 타로 [${todayAnchorCard.nameKo}]와 사주 원국의 거대한 공명
 - ### 🕯️ 2. 무의식의 뿌리와 과거의 씨앗 [1번 카드: ${cards[0]?.nameKo}]
 - ### ⚡ 3. 현실의 갈등과 마음의 소용돌이 [2번 카드: ${cards[1]?.nameKo}]
@@ -1818,7 +1834,7 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
 
 반드시 마크다운 코드블록 없이 순수 JSON 형식으로만 응답해야 합니다. "message" 필드를 가장 먼저 작성하세요:
 {
-  "message": "질문자(${recipientName} 님)를 정중히 부르며 시작하여, 5개의 소제목(### 1~5단계)을 빠짐없이 갖추고 각 단계마다 짧은 단락으로 오늘의 일일 타로 [${todayAnchorCard.nameKo}]와 사주 일간 본원, 3장의 카드를 유기적으로 교차 해설한 900~1500자 안팎의 5단계 심층 총평 대서사 본문 (마크다운 포맷)",
+  "message": "질문자(${recipientName} 님)를 정중히 부르며 시작하여, 5개의 소제목(### 1~5단계)을 빠짐없이 갖추고 각 단계마다 짧은 단락으로 오늘의 일일 타로 [${todayAnchorCard.nameKo}]와 사주 일간 본원, 3장의 카드를 유기적으로 교차 해설한 짧은 보고서 안팎의 5단계 심층 총평 대서사 본문 (마크다운 포맷)",
   "concise_summary": [
     "[현재 에너지] 사주 일간(${saju?.dayMaster?.symbolName || '본원 기운'})과 1·2번 카드가 마주한 질문자 내면의 무의식적 피로와 현실 에너지 흐름을 섬세하게 진단한 깊이 있는 1~2문장 (60~85자 내외)",
     "[방향과 결단] 사주 용신(${saju?.yongsin?.name || '조화'})과 3번 조언 카드가 제시하는 지혜로운 마음가짐과 영혼의 전환점 결단 (60~85자 내외)",
@@ -1874,7 +1890,7 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
           ? `\n\n# [최우선 필수 집중 주제] 내담자가 질문한 구체적인 고민:\n"${effectiveInquiry}"\n★ 절대 지침: 사주 ✕ 타로 리딩은 질문자의 구체적인 고민("${effectiveInquiry}")을 서두부터 중심에 두고 전개되어야 합니다. 일반론적 설명을 배제하고, 내담자가 호소한 고민 상황을 명확히 짚어내며, 사주 본원 기운(${saju?.dayMaster?.symbolName || '본원 기운'})이 왜 이 고민 앞에서 특정 패턴을 겪게 되었는지, 그리고 뽑힌 3장의 카드가 이 고민을 어떻게 해결의 길로 인도하는지 사주와 타로의 콜라보레이션으로 명쾌하게 작성해 주세요.\n`
           : `\n\n# 질문자의 상황:\n사주 원국의 일간(${saju?.dayMaster?.symbolName || '본원 기운'})과 오행 분포(${saju?.elements?.dominant?.name || '조화'} 우세, ${saju?.elements?.lacking?.name || '보완'} 결핍)를 바탕으로 현재 삶의 흐름과 고민을 입체적으로 조명하고, 3장의 타로 카드가 전하는 명쾌한 방향성을 전해 주세요.\n`;
 
-        const prompt = `${sajuContextPrompt}${inquiryPromptAddon}\n\n사용자가 뽑은 3장의 카드:\n${cardDescriptions}\n\n위 질문자(${recipientName} 님)의 사주 명리학 원국과 뽑힌 3장의 타로 카드가 지닌 본질적 도상 상징과 뜻을 긴밀하게 '교차 융합(Collaboration)'하여, 질문자의 고민을 중심에 두고 높은 통찰과 현실적 해법을 담은 정통 타로 리딩 결과를 JSON으로 생성해 주십시오.\n\n★ [작성 지침 - 절대 엄수]:\n1. 분량 및 디테일: 자기계발 오라클 타로처럼 매우 길고, 돋보기로 들여다보듯 디테일하고 깊이 있게 작성하십시오.\n2. 'message' 필드는 본문 리딩의 핵심 대서사이므로 반드시 5개의 소제목(### 1~5단계)을 빠짐없이 갖추고, 각 단계마다 짧은 단락(각 단계는 필요한 만큼만, 총 900~1,500자 안팎)으로 풍성하게 서술하십시오. 결코 1~2줄의 짧은 요약으로 끝내지 마십시오.\n3. 3줄 요약('concise_summary')은 각 항목당 60~85자 내외로 사주 원국과 카드의 의미를 융합하여 자기계발 오라클만큼 풍성하고 깊이 있는 완성형 문맥으로 작성하십시오.\n4. 카드별 심층 분석('card_insights')의 4개 항목(core_meaning, saju_resonance, personal_interpretation, action_guide)을 3장의 카드 모두 빠짐없이 풍성하고 디테일하게 작성하십시오.`;
+        const prompt = `${sajuContextPrompt}${inquiryPromptAddon}\n\n사용자가 뽑은 3장의 카드:\n${cardDescriptions}\n\n위 질문자(${recipientName} 님)의 사주 명리학 원국과 뽑힌 3장의 타로 카드가 지닌 본질적 도상 상징과 뜻을 긴밀하게 '교차 융합(Collaboration)'하여, 질문자의 고민을 중심에 두고 높은 통찰과 현실적 해법을 담은 정통 타로 리딩 결과를 JSON으로 생성해 주십시오.\n\n★ [작성 지침 - 절대 엄수]:\n1. 분량 및 디테일: 자기계발 오라클 타로처럼 매우 길고, 돋보기로 들여다보듯 디테일하고 깊이 있게 작성하십시오.\n2. 'message' 필드는 본문 리딩의 핵심 대서사이므로 반드시 5개의 소제목(### 1~5단계)을 빠짐없이 갖추고, 각 단계마다 짧은 단락(각 단계는 필요한 만큼만, 총 짧은 보고서 안팎)으로 풍성하게 서술하십시오. 결코 1~2줄의 짧은 요약으로 끝내지 마십시오.\n3. 3줄 요약('concise_summary')은 각 항목당 60~85자 내외로 사주 원국과 카드의 의미를 융합하여 자기계발 오라클만큼 풍성하고 깊이 있는 완성형 문맥으로 작성하십시오.\n4. 카드별 심층 분석('card_insights')의 4개 항목(core_meaning, saju_resonance, personal_interpretation, action_guide)을 3장의 카드 모두 빠짐없이 풍성하고 디테일하게 작성하십시오.`;
         const res = await invokeLLM({
           messages: [
             { role: 'system', content: `${systemPrompt}\n${TAROT_READING_VOICE}` },
@@ -2000,15 +2016,15 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
       } else if (oracleMode === 'miracle') {
         // [MIRACLE MODE - A Course in Miracles (ACIM) Dedicated Metaphysical Oracle]
         const miracleInquiryPromptAddon = effectiveInquiry
-          ? `\n\n# [최우선 필수 집중 화두] 질문자가 호소한 구체적인 삶의 갈등/두려움/고민:\n"${effectiveInquiry}"\n★ 절대 지침: 기적수업(ACIM) 오라클 리딩은 질문자의 구체적인 고민("${effectiveInquiry}")을 정중앙에 두고 풀이해야 합니다. 일반적인 세속적 타로 점술이나 막연한 조언을 배제하고, 질문자가 겪고 있는 고통의 본질을 에고의 두려움/죄책감/투사 관점에서 밝히 드러내며, 성령의 지각 전환(Shift in Perception)과 거룩한 순간(Holy Instant), 그리고 참된 용서를 통해 온전한 하나님의 평화로 귀환하는 영적 길을 900~1500자 안팎의 대서사로 인도하십시오.\n`
+          ? `\n\n# [최우선 필수 집중 화두] 질문자가 호소한 구체적인 삶의 갈등/두려움/고민:\n"${effectiveInquiry}"\n★ 절대 지침: 기적수업(ACIM) 오라클 리딩은 질문자의 구체적인 고민("${effectiveInquiry}")을 정중앙에 두고 풀이해야 합니다. 일반적인 세속적 타로 점술이나 막연한 조언을 배제하고, 질문자가 겪고 있는 고통의 본질을 에고의 두려움/죄책감/투사 관점에서 밝히 드러내며, 성령의 지각 전환(Shift in Perception)과 거룩한 순간(Holy Instant), 그리고 참된 용서를 통해 온전한 하나님의 평화로 귀환하는 영적 길을 짧은 보고서 안팎의 대서사로 인도하십시오.\n`
           : `\n\n# 질문자의 영적 화두:\n세상의 복잡한 갈등과 에고의 불안 속에서, 마음의 눈을 성령의 시선으로 전환하여 하나님의 온전한 평화와 참된 용서의 기적을 체험하도록 이끌어 주십시오.\n`;
 
         const systemPrompt = `당신은 『기적수업(A Course in Miracles, ACIM)』의 심원한 비이원론(Non-duality) 형이상학과 내면의 거룩한 평화를 비에빌 78장 타로 및 사주 명리와 정교하게 융합하는 '기적수업 지각전환 영적 오라클 마스터'입니다.
 
 # 핵심 사명 (Core ACIM Oracle Mission):
 오라클 타로는 일반 타로보다 훨씬 더 길고 자세하며, 방대하고 정밀한 영적/운명적 대서사를 제공하는 최상위 오라클입니다.
-이 리딩의 목적은 질문자가 호소한 구체적인 고민("${effectiveInquiry || '에고의 불안과 내면의 평화'}")을 기적수업의 근본 원리【에고의 환영과 분리감 타파, 죄책감과 원한의 해체, 성령의 지각 전환(Shift in Perception), 거룩한 순간(Holy Instant), 참된 용서(True Forgiveness), 하나님의 평화(Peace of God)】를 바탕으로, 사주 일간 본원(${saju?.dayMaster?.symbolName || '본원 생명'})과 오늘의 일일 타로([${todayAnchorCard.nameKo}])의 배경 파동, 그리고 3장의 오라클 카드(1번 에고의 두려움: ${cards[0]?.nameKo}, 2번 거룩한 순간/지각전환: ${cards[1]?.nameKo}, 3번 참된 용서/평화의 기적: ${cards[2]?.nameKo})와 입체적으로 융합하여, 900~1,500자 안팎의 압도적이고 눈부신 '5단계 지각전환 대서사 본문'으로 전달하는 것입니다.
-- 형식적인 단문이나 요약식 서술을 철저히 배제합니다.
+이 리딩의 목적은 질문자가 호소한 구체적인 고민("${effectiveInquiry || '에고의 불안과 내면의 평화'}")을 기적수업의 근본 원리【에고의 환영과 분리감 타파, 죄책감과 원한의 해체, 성령의 지각 전환(Shift in Perception), 거룩한 순간(Holy Instant), 참된 용서(True Forgiveness), 하나님의 평화(Peace of God)】를 바탕으로, 사주 일간 본원(${saju?.dayMaster?.symbolName || '본원 생명'})과 오늘의 일일 타로([${todayAnchorCard.nameKo}])의 배경 파동, 그리고 3장의 오라클 카드(1번 에고의 두려움: ${cards[0]?.nameKo}, 2번 거룩한 순간/지각전환: ${cards[1]?.nameKo}, 3번 참된 용서/평화의 기적: ${cards[2]?.nameKo})와 입체적으로 융합하여, 짧은 보고서 안팎의 압도적이고 눈부신 '5단계 지각전환 대서사 본문'으로 전달하는 것입니다.
+- 같은 문장을 단계마다 반복하지 마십시오. 역방향 주의는 맨 끝 ## 주의에 한 줄만 쓰십시오.
 - 기적수업의 핵심 금언(예: "실재하는 것은 위협받을 수 없다. 실재하지 않는 것은 존재하지 않는다. 여기에 하나님의 평화가 있다", "기적은 사랑의 자연스러운 표현이다", "용서는 환영을 환영으로 알아보는 것이다")을 유기적으로 녹여내십시오.
 - 성과 경쟁이나 세속적 처세술이 아닌, 두려움의 꿈에서 깨어나 참된 마음(Christ Mind)의 완전한 무죄성과 평온함을 회복하도록 안내해야 합니다.
 - 유치한 반말이나 편지체 사적 잡담을 배제하고, 신성하고 자비로우며 깊은 평화가 깃든 정통 경어체("${recipientName} 님")를 일관되게 사용하십시오.
@@ -2019,7 +2035,7 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
 - [지각의 전환] 2번 카드가 안내하는 거룩한 순간과 성령께 맡김의 지각 전환 문장 (60~85자)
 - [기적의 선언] 3번 카드가 약속하는 참된 용서와 하나님의 평화를 선언하는 문장 (60~85자)
 
-# message (5단계 대서사 구조 — 각 단계당 서로 다른 내용을 담은 짧은 단락, 총 900~1,500자 안팎):
+# message (5단계 대서사 구조 — 각 단계당 서로 다른 내용을 담은 짧은 단락, 총 짧은 보고서 안팎):
 반드시 다음 5개의 소제목(### 마크다운 헤더)을 갖추어 전개하십시오:
 - ### 🕊️ 1. 2026 오늘의 일일 타로 [${todayAnchorCard.nameKo}]와 성령의 거룩한 초대 (지각의 전환)
 - ### 🌑 2. 에고의 환영과 숨겨진 두려움의 투사 [1번 카드: ${cards[0]?.nameKo}]
@@ -2029,7 +2045,7 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
 
 반드시 마크다운 코드블록 없이 순수 JSON 형식으로만 응답해야 합니다. "message" 필드를 가장 먼저 작성하세요:
 {
-  "message": "900~1500자 안팎의 5단계 지각전환 대서사 본문 (마크다운 포맷)",
+  "message": "짧은 보고서 안팎의 5단계 지각전환 대서사 본문 (마크다운 포맷)",
   "concise_summary": [
     "[마음의 환영] 에고의 투사와 무의식적 죄책감 해독 (60~85자)",
     "[지각의 전환] 거룩한 순간을 통한 성령의 시선 회복 (60~85자)",
@@ -2086,7 +2102,7 @@ ${dailyBulletsStr ? `- 오늘의 타로 핵심 요약:\n${dailyBulletsStr}` : ''
   ]
 }`;
 
-        const prompt = `${sajuContextPrompt}${miracleInquiryPromptAddon}\n\n사용자가 뽑은 3장의 기적수업 오라클 카드:\n${cardDescriptions}\n\n위 질문자(${recipientName} 님)의 사주 명리학 원국과 기적수업 3카드 스프레드를 형이상학적으로 융합하여 온전한 내면의 평화와 지각의 전환을 인도하는 결과를 JSON으로 생성해 주십시오.\n\n★ [작성 지침 - 절대 엄수]:\n1. 'message' 필드는 5개의 소제목(### 1~5단계)을 빠짐없이 갖추고, 각 단계마다 짧은 단락(총 900~1,500자 안팎)으로 풍성하게 서술하십시오.\n2. 3줄 요약('concise_summary')은 각 항목당 60~85자 내외로 [마음의 환영], [지각의 전환], [기적의 선언]의 완성된 문맥으로 작성하십시오.\n3. 'miracle_lesson' 항목을 충실하게 작성해 주십시오.`;
+        const prompt = `${sajuContextPrompt}${miracleInquiryPromptAddon}\n\n사용자가 뽑은 3장의 기적수업 오라클 카드:\n${cardDescriptions}\n\n위 질문자(${recipientName} 님)의 사주 명리학 원국과 기적수업 3카드 스프레드를 형이상학적으로 융합하여 온전한 내면의 평화와 지각의 전환을 인도하는 결과를 JSON으로 생성해 주십시오.\n\n★ [작성 지침 - 절대 엄수]:\n1. 'message' 필드는 5개의 소제목(### 1~5단계)을 빠짐없이 갖추고, 각 단계마다 짧은 단락(총 짧은 보고서 안팎)으로 풍성하게 서술하십시오.\n2. 3줄 요약('concise_summary')은 각 항목당 60~85자 내외로 [마음의 환영], [지각의 전환], [기적의 선언]의 완성된 문맥으로 작성하십시오.\n3. 'miracle_lesson' 항목을 충실하게 작성해 주십시오.`;
 
         const res = await invokeLLM({
           messages: [
@@ -4247,37 +4263,6 @@ ${recipientName} 님, 성장은 생각의 깊이가 아니라 행동의 빈도�
                       {hasTodayDailyResult ? '✓ 일일 타로 진단 ✕ 오라클 심층 확장' : '천문 지배 기저 에너지 결합'}
                     </span>
                   </div>
-
-                  {/* ⚠️ 역방향 카드 주의점 1가지 별도 강조 배너 (역방향 카드가 뽑혔을 때만 표시) */}
-                  {drawnCards.some((c) => c?.reversed) && (
-                    <div className="space-y-2 pt-1">
-                      {drawnCards.map((c, idx) => {
-                        if (!c?.reversed) return null;
-                        const revData = getTarotReversedData(c);
-                        const cautionText = getTarotCardCaution(c);
-                        const posLabel = slotPositions[idx] || `${idx + 1}번`;
-                        return (
-                          <div
-                            key={`rev-caution-${c.id}-${idx}`}
-                            className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-rose-950/50 via-rose-900/25 to-black/40 border border-rose-400/40 shadow-md space-y-1 text-xs"
-                          >
-                            <div className="duo-workspace-actions flex items-center justify-between gap-2 flex-wrap">
-                              <span className="font-bold text-rose-300 flex items-center gap-1.5">
-                                <span>⚠️ [{c.nameKo || c.name} (역방향) 주의점 1가지]</span>
-                                <span className="text-[10px] font-normal text-rose-200/75">· {posLabel}</span>
-                              </span>
-                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-200 border border-rose-400/30 font-medium">
-                                역방향 키워드: {revData.keywords.slice(0, 3).join(', ')}
-                              </span>
-                            </div>
-                            <p className="text-rose-100 font-semibold leading-snug break-keep">
-                              {cautionText}
-                            </p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
 
                   {/* 📜 Streamdown 기반 정통 마크다운 본문 리딩 */}
                   <div className="text-white/90 leading-relaxed font-sans text-xs sm:text-sm pt-2">

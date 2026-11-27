@@ -1,4 +1,4 @@
-import { TarotCard, getEffectiveTarotKeywords, getTarotReversedData, getTarotCardCaution } from '@/data/tarotData';
+import { getEffectiveTarotKeywords, getTarotReversedData } from '@/data/tarotData';
 import { invokeLLMStructured } from '@/lib/ai';
 import { z } from 'zod';
 import { getTarotCardDetails } from '@/lib/dailyTarotOracle';
@@ -23,10 +23,10 @@ export interface LucyTarotAdviceParams {
 }
 
 const LucyTarotAdviceSchema = z.object({
-  headline: z.string().describe("루시의 한 줄 핵심 통찰 (반말 친근한 톤, 15자 내외)"),
-  advice: z.string().describe("루시가 질문자에게 건네는 따뜻하고 명쾌한 1:1 맞춤 조언 (반말 친근한 톤, 2~3문장)"),
-  actionTip: z.string().describe("오늘 즉시 실천할 수 있는 구체적인 행동 팁 1가지 (반말, 1문장)"),
-  keyword: z.string().describe("에너지 키워드 태그 (예: #직관과확신 #마음의평온)"),
+  headline: z.string().describe("16자 안팎의 반말 한 줄. 카드 이름과 주의 문장은 넣지 않음"),
+  advice: z.string().describe("한 문장, 60자 안팎. 리딩 본문과 주의점을 반복하거나 인용하지 않음"),
+  actionTip: z.string().describe("오늘 할 행동 하나, 30자 안팎"),
+  keyword: z.string().describe("해시태그 하나"),
 });
 
 // Cache for quick recall without redundant generation
@@ -49,76 +49,27 @@ export function buildLucyAdviceSpeechText(headline: string, advice: string, acti
   return `${cleanHead}. ${cleanAdv} 오늘의 실천: ${cleanTip}`;
 }
 
+function clipKo(text: string, max = 42): string {
+  const compact = (text || '').replace(/\s+/g, ' ').trim();
+  if (compact.length <= max) return compact;
+  const slice = compact.slice(0, max);
+  const stop = slice.lastIndexOf(' ');
+  return `${(stop > 16 ? slice.slice(0, stop) : slice).replace(/[,\s]+$/, '')}.`;
+}
+
 /**
- * Generates an instantaneous, rich, deterministic advice from Lucy based on the drawn cards and concern.
- * 100% reliable offline, sub-millisecond latency.
+ * 카드와 질문에서 바로 만드는 짧은 조언. 리딩 본문·주의점은 여기서 다시 풀지 않습니다.
  */
 export function buildDeterministicLucyAdvice(params: LucyTarotAdviceParams): LucyTarotAdvice {
   const rawNick = params.nickname?.trim() || '여행자';
   const nickVocative = hasKoreanJongseong(rawNick) ? `${rawNick}아` : `${rawNick}야`;
-  const concern = (params.tarotConcern || '').trim();
   const primaryCard = params.cards && params.cards.length > 0
-    ? params.cards[params.cards.length - 1] // Last card in spread or single drawn card
+    ? params.cards[params.cards.length - 1]
     : null;
   const isReversed = !!primaryCard?.reversed;
-  const cardName = primaryCard?.nameKo || primaryCard?.name || '운명의 인도자';
-  const cardParticle = hasKoreanJongseong(cardName) ? '이' : '가';
-  const details = primaryCard ? getTarotCardDetails(primaryCard) : null;
+  const cardName = primaryCard?.nameKo || primaryCard?.name || '이 카드';
   const revData = isReversed && primaryCard ? getTarotReversedData(primaryCard) : null;
-  const specificCaution = isReversed && primaryCard ? getTarotCardCaution(primaryCard) : '';
 
-  // 1. Oracle Tarot Mode
-  if (params.mode === 'oracle') {
-    if (params.oracleMode === 'healing') {
-      const headline = isReversed
-        ? `${nickVocative}, [${cardName}] 역방향의 신호처럼 잠시 쉬어가도 돼`
-        : `${nickVocative}, [${cardName}] 카드가 따스한 온기를 건네고 있어`;
-      const advice = isReversed
-        ? `오늘 모습을 드러낸 [${cardName}] 역방향 카드는 ${revData?.meaning || '내면의 피로와 정체를 다정하게 비춰주고 있어.'} 특히 꼭 기억해야 할 주의점 한 가지는 "${specificCaution}" 남들의 속도에 맞추려 애쓰지 말고 네 마음을 먼저 다독여 줘.`
-        : `오늘 모습을 드러낸 [${cardName}] 카드${cardParticle} 지친 마음에 깊은 쉼과 위로가 필요함을 다정하게 일깨워주고 있어. 남들의 기대나 세상의 속도에 쫓기듯 맞추려 애쓰지 마. 잠시 모든 짐을 내려놓고 편안히 숨을 고르는 것만으로도, 너는 이미 충분히 온전하고 소중해.`;
-      const actionTip = revData?.advice || `따뜻한 차 한 잔을 천천히 마시며, 가슴에 손을 얹고 깊은 심호흡 3번 하기.`;
-      return {
-        headline,
-        advice,
-        actionTip,
-        speechText: buildLucyAdviceSpeechText(headline, advice, actionTip),
-        keyword: `#마음의안식 #온전한치유`,
-      };
-    } else if (params.oracleMode === 'miracle') {
-      const headline = isReversed
-        ? `${nickVocative}, [${cardName}] 역방향의 두려움을 내려놓고 평화를 선택해`
-        : `${nickVocative}, [${cardName}]의 상징처럼 시선을 바꾸면 기적이 일어나`;
-      const advice = isReversed
-        ? `[${cardName}] 역방향이 비추는 뜻은 ${revData?.meaning || '내면의 저항과 집착을 내려놓으라는 신호야.'} 여기서 꼭 기억할 주의점 한 가지는 "${specificCaution}" 에고의 두려움 대신 사랑을 청하는 외침으로 바라볼 때 참된 평화가 깃들 거야.`
-        : `기적수업의 가르침처럼, 실재하는 너의 참된 평화는 세상 그 어떤 일로도 결코 위협받을 수 없어. 일어난 상황을 에고의 두려움 대신 사랑을 청하는 외침으로 바라볼 때, 너의 마음에 기적 같은 고요와 자유가 깃들 거야.`;
-      const actionTip = `마음이 요동칠 때 "나는 이것 대신 평화를 보기를 선택한다"고 가만히 선언하기.`;
-      return {
-        headline,
-        advice,
-        actionTip,
-        speechText: buildLucyAdviceSpeechText(headline, advice, actionTip),
-        keyword: `#지각의전환 #참된용서`,
-      };
-    } else {
-      // Growth Mode
-      const headline = isReversed
-        ? `${nickVocative}, [${cardName}] 역방향의 교훈처럼 내실을 먼저 단단히 다져봐`
-        : `${nickVocative}, [${cardName}]의 뜻처럼 네 직관이 가리키는 곳으로 나아가`;
-      const advice = isReversed
-        ? `오늘 모습을 드러낸 [${cardName}] 역방향 카드는 ${revData?.meaning || '서두름을 멈추고 내실을 점검하라는 신호야.'} 특히 이 카드의 주의점 한 가지는 "${specificCaution}" 조급함을 내려놓고 빈틈을 먼저 메우면 훨씬 단단하게 도약할 수 있어.`
-        : `오늘 모습을 드러낸 [${cardName}] 카드${cardParticle} 네 안의 소중한 잠재력이 꽃피울 준비를 마쳤음을 선명하게 비춰주고 있어. 두려움에 머뭇거리기보다, 오늘 네 손으로 이룰 수 있는 작은 실행 하나에 집중해 봐. 넌 이미 해낼 충분한 힘을 품고 있어.`;
-      const actionTip = revData?.advice || `오늘 할 일 중 가장 중요한 1가지를 정하고 망설임 없이 15분간 몰입해 보기.`;
-      return {
-        headline,
-        advice,
-        actionTip,
-        speechText: buildLucyAdviceSpeechText(headline, advice, actionTip),
-        keyword: `#도약과실행 #성장모멘텀`,
-      };
-    }
-  }
-
-  // 2. Standard / Daily Tarot Mode with Card-Specific Resonance
   let suit = 'general';
   if (primaryCard?.id?.startsWith('wands_')) suit = 'wands';
   else if (primaryCard?.id?.startsWith('cups_')) suit = 'cups';
@@ -126,49 +77,53 @@ export function buildDeterministicLucyAdvice(params: LucyTarotAdviceParams): Luc
   else if (primaryCard?.id?.startsWith('pent_')) suit = 'pentacles';
   else if (primaryCard?.type === 'major') suit = 'major';
 
-  let headline = `${nickVocative}, [${cardName}]의 파동이 오늘 네 길을 밝히고 있어`;
-  let advice = `오늘 카드가 비추는 핵심은 내면의 신뢰야. 외부의 소음에 흔들리지 말고 네 마음의 중심을 굳건히 세워봐.`;
-  let actionTip = `창밖 하늘을 바라보며 깊은 심호흡 3번으로 머릿속을 맑게 비우기.`;
-  let keyword = `#직관과확신 #운명의빛`;
+  let headline = `${nickVocative}, 오늘은 이것만`;
+  let advice = `[${cardName}]이 오늘 기준이야. 한 가지만 고르고 나머지는 내려놔.`;
+  let actionTip = '지금 할 일 하나를 10분만 시작.';
+  let keyword = '#한걸음';
 
-  if (isReversed && revData) {
-    const revKws = getEffectiveTarotKeywords(primaryCard);
-    headline = `${nickVocative}, [${cardName}] 역방향의 경고를 마음에 새기고 중심을 잡아봐`;
-    advice = `[${cardName}] 역방향은 정방향과는 달리 ${revData.meaning} 특히 이 카드에서 꼭 기억해야 할 주의점 1가지는 바로 이거야: "${specificCaution}"`;
-    actionTip = revData.advice;
-    keyword = revKws.slice(0, 2).map((k) => `#${k.replace(/\s+/g, '')}`).join(' ') || `#신중한점검 #내실다지기`;
+  if (isReversed) {
+    headline = `${nickVocative}, 속도만 낮춰`;
+    advice = `[${cardName}]은 역방향이야. 새로 벌리기보다 이미 있는 일만 맞춰.`;
+    actionTip = clipKo(revData?.advice || '미룬 확인 하나만 해.', 32);
+    keyword = '#점검';
   } else if (suit === 'wands') {
-    headline = `${nickVocative}, 네 가슴속 불꽃을 믿고 당당히 행동해 봐`;
-    advice = `[${cardName}] 카드가 역동적인 창조의 힘을 건네고 있어. 생각만 하던 계획을 망설이지 말고 행동으로 옮기면 놀라운 결과가 열릴 거야.`;
-    actionTip = `망설였던 연락이나 실행을 지금 즉시 첫걸음 떼어보기.`;
-    keyword = `#용기와실행 #뜨거운열정`;
+    headline = `${nickVocative}, 첫걸음만`;
+    advice = `[${cardName}]은 시작 쪽이야. 생각 말고 제일 작은 행동부터.`;
+    actionTip = '연락이나 착수, 지금 하나만.';
+    keyword = '#실행';
   } else if (suit === 'cups') {
-    headline = `${nickVocative}, 너 자신과 주변을 향해 사랑의 마음을 열어봐`;
-    advice = `[${cardName}] 카드는 따스한 교감과 공감의 기운을 전하고 있어. 진심 어린 미소와 다정한 한마디가 막혔던 관계의 문을 부드럽게 열어줄 거야.`;
-    actionTip = `고마운 사람이나 스스로에게 '고마워, 수고했어'라는 다정한 한마디 건네기.`;
-    keyword = `#사랑과조화 #다정한연결`;
+    headline = `${nickVocative}, 말은 짧게`;
+    advice = `[${cardName}]은 마음 쪽이야. 길게 설명하지 말고 한마디만.`;
+    actionTip = '고마운 사람에게 한마디.';
+    keyword = '#한마디';
   } else if (suit === 'swords') {
-    headline = `${nickVocative}, 명쾌한 통찰과 결단으로 길을 뚫어봐`;
-    advice = `[${cardName}] 카드가 지혜의 칼날처럼 명확한 판단력을 선물하고 있어. 모호한 상황을 두려워하지 말고, 네 원칙에 따라 솔직하게 소통해 봐.`;
-    actionTip = `문제가 되는 상황의 핵심 원인을 종이에 단 1줄로 요약해 보기.`;
-    keyword = `#지혜와결단 #명확한시선`;
+    headline = `${nickVocative}, 핵심만`;
+    advice = `[${cardName}]은 정리 쪽이야. 문제를 한 줄로 줄여.`;
+    actionTip = '원인 한 줄을 적어.';
+    keyword = '#한줄';
   } else if (suit === 'pentacles') {
-    headline = `${nickVocative}, 네가 흘린 땀과 노력은 결코 배신하지 않아`;
-    advice = `[${cardName}] 카드의 풍요로운 대지가 네 곁에 있어. 매일 꾸준히 쌓아온 너만의 정성이 이제 든든한 결실로 나타나기 시작할 거야. 스스로의 가치를 굳게 믿어.`;
-    actionTip = `오늘 나를 위해 작지만 확실한 보상(맛있는 간식이나 편안한 휴식) 선물하기.`;
-    keyword = `#풍요와안정 #성실의결실`;
+    headline = `${nickVocative}, 손에 잡히는 것`;
+    advice = `[${cardName}]은 현실 쪽이야. 오늘 만질 수 있는 일만.`;
+    actionTip = '지갑이나 할 일 하나만 정리.';
+    keyword = '#정리';
   } else if (suit === 'major') {
-    headline = `${nickVocative}, 우주가 네 삶에 거대한 축복의 문을 열어주고 있어`;
-    advice = `[${cardName}] 메이저 카드가 전하는 영혼의 메시지는 명확해. 지금 네가 겪는 모든 순간이 더 큰 너로 나아가기 위한 소중한 여정이야. 가슴 뛰는 방향을 향해 당당히 걸어가.`;
-    actionTip = `오늘 가장 설레는 목표를 다이어리 맨 윗줄에 굵게 적어두기.`;
-    keyword = `#운명의축복 #새로운도약`;
+    headline = `${nickVocative}, 방향만 정해`;
+    advice = `[${cardName}]은 큰 카드야. 오늘은 방향 하나만 적어.`;
+    actionTip = '목표 한 줄을 맨 위에 적어.';
+    keyword = '#방향';
   }
 
-  // Concern context tuning
-  if (concern && (concern.includes('연애') || concern.includes('사랑') || concern.includes('재회'))) {
-    keyword += ' #마음의나침반';
-  } else if (concern && (concern.includes('취업') || concern.includes('이직') || concern.includes('사업') || concern.includes('돈'))) {
-    keyword += ' #풍요의기운';
+  if (params.mode === 'oracle' && params.oracleMode === 'healing') {
+    advice = isReversed
+      ? `[${cardName}] 역방향이야. 남 속도에 맞추지 말고 쉬어.`
+      : `[${cardName}]은 쉼이 먼저야. 오늘은 짐을 하나 내려.`;
+    actionTip = '따뜻한 물 한 잔, 호흡 세 번.';
+    keyword = '#쉼';
+  } else if (params.mode === 'oracle' && params.oracleMode === 'miracle') {
+    advice = `[${cardName}]을 싸움으로 읽지 마. 지금은 평화 쪽을 골라.`;
+    actionTip = '나는 평화를 선택한다, 한 번만.';
+    keyword = '#평화';
   }
 
   return {
@@ -205,9 +160,8 @@ export async function getEnhancedLucyTarotAdvice(
             const orient = c.reversed ? '역방향' : '정방향';
             const effKws = getEffectiveTarotKeywords(c);
             const revData = c.reversed ? getTarotReversedData(c) : null;
-            const cautionStr = c.reversed ? `, 역방향 주의점 1가지: ${getTarotCardCaution(c)}` : '';
             const detailStr = d
-              ? ` (원형: ${d.archetype}, 상징: ${d.symbolWord}, 본래 뜻: ${c.reversed ? (revData?.meaning || d.reversedCore) : d.uprightCore}${cautionStr})`
+              ? ` (원형: ${d.archetype}, 본래 뜻: ${c.reversed ? (revData?.meaning || d.reversedCore) : d.uprightCore})`
               : '';
             return `${c.nameKo} (${orient}${effKws.length > 0 ? ` - ${effKws.slice(0, 3).join(', ')}` : ''})${detailStr}`;
           })
@@ -227,8 +181,8 @@ ${isMiracleOracle ? `\n[★ 기적수업(ACIM) 전용 안내]: 질문자가 기�
 [필수 원칙]:
 1. [루시 페르소나 어조]: 질문자(${params.nickname || '여행자'})에게 반말(~해봐, ~야, ~할 거야, ~을 잊지 마)로 100% 다정하고 명쾌하게 이야기하세요. 질문자의 호칭 뒤에 조사를 붙일 때 받침 유무(받침 있으면 '아', 없으면 '야')를 문법에 맞게 정확히 지키세요.
 2. [시스템/기능 명칭 누출 절대 금지]: '오라클', '제제의 치유', '루시의 성장' 같은 기능 명칭이나 시스템 명칭을 문맥 없이 기계적으로 넣지 마십시오.
-3. [★ 역방향 카드 해석 및 주의점 1가지 필수 반영]: 뽑힌 카드 중 '역방향' 카드가 있다면 절대 정방향 뜻으로 풀이하지 말고 반드시 역방향 고유의 뜻으로 풀이하며, 그 역방향 카드와 관련된 핵심 주의점 1가지를 advice 속에 명확히 짚어주세요.
-4. [간결성]: 길게 늘어놓지 말고 headline(15자 내외 - 카드의 정/역방향 뜻 반영), advice(2~3문장 - 역방향일 경우 역방향 뜻과 주의점 1가지를 자연스럽게 담을 것), actionTip(1문장 실천), keyword(#키워드 2개)로 산뜻하게 정돈하세요.`;
+3. [주의점 반복 금지]: 역방향이어도 주의 문장을 advice에 인용하거나 다시 설명하지 마세요. 주의는 리딩 보고서의 주의 칸에만 있습니다.
+4. [간결성]: headline 16자 안팎, advice는 한 문장 60자 안팎, actionTip은 30자 안팎의 행동 하나, keyword는 해시태그 하나.`;
 
         const userMsg = `질문자: ${params.nickname || '여행자'}
 고민/질문: "${cleanConcern}"

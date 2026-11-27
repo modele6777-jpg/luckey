@@ -37,6 +37,23 @@
 .tarot-reading-panel textarea { min-height: 160px; border-color: #ffffff20; background: #080b1466; }
 .tarot-selected-spread { border-color: #d5b86c30; background: #ffffff03; box-shadow: none; }
 .tarot-reading-panel :is(.animate-pulse, .animate-ping) { animation: none; }
+
+.trinity-report :is(h2, h3) {
+  margin: 1rem 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: #f3e6c0;
+}
+.trinity-report p,
+.trinity-report li {
+  margin: 0.3rem 0;
+  line-height: 1.65;
+}
+.trinity-report ul,
+.trinity-report ol { margin: 0.2rem 0 0.6rem; padding-left: 1.1rem; }
+.trinity-report strong { font-weight: 700; }
+
 @container tarot-reading (min-width: 1100px) {
   .tarot-setup-grid { grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
 }

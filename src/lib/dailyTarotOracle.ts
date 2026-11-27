@@ -1,6 +1,5 @@
 import { getTarotReversedData, getEffectiveTarotKeywords, getTarotCardCaution, type TarotCard } from '../data/tarotData.ts';
 import type { AuraThemeCard } from './auraCards.ts';
-import { getCardSoulBlessing, getCardDailyAffirmation } from './tarotBlessings.ts';
 
 interface DailyOracleResult {
   diagnosis: string;
@@ -525,57 +524,33 @@ export function buildSpecificTarotDailyOracle(card: TarotCard, mode: string = "o
   const luckyAction = getTarotLuckyAction(card, isReversed);
 
   const cardMeaning = isReversed ? (revData?.meaning || details.reversedCore) : details.uprightCore;
-  const shadowWarn = isReversed
-    ? `${specificCaution || details.shadowWarning} 지금은 억지로 결과를 서두르기보다 마음의 중심을 단단히 잡고 내실을 다져야 할 때입니다.`
-    : `${details.shadowWarning} 자만하거나 사소한 방심으로 흐름을 깨뜨리지 않도록 유의하세요.`;
 
-  const workGuidance = isReversed
-    ? `무리한 확장이나 새로운 시작보다는, 기존에 진행하던 일들의 결함이나 미비점을 차분히 보완하고 점검하는 데 집중하세요.`
-    : `아이디어에 머물지 말고 자신감 있게 결단을 내리고 행동으로 옮기세요. 적극적인 소통과 실행이 기대 이상의 결과로 이어집니다.`;
-
-  const relationGuidance = isReversed
-    ? `상대방의 사소한 말 한마디에 민감하게 반응하기보다, 한 템포 쉬어가는 여유를 가지세요. 내면의 평온이 대인관계의 마찰을 사전에 예방합니다.`
-    : `밝고 진솔한 태도로 주변 사람들에게 온기를 건네보세요. 긍정적인 감정 교류가 당신의 운을 더욱 크고 환하게 열어줍니다.`;
-
+  const leadKeyword = keywords.split(',')[0]?.trim() || cardName;
   const energySummary = isReversed
-    ? `지금 당신의 상태는 ${cardMeaning.replace(/[.!?]\s*$/g, '')}.`
-    : `지금 당신의 에너지는 [${cardName}]의 ${keywords} 흐름 위에 있습니다.`;
+    ? `[${cardName}] 역방향입니다. 오늘의 키워드는 ${keywords}입니다.`
+    : `지금 에너지는 [${cardName}]의 ${keywords} 흐름 위에 있습니다.`;
   const decisionSummary = isReversed
-    ? `지금은 결과를 밀어붙이기보다 어긋난 부분을 먼저 맞출 방향입니다. ${specificCaution}`
-    : `오늘은 ${keywords.split(',')[0]?.trim() || cardName}의 흐름을 따라 한 걸음 나아가되, ${details.shadowWarning}`;
+    ? `지금은 [${cardName}] 역방향처럼 결과를 밀기보다, 어긋난 부분 하나를 먼저 맞출 방향입니다.`
+    : `오늘은 ${leadKeyword}의 흐름을 따라 한 걸음 나아가되, 속도만 과하게 올리지 마세요.`;
   const actionSummary = luckyAction && luckyAction.length >= 2
     ? luckyAction.replace(/[.!?]\s*$/g, '') + '.'
     : '오늘 바로 할 수 있는 일 하나를 정해 10분 안에 손을 대고, 끝낸 뒤 결과를 한 줄로 적으세요.';
+
+  const cautionBlock = isReversed && specificCaution
+    ? `\n\n## 주의\n- ${specificCaution}`
+    : '';
 
   const diagnosis = `[핵심 3줄 요약]
 - [현재 에너지] ${energySummary}
 - [방향과 결단] ${decisionSummary}
 - [실천 행동] ${actionSummary}
 
-### 🕯️ 1. 카드가 비추는 당신의 마음과 현재 에너지
-${cardMeaning}
-오늘 하루 당신의 영혼과 일상에는 **${keywords}**의 흐름이 깊숙이 자리하고 있으며, 내면의 무의식 속에서는 ${isReversed ? '잠시 숨을 고르며 내면의 저항과 과잉 에너지를 정돈하고 새로운 방향을 모색하는 재정비의 에너지' : '오랜 시간 준비해 온 에너지가 밖으로 뻗어나가 결실을 맺고자 하는 역동적인 생명력'}가 흐르고 있습니다.${isReversed ? ` 특히 오늘 [${cardName}] 역방향 카드를 마주한 당신이 꼭 기억해야 할 **핵심 주의점 1가지**는 **"${specificCaution}"**입니다.` : ''} 외부의 소음이나 타인의 기대에 휘둘리지 않고 당신의 내면 나침반을 신뢰할 때, 오늘 하루의 흐름은 가장 이상적인 조화를 이루게 될 것입니다.
+## 카드
+**${cardName}${cardEn ? ` (${cardEn})` : ''}** · ${orientation}
+${cardMeaning}${cautionBlock}
 
-### 🎴 2. 펼쳐진 카드들이 들려주는 이야기 (카드 상징과 본래 뜻 해독)
-오늘 당신의 손끝에서 모습을 드러낸 카드는 **[${cardName}${cardEn ? ` (${cardEn})` : ''}] (${orientation})**입니다.
-- **카드의 영적 원형과 도상 상징**: 이 카드는 4대 원소 중 **${details.element}**의 파동을 품고 있으며, **"${details.archetype}"**의 영적 원형과 **[${details.symbolWord}]**의 신성한 도상 상징을 담고 있습니다.
-- **카드가 품은 본래의 뜻**: ${isReversed ? `정방향의 뜻이 아닌 **역방향 고유의 의미**로 발현되어, **${cardMeaning}**을(를) 선명하게 나타냅니다. 에너지가 잠시 내면으로 향해 숨을 고르고 내실을 다지며 재정비해야 할 운명적 신호입니다.` : `정방향으로 발현되어 **${details.uprightCore}**을(를) 선명하게 나타냅니다. 외부를 향한 생명력과 진취적인 창조의 흐름이 활짝 열려 있음을 가리킵니다.`}
-- **일과 활동**: ${workGuidance}
-- **대인관계 & 소통**: ${relationGuidance}
-- **${isReversed ? `[${cardName} 역방향 주의점 1가지]` : '주의할 점'}**: ${isReversed ? `**${specificCaution}**` : shadowWarn}
-
-### 🔮 3. 트리니티 마스터의 직관적 결단 & 방향성
-**[${isReversed ? '신중한 내실 다지기 & 역방향 주의점 점검' : '자신감 있는 실행 & 적극적인 전진'}]**
-${isReversed ? `${revData?.advice || '지금은 억지로 결과를 서두르기보다 마음의 중심을 단단히 잡고 내실을 다져야 할 때입니다.'} 무엇보다 "${specificCaution}"라는 이 카드의 경고를 마음 깊이 새길 때 보이지 않던 명쾌한 돌파구가 열립니다.` : '아이디어에 머물지 말고 자신감 있게 결단을 내리고 행동으로 옮기세요. 적극적인 소통과 실행이 기대 이상의 결과로 이어집니다.'}
-
-### 🌿 4. 운의 흐름을 바꿀 마스터의 실천 처방 (개운 가이드)
-- **오늘의 핵심 실천**: ${luckyAction}
-- **마음 정돈**: 가슴 한가운데 손을 얹고 깊은 복식호흡 3회를 진행해 보세요.
-
-### ✨ 5. 오늘 하루를 지켜줄 황금빛 축복과 확언
-> _"${getCardSoulBlessing(card)}"_
-
-- **오늘의 황금빛 확언**: "${getCardDailyAffirmation(card)}"`;
+## 메모
+- 색 ${details.luckyColor} · 수 ${details.luckyNum}`;
 
   return {
     diagnosis,

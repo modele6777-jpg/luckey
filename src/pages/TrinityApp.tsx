@@ -2643,13 +2643,13 @@ function playDailyCardChimeAsync() {
 ${dailyCard ? `오늘의 참고 카드: ${dailyCard.nameKo}. 이번 배열의 핵심 카드 해석에 도움이 될 때만 짧게 연결하세요.` : ''}
 ${binaryChoicePromptAddon}${contextPromptAddon}
 ${buildTarotInterpretationGuidance({ question: tarotConcern, hasAppDraw: true })}
-카드 목록을 그대로 사용하고 임의로 추가하거나 바꾸지 마세요. 역방향은 해당 카드의 막힘·과잉·내면화 중 질문에 맞는 뜻으로 읽고, 주의점은 한 번만 자연스럽게 설명하세요.
+카드 목록을 그대로 사용하고 임의로 추가하거나 바꾸지 마세요. 출력은 짧은 보고서입니다. 칸은 카드, 종합, 다음 행동, 주의만. 카드 의미는 칸마다 두 문장. 역방향 주의는 맨 끝 주의 칸에 카드당 한 줄만 쓰고, 본문에서 그 문장을 다시 쓰지 마세요.
 ${TAROT_READING_VOICE}`;
         }
 
         let finalResponse = "";
         const isOneCardDaily = concernAnalysis.spread.cardCount === 1 || isDailyTarotConcern(tarotConcern);
-        const maxOutputTokens = isOneCardDaily ? 3500 : 4096;
+        const maxOutputTokens = isOneCardDaily ? 900 : 1400;
         const streamTimeoutMs = isOneCardDaily ? 35000 : 45000;
 
         try {
@@ -3007,7 +3007,7 @@ ${TAROT_READING_VOICE}`;
 [답변 규정]
 1. 모호한 미사여구나 불필요한 장설, 뜬구름 잡는 우주적 추상주의는 완전히 지양하십시오.
 2. 질문자가 던진 구체적인 질문에 대하여, 새로 뽑힌 추가 카드의 상징과 정/역방향 에너지를 직관적으로 관통하여 날카롭고 똑부러지게 답변하십시오.
-3. [★ 역방향 카드 해독 및 주의점 1가지 필수 제시] 새로 뽑힌 카드가 '역방향'이라면 절대로 정방향 뜻으로 풀이하지 말고 반드시 역방향 고유의 뜻(${revData?.meaning || '내면의 그림자와 재정비'})으로 풀이하며, 본문 속에 해당 카드와 관련된 주의점 1가지("${revCaution}")를 자연스럽게 녹여 설명하고 **⚠️ [${cardNameKo} 역방향 주의점 1가지]: ${revCaution}** 형태로 한 줄 강조하여 알려주십시오.
+3. 역방향이면 정방향 뜻으로 풀지 말고, 주의 문장은 답변 맨 끝 한 줄만 쓰십시오. 본문에 같은 문장을 반복하지 마십시오. 답은 카드 의미 두 문장, 이번 질문에 대한 답 두 문장, 행동 하나로 끝내십시오.
 4. 최초 질문 및 초기 리딩의 맥락을 완벽히 계승하되 중복 설명을 피하고, 이번 질문에 대한 즉각적이고 실천 가능한 현실적 해결책과 행동 지침을 제시하십시오.
 5. 한국어로 품격 있고 신뢰감 넘치는 마스터의 어조를 유지하십시오.${profileContext}`,
         },
@@ -4049,13 +4049,13 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                 {/* Right Pane: Master's Deep Reading & Follow-up Actions */}
                                 <div className="flex flex-col gap-4 w-full">
                                 {(tarotResult || isTarotGenerating) && (
-                                  <div className="glass p-5 rounded-2xl border border-yellow-500/30 shadow-2xl flex flex-col relative overflow-hidden">
+                                  <div className="glass trinity-report p-5 rounded-2xl border border-yellow-500/30 shadow-2xl flex flex-col relative overflow-hidden">
                                   <div className="absolute top-0 right-0 w-48 h-48 bg-yellow-500/5 blur-[60px] pointer-events-none rounded-full" />
                                   <div className="duo-workspace-actions flex justify-between items-center mb-4 shrink-0 relative z-10 w-full font-sans">
                                     <div className="flex items-center gap-2 text-yellow-400">
                                       <Sparkles size={16} />
                                       <h4 className="text-xs font-bold tracking-widest uppercase">
-                                        Trinity's Insight
+                                        리딩 보고서
                                       </h4>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -4152,44 +4152,6 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
                                               </div>
                                             </div>
                                           )}
-
-                                          {/* ⚠️ 역방향 카드 주의점 1가지 별도 강조 배너 (역방향 카드가 뽑혔을 때만 표시) */}
-                                          {(() => {
-                                            const activeReadingCards = (drawnCards && drawnCards.length > 0)
-                                              ? drawnCards
-                                              : (dailyResult?.drawnCard ? [dailyResult.drawnCard] : (dailyDrawnCard ? [dailyDrawnCard] : []));
-                                            const reversedCards = activeReadingCards.filter((c: any) => Boolean(c?.reversed));
-                                            if (reversedCards.length === 0) return null;
-                                            return (
-                                              <div className="mb-4 space-y-2">
-                                                {activeReadingCards.map((c: any, idx: number) => {
-                                                  if (!c?.reversed) return null;
-                                                  const revData = getTarotReversedData(c);
-                                                  const cautionText = getTarotCardCaution(c);
-                                                  const posLabel = tarotSpreadRecommendation?.positions?.[idx] || `${idx + 1}번 카드`;
-                                                  return (
-                                                    <div
-                                                      key={`trinity-rev-caution-${c.id || idx}-${idx}`}
-                                                      className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-rose-950/55 via-rose-900/25 to-black/45 border border-rose-400/45 shadow-md space-y-1 text-xs"
-                                                    >
-                                                      <div className="duo-workspace-actions flex items-center justify-between gap-2 flex-wrap">
-                                                        <span className="font-bold text-rose-300 flex items-center gap-1.5">
-                                                          <span>⚠️ [{c.nameKo || c.name} (역방향) 주의점 1가지]</span>
-                                                          <span className="text-[10px] font-normal text-rose-200/75">· {posLabel}</span>
-                                                        </span>
-                                                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-200 border border-rose-400/30 font-medium">
-                                                          역방향 키워드: {revData.keywords.slice(0, 3).join(', ')}
-                                                        </span>
-                                                      </div>
-                                                      <p className="text-rose-100 font-semibold leading-snug break-keep">
-                                                        {cautionText}
-                                                      </p>
-                                                    </div>
-                                                  );
-                                                })}
-                                              </div>
-                                            );
-                                          })()}
 
                                           <Streamdown immediate={!isTarotGenerating} enableTTSHighlight={isFullReadingTTSActive}>{displayTarotResult || stripSummaryFromTarotText(tarotResult || "")}</Streamdown>
                                           {/* 🌟 그에 맞는 루시의 조언 (TTS 가능) */}

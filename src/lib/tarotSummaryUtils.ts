@@ -14,6 +14,41 @@ export function sanitizeTarotDecisionYesNo(text: string): string {
 }
 
 /**
+ * 같은 역방향 주의 문장이 본문·배너·강조 줄에 연속으로 반복되면 첫 한 줄만 남깁니다.
+ */
+export function collapseRepeatedCautions(text: string): string {
+  if (!text) return text;
+  const seen = new Set<string>();
+  const normalize = (value: string) =>
+    value
+      .replace(/[*_`~#>[\]()"'“”‘’⚠️·:：]/g, '')
+      .replace(/역방향/g, '')
+      .replace(/주의점(?:\s*\d+\s*가지)?/g, '')
+      .replace(/\s+/g, '')
+      .trim();
+
+  const kept: string[] = [];
+  for (const line of text.split('\n')) {
+    if (!/주의/.test(line)) {
+      kept.push(line);
+      continue;
+    }
+    const quoted = line.match(/[「"“]([^"”」]{6,})[」"”]/);
+    const afterLabel = line.split(/주의[^\n]{0,16}[:：\]]/).pop() || line;
+    const body = normalize(quoted?.[1] || afterLabel);
+    if (body.length >= 8 && seen.has(body)) continue;
+    if (body.length >= 8) seen.add(body);
+    kept.push(line);
+  }
+
+  return kept
+    .join('\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+/**
  * 🧹 타로 리딩 본문 중복 서술 및 2회 반복 생성 전면 방지 & 제거
  */
 export function deduplicateReadingText(text: string): string {
@@ -85,7 +120,7 @@ export function deduplicateReadingText(text: string): string {
     lastNonEmpty = trimmedLine;
   }
 
-  return deduplicatedLines.join('\n');
+  return collapseRepeatedCautions(deduplicatedLines.join('\n'));
 }
 
 export function stripSummaryFromTarotText(text: string): string {
