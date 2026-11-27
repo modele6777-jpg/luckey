@@ -10,7 +10,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION = '2.2.0';
+export const SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION = '2.4.0';
 
 export type InannaQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 export type InannaDescentPhase = 'THRESHOLD_DESCENT' | 'ZERO_POINT_SUSPENSION' | 'ENKI_REVIVAL';
@@ -47,6 +47,7 @@ export interface SumerianInannaUnderworldDescentReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    inannaCrossAxis: string;
   };
   reflectiveQuestion: string;
   interpretiveBoundary: string;
@@ -218,10 +219,12 @@ export function calculateSumerianInannaUnderworldDescent(
   const enkiLifeRestorationRitual = TOPIC_RITUAL_ACTION[questionTopic];
 
   const calculatedAtKst = formatInannaKstTimestamp(now);
+  const inannaCrossAxis = `[${currentCrucialGate.gateName}] × [${currentCrucialGate.relicStripped}] × [${descentPhase}] × [${questionTopic}]`;
   const inannaSynthesisMatrix = {
     dominantTension: `${currentCrucialGate.gateName}(${currentCrucialGate.relicStripped}) ↔ ${currentCrucialGate.shadowPersona}`,
     alignmentState: `${descentPhaseLabel}`,
     integratedAction: `${ritualAction}${question ? ` [질문 맥락: ${question}]` : ''}`,
+    inannaCrossAxis,
   };
 
   const trimmedQ = question.trim();
@@ -269,6 +272,7 @@ export function formatSumerianInannaUnderworldDescentPrompt(rep: SumerianInannaU
   if (rep.inannaSynthesisMatrix) {
     lines.push(
       `· 교차 매트릭스: [핵심 긴장: ${rep.inannaSynthesisMatrix.dominantTension} | 조율 상태: ${rep.inannaSynthesisMatrix.alignmentState}]`,
+      `  - 4중 교차 축: ${rep.inannaSynthesisMatrix.inannaCrossAxis}`,
       `  - 통합 실천: ${rep.inannaSynthesisMatrix.integratedAction}`,
     );
   }
