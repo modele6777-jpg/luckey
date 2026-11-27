@@ -6708,12 +6708,14 @@ test('Ancient Greek Heraclitus Panta Rhei Engine: calculates flux index, Logos h
   assert(rep.situationalReflection.reflectionPrompt.length > 0);
   assert(rep.temporalFluxContext.dayPhaseKo.length > 0);
   assert(rep.dialecticPolarityMatrix.tensionHarmonyRatio >= 0 && rep.dialecticPolarityMatrix.tensionHarmonyRatio <= 100);
+  assert(Boolean(rep.heraclitusSynthesisMatrix?.heraclitusCrossAxis.includes(rep.temporalFluxContext.fluxAttitude)));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatHeraclitusPantaRheiPrompt(rep);
   assert(prompt.includes('에페소스 헤라클레이토스 만물유전(Panta Rhei)'));
   assert(prompt.includes(rep.activeHeraclitusStage.stageNameKo));
   assert(prompt.includes(rep.situationalReflection.fragmentRef));
+  assert(prompt.includes('4중 교차 축'));
 });
 
 test('Ancient Chinese Mozi Gyeom-Ae Universal Love Engine: calculates Gyeom-Ae love, Gyo-Ri mutual benefit and Bi-Gong shield', () => {
@@ -6894,11 +6896,13 @@ test('Ancient Greek Socratic Maieutic Daimon Engine: calculates dialogue, daimon
   assert(rep.elenchusRefutationClarity >= 0 && rep.elenchusRefutationClarity <= 100);
   assert(rep.epimeleiaSoulCareIntegrity >= 0 && rep.epimeleiaSoulCareIntegrity <= 100);
   assert(rep.activeSocraticStage.stageNameGreek.length > 0);
+  assert(Boolean(rep.dialecticSynthesisMatrix.socraticCrossAxis.includes(rep.situationalElenchus.detectedTheme)));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.shadowWarning.length > 0);
   const prompt = formatSocraticMaieuticDaimonPrompt(rep);
   assert(prompt.includes('고대 그리스 소크라테스 산파술 & 다이몬 영혼성찰 지표'));
   assert(prompt.includes(rep.activeSocraticStage.stageNameKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('과잉 경계'));
 });
@@ -8927,11 +8931,13 @@ test('Alfred Adler Individual Psychology Engine: calculates Inferiority Transcen
   assert(rep.teleologicalReframingCreationIndex >= 0 && rep.teleologicalReframingCreationIndex <= 100);
   assert(rep.courageToBeImperfectResilienceScore >= 0 && rep.courageToBeImperfectResilienceScore <= 100);
   assert(rep.activeAdlerTheme.themeTitleKo.length > 0);
+  assert(Boolean(rep.adlerSynthesisMatrix.adlerCrossAxis.includes(rep.questionTopic)));
   assert(rep.shadowWarning.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAustrianAlfredAdlerIndividualPsychologyPrompt(rep);
   assert(prompt.includes('알프레트 아들러 《인간이해》 & 《삶의 의미》 열등감 극복 및 공동체 감각 지혜 지표'));
   assert(prompt.includes(rep.activeAdlerTheme.themeTitleKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('과잉 경계'));
 });
 

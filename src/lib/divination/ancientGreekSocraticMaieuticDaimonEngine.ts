@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SOCRATIC_MAIEUTIC_DAIMON_VERSION = 'LUCKEY-SOCRATIC-MAIEUTIC-DAIMON-v2.4.0';
+export const SOCRATIC_MAIEUTIC_DAIMON_VERSION = 'LUCKEY-SOCRATIC-MAIEUTIC-DAIMON-v2.5.0';
 
 function describeSocraticStage(score: number): string {
   if (score >= 88) return '명료한 각성 단계';
@@ -51,6 +51,7 @@ export interface DialecticSynthesisMatrix {
   maieuticClarity: number;
   primaryBottleneck: string;
   synthesisDirective: string;
+  socraticCrossAxis: string;
 }
 
 export interface SocraticMaieuticDaimonResult {
@@ -301,12 +302,14 @@ export function calculateSocraticMaieuticDaimon(
     synthesisDirective = '타인의 조언을 수집하는 일을 멈추고 스스로의 말로 핵심 질문을 한 문장으로 빚어내십시오.';
   }
 
+  const socraticCrossAxis = `[${activeSocraticStage.stageNameGreek.split(' ')[0]}] × [${situationalElenchus.detectedTheme}] × [${temporalDaimonionRhythm.kstPhaseLabel.split(' ')[0]}] × [${primaryBottleneck}]`;
   const dialecticSynthesisMatrix: DialecticSynthesisMatrix = {
     aporiaCourage,
     daimonAttunement,
     maieuticClarity,
     primaryBottleneck,
     synthesisDirective,
+    socraticCrossAxis,
   };
 
   const counselTitle = `소크라테스 문답과 다이몬: ${activeSocraticStage.stageNameGreek}`;
@@ -352,7 +355,7 @@ export function formatSocraticMaieuticDaimonPrompt(res: SocraticMaieuticDaimonRe
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 산파술 실천: ${res.dailyPracticeRitual}`,
     `- KST 시공간 리듬 (${res.calculatedAtKst}): ${res.temporalDaimonionRhythm.kstPhaseLabel} · ${res.temporalDaimonionRhythm.seasonContext} (다이몬 감응: ${describeSocraticStage(res.temporalDaimonionRhythm.daimonClarityIndex)})`,
-    `- 변증 통합 매트릭스: 아포리아 용기(${describeSocraticStage(res.dialecticSynthesisMatrix.aporiaCourage)}) / 다이몬 조율(${describeSocraticStage(res.dialecticSynthesisMatrix.daimonAttunement)}) / 산파 명료도(${describeSocraticStage(res.dialecticSynthesisMatrix.maieuticClarity)}) → [${res.dialecticSynthesisMatrix.primaryBottleneck}] ${res.dialecticSynthesisMatrix.synthesisDirective}`,
+    `- 변증 통합 매트릭스: 아포리아 용기(${describeSocraticStage(res.dialecticSynthesisMatrix.aporiaCourage)}) / 다이몬 조율(${describeSocraticStage(res.dialecticSynthesisMatrix.daimonAttunement)}) / 산파 명료도(${describeSocraticStage(res.dialecticSynthesisMatrix.maieuticClarity)}) / 4중 교차 축(${res.dialecticSynthesisMatrix.socraticCrossAxis}) → [${res.dialecticSynthesisMatrix.primaryBottleneck}] ${res.dialecticSynthesisMatrix.synthesisDirective}`,
     `- 성찰 핵심 격언: "${res.primarySocraticAphorism.themeKo}" [${res.primarySocraticAphorism.greekClassic}]`,
     `- 과잉 경계: ${res.shadowWarning}`,
     `- 철학적 처방: ${res.socraticPhilosophicalCounsel.philosophicalGuidance}`,
