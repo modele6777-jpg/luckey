@@ -4631,11 +4631,13 @@ test('Aboriginal Dreamtime Songlines Engine: calculates ancestral totem and Kuru
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.kurunpaLifeForceIndex >= 0 && rep.kurunpaLifeForceIndex <= 100);
   assert(rep.activeTotem.name.length > 0);
+  assert(rep.dreamtimeSynthesisMatrix.dreamtimeCrossAxis.includes(rep.activeTotem.name));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAboriginalDreamtimeSonglinesPrompt(rep);
   assert(prompt.includes('호주 원주민 드림타임(Dreamtime) 송라인 & 8대 토템 영혼 나침반'));
   assert(prompt.includes(rep.activeTotem.name));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100') && !prompt.includes('점수'));
 });
@@ -4703,10 +4705,12 @@ test('Celtic Awen Taliesin Engine: calculates Awen 3 rays and metamorphosis phas
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.awenFlowIndex >= 0 && rep.awenFlowIndex <= 100);
   assert(rep.awenRays.dominantRay.length > 0);
+  assert(rep.awenSynthesisMatrix.awenCrossAxis.includes(rep.activeMetamorphosis.animalTotem));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatCelticAwenTaliesinPrompt(rep);
   assert(prompt.includes('고대 켈트 바드 탈리에신(Taliesin) 가마솥 & 아웬(Awen) 영감 실측 데이터'));
   assert(prompt.includes(rep.activeMetamorphosis.animalTotem));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('+09:00') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/ 100') && !prompt.includes('점수'));
 });
@@ -5596,9 +5600,11 @@ test('Alexandrian Decan Thirty Six Gods Engine: provides qualitative Kairos post
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalDecanRhythm.hermeticWatchWindow.length > 0);
   assert(rep.decanSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.decanSynthesisMatrix.decanCrossAxis.includes(rep.dominantDecan.nameGreek));
   const prompt = formatAlexandrianDecanThirtySixGodsPrompt(rep);
   assert(prompt.includes('알렉산드리아 헤르메스주의 36대 데칸 천상 성령 & 시간의 지배자 실측 데이터'));
   assert(prompt.includes(rep.dominantDecan.nameKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
