@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const LAKOTA_MEDICINE_WHEEL_ENGINE_VERSION = '2.3.0';
+export const LAKOTA_MEDICINE_WHEEL_ENGINE_VERSION = '2.4.0';
 
 export interface LakotaMedicineWheelReport {
   engineVersion: string;
@@ -80,6 +80,7 @@ export interface LakotaMedicineWheelReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    lakotaCrossAxis: string;
   };
 }
 
@@ -221,10 +222,13 @@ export function calculateLakotaMedicineWheel(
   }
 
   const calculatedAtKst = formatLakotaKstTimestamp(now);
+  const alignmentState = describeLakotaStage(medicineWheelBalanceIndex);
+  const lakotaCrossAxis = `[${primarySacredDirection.directionKo}] × [${secondarySacredDirection.directionKo}] × [${activeCardinalVirtue.virtueKo}] × [${alignmentState.split(' — ')[0]}]`;
   const lakotaSynthesisMatrix = {
     dominantTension: `${primarySacredDirection.directionKo} ↔ ${activeCardinalVirtue.virtueKo}`,
-    alignmentState: describeLakotaStage(medicineWheelBalanceIndex),
+    alignmentState,
     integratedAction: `${activeCardinalVirtue.practicalAction}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
+    lakotaCrossAxis,
   };
 
   return {
@@ -271,6 +275,7 @@ export function formatLakotaMedicineWheelPrompt(report: LakotaMedicineWheelRepor
   if (report.lakotaSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스 [핵심 긴장: ${report.lakotaSynthesisMatrix.dominantTension} | 조율 상태: ${report.lakotaSynthesisMatrix.alignmentState}]`,
+      `- 4중 교차 축: ${report.lakotaSynthesisMatrix.lakotaCrossAxis}`,
       `- 통합 실천: ${report.lakotaSynthesisMatrix.integratedAction}`,
     );
   }

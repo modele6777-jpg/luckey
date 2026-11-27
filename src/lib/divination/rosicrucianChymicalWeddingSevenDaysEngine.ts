@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ROSICRUCIAN_CHYMICAL_WEDDING_ENGINE_VERSION = '2.3.0';
+export const ROSICRUCIAN_CHYMICAL_WEDDING_ENGINE_VERSION = '2.4.0';
 
 export interface RosicrucianAlchemicalStage {
   dayNumber: number;
@@ -49,6 +49,7 @@ export interface RosicrucianChymicalWeddingReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    rosicrucianCrossAxis: string;
   };
   interpretiveBoundary: string;
 }
@@ -189,10 +190,13 @@ export function calculateRosicrucianChymicalWedding(
   const composite = Math.round(
     (chymicalUnionScore + philosophersStoneIndex + sevenDaysTransmutationRate + phoenixRebirthVibration) / 4
   );
+  const alignmentState = describeRosicrucianStage(composite, activeAlchemicalPhase);
+  const rosicrucianCrossAxis = `[${dominantStage.dayName}] × [${activeAlchemicalPhase}] × [${dominantStage.latinStage}] × [${alignmentState.split(' — ')[0]}]`;
   const rosicrucianSynthesisMatrix = {
     dominantTension: `${dominantStage.dayName} ↔ ${activeAlchemicalPhase}`,
-    alignmentState: describeRosicrucianStage(composite, activeAlchemicalPhase),
+    alignmentState,
     integratedAction: `${dominantStage.spiritualTransmutation}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+    rosicrucianCrossAxis,
   };
 
   return {
@@ -233,6 +237,7 @@ export function formatRosicrucianChymicalWeddingPrompt(report: RosicrucianChymic
   if (report.rosicrucianSynthesisMatrix) {
     lines.push(
       `- **교차 매트릭스**: [핵심 긴장: ${report.rosicrucianSynthesisMatrix.dominantTension} | 조율 상태: ${report.rosicrucianSynthesisMatrix.alignmentState}]`,
+      `- **4중 교차 축**: ${report.rosicrucianSynthesisMatrix.rosicrucianCrossAxis}`,
       `- **통합 실천**: ${report.rosicrucianSynthesisMatrix.integratedAction}`,
     );
   }
