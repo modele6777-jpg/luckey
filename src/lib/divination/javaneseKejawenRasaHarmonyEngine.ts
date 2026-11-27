@@ -22,6 +22,7 @@ export interface JavaneseKejawenResult {
   activePrinciple: KejawenRasaPrinciple;
   supportingPrinciple: KejawenRasaPrinciple;
   rasaBalanceAxis: string;
+  topicBalanceHint: string;
   rasaTone: string;
   qualitativeSynthesis: string;
   reflectionFocus: string;
@@ -95,6 +96,13 @@ const KEJAWEN_SHADOWS: Record<KejawenRasaPrincipleId, string> = {
   memayu_hayuning_bawana: '주변과 공간을 정갈히 가꾸는 정성이 완벽주의나 끝없는 정리 강박으로 이어져 본래의 휴식을 빼앗지 않게 하세요.',
 };
 
+const KEJAWEN_TOPIC_HINTS: Record<JavaneseKejawenResult['questionTopic'], string> = {
+  '평정·분별': '평정과 분별의 질문에서는 결론을 서두르기보다 오늘 하루 숨을 세 번 고른 뒤 중심을 먼저 확인하세요.',
+  '인내·수용': '인내와 수용의 질문에서는 내가 닿을 수 없는 결과에 쓰던 힘을 거두고 오늘 할 수 있는 한 걸음만 남기세요.',
+  '공감·조화': '공감과 조화의 질문에서는 상대의 입장을 한 문장 먼저 헤아린 뒤 내 경계를 부드럽게 전해 보세요.',
+  '라사 전반': '전반적 라사(Rasa)의 질문에서는 내 마음의 결을 정갈히 다듬는 작은 생활 정돈부터 시작해 보세요.',
+};
+
 function classifyKejawenTopic(q: string): JavaneseKejawenResult['questionTopic'] {
   if (/평정|분별|흔들|불안|조급/.test(q)) return '평정·분별';
   if (/인내|수용|기다|통제|내려/.test(q)) return '인내·수용';
@@ -127,6 +135,7 @@ export function calculateJavaneseKejawenRasaHarmony(params: {
   const activePrinciple = KEJAWEN_PRINCIPLES[activeIdx];
   const supportingPrinciple = KEJAWEN_PRINCIPLES[supportingIdx];
   const rasaBalanceAxis = `${activePrinciple.koreanTitle} ↔ ${supportingPrinciple.koreanTitle} (${questionTopic})`;
+  const topicBalanceHint = KEJAWEN_TOPIC_HINTS[questionTopic];
   const shadowWarning = KEJAWEN_SHADOWS[activePrinciple.id];
 
   const qualitativeSynthesis =
@@ -146,12 +155,13 @@ export function calculateJavaneseKejawenRasaHarmony(params: {
 
   return {
     engineName: '자바 케자웬(Kejawen) 라사·내면 평정 (Javanese Kejawen Rasa)',
-    engineVersion: 'LUCKEY-JAVANESE-KEJAWEN-v2.3.0',
+    engineVersion: 'LUCKEY-JAVANESE-KEJAWEN-v2.4.0',
     calculatedAtKst: formatJavaneseKstTimestamp(now),
     questionTopic,
     activePrinciple,
     supportingPrinciple,
     rasaBalanceAxis,
+    topicBalanceHint,
     rasaTone,
     qualitativeSynthesis,
     reflectionFocus,
@@ -169,6 +179,7 @@ export function formatJavaneseKejawenPrompt(res: JavaneseKejawenResult): string 
     `[보조 상징 관점 — ${res.engineName}]`,
     `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 라사 균형 축: ${res.rasaBalanceAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 중심 덕목: ${res.activePrinciple.javanesePhrase} · ${res.activePrinciple.koreanTitle}`,
     `- 보조 덕목: ${res.supportingPrinciple.javanesePhrase} · ${res.supportingPrinciple.koreanTitle}`,
     `- 라사(Rasa) 결: ${res.rasaTone}`,
