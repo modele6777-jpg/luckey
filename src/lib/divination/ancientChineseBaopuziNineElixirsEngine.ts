@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BAOPUZI_ELIXIRS_ENGINE_VERSION = 'LUCKEY-BAOPUZI-ELIXIRS-v2.4.0';
+export const BAOPUZI_ELIXIRS_ENGINE_VERSION = 'LUCKEY-BAOPUZI-ELIXIRS-v2.5.0';
 
 export type BaopuziQuestionFocus = 'health' | 'career' | 'relationship' | 'decision' | 'spiritual';
 
@@ -39,6 +39,7 @@ export interface BaopuziSynthesisMatrix {
   fireControlBalance: string;
   immunityFoundation: string;
   synthesizedGuidance: string;
+  baopuziCrossAxis: string;
 }
 
 export interface BaopuziElixirsReport {
@@ -255,11 +256,13 @@ export function calculateBaopuziElixirs(params?: BaopuziElixirsParams): BaopuziE
         ? '기초 원기는 유지되나 불규칙한 소모를 경계해야 하는 상태'
         : '원기가 지쳐 있어 즉각적인 휴식과 문호(약불) 보양이 필요한 상태';
 
+  const baopuziCrossAxis = `[${activeElixir.elixirNameKo}] × [${questionFocus}] × [${temporalElixirRhythm.shichenWindow}] × [${temporalElixirRhythm.seasonalOrganFocus}]`;
   const baopuziSynthesisMatrix: BaopuziSynthesisMatrix = {
     vitalityStateLabel,
     fireControlBalance: `${rank}전 [${activeElixir.elixirNameKo}]의 수련 단계와 ${temporalElixirRhythm.shichenWindow}이 조응합니다.`,
     immunityFoundation: immunity >= 75 ? '외부 사기를 막아내는 위기(衛氣) 방어력이 단단한 편입니다.' : '무리한 일정을 줄이고 수면·보온으로 면역 기초를 다져야 합니다.',
     synthesizedGuidance: `${activeElixir.elixirNameKo}의 효능(${activeElixir.transformativePower})을 살리려면 ${temporalElixirRhythm.cultivationTimingAdvice}`,
+    baopuziCrossAxis,
   };
 
   const advices = [
@@ -303,7 +306,7 @@ export function formatBaopuziElixirsPrompt(report: BaopuziElixirsReport): string
 - 금단 연마 단계: ${report.alchemicalRefinementLevel}전 [${report.activeElixirPhase.elixirNameKo}] (${report.activeElixirPhase.elixirNameZh})
   * 효능: ${report.activeElixirPhase.transformativePower}
   * 생활 양생 실천: ${report.activeElixirPhase.nourishingPractice}
-- 정기신(精氣神) 및 면역 상태: ${report.baopuziSynthesisMatrix.vitalityStateLabel} · ${report.baopuziSynthesisMatrix.immunityFoundation}
+- 정기신(精氣神) 및 면역 상태: ${report.baopuziSynthesisMatrix.vitalityStateLabel} · ${report.baopuziSynthesisMatrix.immunityFoundation} · 4중 교차 축(${report.baopuziSynthesisMatrix.baopuziCrossAxis})
 - 질문 맥락 포박자 감사 (${report.situationalBaopuziAudit.focus}):
   * 원전 구절: ${report.situationalBaopuziAudit.baopuziVerse}
   * 정기신 진단: ${report.situationalBaopuziAudit.jingQiShenDiagnosis}
