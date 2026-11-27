@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION = '2.3.0';
+export const KOREAN_DANGUN_CHEONBUIN_ENGINE_VERSION = '2.4.0';
 
 export interface CheonbuTreasure {
   id: 'mirror' | 'sword' | 'bell';
@@ -62,6 +62,7 @@ export interface KoreanDangunCheonbuinReport {
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
+    cheonbuinCrossAxis: string;
   };
   ihwaSegyeRemedy: string; // 이화세계 개운 처방
   boundaryNotice: string;
@@ -223,10 +224,12 @@ export function calculateKoreanDangunCheonbuin(options?: {
           ministerSupport: `${activeMinister.nameKo}(${activeMinister.element})의 조력: ${activeMinister.guidance}`,
         };
 
+  const cheonbuinCrossAxis = `[${dominant.nameKo}] × [${activeMinister.nameKo}] × [${situationalCheonbuinAudit.focusTheme}] × [${temporalCheonbuinRhythm.shinsiSkyWindow.split(' — ')[0]}]`;
   const cheonbuinSynthesisMatrix = {
     coreInsight: `주재 천부보물 [${dominant.nameKo}]와 천계 관직 [${activeMinister.nameKo}]가 만나 ${situationalCheonbuinAudit.focusTheme}을 이끕니다.`,
     recommendedAction: ihwaSegyeRemedy,
     cautionNotice: '거울의 성찰 없는 칼의 결단이나, 칼의 경계 없는 방울의 타협에 빠지지 않도록 삼인의 균형을 살피십시오.',
+    cheonbuinCrossAxis,
   };
 
   const ritualAction = `[${dominant.nameKo} · ${activeMinister.nameKo}] ${ihwaSegyeRemedy}`;
@@ -275,6 +278,7 @@ export function formatKoreanDangunCheonbuinPrompt(rep: KoreanDangunCheonbuinRepo
   - 시공간 지침: ${rep.temporalCheonbuinRhythm.temporalGuidance}
 · 천부인 교차 매트릭스:
   - 핵심 통찰: ${rep.cheonbuinSynthesisMatrix.coreInsight}
+  - 4중 교차 축: ${rep.cheonbuinSynthesisMatrix.cheonbuinCrossAxis}
   - 권고 실행: ${rep.cheonbuinSynthesisMatrix.recommendedAction}
   - 주의 경계: ${rep.cheonbuinSynthesisMatrix.cautionNotice}
 · 이화세계(理化世界) 현실 개운 처방: ${rep.ihwaSegyeRemedy}

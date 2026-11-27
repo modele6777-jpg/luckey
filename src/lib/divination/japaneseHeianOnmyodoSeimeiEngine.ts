@@ -30,7 +30,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HEIAN_ONMYODO_SEIMEI_VERSION = '2.3.0';
+export const HEIAN_ONMYODO_SEIMEI_VERSION = '2.4.0';
 
 export interface HeianOnmyodoSeimeiReport {
   engineVersion: string;
@@ -70,6 +70,7 @@ export interface HeianOnmyodoSeimeiReport {
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
+    onmyoCrossAxis: string;
   };
   onmyoPurificationGuidance: string;
   boundaryNotice: string;
@@ -283,10 +284,12 @@ export function calculateHeianOnmyodoSeimei(
     onmyoPurificationGuidance = '소금과 맑은 물로 주변 공간을 정화하고, 매일 아침 동쪽을 향해 심호흡하며 12천장의 수호령을 상기하십시오. 흩어진 잡념이 정돈되며 올바른 판단력이 살아납니다.';
   }
 
+  const onmyoCrossAxis = `[${primaryGuardianGeneral.kanji}] × [${secondaryGuardianGeneral.kanji}] × [${situationalOnmyoAudit.focusTheme}] × [${temporalOnmyoRhythm.twelveBranchWindow.split(' — ')[0]}]`;
   const onmyoSynthesisMatrix = {
     coreInsight: `주 수호 신장 [${primaryGuardianGeneral.nameKo}]과 보조 신장 [${secondaryGuardianGeneral.nameKo}]이 결합해 ${situationalOnmyoAudit.focusTheme}의 결계를 이루고 있습니다.`,
     recommendedAction: `${situationalOnmyoAudit.shikigamiStance} (${onmyoPurificationGuidance})`,
     cautionNotice: '음양의 기운이 한쪽으로 치우치면 결계에 틈이 생깁니다. 과신이나 지나친 위축을 모두 경계하십시오.',
+    onmyoCrossAxis,
   };
 
   const ritualAction = `[${primaryGuardianGeneral.nameKo}] ${situationalOnmyoAudit.shikigamiStance}`;
@@ -332,6 +335,7 @@ export function formatHeianOnmyodoSeimeiPrompt(report: HeianOnmyodoSeimeiReport)
   - *시공간 지침*: ${report.temporalOnmyoRhythm.temporalGuidance}
 - **음양도 교차 매트릭스**:
   - *핵심 통찰*: ${report.onmyoSynthesisMatrix.coreInsight}
+  - *4중 교차 축*: ${report.onmyoSynthesisMatrix.onmyoCrossAxis}
   - *권고 실행*: ${report.onmyoSynthesisMatrix.recommendedAction}
   - *주의 경계*: ${report.onmyoSynthesisMatrix.cautionNotice}
 - **아베노 세이메이 액막이 비방**:
