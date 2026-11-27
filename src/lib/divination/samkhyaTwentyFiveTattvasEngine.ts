@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SAMKHYA_TATTVAS_ENGINE_VERSION = 'LUCKEY-SAMKHYA-TATTVAS-v2.3.0';
+export const SAMKHYA_TATTVAS_ENGINE_VERSION = 'LUCKEY-SAMKHYA-TATTVAS-v2.4.0';
 
 export type SamkhyaQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
 
@@ -67,6 +67,7 @@ export interface SamkhyaTwentyFiveTattvasReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    samkhyaCrossAxis: string;
   };
 }
 
@@ -427,10 +428,12 @@ export function calculateSamkhyaTwentyFiveTattvas(params: {
   );
   const samkhyaPhase = describeSamkhyaStage(composite, dominantGuna);
   const shadowWarning = buildSamkhyaShadowWarning(dominantTattva, dominantGuna, questionTopic);
+  const samkhyaCrossAxis = `[${dominantTattva.nameSanskrit}] × [${secondaryTattva.nameSanskrit}] × [${dominantGuna}] × [${questionTopic}]`;
   const samkhyaSynthesisMatrix = {
     dominantTension: `${dominantTattva.nameKo} ↔ ${dominantGuna} (${questionTopic})`,
     alignmentState: samkhyaPhase,
     integratedAction: `${mindPurificationPrescription}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+    samkhyaCrossAxis,
   };
 
   const ritualAction = `[${dominantTattva.nameKo}] 호흡을 고르며 '${dominantGuna}'의 흐름을 순수 관조자(Purusha)의 시선으로 1분간 바라보기`;
@@ -484,6 +487,7 @@ export function formatSamkhyaTwentyFiveTattvasPrompt(rep: SamkhyaTwentyFiveTattv
   if (rep.samkhyaSynthesisMatrix) {
     lines.push(
       `· 교차 매트릭스 [핵심 긴장: ${rep.samkhyaSynthesisMatrix.dominantTension} | 조율 상태: ${rep.samkhyaSynthesisMatrix.alignmentState}]`,
+      `· 4중 교차 축: ${rep.samkhyaSynthesisMatrix.samkhyaCrossAxis}`,
       `· 통합 실천: ${rep.samkhyaSynthesisMatrix.integratedAction}`,
     );
   }

@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NEO_CONFUCIAN_LIQI_ENGINE_VERSION = 'LUCKEY-NEO-CONFUCIAN-LIQI-v2.3.0';
+export const NEO_CONFUCIAN_LIQI_ENGINE_VERSION = 'LUCKEY-NEO-CONFUCIAN-LIQI-v2.4.0';
 
 export interface SadanVirtueInfo {
   nameKo: string;
@@ -63,6 +63,7 @@ export interface NeoConfucianFourSevenLiQiReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    liQiCrossAxis: string;
   };
 }
 
@@ -199,10 +200,12 @@ export function calculateNeoConfucianFourSevenLiQi(params: {
   const composite = Math.round(
     (sadanAlignmentScore + chiljeongBalanceScore + liQiHarmonyIndex + originalNaturePurityScore + geogyeongConcentrationIndex) / 5
   );
+  const liQiCrossAxis = `[${dominantSadan.nameKo}] × [${secondarySadan.nameKo}] × [${dominantChiljeong.nameKo}] × [${dominantChiljeong.moderationStatus}]`;
   const liQiSynthesisMatrix = {
     dominantTension: `${dominantSadan.nameKo} ↔ ${dominantChiljeong.nameKo} [${dominantChiljeong.moderationStatus}]`,
     alignmentState: describeLiQiStage(composite),
     integratedAction: `${dominantSadan.moralAction} · ${dominantChiljeong.harmonizationKey}${question?.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+    liQiCrossAxis,
   };
 
   // 4. Guidance Formulation
@@ -257,6 +260,7 @@ export function formatNeoConfucianFourSevenLiQiPrompt(rep: NeoConfucianFourSeven
   if (rep.liQiSynthesisMatrix) {
     lines.push(
       `· 교차 매트릭스 [핵심 긴장: ${rep.liQiSynthesisMatrix.dominantTension} | 조율 상태: ${rep.liQiSynthesisMatrix.alignmentState}]`,
+      `· 4중 교차 축: ${rep.liQiSynthesisMatrix.liQiCrossAxis}`,
       `· 통합 실천: ${rep.liQiSynthesisMatrix.integratedAction}`,
     );
   }

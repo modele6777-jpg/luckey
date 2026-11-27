@@ -4987,12 +4987,13 @@ test('Popol Vuh Hero Twins Engine: calculates active trial house and qualitative
   assert(rep.boundaryNotice.length > 0);
   assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.popolVuhSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.popolVuhSynthesisMatrix?.popolVuhCrossAxis.includes(rep.activeTrialHouse.houseNameKo)));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatPopolVuhHeroTwinsPrompt(rep);
   assert(prompt.includes('고대 마야 포폴 부(Popol Vuh) 쌍둥이 영웅 & 시발바 시련 돌파 실측 데이터'));
   assert(prompt.includes(rep.activeTrialHouse.houseNameKo) && prompt.includes(rep.companionTrialHouse.houseNameKo));
   assert(prompt.includes(rep.heroicPhase) && prompt.includes(rep.shadowWarning));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -5683,12 +5684,13 @@ test('Samkhya Twenty-Five Tattvas Engine: calculates Viveka discernment, Guna ba
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.samkhyaSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.samkhyaSynthesisMatrix?.samkhyaCrossAxis.includes(rep.dominantTattva.nameSanskrit)));
   assert(rep.reflectiveQuestion.includes('상키야 25타트바 분별지'));
   assert(rep.interpretiveBoundary.includes('성찰 비유'));
   const prompt = formatSamkhyaTwentyFiveTattvasPrompt(rep);
   assert(prompt.includes('고대 인도 상키야(Samkhya) 25타트바 & 푸루샤-프라크리티 분별지 실측 리포트'));
   assert(prompt.includes(rep.dominantTattva.nameKo));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('과잉 경계'));
@@ -5715,6 +5717,7 @@ test('Neo-Confucian Four-Seven Li-Qi Engine: calculates Sadan alignment, Chiljeo
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.liQiSynthesisMatrix?.integratedAction));
   const repQ = calculateNeoConfucianFourSevenLiQi({ profile, question: '감정의 치우침을 중절로 되돌리기' });
+  assert(Boolean(repQ.liQiSynthesisMatrix?.liQiCrossAxis.includes(repQ.dominantSadan.nameKo)));
   assert(repQ.reflectiveQuestion.includes('중절로 되돌리기'));
   const prompt = formatNeoConfucianFourSevenLiQiPrompt(repQ);
   assert(prompt.includes('성리학 사칠이기(四七理氣) & 거경궁리 주일무적 수양 실측 리포트'));
@@ -5724,7 +5727,7 @@ test('Neo-Confucian Four-Seven Li-Qi Engine: calculates Sadan alignment, Chiljeo
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('해석 경계'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
