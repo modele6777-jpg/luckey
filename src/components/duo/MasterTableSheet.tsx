@@ -16,11 +16,12 @@ import { MasterSajuBoard } from './MasterSajuBoard';
 import { MasterToolTabPanel } from './MasterToolTabPanel';
 import { DivinationToolTabBar, resolveToolTabViews } from './MasterToolTabs';
 import { LucyDeepPerspectivePanel } from '@/components/chat/LucyEngineCatalogDialog';
+import { LucyOrbToolIcon } from '@/components/icons/LucyOrbToolIcon';
 import type { DivinationToolId } from '@/lib/fifteenDivinationTools';
 import { CLOSED_LUCY_SHEET, pickActiveDivinationTab, reduceLucySheet } from '@/lib/lucyToolSheetRouting';
 
 /**
- * 📱 도구함(연필 버튼) 창.
+ * 📱 도구함 창(점술모드 오브 버튼 · 일반 채팅 연필 버튼).
  * - 점술모드: 사주 원국 · 타로 · 나머지 13개 기초 도구 = 15개 탭 (엔진함·추천 도구·양피지는 없앴다)
  * - 일반 채팅: 엔진함(심층 관점 설명)만
  */
@@ -169,7 +170,11 @@ function DrawnCards({ cards }: { cards: LucyTableState['cards'] }) {
   );
 }
 
-/** 헤더의 연필 모양 도구함 버튼. 점술모드와 일반 채팅 모두 같은 버튼을 쓴다. */
+/**
+ * 헤더의 도구함 버튼.
+ * - 점술모드: 오브(구슬) 아이콘 → 15개 점술 도구 창 (사용자: "루시점술 모드에 해당 도구 버튼을 상단 헤더에 오브모양으로 만들어줘", 2026-11-27)
+ * - 일반 채팅: 연필 아이콘 → 엔진함(심층 관점 설명)
+ */
 export function MasterTableSheetButton({ tone = 'dark', isMasterMode = false }: { tone?: 'dark' | 'light'; isMasterMode?: boolean }) {
   const [sheet, dispatchSheet] = useReducer(reduceLucySheet, CLOSED_LUCY_SHEET);
 
@@ -203,6 +208,7 @@ export function MasterTableSheetButton({ tone = 'dark', isMasterMode = false }: 
         type="button"
         data-master-table-sheet-button
         data-tool-sheet-variant={isMasterMode ? 'divination' : 'chat'}
+        data-tool-button-icon={isMasterMode ? 'orb' : 'pencil'}
         aria-label={isMasterMode ? '점술 도구 보기' : '엔진함 보기'}
         title={isMasterMode ? '점술 도구' : '엔진함'}
         onClick={() => { triggerHaptic('whitehole'); openFromButton(); }}
@@ -210,7 +216,7 @@ export function MasterTableSheetButton({ tone = 'dark', isMasterMode = false }: 
           ? 'border-slate-300/80 bg-white/80 text-slate-700'
           : 'border-amber-200/30 bg-amber-400/10 text-amber-100'}`}
       >
-        <Pencil size={15} aria-hidden="true" />
+        {isMasterMode ? <LucyOrbToolIcon size={16} /> : <Pencil size={15} aria-hidden="true" />}
       </button>
       {sheet.open && <MasterTableSheet onClose={closeSheet} variant={sheet.variant} />}
     </>

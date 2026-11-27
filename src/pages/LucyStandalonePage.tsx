@@ -17,6 +17,7 @@ import { resolveMessagePerspectives, shouldShowAnswerEngines } from '@/lib/lucyA
 import type { DivinationToolId } from '@/lib/lucyToolRegistry';
 import { buildActiveEngineTray } from '@/lib/lucyActiveEngineTray';
 import { MasterTableSheetButton } from '@/components/duo/MasterTableSheet';
+import { MasterEngineCatalogButton } from '@/components/duo/MasterEngineCatalogButton';
 import { extractAllToolFacts, pickCalculatedToolData, type ToolFact } from '@/lib/lucyMasterToolFacts';
 import { LUCY_PRO_TOOLS } from '@/lib/divination/smartAgentRouter';
 import { shouldOfferLucyMaster, dismissLucyMasterOffer, markLucyMasterFromOffer, consumeLucyMasterFromOffer, shouldOfferReturnToLucy, dismissReturnToLucyOffer } from '@/lib/lucyMasterOffer';
@@ -4419,7 +4420,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     </span>
                   </h1>
                   {/* 루시프로 표시는 'Lucy Pro' 이름만 남긴다 — 상단 '통합' 배지는 사용자 요청으로 제거(2026-11-26).
-                      엔진함은 일반 채팅 도구함(헤더 연필 버튼)에서 열린다. */}
+                      엔진함은 일반 채팅 도구함(연필)과 점술모드 헤더 연필 버튼에서 열린다. */}
                 </div>
               </div>
             </div>
@@ -4427,8 +4428,10 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
           {/* Right Action Tools: 검색 · 자동 읽기 · 내보내기 */}
           <div className="lucy-header-actions flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* ✏️ 도구함: 점술모드는 15개 도구 탭, 일반 채팅은 엔진함(심층 관점 설명) — 같은 연필 버튼 */}
+            {/* ✏️ 도구함: 점술모드는 오브(구슬)·15개 도구 탭, 일반 채팅은 연필·엔진함(심층 관점 설명) */}
             <MasterTableSheetButton tone={isLight ? 'light' : 'dark'} isMasterMode={isMasterMode} />
+            {/* ✏️ 점술모드 전용 엔진함: 일반 채팅과 같은 엔진함(심층 관점 설명)을 연다 (사용자: "루시점술모드에도 상단에 연필버튼 만들어서 엔진함을 만들어줘", 2026-11-27) */}
+            {isMasterMode && <MasterEngineCatalogButton tone={isLight ? 'light' : 'dark'} />}
             {/* 📘 가이드 */}
             <PageGuideButton guide={getPageGuide(isMasterMode ? 'master' : 'lucy')} tone={isLight ? 'light' : 'dark'} />
             {/* 1. 검색 (Search Toggle) */}

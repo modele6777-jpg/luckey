@@ -92,10 +92,14 @@ test('the Pro wordmark is a straight sans-serif, not an italic serif', () => {
   assert.doesNotMatch(MODE_NAME, /font-serif[^"`]*italic[^`]*>Pro</, 'the Pro word is no longer an italic serif');
 });
 
-test('the divination tool button is a pencil-only round icon', () => {
+test('the header tool button is an orb in the pro mode and a pencil in the chat', () => {
   // 사용자 지시: "도구버튼도 연필모양 아이콘으로 바꿔줘" (2026-11-26)
+  //            → "루시점술 모드에 해당 도구 버튼을 상단 헤더에 오브모양으로 만들어줘" (2026-11-27)
   assert.match(SHEET, /import \{[^}]*\bPencil\b[^}]*\} from 'lucide-react'/);
+  // 일반 채팅은 연필 그대로, 점술모드만 오브(구슬) 아이콘.
   assert.match(SHEET_BUTTON, /<Pencil size=\{15\}/);
+  assert.match(SHEET_BUTTON, /\{isMasterMode \? <LucyOrbToolIcon size=\{16\} \/> : <Pencil size=\{15\}/);
+  assert.match(SHEET_BUTTON, /data-tool-button-icon=\{isMasterMode \? 'orb' : 'pencil'\}/);
   assert.match(SHEET_BUTTON, /h-8 w-8 shrink-0 items-center justify-center rounded-full/, 'round 32px icon button');
   assert.doesNotMatch(SHEET_BUTTON, /🔮/, 'no crystal ball emoji');
   assert.doesNotMatch(SHEET_BUTTON, />\s*도구\s*</, 'no 도구 text label');

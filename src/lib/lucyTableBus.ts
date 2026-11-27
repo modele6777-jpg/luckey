@@ -133,6 +133,12 @@ export function openEngineAtPerspective(engineKey: string): void {
   dispatchToWindow(LUCY_ENGINE_BOX_OPEN_EVENT, engineFocus);
 }
 
+/** 헤더 연필 버튼(점술모드): 엔진함을 처음부터 연다 (지난 답변의 관점 이동 요청은 지운다). */
+export function openLucyEngineBox(): void {
+  engineFocus = null;
+  dispatchToWindow(LUCY_ENGINE_BOX_OPEN_EVENT, null);
+}
+
 /** 도구 버튼: 점술 도구함을 열고 그 도구 탭을 고른다. */
 export function openDivinationToolTab(toolId: DivinationToolId): void {
   if (!toolId) return;
