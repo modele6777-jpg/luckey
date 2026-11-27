@@ -22,7 +22,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DONGHAK_CHEONDOISM_VERSION = '2.3.0';
+export const DONGHAK_CHEONDOISM_VERSION = '2.4.0';
 
 export interface DonghakCheonjuReport {
   engineVersion: string;
@@ -62,6 +62,7 @@ export interface DonghakCheonjuReport {
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
+    donghakCrossAxis: string;
   };
   sainyeocheonGuidance: string;
   boundaryNotice: string;
@@ -214,10 +215,12 @@ export function calculateDonghakCheondoismCheonju(
           practiceFocus: '잠시 숨을 고르며 오늘의 심법 덕목을 조용히 되새기십시오.',
         };
 
+  const donghakCrossAxis = `[${primaryVirtue.titleKo}] × [${twentyOneWordsMantraFocus.phraseKo}] × [${situationalDonghakAudit.focusTheme}] × [${temporalDonghakRhythm.yongdamWatchWindow.split(' — ')[0]}]`;
   const donghakSynthesisMatrix = {
     coreInsight: `[${primaryVirtue.titleKo}]와 주문 구절 [${twentyOneWordsMantraFocus.phraseKo}]가 ${situationalDonghakAudit.focusTheme}을 비춥니다.`,
     recommendedAction: `${sainyeocheonGuidance} (${situationalDonghakAudit.practiceFocus})`,
     cautionNotice: '조급함으로 외유기화의 흐름을 거스르거나 스스로의 내적 존엄을 가볍게 여기지 않도록 경계하십시오.',
+    donghakCrossAxis,
   };
 
   const ritualAction = `[${primaryVirtue.titleKo} · ${twentyOneWordsMantraFocus.phraseKo}] ${situationalDonghakAudit.practiceFocus}`;
@@ -261,7 +264,7 @@ export function formatDonghakCheondoismCheonjuPrompt(report: DonghakCheonjuRepor
     `- 질문 맥락 감사 (${report.situationalDonghakAudit.focusTheme}): ${report.situationalDonghakAudit.samjauiAlignmentNote} / 실천: ${report.situationalDonghakAudit.practiceFocus}`,
     `- KST 시공간 용담 리듬: ${report.temporalDonghakRhythm.yongdamWatchWindow} / ${report.temporalDonghakRhythm.seasonalGaebyeokTone}`,
     `  • 시공간 지침: ${report.temporalDonghakRhythm.temporalGuidance}`,
-    `- 동학 교차 매트릭스: 핵심(${report.donghakSynthesisMatrix.coreInsight}) | 실행(${report.donghakSynthesisMatrix.recommendedAction}) | 주의(${report.donghakSynthesisMatrix.cautionNotice})`,
+    `- 동학 교차 매트릭스: 핵심(${report.donghakSynthesisMatrix.coreInsight}) | 4중 교차 축(${report.donghakSynthesisMatrix.donghakCrossAxis}) | 실행(${report.donghakSynthesisMatrix.recommendedAction}) | 주의(${report.donghakSynthesisMatrix.cautionNotice})`,
     `- 사인여천(事人如天) 실천 지침: ${report.sainyeocheonGuidance}`,
     `- 실천 의례(Ritual Action): ${report.ritualAction}`,
     `- 성찰 초점(Reflection Focus): ${report.reflectionFocus}`,
