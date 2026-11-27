@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION = '2.2.0';
+export const EGYPTIAN_HERMETIC_CARTOUCHE_ENGINE_VERSION = '2.4.0';
 
 export type HermeticQuestionFocus = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -38,6 +38,7 @@ export interface EgyptianHermeticCartoucheReport {
     recommendedAction: string;
     cautionNotice: string;
     reflectiveQuestion: string;
+    cartoucheCrossAxis: string;
   };
   interpretiveBoundary: string;
   boundaryNotice: string;
@@ -275,6 +276,7 @@ export function calculateEgyptianHermeticCartouche(
   const guidance = buildHermeticGuidance(dominantAxis, questionFocus, cartouche.name);
   const temporalHermeticRhythm = getTemporalHermeticRhythm(kst);
   const trimmedQuestion = q.trim();
+  const cartoucheCrossAxis = `[${cartouche.name}] × [${secondaryCartouche.name}] × [${dominantAxis.toUpperCase()}] × [${questionFocus}]`;
   const hermeticSynthesisMatrix = {
     coreInsight: `[${cartouche.name}] ${triadHarmonyState}`,
     recommendedAction: guidance.practiceGuidance,
@@ -282,6 +284,7 @@ export function calculateEgyptianHermeticCartouche(
     reflectiveQuestion: trimmedQuestion
       ? `'${trimmedQuestion}'에서 ${cartouche.name}의 원형과 ${secondaryCartouche.name}의 균형이 비추는 가장 정직한 내면의 기준은 무엇인가요?`
       : `지금 내 삶의 중심에서 ${cartouche.name}의 빛으로 가장 먼저 정돈해야 할 한 가지는 무엇인가요?`,
+    cartoucheCrossAxis,
   };
   const interpretiveBoundary = '고대 이집트 헤르메스 카르투슈 관점은 점술적 예단이나 심리 진단이 아니라, 영혼의 균형과 실천을 비추는 상징적 성찰 렌즈입니다.';
   const boundaryNotice = '이는 고대 이집트 헤르메스주의 상징에 기반한 자기 성찰 참고일 뿐, 개인 점수·심리 진단·미래 예측이 아닙니다.';
@@ -309,6 +312,7 @@ export function calculateEgyptianHermeticCartouche(
    - 조언 요약: ${guidance.counselNote}
    - KST 시공간 리듬: ${temporalHermeticRhythm.nileWatchWindow} / ${temporalHermeticRhythm.seasonalSolarTone}
    - 교차 매트릭스: 핵심(${hermeticSynthesisMatrix.coreInsight}) | 실행(${hermeticSynthesisMatrix.recommendedAction}) | 성찰(${hermeticSynthesisMatrix.cautionNotice})
+   - 4중 교차 축: ${hermeticSynthesisMatrix.cartoucheCrossAxis}
    - 해석 경계: ${interpretiveBoundary}
 ======================================================================
 `.trim();

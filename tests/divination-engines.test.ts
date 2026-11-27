@@ -4526,9 +4526,11 @@ test('Egyptian Hermetic Cartouche Engine: calculates divine cartouche and qualit
   assert(rep.soulTriad.akhLuminousPurity >= 0 && rep.soulTriad.akhLuminousPurity <= 100);
   assert(rep.temporalHermeticRhythm.nileWatchWindow.length > 0);
   assert(rep.hermeticSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.hermeticSynthesisMatrix.cartoucheCrossAxis.includes(rep.primaryCartoucheName));
   const prompt = formatEgyptianHermeticCartouchePrompt(rep);
   assert(prompt.includes('고대 이집트 헤르메스 카르투슈 & 영혼 3위일체 상징 성찰 안내'));
   assert(prompt.includes('성찰 초점'));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes(rep.primaryCartoucheName));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
@@ -5560,6 +5562,7 @@ test('Persian Attar Seven Valleys Engine: calculates seven valleys passage, Simu
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(Boolean(rep.attarSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.attarSynthesisMatrix?.attarCrossAxis.includes(rep.dominantValley.nameKo)));
   assert(rep.reflectiveQuestion.includes('시무르그'));
   assert(rep.interpretiveBoundary.includes('문학적 비유'));
   const prompt = formatPersianAttarSevenValleysPrompt(rep);
@@ -5567,7 +5570,7 @@ test('Persian Attar Seven Valleys Engine: calculates seven valleys passage, Simu
   assert(prompt.includes(rep.dominantValley.nameKo));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
@@ -5869,6 +5872,7 @@ test('Norse Havamal Eighteen Galdr Engine: calculates eighteen runic charms, ygg
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(Boolean(rep.havamalSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.havamalSynthesisMatrix?.havamalCrossAxis.includes(rep.dominantGaldrCharm.norseTitle)));
   assert(rep.reflectiveQuestion.includes('협상'));
   assert(rep.interpretiveBoundary.includes('성찰용 비유'));
   const prompt = formatNorseHavamalEighteenGaldrPrompt(rep);
@@ -5877,7 +5881,7 @@ test('Norse Havamal Eighteen Galdr Engine: calculates eighteen runic charms, ygg
   assert(prompt.includes('보조 공명 주문'));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
