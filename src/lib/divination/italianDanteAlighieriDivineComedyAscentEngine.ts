@@ -10,12 +10,12 @@
  * 4. 천국(Paradiso)의 지복직관(Visio Beatifica): 베아트리체의 순수한 인도를 받아 우주의 조화와 영원한 빛에 눈뜨는 지혜의 도약.
  * 5. 태양과 별들을 움직이는 그 사랑(L'amor che move il sole e l'altre stelle): 모든 모순과 갈등을 감싸 안는 신성한 우주적 사랑과의 영적 합일.
  *
- * @version LUCKEY-DANTE-DIVINE-COMEDY-v2.0.0
+ * @version LUCKEY-DANTE-DIVINE-COMEDY-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ITALIAN_DANTE_COMEDY_VERSION = 'LUCKEY-DANTE-DIVINE-COMEDY-v2.3.0';
+export const ITALIAN_DANTE_COMEDY_VERSION = 'LUCKEY-DANTE-DIVINE-COMEDY-v2.4.0';
 
 export interface DanteTheme {
   themeKey: string;
@@ -58,6 +58,11 @@ export interface DanteAlighieriDivineComedyAscentResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  danteCrossAxis: {
+    themeAphorismPair: string;
+    ascentStage: string;
+    sourceAnchor: string;
   };
 }
 
@@ -192,6 +197,11 @@ export function calculateItalianDanteAlighieriDivineComedyAscent(
         : '그림자 직면과 연옥의 정화를 통해 별빛으로 오르는 국면',
     integratedAction: `${activeDanteTheme.practicalCounsel} (${focalDanteAphorism.actionGuidance})`,
   };
+  const danteCrossAxis = {
+    themeAphorismPair: `${activeDanteTheme.themeKey} ↔ ${focalDanteAphorism.aphorismKey}`,
+    ascentStage: describeDanteStage(Math.round((selvaOscuraWayfindingScore + purgatorioCleansingVirtueScore + paradisoLuminousClarityScore) / 3)).split('(')[0].trim(),
+    sourceAnchor: focalDanteAphorism.sourceContext,
+  };
 
   const ritualAction = `[${activeDanteTheme.themeTitleKo}] ${focalDanteAphorism.actionGuidance}`;
   const reflectionFocus = reflectiveQuestion;
@@ -216,6 +226,7 @@ export function calculateItalianDanteAlighieriDivineComedyAscent(
       philosophicalCounsel,
     },
     danteSynthesisMatrix,
+    danteCrossAxis,
   };
 }
 
@@ -244,6 +255,7 @@ export function formatDanteAlighieriDivineComedyAscentPrompt(res: DanteAlighieri
   if (res.danteSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스 [핵심 긴장: ${res.danteSynthesisMatrix.dominantTension} | 조율 상태: ${res.danteSynthesisMatrix.alignmentState}]`,
+      `- 신곡 순례 교차 축: ${res.danteCrossAxis.ascentStage} | ${res.danteCrossAxis.sourceAnchor}`,
       `- 통합 실천: ${res.danteSynthesisMatrix.integratedAction}`,
     );
   }

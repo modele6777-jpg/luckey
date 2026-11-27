@@ -51,7 +51,7 @@
 import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 
-export const KABBALAH_ENGINE_VERSION = 'LUCKEY-KB-v2.3.0';
+export const KABBALAH_ENGINE_VERSION = 'LUCKEY-KB-v2.4.0';
 
 export const KABBALAH_METHOD =
   '헤르메틱 카발라(황금여명 통용표) 생명나무 대응 산법: 10 세피로트·다트, 3대 기둥, 4개 세계(아칠루트 케테르·베리아 호크마~비나·예치라 헤세드~예소드·아시야 말쿠트), 22 경로(알레프~타브, 황금여명 원소·행성·별자리 및 타로 메이저 0~21 배속)에 생년월일 수비학(피타고라스 라이프 패스 1~9·마스터 11/22/33, 생일수 1~9)과 타로 탄생 카드(그리어 방식: 월+일+연 → 22 이하 축약, 22=바보)를 대응';
@@ -367,6 +367,11 @@ export interface KabbalahResult {
     recommendedAction: string;
     cautionNotice: string;
   };
+  kabbalahCrossAxis?: {
+    sephirahPathPair: string;
+    worldPillarAnchor: string;
+    tarotKey: string;
+  };
   boundaryNotice?: string;
   interpretiveBoundary?: string;
   ritualAction?: string;
@@ -631,6 +636,11 @@ export function calculateKabbalah(params: {
       recommendedAction: tipherethAlignment.solarHeartGuidance,
       cautionNotice: '자비(확장)와 엄격(수축) 중 한쪽으로 치우치지 않도록 중도(티페레트)를 의식하십시오.',
     };
+    const kabbalahCrossAxis = {
+      sephirahPathPair: `${lifePathSephirah.name}(${personalitySephirah.name}) ↔ 제${soulPath.number}경로 ${soulPath.letterName}`,
+      worldPillarAnchor: `${dominantWorld.name}(${dominantWorld.korean}) · ${'pillar' in lifePathSephirah ? lifePathSephirah.pillar : '심연 다트'}`,
+      tarotKey: `${soulPath.tarotNumber}번 ${soulPath.tarotName}(${soulPath.tarotTranslit})`,
+    };
 
     const reflectionFocus = `오늘 '${situationalKabbalahAudit.focusTheme}'에서 자비와 엄격의 균형을 맞추어 한 걸음 옮길 실천은 무엇인가요?`;
     const reflectiveQuestion = question
@@ -673,6 +683,7 @@ export function calculateKabbalah(params: {
       situationalKabbalahAudit,
       temporalKabbalahRhythm,
       kabbalahSynthesisMatrix,
+      kabbalahCrossAxis,
       boundaryNotice: '본 결과는 헤브라이 카발라 생명나무와 생년월일 게마트리아 수리에 기반한 정성적 성찰 안내이며, 확정적 예언이 아닙니다.',
       interpretiveBoundary: '전통 유대 카발라의 계산법이 아니라, 헤르메틱 카발라(황금여명) 대응표에 생년월일 수비학과 타로 탄생 카드를 얹은 현대식 상징 해석이다. 숫자 계산은 표준 방식대로 정확하지만, 어느 세피라·경로에 대응시키느냐는 이 전통의 약속이다. 확정적 예언이 아니다.',
       ritualAction: `[${lifePathSephirah.name} · 제${soulPath.number}경로 ${soulPath.tarotName}] ${tipherethAlignment.solarHeartGuidance}`,
@@ -737,6 +748,9 @@ export function formatKabbalahPrompt(result: KabbalahResult): string {
   }
   if (result.kabbalahSynthesisMatrix) {
     lines.push(`- 카발라 교차 매트릭스: 핵심(${result.kabbalahSynthesisMatrix.coreInsight}) | 실행(${result.kabbalahSynthesisMatrix.recommendedAction}) | 주의(${result.kabbalahSynthesisMatrix.cautionNotice})`);
+  }
+  if (result.kabbalahCrossAxis) {
+    lines.push(`- 생명나무 교차 축: ${result.kabbalahCrossAxis.sephirahPathPair} | ${result.kabbalahCrossAxis.worldPillarAnchor} | ${result.kabbalahCrossAxis.tarotKey}`);
   }
   if (result.ritualAction) {
     lines.push(`- 실천 의례(Ritual Action): ${result.ritualAction}`);

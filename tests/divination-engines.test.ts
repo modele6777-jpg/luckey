@@ -1925,6 +1925,8 @@ test('Kabbalah engine: determinism, null-safe fallback and prompt formatting', (
   assert(prompt.includes('엄격(수축)'));
   assert(prompt.includes('예치라'));
   assert(prompt.includes('KST'));
+  assert(Boolean(r1.kabbalahCrossAxis?.sephirahPathPair && r1.kabbalahCrossAxis?.worldPillarAnchor && r1.kabbalahCrossAxis?.tarotKey));
+  assert(prompt.includes('생명나무 교차 축'));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
   assert(prompt.includes('게마트리아 결과는 입력한 생년월일과 전통적 대응 규칙을 적용한 참고 자료'));
   assert.equal(formatKabbalahPrompt(skipped), '');
@@ -2551,6 +2553,7 @@ test('Karmic Nodes Engine: 카르믹 노드 축 및 영혼 진화 궤적 검증'
   assert(res.lilith.rawPower.length > 0);
   assertKstTimestamp(res.calculatedAtKst);
   assert(Boolean(res.karmicNodesSynthesisMatrix?.integratedAction));
+  assert(Boolean(res.nodesCrossAxis?.northSouthPair && res.nodesCrossAxis?.chironLilithBridge && res.nodesCrossAxis?.evolutionStage));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatKarmicNodesPrompt(res);
@@ -2558,7 +2561,7 @@ test('Karmic Nodes Engine: 카르믹 노드 축 및 영혼 진화 궤적 검증'
   assert(prompt.includes('카르믹 노드 축'));
   assert(prompt.includes('키론'));
   assert(prompt.includes(res.ritualAction));
-  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('노드 진화 교차 축') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -7756,11 +7759,12 @@ test('Dante Alighieri Divine Comedy Ascent Engine: calculates Wayfinding, Infern
   assert(rep.activeDanteTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.danteSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.danteCrossAxis?.themeAphorismPair && rep.danteCrossAxis?.ascentStage && rep.danteCrossAxis?.sourceAnchor));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatDanteAlighieriDivineComedyAscentPrompt(rep);
   assert(prompt.includes('단테 알리기에리 《신곡》 영혼의 상승 & 지옥·연옥·천국 지혜 지표'));
   assert(prompt.includes(rep.activeDanteTheme.themeTitleKo));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('신곡 순례 교차 축'));
   assert(prompt.includes(rep.ritualAction));
   assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
