@@ -5,7 +5,7 @@
  * 12대 영웅적 통과의례 및 영혼 불멸 탐색 관문을 현대 심리 분석과 사주·운명학적 맥락에 연동합니다.
  */
 
-export const SUMERIAN_GILGAMESH_TRIALS_ENGINE_VERSION = 'LUCKEY-GILGAMESH-TRIALS-v2.3.0';
+export const SUMERIAN_GILGAMESH_TRIALS_ENGINE_VERSION = 'LUCKEY-GILGAMESH-TRIALS-v2.4.0';
 
 export type GilgameshQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -40,6 +40,7 @@ export interface GilgameshTrialsReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    gilgameshCrossAxis: string;
   };
 }
 
@@ -238,10 +239,12 @@ export function calculateSumerianGilgameshTrials(params: {
     '길가메시 서사시 12관문 원형은 삶의 전환기와 내면의 성장을 비추는 서사적·상징적 관점이며, 단정적 미래 예언이나 의학·법률·재무 결정을 대체하지 않습니다.';
   const ritualAction = `[제${activeTrial.gateNumber}관문 · ${activeTrial.cosmicElement}] ${activeTrial.heroicBreakthroughAction}`;
   const reflectionFocus = `길가메시 12관문(${activeTrial.nameKo}) — ${activeTrial.nameAkkadian}`;
+  const gilgameshCrossAxis = `[제${activeTrial.gateNumber}관문 ${activeTrial.nameKo}] × [제${secondaryTrial.gateNumber}관문 ${secondaryTrial.nameKo}] × [${activeTrial.cosmicElement}] × [${questionTopic}]`;
   const gilgameshSynthesisMatrix = {
     dominantTension: `제${activeTrial.gateNumber}관문(${activeTrial.nameKo}) ↔ ${activeTrial.egoShadowTrap}`,
     alignmentState: `${immortalPhase} · ${activeTrial.cosmicElement} 원형 · 보조 관문 제${secondaryTrial.gateNumber}관문(${secondaryTrial.nameKo}) · ${questionTopic}`,
     integratedAction: `${activeTrial.heroicBreakthroughAction}${question ? ` [질문 맥락: ${question}]` : ''}`,
+    gilgameshCrossAxis,
   };
 
   return {
@@ -288,6 +291,7 @@ export function formatSumerianGilgameshTrialsPrompt(report: GilgameshTrialsRepor
   if (report.gilgameshSynthesisMatrix) {
     lines.push(
       `- **교차 매트릭스**: [핵심 긴장: ${report.gilgameshSynthesisMatrix.dominantTension} | 조율 상태: ${report.gilgameshSynthesisMatrix.alignmentState}]`,
+      `- **4중 교차 축**: ${report.gilgameshSynthesisMatrix.gilgameshCrossAxis}`,
       `  - 통합 실천: ${report.gilgameshSynthesisMatrix.integratedAction}`,
     );
   }

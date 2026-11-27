@@ -5,7 +5,7 @@
  * 비프로스트(Bifrost) 의식의 다리를 현대인의 라이프스타일 에너지 축 및 결단 체계에 연동합니다.
  */
 
-export const NORDIC_YGGDRASIL_NINE_REALMS_ENGINE_VERSION = 'LUCKEY-YGGDRASIL-NINE-REALMS-v2.3.0';
+export const NORDIC_YGGDRASIL_NINE_REALMS_ENGINE_VERSION = 'LUCKEY-YGGDRASIL-NINE-REALMS-v2.4.0';
 
 export type YggdrasilQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -43,6 +43,7 @@ export interface YggdrasilRealmsReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    yggdrasilCrossAxis: string;
   };
 }
 
@@ -225,10 +226,12 @@ export function calculateNordicYggdrasilRealms(params: {
   const interpretiveBoundary =
     '이 리포트는 고대 북유럽 세계수 위그드라실 9대 영역의 상징 체계를 통해 내면의 균형과 행동 방향을 성찰하는 참고용 비유이며, 확정된 미래 예언이나 의학·법률·재무적 결정을 대체하지 않습니다.';
 
+  const yggdrasilCrossAxis = `[${dominantRealm.nameEn}] × [${secondaryRealm.nameEn}] × [${shadowTensionRealm.nameEn}] × [${questionTopic}]`;
   const yggdrasilSynthesisMatrix = {
     dominantTension: `${dominantRealm.nameKo} ↔ ${shadowTensionRealm.nameKo} (${yggdrasilPhase})`,
     alignmentState: describeYggdrasilStage(composite),
     integratedAction: `${dominantRealm.realmActionRule} [그림자 경계: ${shadowTensionRealm.shadowChallenge}]${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+    yggdrasilCrossAxis,
   };
 
   return {
@@ -276,6 +279,7 @@ export function formatNordicYggdrasilRealmsPrompt(report: YggdrasilRealmsReport)
   if (report.yggdrasilSynthesisMatrix) {
     lines.push(
       `- **교차 매트릭스**: [핵심 긴장: ${report.yggdrasilSynthesisMatrix.dominantTension} | 조율 상태: ${report.yggdrasilSynthesisMatrix.alignmentState}]`,
+      `- **4중 교차 축**: ${report.yggdrasilSynthesisMatrix.yggdrasilCrossAxis}`,
       `- **통합 실천**: ${report.yggdrasilSynthesisMatrix.integratedAction}`,
     );
   }

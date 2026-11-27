@@ -4827,6 +4827,7 @@ test('Sumerian Gilgamesh Trials Engine: calculates 12 trials and heroic resilien
   assert(rep.immortalPhase.length > 0 && rep.shadowWarning.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.gilgameshSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.gilgameshSynthesisMatrix?.gilgameshCrossAxis.includes(rep.activeTrial.nameKo)));
   assert(rep.heroicResilienceScore >= 0 && rep.heroicResilienceScore <= 100);
   assert(rep.immortalityWisdomIndex >= 0 && rep.immortalityWisdomIndex <= 100);
   assert(rep.activeTrial.nameKo.length > 0);
@@ -4841,7 +4842,7 @@ test('Sumerian Gilgamesh Trials Engine: calculates 12 trials and heroic resilien
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100'));
 });
 
@@ -4879,6 +4880,7 @@ test('Nordic Yggdrasil Nine Realms Engine: calculates dominant realm and Bifrost
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(Boolean(rep.yggdrasilSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.yggdrasilSynthesisMatrix?.yggdrasilCrossAxis.includes(rep.dominantRealm.nameEn)));
   assert(rep.reflectiveQuestion.includes('고민'));
   assert(rep.interpretiveBoundary.includes('참고용 비유'));
   const prompt = formatNordicYggdrasilRealmsPrompt(rep);
@@ -4888,7 +4890,7 @@ test('Nordic Yggdrasil Nine Realms Engine: calculates dominant realm and Bifrost
   assert(prompt.includes('과잉·경계 점검'));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
@@ -4927,6 +4929,7 @@ test('Persian Mithraic Seven Spheres Engine: calculates Mithraic grade and Sol I
   assert(rep.ritualAction.length > 0);
   assert(rep.reflectionFocus.length > 0);
   assert(Boolean(rep.mithraicSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.mithraicSynthesisMatrix?.mithraicCrossAxis.includes(rep.activeGrade.gradeTitleKo)));
   assert(rep.reflectiveQuestion.includes('결단'));
   assert(rep.interpretiveBoundary.includes('입문 비유'));
   const prompt = formatPersianMithraicSpheresPrompt(rep);
@@ -4936,7 +4939,7 @@ test('Persian Mithraic Seven Spheres Engine: calculates Mithraic grade and Sol I
   assert(prompt.includes('광명 입문 국면') && prompt.includes('과잉 경계'));
   assert(prompt.includes('실천 의례'));
   assert(prompt.includes('성찰 초점'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
