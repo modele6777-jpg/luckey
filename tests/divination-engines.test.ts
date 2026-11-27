@@ -5165,6 +5165,7 @@ test('Taoist Shangqing 24 Spirits Engine: calculates three dantians and active t
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.shangqingSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.shangqingSynthesisMatrix?.shangqingCrossAxis.includes(rep.activeTrueSpirit.nameKo)));
   assert(rep.shangqingAttunementScore >= 0 && rep.shangqingAttunementScore <= 100);
   assert(rep.spiritualShieldRate >= 0 && rep.spiritualShieldRate <= 100);
   assert(rep.activeTrueSpirit.nameKo.length > 0);
@@ -5178,7 +5179,7 @@ test('Taoist Shangqing 24 Spirits Engine: calculates three dantians and active t
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -5360,6 +5361,7 @@ test('Sumerian Inanna Underworld Descent Engine: calculates seven gates strippin
   assert.equal(rep.engineVersion, SUMERIAN_INANNA_UNDERWORLD_DESCENT_ENGINE_VERSION);
   assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.inannaSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.inannaSynthesisMatrix?.inannaCrossAxis.includes(rep.currentCrucialGate.gateName)));
   assert(rep.interpretiveBoundary.length > 0);
   assert.equal(rep.gates.length, 7);
   assert(rep.underworldSevenGatesPassRate >= 0 && rep.underworldSevenGatesPassRate <= 100);
@@ -5369,7 +5371,7 @@ test('Sumerian Inanna Underworld Descent Engine: calculates seven gates strippin
   const prompt = formatSumerianInannaUnderworldDescentPrompt(rep);
   assert(prompt.includes('고대 수메르 이난나 명계 하강 7대 관문 & 부활 실측 데이터'));
   assert(prompt.includes(rep.currentCrucialGate.gateName));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100'));
 });
 
@@ -5911,11 +5913,12 @@ test('Chonggamnok Ten Sanctuaries Engine: calculates geomantic sanctuaries, gong
   assert(rep.interpretiveBoundary.length > 0);
   assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.chonggamnokSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.chonggamnokSynthesisMatrix?.chonggamnokCrossAxis.includes(rep.dominantSanctuary.nameKo)));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatChonggamnokPrompt(rep);
   assert(prompt.includes('조선 비전 정감록 10승지 영맥 & 보신 피난처 실측 데이터'));
   assert(prompt.includes(rep.dominantSanctuary.nameKo));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));

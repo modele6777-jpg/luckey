@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CHONGGAMNOK_SANCTUARIES_ENGINE_VERSION = '2.2.0';
+export const CHONGGAMNOK_SANCTUARIES_ENGINE_VERSION = '2.4.0';
 
 export type ChonggamnokQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -62,6 +62,7 @@ export interface ChonggamnokReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    chonggamnokCrossAxis: string;
   };
   ritualAction: string;
   reflectionFocus: string;
@@ -298,6 +299,7 @@ export function calculateChonggamnokTenSanctuaries(
       spiritualSanctuaryShield) /
       4,
   );
+  const chonggamnokCrossAxis = `[${dominantSanctuary.nameKo}] × [${dominantSanctuary.mountainVein}] × [${temporalSanctuaryRhythm.phaseLabel}] × [${questionTopic}]`;
   const chonggamnokSynthesisMatrix = {
     dominantTension: `${dominantSanctuary.nameKo} ↔ ${temporalSanctuaryRhythm.phaseLabel}`,
     alignmentState: describeChonggamnokStage(
@@ -307,6 +309,7 @@ export function calculateChonggamnokTenSanctuaries(
       '흩어진 기운을 거두어 나만의 고요한 피난처를 다지는 준비기',
     ),
     integratedAction: `${ritualByTopic[questionTopic]}${question?.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+    chonggamnokCrossAxis,
   };
 
   const ritualAction = `[${dominantSanctuary.nameKo}] ${ritualByTopic[questionTopic]}`;
@@ -360,6 +363,7 @@ export function formatChonggamnokPrompt(report: ChonggamnokReport): string {
   if (report.chonggamnokSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스 [핵심 긴장: ${report.chonggamnokSynthesisMatrix.dominantTension} | 조율 상태: ${report.chonggamnokSynthesisMatrix.alignmentState}]`,
+      `- 4중 교차 축: ${report.chonggamnokSynthesisMatrix.chonggamnokCrossAxis}`,
       `- 통합 실천: ${report.chonggamnokSynthesisMatrix.integratedAction}`,
     );
   }

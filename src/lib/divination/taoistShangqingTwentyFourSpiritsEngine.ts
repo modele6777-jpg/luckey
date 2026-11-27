@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAOIST_SHANGQING_TWENTY_FOUR_SPIRITS_ENGINE_VERSION = '2.2.0';
+export const TAOIST_SHANGQING_TWENTY_FOUR_SPIRITS_ENGINE_VERSION = '2.4.0';
 
 function formatShangqingKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -65,6 +65,7 @@ export interface TaoistShangqingTwentyFourSpiritsReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    shangqingCrossAxis: string;
   };
 }
 
@@ -183,10 +184,12 @@ export function calculateTaoistShangqingTwentyFourSpirits(options?: {
     : `${activeTrueSpirit.dantianAffinity}의 기운을 밝히며 5분간 존사(存思)를 실천할 때, 오늘 마음속에서 가장 먼저 가라앉히고 싶은 소음은 무엇입니까?`;
   const interpretiveBoundary =
     '도홍경 《진고》 상청파 24진신과 삼단전 존사(存思) 상징은 내면의 집중과 정서적 평정을 돕기 위한 전통 관조 은유이며, 단정적 미래 예측이나 의학적·영적 처방을 대체하지 않습니다.';
+  const shangqingCrossAxis = `[${activeTrueSpirit.nameKo}] × [${secondaryTrueSpirit.nameKo}] × [${upperNiwan.state}/${middleJiangGong.state}/${lowerQihai.state}] × [${activeTrueSpirit.dantianAffinity}]`;
   const shangqingSynthesisMatrix = {
     dominantTension: `상단전(${upperNiwan.state}) ↔ 중단전(${middleJiangGong.state}) ↔ 하단전(${lowerQihai.state})`,
     alignmentState: `주재 진신: ${activeTrueSpirit.nameKo} · 보조 교차: ${secondaryTrueSpirit.nameKo} (${activeTrueSpirit.dantianAffinity})`,
     integratedAction: `${activeTrueSpirit.contemplationMantra}${question ? ` [질문 맥락: ${question}]` : ''}`,
+    shangqingCrossAxis,
   };
 
   return {
@@ -213,7 +216,7 @@ export function calculateTaoistShangqingTwentyFourSpirits(options?: {
 
 export function formatTaoistShangqingTwentyFourSpiritsPrompt(rep: TaoistShangqingTwentyFourSpiritsReport): string {
   const matrixLine = rep.shangqingSynthesisMatrix
-    ? `\n· 상청 교차 매트릭스: 핵심 긴장(${rep.shangqingSynthesisMatrix.dominantTension}) · 조율 상태(${rep.shangqingSynthesisMatrix.alignmentState}) · 통합 실천(${rep.shangqingSynthesisMatrix.integratedAction})`
+    ? `\n· 상청 교차 매트릭스: 핵심 긴장(${rep.shangqingSynthesisMatrix.dominantTension}) · 조율 상태(${rep.shangqingSynthesisMatrix.alignmentState}) · 4중 교차 축(${rep.shangqingSynthesisMatrix.shangqingCrossAxis}) · 통합 실천(${rep.shangqingSynthesisMatrix.integratedAction})`
     : '';
   return `[고대 중국 도홍경(陶弘景) 진고(眞誥) 상청파(上淸派) 24성도 존사(存思) 통령 실측 데이터]
 · 엔진 버전: v${rep.engineVersion} | 기준 시각: ${rep.calculatedAtKst}
