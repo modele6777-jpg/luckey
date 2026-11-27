@@ -73,22 +73,23 @@ export function createOrbToolExecutor(options: {
 
   async function runTool(toolId: string, reason: string, dice = false): Promise<Record<string, unknown>> {
     const meta = ORB_TOOL_BY_ID.get(toolId);
-    if (!meta) return { ok: false, error: 'unknown_tool', message: '없는 도구입니다. 목록에 있는 도구만 쓰세요.' };
+    // 마스터 루시는 사주와 타로만 본다 — 다른 도구 id는 목록에 없다.
+    if (!meta) return { ok: false, error: 'unknown_tool', message: '마스터 루시는 사주와 타로만 봅니다. 사주는 run_divination_tool(tool: "saju"), 카드는 open_tarot_shuffle로 부르세요.' };
     const cacheKey = dice ? 'iching:dice' : toolId;
     const cached = cache.get(cacheKey);
     if (cached) return { ...cached, cached: true };
     const pending = inFlight.get(cacheKey);
     if (pending) return { ...await pending, cached: true };
     if (callsThisTurn >= ORB_MAX_CALLS_PER_TURN) {
-      return { ok: false, error: 'turn_limit', message: '이번 질문에는 도구를 충분히 썼습니다. 지금 있는 결과로 상담을 이어 가세요.' };
+      return { ok: false, error: 'turn_limit', message: '이번 질문에는 사주를 충분히 봤습니다. 지금 있는 결과와 카드로 상담을 이어 가세요.' };
     }
     if (cache.size + inFlight.size >= ORB_MAX_TOOLS_PER_SESSION) {
-      return { ok: false, error: 'session_limit', message: '이번 상담에서는 도구를 충분히 썼습니다. 이미 받은 결과로 종합하세요.' };
+      return { ok: false, error: 'session_limit', message: '이번 상담에서는 사주를 충분히 봤습니다. 이미 받은 계산값으로 종합하세요.' };
     }
     if (meta.needs === 'birthdate' && !hasBirthdate()) {
       return {
         ok: false, error: 'needs_birthdate', tool: meta.name,
-        message: '생년월일이 없어 계산하지 못했습니다. 마이 페이지에 생년월일을 넣으면 볼 수 있다고 안내하고, 생년월일 없이 되는 도구(주역·육임·기문·태을·타로)나 대화로 이어 가세요.',
+        message: '생년월일이 없어 사주를 계산하지 못했습니다. 마이 페이지에 생년월일을 넣으면 원국·대운까지 볼 수 있다고 안내하고, 지금은 타로와 대화로 이어 가세요.',
       };
     }
     callsThisTurn += 1;
@@ -126,7 +127,7 @@ export function createOrbToolExecutor(options: {
         ...(calculated ? { cards: cards.buildKnowledgeCards([envelope]) } : {}),
         calculatedAtKst: report.calculatedAtKst,
       };
-      if (!calculated) result.message = '이 도구는 지금 계산되지 않았습니다. 계산된 것처럼 말하지 말고 다른 방법으로 이어 가세요.';
+      if (!calculated) result.message = '사주가 지금 계산되지 않았습니다. 계산된 것처럼 말하지 말고 카드와 대화로 이어 가세요.';
       cache.set(cacheKey, result);
       log.push({ tool: toolId, status: String(result.status), ms: performance.now() - started });
       options.events?.onToolEnd?.(toolId, calculated);
@@ -134,7 +135,7 @@ export function createOrbToolExecutor(options: {
     } catch {
       log.push({ tool: toolId, status: 'error', ms: performance.now() - started });
       options.events?.onToolEnd?.(toolId, false);
-      return { ok: false, error: 'engine_error', tool: meta.name, message: '계산 중 오류가 났습니다. 계산값 없이 솔직하게 말하고 대화로 이어 가세요.' };
+      return { ok: false, error: 'engine_error', tool: meta.name, message: '사주 계산 중 오류가 났습니다. 계산값 없이 솔직하게 말하고 카드와 대화로 이어 가세요.' };
     }
   }
 
@@ -157,7 +158,7 @@ export function createOrbToolExecutor(options: {
     async execute(call: OrbFunctionCall): Promise<Record<string, unknown>> {
       const args = call.args || {};
       const reason = typeof args.reason === 'string' ? args.reason.slice(0, 200) : '';
-      if (call.name === ORB_FN_RUN_TOOL) return runTool(String(args.tool || ''), reason, args.tool === 'iching' && args.ichingMethod === 'dice');
+      if (call.name === ORB_FN_RUN_TOOL) return runTool(String(args.tool || ''), reason, false);
       if (call.name === ORB_FN_TAROT) {
         const state = options.events?.openTarot?.() || { opened: false };
         if (state.alreadyPicked) return { ok: true, alreadyPicked: state.alreadyPicked, message: '이번 상담의 카드는 이미 뽑았습니다. 그 세 장으로 이어 가세요.' };

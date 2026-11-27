@@ -7,6 +7,7 @@ import * as engine from '../src/lib/divination/deterministicEngine.ts';
 import * as slim from '../src/lib/divination/promptSlim.ts';
 import * as cards from '../src/lib/divination/knowledge/index.ts';
 
+const profile = { basic: { birthdate: '1990-05-15', birthtime: '14:30', lunarSolar: 'solar', gender: 'female', birthCity: '서울' } } as any;
 const call = (tool: string, reason = '') => ({ name: ORB_FN_RUN_TOOL, args: { tool, reason } });
 
 test('warmup shares the same pending modules and repeated calls perform one calculation', async () => {
@@ -24,10 +25,10 @@ test('warmup shares the same pending modules and repeated calls perform one calc
       } }, slim, cards };
     },
   };
-  const executor = createOrbToolExecutor({ loader });
+  const executor = createOrbToolExecutor({ profile, loader });
   const warmup = executor.prewarm();
-  const first = executor.execute(call('iching'));
-  const repeated = executor.execute(call('iching'));
+  const first = executor.execute(call('saju'));
+  const repeated = executor.execute(call('saju'));
   assert.equal(loads, 1);
   release();
   await warmup;
@@ -38,12 +39,12 @@ test('warmup shares the same pending modules and repeated calls perform one calc
 
 test('a failed warmup does not poison later counseling', async () => {
   let tries = 0;
-  const executor = createOrbToolExecutor({ loader: { load: async () => {
+  const executor = createOrbToolExecutor({ profile, loader: { load: async () => {
     if (++tries === 1) throw new Error('offline');
     return { engine, slim, cards };
   } } });
   await executor.prewarm();
-  assert.equal((await executor.execute(call('iching'))).ok, true);
+  assert.equal((await executor.execute(call('saju'))).ok, true);
   assert.equal(tries, 2);
 });
 
@@ -68,6 +69,7 @@ test('voice fixtures get grounded facts or a clear missing-data result', async (
   const rules = buildOrbMasterRules({ birthdate: true, birthtime: false });
   assert.match(rules, /건강 진단·법적 판단·투자 결정을 대신하지/);
   assert.match(rules, /결과를 보장하지/);
-  assert.match(rules, /결과에 없는 별, 괘, 카드, 숫자를 지어내지/);
+  assert.match(rules, /결과에 없는 별, 괘, 카드, 숫자, 신살을 지어내지/);
+  assert.match(rules, /사주와 타로, 둘뿐/);
   assert.match(rules, /해볼 수 있는 행동 하나/);
 });

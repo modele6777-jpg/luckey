@@ -28,7 +28,7 @@ function buildOrbReportRequestContext(record: string): string {
 /** Orb is a page, not a popup. Only this route is active while it is open. */
 export function OrbPage() {
   const { sharedState, firebaseUser, updateSharedState } = useApp();
-  // 상담을 마치면 루시 채팅으로 넘어가지 않고 오브 메인화면(마스터 선택)으로 새로 돌아간다.
+  // 상담을 마치면 루시 채팅으로 넘어가지 않고 오브 메인화면(마스터 루시와 바로 상담)으로 새로 돌아간다.
   const [resetKey, setResetKey] = useState(0);
   // 단골 기억(지난 상담 기록)은 계정별로 나눠 둔다.
   const account = firebaseUser?.uid || safeSessionStorage.getItem('prism_auth_uid') || 'device';
@@ -163,11 +163,12 @@ export function OrbPage() {
           // 화면은 루시 채팅으로 옮기지 않는다 — 사용자가 채팅을 열 때 루시가 요약 보고서를 쓴다.
           // (부적은 채팅에 남기지 않는다.)
           if (summary) {
-            const masterName = /마스터:\s*(.+)/.exec(summary)?.[1]?.trim() || '오브';
+            const raw = /마스터:\s*(.+)/.exec(summary)?.[1]?.trim() || '오브';
+            const masterName = /마스터/.test(raw) ? raw : `${raw} 마스터`;
             setPendingLucyContext(buildOrbReportRequestContext(summary));
-            queueLucyAction({ prompt: `🔮 오브에서 ${masterName} 마스터와 상담을 마쳤어. 상담 내용을 요약 보고서로 정리해 줘.` });
+            queueLucyAction({ prompt: `🔮 오브에서 ${masterName}와 상담을 마쳤어. 상담 내용을 요약 보고서로 정리해 줘.` });
           }
-          // 닫기·채팅에 남기기 모두 오브 메인화면(phase === 'pick')으로 돌아간다. /chat이나 /로 나가지 않는다.
+          // 닫기·채팅에 남기기 모두 오브 메인화면(마스터 루시와 바로 상담)으로 돌아간다. /chat이나 /로 나가지 않는다.
           setResetKey(key => key + 1);
         }}
       />

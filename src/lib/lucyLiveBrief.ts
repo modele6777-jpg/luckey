@@ -34,27 +34,27 @@ ${cardText}`;
 }
 
 /**
- * 🔮 오브 통합 마스터: 마스터 한 명이 15가지 도구를 함수로 불러 쓴다.
- * 말투는 고른 목소리에서 가져오고, 지금 선택된 상담 대상의 사주 데이터(profile)를 함께 넣는다.
+ * 🔮 오브의 마스터 루시: 사주 원국·대운과 손님이 뽑은 카드 세 장을 교차해 풀이한다.
+ * 말투는 마스터의 페르소나에서, 규칙은 buildOrbMasterRules에서, 사주는 지금 선택된 대상의 정밀 자료에서.
  */
 export function buildOrbLiveInstruction(nickname: string, persona = '', greet = '', notes = '', rules = '', profile = ''): string {
   const name = nickname.replace(/[^\p{L}\p{N} _.-]/gu, '').trim().slice(0, 24);
   const who = name
-    ? `당신은 ${name}님과 목소리로 상담하는 오브의 마스터입니다. 한국어 존댓말만 쓰고, 호칭은 ${name}님입니다.`
-    : '당신은 사용자와 목소리로 상담하는 오브의 마스터입니다. 한국어 존댓말만 쓰고, 사용자의 이름을 모르니 친구님·고객님·손님 같은 호칭으로 부르지 말고 호칭 없이 말하세요.';
-  const personaText = clip(persona, 240);
-  const greetText = clip(greet, 180);
+    ? `당신은 ${name}님과 목소리로 상담하는 오브의 마스터 루시입니다. 한국어 존댓말만 쓰고, 호칭은 ${name}님입니다.`
+    : '당신은 사용자와 목소리로 상담하는 오브의 마스터 루시입니다. 한국어 존댓말만 쓰고, 사용자의 이름을 모르니 친구님·고객님·손님 같은 호칭으로 부르지 말고 호칭 없이 말하세요.';
+  const personaText = clip(persona, 320);
+  const greetText = clip(greet, 200);
   const keepLines = (value: string, max: number) => String(value || '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, ' ').trim().slice(0, max);
   const notesText = keepLines(notes, 1400);
-  const rulesText = keepLines(rules, 2400);
-  // 이번 상담 대상(본인 또는 궁합 상대)의 만세력·사주. 도구 결과와 함께 풀이의 근거가 된다.
-  const profileText = keepLines(profile, 4000);
+  const rulesText = keepLines(rules, 2600);
+  // 이번 상담 대상(본인 또는 궁합 상대)의 원국·십신·용신·대운·세운·월운·일진·신살·공망·합충.
+  const profileText = keepLines(profile, 6000);
   return `${who}
 사용자는 한국어로 말합니다. 사용자의 목소리는 영어처럼 들려도 한국어 발화로 알아듣고, 영어로 답하지 마세요.
 ${personaText ? `당신의 성격과 말투: ${personaText}
 ` : ''}${rulesText ? `${rulesText}
 ` : ''}${profileText ? `${profileText}
-이 사주는 지금 선택된 상담 대상자의 것입니다. 위에 없는 사주·생년월일을 지어내지 말고, 도구 결과가 이 사주와 다르면 도구 결과를 따르세요.
+이 사주는 지금 선택된 상담 대상자의 것입니다. 위에 없는 사주·생년월일·신살을 지어내지 말고, 도구 결과가 이 사주와 다르면 도구 결과를 따르세요. 카드 세 장은 자리(과거·지금·앞으로)대로 읽고, 카드의 원소·메이저/마이너·수비학을 이 사주의 오행·용신·대운과 교차해 풀이하세요.
 ` : ''}${notesText ? `${notesText}
 ` : ''}${greetText ? `상담이 열리면 사용자가 말씀하시기 전에 먼저 인사하세요. 인사는 두 문장을 넘기지 마세요. 말투는 이렇습니다. ${greetText}
 ` : ''}한 번에 네 문장에서 여섯 문장 정도 말씀으로 풀고, 목록이나 기호는 말하지 마세요.

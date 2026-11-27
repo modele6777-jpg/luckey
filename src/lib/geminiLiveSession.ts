@@ -524,7 +524,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
               ? buildOrbLiveInstruction(handlers.nickname || '', handlers.orb.persona, handlers.greet || '', handlers.notes || '', handlers.orb.rules, handlers.orb.profile || '')
               : buildLucyLiveInstruction(handlers.nickname || '', handlers.chart || '', handlers.cards || '', handlers.focus || '', handlers.greet || '', handlers.notes || '') }],
           },
-          // 🔮 오브 마스터는 15가지 도구를 함수로 부른다.
+          // 🔮 마스터 루시는 사주 계산과 타로 카드 두 함수만 쓴다.
           ...(handlers.orb ? { tools: [{ functionDeclarations: orbFunctionDeclarations() }] } : {}),
         },
       }));

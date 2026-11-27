@@ -1415,21 +1415,56 @@ input[type="file"].lucy-orb-attach-input { display: none; }
 .lucy-orb-header .lucy-orb-bed:active { transform: scale(.95); }
 .lucy-orb-header .lucy-orb-bed[aria-pressed="false"] { color: rgba(255,255,255,.72); }
 .lucy-orb-header .lucy-orb-bed svg { flex: 0 0 auto; }
-.lucy-orb-masters { margin-top: 16px; display: grid; gap: 8px; width: min(420px, 100%); }
-html.duo-unfolded-mode .lucy-orb-masters { grid-template-columns: 1fr 1fr; }
-.lucy-orb-masters button:not(.lucy-die) {
-  text-align: left;
-  border: 1px solid rgba(243, 207, 134, .35);
-  background: linear-gradient(160deg, rgba(255, 255, 255, .12), rgba(120, 140, 255, .08));
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #fbf7ff;
-  border-radius: 20px;
-  padding: 11px 14px;
-  transition: transform .3s var(--orb-spring), background .3s ease;
+/* 사주·타로 통합 마스터 '루시' 한 명 — 고르는 카드 없이 바로 상담한다. */
+.lucy-orb-master-hero {
+  margin-top: 14px;
+  width: min(420px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 15px 18px 13px;
+  border: 1px solid rgba(243, 207, 134, .4);
+  border-radius: 24px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, .14), rgba(120, 140, 255, .1));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 18px 40px rgba(4, 2, 14, .35), inset 0 1px 0 rgba(255, 255, 255, .18);
+  animation: lucy-chip-in .7s var(--orb-spring) both;
 }
-.lucy-orb-masters strong { display: block; font-size: 15px; }
-.lucy-orb-masters span { display: block; margin-top: 2px; font-size: 12px; color: rgba(247,244,238,.72); }
+.lucy-orb-master-eyebrow { font-size: 10.5px; letter-spacing: .16em; color: rgba(243, 207, 134, .92); }
+.lucy-orb-master-name { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -.02em; color: #fff; }
+.lucy-orb-master-intro { margin: 2px 0 0; font-size: 12.5px; line-height: 1.5; color: rgba(247, 244, 238, .84); text-align: center; }
+.lucy-orb-master-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 5px; }
+.lucy-orb-master-tags i {
+  font-style: normal;
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(243, 207, 134, .16);
+  border: 1px solid rgba(243, 207, 134, .35);
+  color: #f6e3b8;
+}
+.lucy-orb-master-actions { display: flex; gap: 8px; margin-top: 10px; width: 100%; }
+.lucy-orb-master-actions button {
+  flex: 1;
+  padding: 11px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, .22);
+  background: rgba(255, 255, 255, .1);
+  color: #fbf7ff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .2s var(--orb-spring), background .2s ease;
+}
+.lucy-orb-master-actions button.is-primary {
+  border-color: rgba(243, 207, 134, .65);
+  background: linear-gradient(160deg, rgba(243, 207, 134, .34), rgba(255, 160, 90, .24));
+}
+.lucy-orb-master-actions button:active { transform: scale(.97); }
+.lucy-orb-master-actions button:disabled { opacity: .55; cursor: default; }
+.lucy-orb-master-best { margin-top: 8px; font-size: 11px; color: rgba(247, 244, 238, .62); text-align: center; }
 .lucy-charm {
   position: relative;
   width: min(300px, 86%);
@@ -1515,7 +1550,6 @@ html.duo-unfolded-mode .lucy-charm { width: min(380px, 70%); }
 .lucy-orb-keywords button:nth-child(2) { animation-delay: .08s; }
 .lucy-orb-keywords button:nth-child(3) { animation-delay: .16s; }
 .lucy-orb-keywords button:nth-child(4) { animation-delay: .24s; }
-.lucy-orb-masters button:not(.lucy-die) { animation: lucy-chip-in .6s var(--orb-spring) both; }
 .lucy-charm { animation: lucy-charm-in .8s var(--orb-spring); }
 .lucy-charm-seal { animation: lucy-seal-pulse 2.8s ease-in-out infinite; }
 @keyframes lucy-chip-in {
