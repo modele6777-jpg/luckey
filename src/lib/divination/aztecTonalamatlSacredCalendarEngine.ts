@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AZTEC_TONALAMATL_ENGINE_VERSION = 'LUCKEY-AZTEC-TONALAMATL-v2.4.0';
+export const AZTEC_TONALAMATL_ENGINE_VERSION = 'LUCKEY-AZTEC-TONALAMATL-v2.5.0';
 
 export interface AztecDaySign {
   signNumber: number;
@@ -40,6 +40,7 @@ export interface AztecSynthesisMatrix {
   solarClarityGrade: '탁월' | '안정' | '보완';
   heartAlignmentState: string;
   ollinActionDirective: string;
+  tonalamatlCrossAxis: string;
 }
 
 export interface AztecTonalamatlReport {
@@ -394,10 +395,12 @@ export function calculateAztecTonalamatl(
       : '감정의 잔물결을 호흡으로 가라앉히며 진심을 다시 확인해야 할 상태';
   const ollinActionDirective = `${temporalTonalamatlRhythm.sunPhase} 흐름에 맞추어 ${situationalTonalamatlAudit.focusAxis}을 우선 정돈하십시오.`;
 
+  const tonalamatlCrossAxis = `[${dominantDaySign.nameKo}] × [${thirteenLordOfTheDay.split(' ')[0]}] × [${temporalTonalamatlRhythm.cosmicRhythmQuality}] × [${question.trim() || '삼위일체 정렬'}]`;
   const tonalamatlSynthesisMatrix: AztecSynthesisMatrix = {
     solarClarityGrade,
     heartAlignmentState,
     ollinActionDirective,
+    tonalamatlCrossAxis,
   };
 
   const aztecTonalamatlGuidance = `아즈텍 토날포왈리 성력서는 가르칩니다: "태양의 전사는 자신의 토날리(Tonalli)를 의식의 불꽃으로 지피며 어둠을 가른다." 현재 당신의 운명을 비추는 성스러운 일진은 [${dominantDaySign.nameKo}]이며, 수호신은 [${dominantDaySign.patronDeity}]입니다. ${dominantDaySign.cosmicDestinyPower}.`;
@@ -447,7 +450,7 @@ export function formatAztecTonalamatlPrompt(report: AztecTonalamatlReport): stri
   * 주의 경계: ${report.situationalTonalamatlAudit.cautionNotice}
 - **KST 시공간 리듬 (${report.temporalTonalamatlRhythm.kstHour}시)**: ${report.temporalTonalamatlRhythm.sunPhase} · ${report.temporalTonalamatlRhythm.seasonElement} (${report.temporalTonalamatlRhythm.cosmicRhythmQuality})
   * 시공간 지침: ${report.temporalTonalamatlRhythm.temporalPrescription}
-- **삼중 영혼 교차 매트릭스**: 토날리(${report.tonalamatlSynthesisMatrix.solarClarityGrade}) · ${report.tonalamatlSynthesisMatrix.heartAlignmentState}
+- **삼중 영혼 교차 매트릭스**: 토날리(${report.tonalamatlSynthesisMatrix.solarClarityGrade}) · ${report.tonalamatlSynthesisMatrix.heartAlignmentState} · 4중 교차 축(${report.tonalamatlSynthesisMatrix.tonalamatlCrossAxis})
   * 통합 행동 지침: ${report.tonalamatlSynthesisMatrix.ollinActionDirective}
 - **토날라마틀 지혜 지침**: ${report.aztecTonalamatlGuidance}
 - **토날리 태양 경배 리추얼**: ${report.tonalliSunSalutationRitual}

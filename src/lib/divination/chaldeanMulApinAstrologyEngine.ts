@@ -7,7 +7,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION = 'LUCKEY-CHALDEAN-MULAPIN-v2.4.0';
+export const CHALDEAN_MUL_APIN_ASTROLOGY_ENGINE_VERSION = 'LUCKEY-CHALDEAN-MULAPIN-v2.5.0';
 
 export type CelestialPath =
   | '엔릴의 길(Way of Enlil - 북천/절대원칙과 법도)'
@@ -41,6 +41,7 @@ export interface ChaldeanSynthesisMatrix {
   pathResonanceGrade: '선명' | '안정' | '보완';
   planetConstellationLink: string;
   nextAstronomicalStep: string;
+  mulApinCrossAxis: string;
 }
 
 export interface ChaldeanMulApinAstrologyReport {
@@ -234,10 +235,12 @@ export function calculateChaldeanMulApinAstrology(options?: {
   const planetConstellationLink = `주재 행성 ${rulingPlanet.akkadianName}의 기운이 원초 별자리 ${cMeta.name}의 성질(${cMeta.nature})과 맞물려 작동합니다.`;
   const nextAstronomicalStep = `${temporalMulApinRhythm.zigguratWatch} 리듬에 맞추어 ${situationalMulApinAudit.celestialFocus}을 우선 점검하십시오.`;
 
+  const mulApinCrossAxis = `[${celestialPath.split('(')[0].trim()}] × [${rulingPlanet.nameKo}] × [${cMeta.name}] × [${temporalMulApinRhythm.celestialTempo}]`;
   const mulApinSynthesisMatrix: ChaldeanSynthesisMatrix = {
     pathResonanceGrade,
     planetConstellationLink,
     nextAstronomicalStep,
+    mulApinCrossAxis,
   };
 
   const noeticFireGuidance = `칼데아 신탁의 전승: "물질의 어둠에 현혹되지 말고 가슴속 신성한 지성의 불꽃(Noetic Fire)에 불을 지펴라." ` +
@@ -284,7 +287,7 @@ export function formatChaldeanMulApinAstrologyPrompt(rep: ChaldeanMulApinAstrolo
   - 경계할 식(Eclipse): ${rep.situationalMulApinAudit.eclipseWarning}
 · KST 시공간 리듬 (${rep.temporalMulApinRhythm.kstHour}시): ${rep.temporalMulApinRhythm.zigguratWatch} · ${rep.temporalMulApinRhythm.babylonianSeason} (${rep.temporalMulApinRhythm.celestialTempo})
   - 시간대 지침: ${rep.temporalMulApinRhythm.timingGuidance}
-· 천문 교차 매트릭스: 조응(${rep.mulApinSynthesisMatrix.pathResonanceGrade}) · ${rep.mulApinSynthesisMatrix.planetConstellationLink}
+· 천문 교차 매트릭스: 조응(${rep.mulApinSynthesisMatrix.pathResonanceGrade}) · ${rep.mulApinSynthesisMatrix.planetConstellationLink} · 4중 교차 축(${rep.mulApinSynthesisMatrix.mulApinCrossAxis})
   - 다음 행동: ${rep.mulApinSynthesisMatrix.nextAstronomicalStep}
 · 칼데아 지성 불꽃(Noetic Fire): ${rep.noeticFireGuidance}
 · 천문학적 행동 처방: ${rep.astronomicalActionAdvice}
