@@ -9387,11 +9387,12 @@ test('Baek Seok Deer and White Wall Poetic Purity Engine: calculates Noble Solit
   assert(rep.activeBaekSeokTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.baekSeokSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.baekSeokCrossAxis?.themeAphorismPair && rep.baekSeokCrossAxis?.poeticStage && rep.baekSeokCrossAxis?.sourceAnchor));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanBaekSeokDeerWhiteWallPoeticPurityPrompt(rep);
   assert(prompt.includes('백석 《사슴·흰 바람벽이 있어》 순수 고결성·맑은 존엄(Poetic Purity) 지표'));
   assert(prompt.includes(rep.activeBaekSeokTheme.themeTitleKo));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('백석 서정 교차 축'));
   assert(prompt.includes(rep.ritualAction));
   assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
@@ -13840,15 +13841,15 @@ test('Guarani Teko Pora Forest Harmony engine: principles, +09:00 KST, and inter
 
 test('Navajo Hozho Beauty Balance engine: pillars, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateNavajoHozhoBeautyBalance({ profile, now: new Date('2026-11-20T05:50:00Z'), question: '흔들리지 않고 균형 있게 걷고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-NAVAJO-HOZHO-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-NAVAJO-HOZHO-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.balancePillar.name !== rep.primaryPillar.name);
-  assert.ok(rep.hozhoWalkAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.hozhoWalkAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatNavajoHozhoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('호조') && prompt.includes('균형 기둥') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('호조') && prompt.includes('맥락 균형 조언') && prompt.includes('균형 기둥') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
 });
 
 test('Bhutan GNH Tashi Tagye engine: pillars, +09:00 KST, and interpretive boundary', () => {
@@ -14225,15 +14226,15 @@ test('Occitan Troubadour Paratge engine: virtue, +09:00 KST, and interpretive bo
 
 test('Zapotec Piye Cloud Wisdom engine: glyph, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateZapotecPiyeCloudWisdom({ profile, now: new Date('2026-11-20T07:22:00Z'), question: '높은 곳에서 전체 흐름을 보고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ZAPOTEC-PIYE-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ZAPOTEC-PIYE-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionGlyph !== rep.piyeGlyph);
-  assert.ok(rep.cloudHorizonAxis.length > 0 && rep.shadowWarning.length > 0 && rep.questionTopic.length > 0);
+  assert.ok(rep.cloudHorizonAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0 && rep.questionTopic.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatZapotecPiyePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('사포텍') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
+  assert.ok(prompt.includes('사포텍') && prompt.includes('맥락 균형 조언') && prompt.includes('동반 상징') && prompt.includes('+09:00 (KST)'));
   assert.ok(prompt.includes('과잉 경계') && prompt.includes('질문 맥락'));
 });
 

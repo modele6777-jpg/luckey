@@ -9,6 +9,7 @@ export interface ZapotecPiyeResult {
   cloudInsight: string;
   monteAlbanTone: string;
   cloudHorizonAxis: string;
+  topicBalanceHint: string;
   reflectionFocus: string;
   ritualAction: string;
   shadowWarning: string;
@@ -64,6 +65,15 @@ const GLYPHS = [
   },
 ];
 
+const ZAPOTEC_TOPIC_HINTS: Record<ZapotecPiyeResult['questionTopic'], string> = {
+  '조망·시야': '조망과 시야의 질문에서는 눈앞의 자잘한 소음에서 한 걸음 물러나 전체 산맥의 윤곽부터 바라보세요.',
+  '착수·결단': '착수와 결단의 질문에서는 완벽한 조건을 기다리기보다 오늘 10분짜리 첫 불꽃 하나를 바로 켜 보세요.',
+  '호흡·순환': '호흡과 순환의 질문에서는 몰입한 시간만큼 자리를 일어나 숨을 고르는 5분의 쉼표를 꼭 챙기세요.',
+  '나눔·연대': '나눔과 연대의 질문에서는 주고받는 셈을 잠시 내려놓고 내가 먼저 건넬 수 있는 작은 온기 하나를 전하세요.',
+  '기록·기준': '기록과 기준의 질문에서는 잠깐의 기분에 흔들리지 않게 오늘 지켜 낸 기준 한 줄을 노트에 남기세요.',
+  '사포텍 전반': '전반적 피예(Piye)의 질문에서는 높은 언덕 위에서 오늘의 흐름과 멈춤의 균형을 함께 살피세요.',
+};
+
 function classifyZapotecTopic(q: string): ZapotecPiyeResult['questionTopic'] {
   if (/높은|전체|흐름|조망|시야|구름/.test(q)) return '조망·시야';
   if (/망설|시작|착수|결단|번개/.test(q)) return '착수·결단';
@@ -101,8 +111,10 @@ export function calculateZapotecPiyeCloudWisdom(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (GLYPHS.length - 1));
   const companion = GLYPHS[(idx + companionOffset) % GLYPHS.length];
 
+  const topicBalanceHint = ZAPOTEC_TOPIC_HINTS[questionTopic];
+
   return {
-    engineVersion: 'LUCKEY-ZAPOTEC-PIYE-v2.3.0',
+    engineVersion: 'LUCKEY-ZAPOTEC-PIYE-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     piyeGlyph: picked.glyph,
@@ -110,6 +122,7 @@ export function calculateZapotecPiyeCloudWisdom(params: {
     cloudInsight: picked.insight,
     monteAlbanTone: picked.tone,
     cloudHorizonAxis: picked.axis,
+    topicBalanceHint,
     reflectionFocus: `메소아메리카 사포텍의 '${picked.glyph}'을 중심에 두고 '${companion.glyph}'의 시야를 함께 엮어, 눈앞의 작은 소음보다 높은 언덕 위에서 전체 흐름을 먼저 바라보세요.`,
     ritualAction: picked.action,
     shadowWarning: picked.shadow,
@@ -124,6 +137,7 @@ export function formatZapotecPiyePrompt(res: ZapotecPiyeResult): string {
     `- 기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `- 피예 상징: ${res.piyeGlyph} (${res.monteAlbanTone})`,
     `- 구름 지평 축: ${res.cloudHorizonAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 동반 상징: ${res.companionGlyph}`,
     `- 중심 통찰: ${res.cloudInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
