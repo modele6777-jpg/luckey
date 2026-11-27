@@ -38,15 +38,17 @@ async function readChrome(locator: Locator) {
       backgroundColor: style.backgroundColor,
       borderWidth: style.borderWidth,
       boxShadow: style.boxShadow,
+      outlineStyle: style.outlineStyle,
     };
   });
 }
 
-async function expectUnboxedLucyHeader(page: Page) {
+async function expectLucyHeaderControls(page: Page) {
   const header = page.locator('#duo-lucy-viewport .lucy-chat-header');
   const guide = header.locator('[data-page-guide-button]');
   const speaker = header.locator('[data-auto-tts-toggle="true"]');
   const smartGuide = header.locator('[data-smart-guide-settings-button="true"]');
+  const search = header.getByRole('button', { name: '대화 검색' });
 
   await expect(guide).toBeVisible();
   await expect(guide).toHaveAccessibleName(/가이드 열기/);
@@ -54,20 +56,47 @@ async function expectUnboxedLucyHeader(page: Page) {
   await expect(speaker).toHaveAttribute('aria-pressed', 'false');
   await expect(speaker).toHaveAccessibleName('자동읽기 꺼짐 (눌러서 켜기)');
   await expect(smartGuide).toBeVisible();
+  await expect(smartGuide).toHaveAttribute('aria-pressed', 'true');
+  await expect(smartGuide).toHaveAccessibleName('스마트 가이드 켜짐 · 설정 열기');
 
   const guideChrome = await readChrome(guide);
   expect(guideChrome.backgroundColor).toBe('rgba(0, 0, 0, 0)');
   expect(guideChrome.borderWidth).toBe('0px');
   expect(guideChrome.boxShadow).toBe('none');
 
+  const smartGuideChrome = await readChrome(smartGuide);
+  expect(smartGuideChrome.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  expect(smartGuideChrome.borderWidth).toBe('0px');
+  expect(smartGuideChrome.boxShadow).toBe('none');
+  expect(smartGuideChrome.outlineStyle).toBe('none');
+  const smartGuideClass = await smartGuide.getAttribute('class') || '';
+  expect(smartGuideClass).toMatch(/border-0/);
+  expect(smartGuideClass).toMatch(/bg-transparent/);
+  expect(smartGuideClass).not.toMatch(/\bbg-(?:white|amber|slate)-/);
+
   const speakerChrome = await readChrome(speaker);
   expect(speakerChrome.backgroundColor).toBe('rgba(0, 0, 0, 0)');
   expect(speakerChrome.borderWidth).toBe('0px');
   expect(speakerChrome.boxShadow).toBe('none');
 
-  const smartGuideClass = await smartGuide.getAttribute('class') || '';
-  expect(smartGuideClass).toMatch(/\bbg-white\/(?:10|80)\b/);
-  expect(smartGuideClass).toMatch(/\bborder-/);
+  const searchClass = await search.getAttribute('class') || '';
+  expect(searchClass).toMatch(/\bbg-(?:white\/10|amber-50\/80)\b/);
+  expect(searchClass).toMatch(/\bborder\b/);
+
+  await smartGuide.tap();
+  const settings = page.locator('[data-smart-guide-settings="true"]');
+  await expect(settings).toBeVisible();
+  const guideSwitch = settings.getByRole('switch', { name: '스마트 가이드' });
+  await guideSwitch.tap();
+  await expect(guideSwitch).toHaveAttribute('aria-checked', 'false');
+  await expect(smartGuide).toHaveAttribute('aria-pressed', 'false');
+  await expect(smartGuide).toHaveAccessibleName('스마트 가이드 꺼짐 · 설정 열기');
+  const activeSmartGuideChrome = await readChrome(smartGuide);
+  expect(activeSmartGuideChrome.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  expect(activeSmartGuideChrome.borderWidth).toBe('0px');
+  expect(activeSmartGuideChrome.outlineStyle).toBe('none');
+  await settings.getByRole('button', { name: '확인' }).tap();
+  await expect(settings).toHaveCount(0);
 
   await guide.tap();
   await expect(page.locator('[data-page-guide]')).toBeVisible();
@@ -77,14 +106,23 @@ async function expectUnboxedLucyHeader(page: Page) {
   await speaker.tap();
   await expect(speaker).toHaveAttribute('aria-pressed', 'true');
   await expect(speaker).toHaveAccessibleName('자동읽기 켜짐 (눌러서 끄기)');
+  await speaker.evaluate(element => (element as HTMLButtonElement).blur());
+  const activeSpeakerChrome = await readChrome(speaker);
+  expect(activeSpeakerChrome.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  expect(activeSpeakerChrome.borderWidth).toBe('0px');
+  expect(activeSpeakerChrome.boxShadow).toBe('none');
+  expect(activeSpeakerChrome.outlineStyle).toBe('none');
+  await speaker.tap();
+  await expect(speaker).toHaveAttribute('aria-pressed', 'false');
+  await expect(speaker).toHaveAccessibleName('자동읽기 꺼짐 (눌러서 켜기)');
 }
 
-test('Lucy chat header Guide and speaker are unboxed while other controls keep their backgrounds', async ({ page }) => {
+test('Lucy Chat header Smart Guide and speaker are unboxed while the book Guide and search stay unchanged', async ({ page }) => {
   await openLucyMode(page, 'chat');
-  await expectUnboxedLucyHeader(page);
+  await expectLucyHeaderControls(page);
 });
 
-test('Lucy divination-mode header Guide and speaker are unboxed while other controls keep their backgrounds', async ({ page }) => {
+test('Lucy Pro header Smart Guide and speaker are unboxed while the book Guide and search stay unchanged', async ({ page }) => {
   await openLucyMode(page, 'divination');
-  await expectUnboxedLucyHeader(page);
+  await expectLucyHeaderControls(page);
 });

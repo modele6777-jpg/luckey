@@ -717,6 +717,9 @@ html[data-lucy-theme='starlight'] .lucy-night .lucy-header-actions > button { mi
 .lucy-header-actions > button:hover { opacity: .7; }
 .lucy-header-actions > button span { display: none; }
 .lucy-header-actions [aria-pressed='true'] { outline: 1px solid #789f8b66; outline-offset: -2px; }
+.lucy-chat-shell .lucy-header-actions > :is([data-smart-guide-settings-button='true'], [data-auto-tts-toggle='true']) { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+.lucy-chat-shell .lucy-header-actions > :is([data-smart-guide-settings-button='true'], [data-auto-tts-toggle='true'])[aria-pressed='true']:not(:focus-visible) { outline: none !important; }
+.lucy-chat-shell .lucy-header-actions > :is([data-smart-guide-settings-button='true'], [data-auto-tts-toggle='true']):focus-visible { outline: 2px solid currentColor !important; outline-offset: 2px !important; }
 .lucy-header-actions svg { width: 17px; height: 17px; animation: none !important; }
 .lucy-night .lucy-chat-main > div { max-width: 820px; margin-inline: auto; }
 .lucy-night .lucy-starlight-assistant { border-radius: 20px 20px 20px 6px; box-shadow: 0 2px 8px #00000008; padding: 18px 20px; }

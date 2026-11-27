@@ -33,6 +33,12 @@ const TONE_BUTTON: Record<SmartGuideSettingsTone, string> = {
   key: 'border-[#e9dccd] bg-[#fffdf9] text-[#c9805c]',
 };
 
+const TONE_UNBOXED_BUTTON: Record<SmartGuideSettingsTone, string> = {
+  dark: 'border-0 bg-transparent text-white/90 shadow-none',
+  light: 'border-0 bg-transparent text-slate-700 shadow-none',
+  key: 'border-0 bg-transparent text-[#c9805c] shadow-none',
+};
+
 const SAMPLE_GUIDE: SmartGuideResult = {
   path: '/',
   action: 'lucy',
@@ -149,7 +155,7 @@ export function SmartGuideSettingsSheet({ onClose }: { onClose: () => void }) {
 }
 
 /** 헤더 물음표 아이콘 — 설정 상태와 관계없이 중립 톤으로 표시하고 설정 시트를 연다. */
-export function SmartGuideSettingsButton({ tone = 'dark', className = '' }: { tone?: SmartGuideSettingsTone; className?: string }) {
+export function SmartGuideSettingsButton({ tone = 'dark', className = '', unboxed = false }: { tone?: SmartGuideSettingsTone; className?: string; unboxed?: boolean }) {
   const [open, setOpen] = useState(false);
   const settings = useSmartGuideSettings();
   const active = settings.guide;
@@ -165,7 +171,7 @@ export function SmartGuideSettingsButton({ tone = 'dark', className = '' }: { to
         aria-pressed={active}
         title="스마트 가이드 설정"
         onClick={() => { triggerHaptic('whitehole'); setOpen(value => !value); }}
-        className={`relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border backdrop-blur-md transition-colors active:scale-95 ${TONE_BUTTON[tone]} ${className}`}
+        className={`relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors active:scale-95 ${unboxed ? TONE_UNBOXED_BUTTON[tone] : `border backdrop-blur-md ${TONE_BUTTON[tone]}`} ${className}`}
       >
         <HelpCircle size={15} aria-hidden="true" />
       </button>

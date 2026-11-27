@@ -4452,7 +4452,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             {/* 📘 가이드 */}
             <PageGuideButton guide={getPageGuide(isMasterMode ? 'master' : 'lucy')} tone={isLight ? 'light' : 'dark'} unboxed />
             {/* 🧭 스마트 가이드 설정 (물음표) — 일반 루시·점술모드 공통 헤더 */}
-            <SmartGuideSettingsButton tone={isLight ? 'light' : 'dark'} />
+            <SmartGuideSettingsButton tone={isLight ? 'light' : 'dark'} unboxed />
             {/* 1. 검색 (Search Toggle) */}
             <button
               type="button"
@@ -4476,7 +4476,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               type="button"
               data-auto-tts-toggle="true"
               onClick={toggleAutoTts}
-              className={`px-2.5 py-1.5 rounded-xl transition-all active:scale-95 cursor-pointer shrink-0 flex items-center gap-1 text-[11px] font-bold ${isLight
+              className={`px-2.5 py-1.5 rounded-xl border-0 bg-transparent shadow-none hover:bg-transparent transition-all active:scale-95 cursor-pointer shrink-0 flex items-center gap-1 text-[11px] font-bold ${isLight
                 ? 'text-slate-500 hover:text-slate-700'
                 : 'text-white/85 hover:text-white'
               }`}

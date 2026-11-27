@@ -162,7 +162,7 @@ test('the guide header button is an icon-only round button that still opens its 
   }
 });
 
-test('Lucy chat and divination headers unbox only the Guide and auto-read speaker controls', () => {
+test('Lucy chat and divination headers unbox the Smart Guide and auto-read controls without changing the book Guide or search', () => {
   const headerStart = pageSource.indexOf('lucy-header-actions');
   const headerEnd = pageSource.indexOf('{/*  Export Chat */', headerStart);
   const header = pageSource.slice(headerStart, headerEnd);
@@ -171,8 +171,14 @@ test('Lucy chat and divination headers unbox only the Guide and auto-read speake
   const guideStart = header.indexOf('<PageGuideButton');
   const guideEnd = header.indexOf('/>', guideStart) + 2;
   const guideCall = header.slice(guideStart, guideEnd);
-  assert.match(guideCall, /unboxed/, 'only the shared Lucy header opts its book Guide button into unboxed styling');
+  assert.match(guideCall, /unboxed/, 'the existing book Guide stays unboxed');
   assert.match(guideCall, /isMasterMode \? 'master' : 'lucy'/, 'the same Guide button serves Lucy chat and divination mode');
+
+  const smartGuideStart = header.indexOf('<SmartGuideSettingsButton');
+  const smartGuideEnd = header.indexOf('/>', smartGuideStart) + 2;
+  const smartGuideCall = header.slice(smartGuideStart, smartGuideEnd);
+  assert.ok(smartGuideStart > 0 && smartGuideEnd > smartGuideStart, 'the shared question-mark Smart Guide button is present');
+  assert.match(smartGuideCall, /unboxed/, 'only the Lucy header opts into the Smart Guide unboxed treatment');
 
   const speakerStart = header.indexOf('data-auto-tts-toggle="true"');
   const speakerEnd = header.indexOf('</button>', speakerStart) + '</button>'.length;
@@ -180,12 +186,25 @@ test('Lucy chat and divination headers unbox only the Guide and auto-read speake
   const speakerClass = speaker.match(/className=\{`([\s\S]*?)`\}/)?.[1] || '';
   assert.ok(speakerStart >= 0 && speakerEnd > speakerStart, 'the Lucy header auto-read speaker toggle is present');
   assert.match(speakerClass, /rounded-xl/, 'the speaker keeps its touch target shape');
-  assert.doesNotMatch(speakerClass, /\bbg-|\bborder(?:-|\s)|\bshadow-/, 'the speaker has no boxed fill, border, or shadow');
+  assert.match(speakerClass, /border-0 bg-transparent shadow-none hover:bg-transparent/, 'the speaker has explicit transparent, borderless styling');
+  assert.doesNotMatch(speakerClass, /\bbg-(?!transparent\b)|\bborder-(?!0\b)|\bshadow-(?!none\b)/, 'the speaker has no visual fill, nonzero border, or shadow');
   assert.match(speaker, /aria-pressed=\{isAutoTts\}/, 'speaker state remains accessible');
   assert.match(speaker, /aria-label=\{isAutoTts \?/, 'speaker action remains accessible');
   assert.match(speaker, /<Volume2/);
   assert.match(speaker, /<VolumeX/);
 
-  assert.match(header, /SmartGuideSettingsButton/, 'the separate question-mark smart-guide control stays in the header');
-  assert.match(header, /bg-white\/10/, 'the separate search control retains its existing boxed background styling');
+  const searchMarker = 'title="대화 내역 검색"';
+  const searchIndex = header.indexOf(searchMarker);
+  const searchStart = header.lastIndexOf('<button', searchIndex);
+  const searchEnd = header.indexOf('</button>', searchIndex) + '</button>'.length;
+  const search = header.slice(searchStart, searchEnd);
+  assert.ok(searchStart > 0 && searchEnd > searchStart, 'the separate search control stays in the header');
+  assert.match(search, /bg-white\/10/, 'the dark search background remains unchanged');
+  assert.match(search, /bg-amber-50\/80/, 'the light search background remains unchanged');
+  assert.match(search, /border-white\/15|border-amber-900\/10/, 'the search border styles remain unchanged');
+
+  const chromeStyleStart = readFileSync(new URL('../src/styles/lucy-starlight.css', import.meta.url), 'utf8');
+  assert.match(chromeStyleStart, /\.lucy-chat-shell \.lucy-header-actions > :is\(\[data-smart-guide-settings-button='true'\], \[data-auto-tts-toggle='true'\]\)/, 'the no-box override targets only Lucy Smart Guide and auto-read controls');
+  assert.match(chromeStyleStart, /:not\(:focus-visible\) \{ outline: none !important;/, 'pressed state loses its box without suppressing keyboard focus');
+  assert.match(chromeStyleStart, /:focus-visible \{ outline: 2px solid currentColor !important;/, 'keyboard focus remains visible');
 });

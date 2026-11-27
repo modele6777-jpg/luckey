@@ -167,7 +167,11 @@ test('the question-mark icon opens a sheet with the two switches', () => {
   const buttonStart = SETTINGS_UI.lastIndexOf('<button', buttonIndex);
   const buttonEnd = SETTINGS_UI.indexOf('</button>', buttonIndex) + '</button>'.length;
   const button = SETTINGS_UI.slice(buttonStart, buttonEnd);
+  assert.match(SETTINGS_UI, /unboxed\?: boolean/, 'the unboxed treatment is opt-in');
+  assert.match(button, /unboxed \? TONE_UNBOXED_BUTTON\[tone\]/, 'Lucy can opt into a transparent, borderless tone');
   assert.match(button, /TONE_BUTTON\[tone\]/);
+  assert.match(SETTINGS_UI, /dark: 'border-0 bg-transparent text-white\/90 shadow-none'/);
+  assert.match(SETTINGS_UI, /light: 'border-0 bg-transparent text-slate-700 shadow-none'/);
   assert.doesNotMatch(SETTINGS_UI, /TONE_ACTIVE/);
   assert.doesNotMatch(button, /bg-cyan-|text-cyan-|shadow-\[/);
   assert.doesNotMatch(button, /<span[^>]*absolute/);
