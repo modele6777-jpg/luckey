@@ -11,7 +11,10 @@ import { LucyTtsControlBar } from '@/components/lucy/LucyTtsControlBar';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { LucyModeTransition } from '@/components/chat/LucyModeTransition';
 import { LucyEntryScreen, type LucyEntryVariant } from '@/components/chat/LucyEntryScreen';
-import { publishTableSaju, publishTableAnswer, publishTableTools, publishTableActiveEngines } from '@/lib/lucyTableBus';
+import { publishTableSaju, publishTableAnswer, publishTableTools, publishTableActiveEngines, openDivinationToolTab, openEngineAtPerspective } from '@/lib/lucyTableBus';
+import { LucyAnswerEngineBar } from '@/components/chat/LucyAnswerPerspectiveBar';
+import { resolveMessagePerspectives, shouldShowAnswerEngines } from '@/lib/lucyAnswerPerspectives';
+import type { DivinationToolId } from '@/lib/lucyToolRegistry';
 import { buildActiveEngineTray } from '@/lib/lucyActiveEngineTray';
 import { MasterTableSheetButton } from '@/components/duo/MasterTableSheet';
 import { extractAllToolFacts, pickCalculatedToolData, type ToolFact } from '@/lib/lucyMasterToolFacts';
@@ -4040,6 +4043,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       mode: isCasual ? 'casual' : 'master',
       usedTools: usedToolNames,
       calculationAudit: divinationSelection.calculationAudit || [],
+      // 💬 답변 끝 '이 답변 관점' 버튼이 읽을, 이 답변에서 고른 심층 관점 키
+      deepPerspectiveKeys: divinationSelection.deepPerspectiveKeys || [],
       onFinish: async (fullText, _sentText, replyMsgId) => {
         if (!tarotCardMarkers && (isAutoTtsRef.current || isVoiceModeRef.current) && fullText && fullText.trim()) {
           void triggerAutoTts(fullText, replyMsgId);
@@ -4317,6 +4322,18 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     link.download = '루시AI프로_대화기록_' + getLocalDateKey() + '.md';
     link.click();
     URL.revokeObjectURL(url);
+  };
+
+  // 💬 답변 끝 '이 답변 관점' 버튼 → 엔진함을 열고 그 관점 설명으로 이동
+  const handleOpenAnswerPerspective = (engineKey: string) => {
+    try { triggerHaptic('whitehole'); } catch (_) {}
+    openEngineAtPerspective(engineKey);
+  };
+
+  // 🔮 답변 끝 '이 답변 도구' 버튼 → 점술 도구함을 열고 그 도구 탭으로 이동
+  const handleOpenAnswerTool = (toolId: DivinationToolId) => {
+    try { triggerHaptic('whitehole'); } catch (_) {}
+    openDivinationToolTab(toolId);
   };
 
   if (!isLucyReady) {
@@ -4812,6 +4829,26 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                         );
                       }}
                     />
+                    {/* ✨ 이 답변의 도구(점술모드)·관점 버튼 — 누르면 각각의 함이 그 항목으로 열린다 */}
+                    {(() => {
+                      const answerEngines = resolveMessagePerspectives(msg);
+                      const showAnswerEngines = shouldShowAnswerEngines({
+                        role: msg.role,
+                        isGreeting,
+                        isGenerating: isLucyGenerating && index === filteredMessages.length - 1,
+                        engines: answerEngines,
+                      });
+                      return (
+                        <LucyAnswerEngineBar
+                          engines={answerEngines}
+                          isLight={isLight}
+                          isMasterMode={isMasterMode}
+                          show={showAnswerEngines}
+                          onOpenPerspective={handleOpenAnswerPerspective}
+                          onOpenTool={handleOpenAnswerTool}
+                        />
+                      );
+                    })()}
                     </>
                   )}
                 </div>

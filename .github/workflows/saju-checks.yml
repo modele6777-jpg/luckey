@@ -26,6 +26,7 @@ on:
       - 'tests/server-import-extensions.test.ts'
       - 'tests/prod-audit-routes.test.ts'
       - 'tests/render-api-routes.test.ts'
+      - 'tests/lucy-answer-perspective-link.test.tsx'
       - 'server.app.ts'
       - 'package.json'
       - 'package-lock.json'
@@ -43,5 +44,5 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
-      - run: npx tsx --test tests/saju-boundaries.test.ts tests/saju-clock-and-elements.test.ts tests/saju-surface-interpretation.test.ts tests/mcp-saju.test.ts tests/mcp-streamable.test.ts tests/mcp-query-auth.test.ts tests/reading-api-origin.test.ts tests/server-import-extensions.test.ts tests/prod-audit-routes.test.ts tests/render-api-routes.test.ts
+      - run: npx tsx --test tests/saju-boundaries.test.ts tests/saju-clock-and-elements.test.ts tests/saju-surface-interpretation.test.ts tests/mcp-saju.test.ts tests/mcp-streamable.test.ts tests/mcp-query-auth.test.ts tests/reading-api-origin.test.ts tests/server-import-extensions.test.ts tests/prod-audit-routes.test.ts tests/render-api-routes.test.ts tests/lucy-answer-perspective-link.test.tsx
       - run: npm run build

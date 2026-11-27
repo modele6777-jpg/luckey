@@ -75,6 +75,8 @@ export interface UnifiedMessage {
   keyExerciseIndex?: number;
   usedTools?: string[];
   calculationAudit?: CalculationAuditItem[];
+  /** 이 답변에서 루시가 골라 쓴 심층 관점 키 (메시지 끝 '이 답변 관점' 버튼용). */
+  deepPerspectiveKeys?: string[];
   divinationContext?: string;
 }
 
@@ -94,6 +96,8 @@ export interface SendUnifiedMessageOptions {
   customUserProfile?: UserProfile;
   usedTools?: string[];
   calculationAudit?: CalculationAuditItem[];
+  /** 이 답변에 쓴 심층 관점 키. assistant 메시지에 저장되어 답변 끝 버튼이 읽는다. */
+  deepPerspectiveKeys?: string[];
   isLucyPlus?: boolean;
   isLucyPro?: boolean;
   isPro?: boolean;
@@ -2525,6 +2529,7 @@ ${responseProfile.rule}`;
                   mode: options?.mode || m.mode,
                   usedTools: toolsIncludedInPrompt,
                   calculationAudit: options?.calculationAudit || toolSelection.calculationAudit || [],
+                  deepPerspectiveKeys: options?.deepPerspectiveKeys || m.deepPerspectiveKeys || [],
                   divinationContext: chatDivinationContext,
                   keyExerciseIndex: resolvedKeyExIndex ?? m.keyExerciseIndex
                 };
@@ -2543,6 +2548,7 @@ ${responseProfile.rule}`;
                 mode: options?.mode,
                 usedTools: toolsIncludedInPrompt,
                   calculationAudit: options?.calculationAudit || toolSelection.calculationAudit || [],
+                  deepPerspectiveKeys: options?.deepPerspectiveKeys || [],
                   divinationContext: chatDivinationContext,
                 keyExerciseIndex: resolvedKeyExIndex
               });

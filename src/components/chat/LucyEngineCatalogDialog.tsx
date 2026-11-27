@@ -3,8 +3,10 @@ import { defaultLibrarySessionKey, useLibrarySessionState, useLibrarySessionScro
 import { DialogBackdrop } from '@/components/layout/DialogBackdrop';
 // 목록 스타일(chat-library-*)은 같은 번들에 항상 들어가는 PromptLibraryModal이 불러온다.
 // (여기서 CSS를 직접 임포트하면 단위 테스트에서 이 모듈을 불러올 수 없다.)
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Search, Sparkles, X } from 'lucide-react';
+import { useLucyEngineFocusRequest } from '@/hooks/useLucyEngineFocus';
+import type { LucyEngineFocusRequest } from '@/lib/lucyTableBus';
 import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import {
   ENGINE_CATALOG_COUNTS,
@@ -36,7 +38,7 @@ const FILTERS: { id: CatalogFilter; label: string }[] = [
 ];
 
 /** 엔진 목록 본문. 엔진함 창과 점술 도구 창의 "엔진함" 탭이 같이 쓴다. */
-function LucyEngineCatalogBody({ isOpen, isLight, sessionKey, deepOnly = false, activeKeys }: {
+function LucyEngineCatalogBody({ isOpen, isLight, sessionKey, deepOnly = false, activeKeys, focus }: {
   isOpen: boolean;
   isLight: boolean;
   sessionKey: string;
@@ -44,6 +46,8 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey, deepOnly = false, 
   deepOnly?: boolean;
   /** 이번 대화에서 루시가 실제로 골라 쓴 심층 관점 키 — 배지로 구분한다. */
   activeKeys?: readonly string[];
+  /** 답변 끝 관점 버튼에서 온 요청: 이 관점 카드로 바로 이동해 강조한다. */
+  focus?: LucyEngineFocusRequest | null;
 }) {
   const [filter, setFilter] = useLibrarySessionState<CatalogFilter>(`${sessionKey}:filter`, 'all');
   const [themeFilter, setThemeFilter] = useLibrarySessionState<CatalogThemeFilter>(`${sessionKey}:theme`, 'all');
@@ -66,7 +70,16 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey, deepOnly = false, 
     }))
     .filter(group => group.engines.length > 0), [filteredEngines]);
 
-  const renderedCount = useProgressiveLibrary(isOpen, filteredEngines.length, `${filter}:${themeFilter}:${query}`);
+  // 답변 끝 관점 버튼으로 연 경우: 그 관점 카드가 첫 화면부터 DOM에 있어야 스크롤·강조가 된다.
+  const groupedOrder = useMemo(
+    () => groupedEngines.flatMap(group => group.engines.map(engine => engine.key)),
+    [groupedEngines],
+  );
+  const focusKey = focus?.engineKey ?? '';
+  const focusIndex = focusKey ? groupedOrder.indexOf(focusKey) : -1;
+  const focusRenderFloor = focusIndex >= 0 ? Math.min(groupedOrder.length, focusIndex + 8) : 0;
+
+  const renderedCount = useProgressiveLibrary(isOpen, filteredEngines.length, `${filter}:${themeFilter}:${query}`, focusRenderFloor);
   const visibleGroups = useMemo(() => {
     let remaining = renderedCount;
     return groupedEngines.map(group => {
@@ -76,6 +89,45 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey, deepOnly = false, 
     }).filter(group => group.engines.length);
   }, [groupedEngines, renderedCount]);
   const scroll = useLibrarySessionScroll(`${sessionKey}:scroll`, isOpen, renderedCount >= filteredEngines.length);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const attachListRef = useCallback((node: HTMLDivElement | null) => {
+    listRef.current = node;
+    scroll.ref(node);
+  }, [scroll.ref]);
+
+  // 이전 검색어·필터가 그 관점을 가리고 있으면 먼저 풀어 준다 (요청당 한 번만).
+  const appliedFocusRef = useRef('');
+  useEffect(() => {
+    if (!isOpen || !focusKey) return;
+    const token = `${focus?.requestId ?? 0}:${focusKey}`;
+    if (appliedFocusRef.current === token) return;
+    appliedFocusRef.current = token;
+    if (query) setQuery('');
+    if (themeFilter !== 'all') setThemeFilter('all');
+    if (!deepOnly && filter !== 'all') setFilter('all');
+  }, [isOpen, focusKey, focus?.requestId, query, themeFilter, filter, deepOnly, setQuery, setThemeFilter, setFilter]);
+
+  // 요청당 한 번만, 카드가 그려진 뒤 화면 가운데로 부드럽게 이동한다.
+  const centeredRef = useRef('');
+  useEffect(() => {
+    if (!isOpen || !focusKey || focusIndex < 0 || renderedCount <= focusIndex) return;
+    const token = `${focus?.requestId ?? 0}:${focusKey}`;
+    if (centeredRef.current === token) return;
+    centeredRef.current = token;
+    const center = () => {
+      const root = listRef.current;
+      if (!root) return;
+      const target = root.querySelector<HTMLElement>(`[data-engine-key="${focusKey}"]`);
+      if (!target) return;
+      const rootRect = root.getBoundingClientRect();
+      const targetRect = target.getBoundingClientRect();
+      const top = root.scrollTop + (targetRect.top - rootRect.top) - Math.max(12, (rootRect.height - targetRect.height) / 2);
+      root.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    };
+    const frame = requestAnimationFrame(center);
+    const timer = setTimeout(center, 220);
+    return () => { cancelAnimationFrame(frame); clearTimeout(timer); };
+  }, [isOpen, focusKey, focus?.requestId, focusIndex, renderedCount]);
 
   const muted = isLight ? 'text-slate-600' : 'text-slate-300';
   const subtleSurface = isLight ? 'bg-amber-50/70 border-amber-200/70' : 'bg-white/[0.045] border-white/10';
@@ -84,7 +136,7 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey, deepOnly = false, 
     : 'border border-white/10 bg-white/[0.04] text-slate-300 hover:bg-white/10';
 
   return (
-          <div ref={scroll.ref} onScroll={scroll.onScroll} data-app-scroll-root="" data-testid="lucy-engine-catalog-list" tabIndex={0}
+          <div ref={attachListRef} onScroll={scroll.onScroll} data-app-scroll-root="" data-testid="lucy-engine-catalog-list" tabIndex={0}
             aria-label="엔진 목록, 세로로 스크롤할 수 있습니다" className="chat-library-scroll overflow-y-auto" aria-busy={renderedCount < filteredEngines.length}>
             <div className="chat-library-toolbar shrink-0 px-4 py-2.5 sm:px-6">
               <p id="lucy-engine-catalog-intro" className={`text-xs leading-relaxed sm:text-sm ${muted}`}>
@@ -193,6 +245,7 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey, deepOnly = false, 
                         {engines.map(engine => {
                           const isFoundational = engine.category === 'foundational';
                           const isActive = activeSet.has(engine.key);
+                          const isFocused = Boolean(focusKey) && engine.key === focusKey;
                           return (
                             <li
                               key={engine.key}
@@ -200,7 +253,10 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey, deepOnly = false, 
                               data-engine-key={engine.key}
                               data-engine-theme={theme.id}
                               data-engine-active={isActive ? 'true' : undefined}
-                              className={`lucy-engine-catalog-entry rounded-2xl border p-3 sm:p-3.5 ${isActive
+                              data-engine-focus={isFocused ? 'true' : undefined}
+                              className={`lucy-engine-catalog-entry rounded-2xl border p-3 sm:p-3.5 ${isFocused
+                                ? 'border-amber-400 bg-amber-400/15 ring-2 ring-amber-400'
+                                : isActive
                                 ? 'border-amber-400/70 bg-amber-400/10'
                                 : isLight ? 'border-slate-200 bg-white' : 'border-white/10 bg-white/[0.035]'}`}
                             >
@@ -209,7 +265,9 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey, deepOnly = false, 
                                 <div className="min-w-0 flex-1">
                                   <div className="flex flex-wrap items-center gap-1.5">
                                     <h4 className="lucy-engine-catalog-entry-name text-xs font-bold leading-relaxed sm:text-sm">{engine.nameKo}</h4>
-                                    {isActive && (
+                                    {isFocused ? (
+                                      <span data-engine-focus-badge className="rounded-full bg-amber-400 px-2 py-0.5 text-[9px] font-black text-slate-950">이 답변에서 쓴 관점</span>
+                                    ) : isActive && (
                                       <span data-engine-active-badge className="rounded-full bg-amber-400 px-2 py-0.5 text-[9px] font-black text-slate-950">이번 대화에서 쓴 관점</span>
                                     )}
                                     <span data-engine-category={engine.category} className={`lucy-engine-catalog-entry-category rounded-full px-2 py-0.5 text-[9px] font-bold ${isFoundational ? 'bg-sky-500/15 text-sky-700 dark:text-sky-300' : 'bg-violet-500/15 text-violet-700 dark:text-violet-300'}`}>
@@ -242,6 +300,7 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey, deepOnly = false, 
 }
 
 export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey = defaultLibrarySessionKey('engine-library') }: LucyEngineCatalogDialogProps) {
+  const focus = useLucyEngineFocusRequest(isOpen);
   if (!isOpen) return null;
   const surface = isLight
     ? 'bg-white text-slate-900 border-amber-200/80'
@@ -282,7 +341,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
             </button>
           </header>
 
-          <LucyEngineCatalogBody isOpen={isOpen} isLight={isLight} sessionKey={sessionKey} />
+          <LucyEngineCatalogBody isOpen={isOpen} isLight={isLight} sessionKey={sessionKey} focus={focus} />
         </section>
       </DialogBackdrop>
     </WorkspacePortal>
@@ -291,6 +350,7 @@ export function LucyEngineCatalogDialog({ isOpen, onClose, isLight, sessionKey =
 
 /** 점술 도구 창 / 펼친 화면 왼쪽 테이블의 "📚 엔진함" 탭 내용 (닫기 버튼 없이 탭 안에 들어간다). */
 export function LucyEngineCatalogPanel({ sessionKey = defaultLibrarySessionKey('engine-library'), deepOnly = false, activeKeys }: { sessionKey?: string; deepOnly?: boolean; activeKeys?: readonly string[] }) {
+  const focus = useLucyEngineFocusRequest(true);
   return (
     <section
       role="region"
@@ -302,7 +362,7 @@ export function LucyEngineCatalogPanel({ sessionKey = defaultLibrarySessionKey('
       style={{ colorScheme: 'dark' }}
       className="lucy-engine-catalog-dialog lucy-engine-catalog-embedded flex min-h-0 flex-1 flex-col text-slate-100"
     >
-      <LucyEngineCatalogBody isOpen isLight={false} sessionKey={sessionKey} deepOnly={deepOnly} activeKeys={activeKeys} />
+      <LucyEngineCatalogBody isOpen isLight={false} sessionKey={sessionKey} deepOnly={deepOnly} activeKeys={activeKeys} focus={focus} />
     </section>
   );
 }

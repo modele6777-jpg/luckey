@@ -2,6 +2,7 @@ import type { SajuAnalysisResult } from '@/lib/sajuAnalysis';
 import type { CalculationAuditItem } from '@/lib/divination/calculationAudit';
 import type { ToolFact } from '@/lib/lucyMasterToolFacts';
 import type { LucyActiveEngineTray } from '@/lib/lucyActiveEngineTray';
+import type { DivinationToolId } from '@/lib/lucyToolRegistry';
 
 /**
  * Lucy Master's unfolded left table listens to what Lucy is doing in the right pane:
@@ -92,7 +93,71 @@ export function publishTableAnswer(text: string): void {
   emit();
 }
 
+/* ─────────────────────────────────────────────────────────────
+ * 💬 답변 끝 버튼 → 함 이동
+ * - 관점 버튼: 엔진함을 열고 그 관점 설명으로 스크롤·하이라이트
+ * - 도구 버튼: 점술 도구함을 열고 그 도구 탭을 바로 선택
+ * 요청은 모듈에 남겨 두어, 창이 나중에 마운트되어도 같은 항목으로 이동한다.
+ * ───────────────────────────────────────────────────────────── */
+
+export interface LucyEngineFocusRequest {
+  engineKey: string;
+  requestId: number;
+}
+
+export interface LucyDivinationToolRequest {
+  toolId: DivinationToolId;
+  requestId: number;
+}
+
+/** 엔진함을 열어 달라는 요청 (관점 버튼). */
+export const LUCY_ENGINE_BOX_OPEN_EVENT = 'prism:lucy_engine_box_open';
+/** 엔진함 안에서 이 관점으로 이동해 달라는 요청. */
+export const LUCY_ENGINE_FOCUS_EVENT = 'prism:lucy_engine_focus';
+/** 점술 도구함을 열어 달라는 요청 (도구 버튼). */
+export const LUCY_DIVINATION_TOOL_EVENT = 'prism:lucy_divination_tool';
+
+let engineFocus: LucyEngineFocusRequest | null = null;
+let divinationTool: LucyDivinationToolRequest | null = null;
+let requestSequence = 0;
+
+function dispatchToWindow(name: string, detail: unknown) {
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(name, { detail }));
+}
+
+/** 관점 버튼: 엔진함을 열고 그 관점 설명으로 이동한다. */
+export function openEngineAtPerspective(engineKey: string): void {
+  if (!engineKey) return;
+  engineFocus = { engineKey, requestId: ++requestSequence };
+  dispatchToWindow(LUCY_ENGINE_FOCUS_EVENT, engineFocus);
+  dispatchToWindow(LUCY_ENGINE_BOX_OPEN_EVENT, engineFocus);
+}
+
+/** 도구 버튼: 점술 도구함을 열고 그 도구 탭을 고른다. */
+export function openDivinationToolTab(toolId: DivinationToolId): void {
+  if (!toolId) return;
+  divinationTool = { toolId, requestId: ++requestSequence };
+  dispatchToWindow(LUCY_DIVINATION_TOOL_EVENT, divinationTool);
+}
+
+export function getLastEngineFocus(): LucyEngineFocusRequest | null {
+  return engineFocus;
+}
+
+export function clearEngineFocus(): void {
+  engineFocus = null;
+}
+
+export function getLastDivinationToolRequest(): LucyDivinationToolRequest | null {
+  return divinationTool;
+}
+
+export function clearDivinationToolRequest(): void {
+  divinationTool = null;
+}
+
 /** Which parts of the chart Lucy's answer talks about, so the board can light them up. */
+
 export function sajuFocusFromAnswer(text: string): { pillars: Set<'year' | 'month' | 'day' | 'hour'>; elements: Set<string>; daeun: boolean } {
   const pillars = new Set<'year' | 'month' | 'day' | 'hour'>();
   const elements = new Set<string>();
