@@ -11,6 +11,7 @@ export interface SherpaSagarmathaResult {
   sagarmathaInsight: string;
   himalayanTone: string;
   altitudePaceAxis: string;
+  topicBalanceHint: string;
   shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -56,6 +57,15 @@ const PRINCIPLES = [
   },
 ];
 
+const TOPIC_BALANCE_HINTS: Record<SherpaQuestionTopic, string> = {
+  career: '일과 프로젝트에서는 단기 속도전보다 지금 감당 가능한 고도에 맞춰 꾸준히 페이스 조절을 하는 편이 오래 갑니다.',
+  relationship: '관계에서는 혼자 앞서가며 끌어당기기보다 상대의 호흡과 속도를 함께 맞추는 로프 팀의 감각이 중요합니다.',
+  wealth: '재정 판단은 무리한 정상 공략보다 베이스캠프 여력을 남겨 두는 보수적 배분이 안전합니다.',
+  health: '몸과 마음의 회복에는 억지 강행군보다 중간 고도에서 숨을 고르는 10분의 적응 휴식이 가장 효과적입니다.',
+  decision: '결정이 벅찰 때는 전체 능선을 한 번에 넘으려 하지 말고 오늘 디딜 다음 한 걸음만 정하면 충분합니다.',
+  general: '상황이 가팔라질수록 비스타레이(천천히, 꾸준히)의 호흡으로 오늘의 페이스를 지키는 편이 좋습니다.',
+};
+
 function classifySherpaTopic(question?: string): SherpaQuestionTopic {
   const q = (question ?? '').trim();
   if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(q)) return 'career';
@@ -97,11 +107,12 @@ export function calculateSherpaSagarmathaRidgeHarmony(params: {
   const picked = PRINCIPLES[idx];
   const companion = PRINCIPLES[(idx + companionOffset) % PRINCIPLES.length];
   const questionTopic = classifySherpaTopic(params.question);
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const altitudePaceAxis = `${picked.principle.split('(')[0].trim()} ↔ ${companion.principle.split('(')[0].trim()} 고산 적응 축`;
   const shadowWarning = `[${picked.principle.split('(')[0].trim()} 과잉 경계] 정상 속도나 휴식 중 한쪽에만 치우쳐 현재 호흡의 리듬을 잃지 않도록 살피십시오.`;
 
   return {
-    engineVersion: 'LUCKEY-SHERPA-SAGARMATHA-v2.3.0',
+    engineVersion: 'LUCKEY-SHERPA-SAGARMATHA-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     ridgePrinciple: picked.principle,
@@ -109,6 +120,7 @@ export function calculateSherpaSagarmathaRidgeHarmony(params: {
     sagarmathaInsight: `${picked.insight} (동반 원리: ${companion.principle})`,
     himalayanTone: picked.tone,
     altitudePaceAxis,
+    topicBalanceHint,
     shadowWarning,
     reflectionFocus: `셰르파 고산 지혜의 '${picked.principle}'와 동반 원리 '${companion.principle}'처럼, 무리한 속도전 대신 내 호흡과 상황의 흐름에 맞춘 꾸준한 발걸음을 선택해 보세요.`,
     ritualAction: picked.ritual,
@@ -124,6 +136,7 @@ export function formatSherpaSagarmathaPrompt(res: SherpaSagarmathaResult): strin
     `- 등반 지혜: ${res.ridgePrinciple} (${res.himalayanTone})`,
     `- 동반 원리: ${res.companionPrinciple}`,
     `- 고산 적응 축: ${res.altitudePaceAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 중심 통찰: ${res.sagarmathaInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,

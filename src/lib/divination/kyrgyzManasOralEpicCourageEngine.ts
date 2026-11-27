@@ -11,6 +11,7 @@ export interface KyrgyzManasResult {
   nomadInsight: string;
   steppeTone: string;
   steppeBreathAxis: string;
+  topicBalanceHint: string;
   shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -56,6 +57,15 @@ const CHAPTERS = [
   },
 ];
 
+const TOPIC_BALANCE_HINTS: Record<KyrgyzQuestionTopic, string> = {
+  career: '일에서는 거창한 완주 선언보다 오늘 넘을 작은 고개 하나를 10분 안에 여는 실행력이 흐름을 바꿉니다.',
+  relationship: '관계에서는 혼자 묵묵히 버티기보다 곁의 사람과 진심을 맞춰 화음을 내는 편이 훨씬 가볍습니다.',
+  wealth: '재정 선택에서는 좁은 골목에 몰리기보다 시야를 넓혀 여유 있는 우회로를 먼저 살피는 편이 유리합니다.',
+  health: '회복이 필요할 때는 단거리 전력 질주를 멈추고 마나스치의 긴 호흡처럼 일상 리듬을 완만하게 되돌리세요.',
+  decision: '망설임이 길어질수록 완벽한 답을 기다리기보다 오늘 몫의 첫 걸음만 당당히 내디뎌 보는 편이 좋습니다.',
+  general: '초원의 바람처럼 넓은 시야와 오늘의 작은 실천 한 가지를 함께 쥐면 흔들림이 줄어듭니다.',
+};
+
 function classifyKyrgyzTopic(question?: string): KyrgyzQuestionTopic {
   const q = (question ?? '').trim();
   if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(q)) return 'career';
@@ -97,11 +107,12 @@ export function calculateKyrgyzManasOralEpicCourage(params: {
   const picked = CHAPTERS[idx];
   const companion = CHAPTERS[(idx + companionOffset) % CHAPTERS.length];
   const questionTopic = classifyKyrgyzTopic(params.question);
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const steppeBreathAxis = `${picked.chapter.split('(')[0].trim()} ↔ ${companion.chapter.split('(')[0].trim()} 서사 호흡 축`;
   const shadowWarning = `[${picked.chapter.split('(')[0].trim()} 과잉 경계] 단거리 돌파나 고집에만 기대어 호흡의 완급과 동료의 화음을 놓치지 않도록 살피십시오.`;
 
   return {
-    engineVersion: 'LUCKEY-KYRGYZ-MANAS-v2.3.0',
+    engineVersion: 'LUCKEY-KYRGYZ-MANAS-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     epicChapter: picked.chapter,
@@ -109,6 +120,7 @@ export function calculateKyrgyzManasOralEpicCourage(params: {
     nomadInsight: `${picked.insight} (동반 장면: ${companion.chapter})`,
     steppeTone: picked.tone,
     steppeBreathAxis,
+    topicBalanceHint,
     shadowWarning,
     reflectionFocus: `마나스 서사시의 '${picked.chapter}'와 동반 장면 '${companion.chapter}'처럼, 한 번에 다 끝내려 하지 말고 오늘 몫의 걸음만 당당히 내디뎌 보세요.`,
     ritualAction: picked.ritual,
@@ -124,6 +136,7 @@ export function formatKyrgyzManasPrompt(res: KyrgyzManasResult): string {
     `- 서사 장면: ${res.epicChapter} (${res.steppeTone})`,
     `- 동반 장면: ${res.companionChapter}`,
     `- 서사 호흡 축: ${res.steppeBreathAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 중심 통찰: ${res.nomadInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,

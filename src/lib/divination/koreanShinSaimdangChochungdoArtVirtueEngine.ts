@@ -8,12 +8,12 @@
  * 4. 소박함 속의 고결한 품격 지표 (Modest Elegance & Quiet Rectitude Index): 화려함을 좇지 않고 단아하고 청초한 인품으로 삶의 균형과 단단한 중심을 지키는 품격.
  * 5. 현명한 감화 및 동반성장 지혜 지표 (Nurturing Wisdom & Co-Evolution Score): 강요와 억압 없이 온화한 모범과 덕성으로 주변 인연을 올바르게 성장시키는 지혜.
  *
- * @version LUCKEY-SHIN-SAIMDANG-CHOCHUNGDO-ART-VIRTUE-v2.2.0
+ * @version LUCKEY-SHIN-SAIMDANG-CHOCHUNGDO-ART-VIRTUE-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_SHIN_SAIMDANG_CHOCHUNGDO_ART_VIRTUE_VERSION = 'LUCKEY-SHIN-SAIMDANG-CHOCHUNGDO-ART-VIRTUE-v2.3.0';
+export const KOREAN_SHIN_SAIMDANG_CHOCHUNGDO_ART_VIRTUE_VERSION = 'LUCKEY-SHIN-SAIMDANG-CHOCHUNGDO-ART-VIRTUE-v2.4.0';
 
 export interface SaimdangTheme {
   themeKey: string;
@@ -34,6 +34,7 @@ export interface SaimdangAphorism {
 export interface KoreanShinSaimdangChochungdoArtVirtueResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '디테일·관조' | '효애·근본' | '주체·예술' | '소박·기품' | '감화·동반' | '사임당 전반';
   // 5대 신사임당 핵심 지표 (0~100)
   natureVitalityContemplationScore: number;     // 자연관조 화육생명 통찰 지표 (Nature Vitality & Contemplation)
   filialPietyAffectionIndex: number;            // 지극한 효애성심 및 가족화합 지수 (Filial Piety & Concord)
@@ -47,6 +48,7 @@ export interface KoreanShinSaimdangChochungdoArtVirtueResult {
   secondarySaimdangAphorism: SaimdangAphorism;
   ritualAction: string;
   reflectionFocus: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   saimdangComprehensiveGuidance: {
@@ -154,6 +156,23 @@ function hashString(str: string): number {
   return hash;
 }
 
+const SAIMDANG_SHADOWS: Record<string, string> = {
+  chochungdoVitality: '작은 풀꽃과 디테일까지 세심하게 살피는 관찰력이 정작 큰 흐름과 우선순위를 놓친 채 사소한 완벽주의에 갇히는 꼼꼼함으로 흐르지 않게 하세요.',
+  sachinDeepAffection: '가까운 인연과 뿌리를 지극히 품는 따스함이 내 자신의 정당한 경계와 숨 쉴 여백마저 모두 내어주어 지치는 과잉 돌봄이 되지 않게 살피세요.',
+  creativeSelfRealization: '주변의 관습을 넘어 나만의 예술과 길을 닦는 주체성이 함께 호흡하는 사람들의 속도와 현실적 조율을 도외시하는 고립으로 굳지 않게 균형을 잡으세요.',
+  dignifiedSimplicity: '소박하고 단아한 내면의 깊이를 지키는 태도가 꼭 필요한 표현과 정당한 성취의 기쁨마저 스스로 축소하는 과도한 겸손이 되지 않게 주의하세요.',
+  wiseNurturing: '강요 없이 본보기로 감화시키는 온화한 인내가 분명한 기준과 단호한 선 긋기가 필요한 순간까지 미루는 우유부단함으로 비치지 않게 하세요.',
+};
+
+function classifySaimdangTopic(q: string): KoreanShinSaimdangChochungdoArtVirtueResult['questionTopic'] {
+  if (/디테일|작은|관찰|관조|초충/.test(q)) return '디테일·관조';
+  if (/효|가족|근본|사랑|진심/.test(q)) return '효애·근본';
+  if (/재능|예술|주체|창작|자아/.test(q)) return '주체·예술';
+  if (/소박|단아|기품|내면|절제/.test(q)) return '소박·기품';
+  if (/감화|경청|성장|모범|온화/.test(q)) return '감화·동반';
+  return '사임당 전반';
+}
+
 export function calculateKoreanShinSaimdangChochungdoArtVirtue(
   profile?: UserProfile,
   query?: string,
@@ -165,7 +184,9 @@ export function calculateKoreanShinSaimdangChochungdoArtVirtue(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `SHIN-SAIMDANG-CHOCHUNGDO:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const trimmedQuery = (query ?? '').trim();
+  const questionTopic = classifySaimdangTopic(trimmedQuery);
+  const seedString = `SHIN-SAIMDANG-CHOCHUNGDO:${name}:${birthDate}:${birthTime}:${gender}:${trimmedQuery}`;
   const baseHash = hashString(seedString);
   const absHash = Math.abs(baseHash);
 
@@ -185,8 +206,8 @@ export function calculateKoreanShinSaimdangChochungdoArtVirtue(
   const focalSaimdangAphorism = SAIMDANG_APHORISMS[aphorismIndex];
   const secondarySaimdangAphorism = SAIMDANG_APHORISMS[secondaryAphorismIndex];
 
-  const trimmedQuery = query?.trim();
   const ritualAction = `[${activeSaimdangTheme.themeTitleKo.split(' — ')[0]}] ${focalSaimdangAphorism.actionGuidance}`;
+  const shadowWarning = SAIMDANG_SHADOWS[activeSaimdangTheme.themeKey] ?? SAIMDANG_SHADOWS.chochungdoVitality;
   const reflectiveQuestion = trimmedQuery
     ? `신사임당의 '${activeSaimdangTheme.themeTitleKo}'와 '${secondarySaimdangTheme.themeTitleKo}'를 비추어 볼 때, "${trimmedQuery}"에서 지나치기 쉬운 작은 디테일과 끝까지 지켜야 할 소박한 진심은 무엇인가요?`
     : `지금 마음을 쓰는 일 앞에서, '${activeSaimdangTheme.themeTitleKo}'의 세심한 관조와 '${secondarySaimdangTheme.themeTitleKo}'의 단아한 기품을 함께 살리려면 무엇을 덜어내야 할까요?`;
@@ -220,6 +241,7 @@ export function calculateKoreanShinSaimdangChochungdoArtVirtue(
   return {
     engineVersion: KOREAN_SHIN_SAIMDANG_CHOCHUNGDO_ART_VIRTUE_VERSION,
     calculatedAtKst,
+    questionTopic,
     natureVitalityContemplationScore,
     filialPietyAffectionIndex,
     sageSelfRealizationScore,
@@ -231,6 +253,7 @@ export function calculateKoreanShinSaimdangChochungdoArtVirtue(
     secondarySaimdangAphorism,
     ritualAction,
     reflectionFocus,
+    shadowWarning,
     reflectiveQuestion,
     interpretiveBoundary,
     saimdangComprehensiveGuidance: {
@@ -255,7 +278,7 @@ export function formatKoreanShinSaimdangChochungdoArtVirtuePrompt(
   const lines = [
     `【신사임당 《초충도》 자연관조 및 현철자아실현 지표】`,
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
-    `- 초충도·현철 국면: ${describeSaimdangStage(avgScore)}`,
+    `- 질문 맥락: ${res.questionTopic} | 초충도·현철 국면: ${describeSaimdangStage(avgScore)}`,
     `- 핵심 신사임당 테마: ${res.activeSaimdangTheme.themeTitleKo} [${res.activeSaimdangTheme.themeTitleEn}]`,
     `- 보조 교차 테마: ${res.secondarySaimdangTheme.themeTitleKo} [${res.secondarySaimdangTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeSaimdangTheme.pragmaticInsight}`,
@@ -265,6 +288,7 @@ export function formatKoreanShinSaimdangChochungdoArtVirtuePrompt(
     `- 원전 출처: [${res.focalSaimdangAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalSaimdangAphorism.actionGuidance}`,
     `- 실천 의례: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,

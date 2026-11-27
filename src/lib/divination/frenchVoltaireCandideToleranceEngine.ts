@@ -9,12 +9,12 @@
  * 4. 억울한 약자를 구명하고 진실을 밝히는 실천적 양심 및 정의 구현도(Justice Advocacy & Conscience Score): 카라스 사건 구명처럼 불의에 맞서 진실을 밝히는 용기.
  * 5. 헛된 관념론을 탈피하고 현실을 직시하는 분별력(Realistic Disillusionment & Clarity Index): 뜬구름 잡는 낙관론을 넘어 객관적 현실을 마주하는 힘.
  *
- * @version LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v2.3.0
+ * @version LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION = 'LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v2.3.0';
+export const FRENCH_VOLTAIRE_CANDIDE_TOLERANCE_VERSION = 'LUCKEY-VOLTAIRE-CANDIDE-TOLERANCE-v2.4.0';
 
 export type VoltaireQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -60,6 +60,7 @@ export interface FrenchVoltaireCandideToleranceResult {
   };
   questionTopic: VoltaireQuestionTopic;
   gardenPhase: string;
+  voltaireCrossAxis: string;
   shadowWarning: string;
   temporalRhythm: VoltaireTemporalRhythm;
   questionContextGuide: string;
@@ -250,6 +251,7 @@ export function calculateFrenchVoltaireCandideTolerance(
   const activeVoltaireTheme = VOLTAIRE_THEMES[themeIndex];
   const companionVoltaireTheme = VOLTAIRE_THEMES[(themeIndex + companionOffset) % VOLTAIRE_THEMES.length];
   const focalVoltaireAphorism = VOLTAIRE_APHORISMS[aphorismIndex];
+  const voltaireCrossAxis = `${activeVoltaireTheme.themeTitleKo} × ${companionVoltaireTheme.themeTitleKo} (${temporalRhythm.kstSlot})`;
   const gardenPhase = VOLTAIRE_GARDEN_PHASES[(absHash >> 11) % VOLTAIRE_GARDEN_PHASES.length];
   const shadowWarning = VOLTAIRE_SHADOW_WARNINGS[(absHash >> 14) % VOLTAIRE_SHADOW_WARNINGS.length];
 
@@ -310,6 +312,7 @@ export function calculateFrenchVoltaireCandideTolerance(
     },
     questionTopic,
     gardenPhase,
+    voltaireCrossAxis,
     shadowWarning,
     temporalRhythm,
     questionContextGuide: `${topicPack.guide} (동반 지혜: ${companionVoltaireTheme.themeTitleKo})`,
@@ -338,6 +341,7 @@ export function formatFrenchVoltaireCandideTolerancePrompt(
     `- 질문 맥락 맞춤 성찰 (${res.questionTopic}): ${res.questionContextGuide}`,
     `- 핵심 볼테르 실천 테마: ${res.activeVoltaireTheme.themeTitleKo} [${res.activeVoltaireTheme.themeTitleEn}]`,
     `- 동반 볼테르 실천 테마: ${res.companionVoltaireTheme.themeTitleKo}`,
+    `- 볼테르 교차 축: ${res.voltaireCrossAxis}`,
     `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 실천적 통찰: ${res.activeVoltaireTheme.pragmaticInsight}`,
     `- 행동 조언: ${res.activeVoltaireTheme.practicalCounsel}`,

@@ -1,11 +1,15 @@
 import type { UserProfile } from '../sharedState';
 
+export type BasothoQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'general';
+
 export interface BasothoBothoResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: BasothoQuestionTopic;
   mountainSign: string;
   companionSign: string;
   highlandPhase: string;
+  bothoCrossAxis: string;
   bothoInsight: string;
   highlandTone: string;
   reflectionFocus: string;
@@ -67,6 +71,22 @@ const SIGNS = [
   },
 ];
 
+const TOPIC_AXES: Record<BasothoQuestionTopic, string> = {
+  career: '일·커리어에서는 성과의 속도보다 동료와 신뢰가 남는 단정한 태도의 품위를 먼저 챙기세요.',
+  relationship: '관계에서는 논리로 이기기보다 서로가 다치지 않고 함께 건널 출구부터 여는 온기가 중요합니다.',
+  wealth: '재정·계약에서는 눈에 띄는 이익보다 오래 부끄럽지 않을 단정한 원칙과 품앗이의 균형을 지키세요.',
+  health: '건강·회복에서는 마른 땅을 적시는 단비처럼 조급한 무리 대신 꾸준하고 고요한 휴식을 이어 가세요.',
+  general: '오늘의 흐름에서는 고원 상징과 보조 맥락을 함께 살피며 태도의 온도와 중심을 지키세요.',
+};
+
+function classifyBasothoTopic(question: string): BasothoQuestionTopic {
+  if (/일|직장|사업|커리어|프로젝트|성과|이직/.test(question)) return 'career';
+  if (/사랑|연애|관계|가족|친구|갈등|화해|태도|품위/.test(question)) return 'relationship';
+  if (/돈|재물|재정|투자|소비|계약/.test(question)) return 'wealth';
+  if (/건강|몸|피로|휴식|수면|회복/.test(question)) return 'health';
+  return 'general';
+}
+
 function formatKstStandard(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -103,13 +123,17 @@ export function calculateBasothoBothoMountainWisdom(params: {
   const shadowWarning = SHADOW_WARNINGS[(idx + phaseIdx) % SHADOW_WARNINGS.length];
   const shortCompanion = companion.sign.split('(')[0].trim();
   const shortPhase = highlandPhase.split('(')[0].trim();
+  const questionTopic = classifyBasothoTopic(params.question ?? '');
+  const bothoCrossAxis = `${shortPhase} × ${shortCompanion} — ${TOPIC_AXES[questionTopic]}`;
 
   return {
-    engineVersion: 'LUCKEY-BASOTHO-BOTHO-v2.3.0',
+    engineVersion: 'LUCKEY-BASOTHO-BOTHO-v2.4.0',
     calculatedAtKst: formatKstStandard(now),
+    questionTopic,
     mountainSign: picked.sign,
     companionSign: companion.sign,
     highlandPhase,
+    bothoCrossAxis,
     bothoInsight: `${picked.insight} (국면: ${shortPhase})`,
     highlandTone: picked.tone,
     reflectionFocus: `남아프리카 바소토의 '${picked.sign}'을 중심에 두고 '${companion.sign}'의 온기를 곁들여 '${highlandPhase}' 흐름 속에서 결과의 크기만큼이나 태도의 품위를 챙겨야 할 때입니다.`,
@@ -127,6 +151,7 @@ export function formatBasothoBothoPrompt(res: BasothoBothoResult): string {
     `- 고원 상징: ${res.mountainSign} (${res.highlandTone})`,
     `- 보조 맥락: ${res.companionSign}`,
     `- 고원 국면: ${res.highlandPhase}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.bothoCrossAxis}`,
     `- 중심 통찰: ${res.bothoInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,

@@ -14,12 +14,12 @@
  * 1. 개인 점수·심리 진단·미래 예측이 아닙니다. 모든 산출은 정성적 성찰 문장입니다.
  * 2. 바스크 전통의 보편적 상징만 빌려 쓰며 출처 없는 인용문을 만들지 않습니다.
  *
- * @version LUCKEY-BASQUE-LAUBURU-v2.3.0
+ * @version LUCKEY-BASQUE-LAUBURU-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BASQUE_LAUBURU_HARMONY_VERSION = 'LUCKEY-BASQUE-LAUBURU-v2.3.0';
+export const BASQUE_LAUBURU_HARMONY_VERSION = 'LUCKEY-BASQUE-LAUBURU-v2.4.0';
 
 export type LauburuQuestionTopic = 'decision' | 'relationship' | 'healing' | 'reflection';
 
@@ -52,6 +52,7 @@ export interface BasqueLauburuBasajaunResult {
   lauburuArmKey: string;
   companionArmKey: string;
   cycleHarmonyPhase: string;
+  lauburuCrossAxis: string;
   shadowWarning: string;
   situationalLauburuAudit: SituationalLauburuAudit;
   temporalCyclePulse: LauburuCyclePulse;
@@ -206,6 +207,7 @@ export function calculateBasqueLauburuBasajaunHarmony(
 
   const situationalLauburuAudit = buildSituationalLauburuAudit(topic, lauburuArmKey);
   const temporalCyclePulse = buildTemporalCyclePulse(now);
+  const lauburuCrossAxis = `${topic} · ${lauburuArmKey.split('—')[0].trim()} × ${cycleHarmonyPhase.split('(')[0].trim()}`;
 
   const trimmedQ = (question ?? '').trim();
   const ritualAction = `${situationalLauburuAudit.forestPractice} 이어서 ${situationalLauburuAudit.renewalAdvice} (${cycleHarmonyPhase})`;
@@ -240,6 +242,7 @@ export function calculateBasqueLauburuBasajaunHarmony(
     lauburuArmKey,
     companionArmKey,
     cycleHarmonyPhase,
+    lauburuCrossAxis,
     shadowWarning,
     situationalLauburuAudit,
     temporalCyclePulse,
@@ -258,6 +261,7 @@ export function formatBasqueLauburuBasajaunHarmonyPrompt(res: BasqueLauburuBasaj
     `- 활성 순환 날개: ${res.lauburuArmKey}`,
     `- 동반 순환 날개: ${res.companionArmKey}`,
     `- 순환 국면: ${res.cycleHarmonyPhase}`,
+    `- 라부루 교차 축: ${res.lauburuCrossAxis}`,
     `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 질문 비춤: ${res.situationalLauburuAudit.cycleMirror}`,
     `- 토대 조언: ${res.situationalLauburuAudit.groundedAdvice}`,

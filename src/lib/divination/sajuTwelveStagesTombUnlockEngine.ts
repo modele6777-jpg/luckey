@@ -18,7 +18,7 @@ import {
   STEM_ELEMENT,
 } from '../sajuAnalysis';
 
-export const SAJU_12STAGES_TOMB_VERSION = 'LUCKEY-SAJU-12STAGES-TOMB-v2.3.0';
+export const SAJU_12STAGES_TOMB_VERSION = 'LUCKEY-SAJU-12STAGES-TOMB-v2.4.0';
 
 export interface TwelveStagePillarVitality {
   pillarName: '년주 (근본)' | '월주 (사회)' | '일주 (본원)' | '시주 (결실)';
@@ -58,6 +58,12 @@ export interface SajuTwelveStagesTombReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  tombCrossAxis: {
+    dayMaster: string;
+    peakStage: string;
+    storageCount: number;
+    primaryStorage: string;
   };
   interpretiveBoundary: string;
 }
@@ -257,6 +263,12 @@ export function calculateSajuTwelveStagesTomb(
     alignmentState: `${annual2026TombInteraction}`,
     integratedAction: tombKeyActionGuidance,
   };
+  const tombCrossAxis = {
+    dayMaster: dayGan,
+    peakStage: peakVitalityStage,
+    storageCount: tombStorages.length,
+    primaryStorage: hasTombStorage ? tombStorages[0].storageType : '건록·제왕 순수 추구',
+  };
 
   const interpretiveBoundary = '본 사주 12운성 포태법 & 묘고지 개고 리포트는 명리 원국 구조의 상징적 해석이며, 확정적 미래 예언이나 재무·투자 자문이 아닙니다.';
   const ritualAction = `[${peakVitalityStage}] ${tombKeyActionGuidance}`;
@@ -269,6 +281,7 @@ export function calculateSajuTwelveStagesTomb(
 - 개고 돌파 행동 처방: "${tombKeyActionGuidance}"
 - 2026 병오년 상호작용: "${annual2026TombInteraction}"
 - 교차 매트릭스 [핵심 긴장: ${tombSynthesisMatrix.dominantTension} | 조율 상태: ${tombSynthesisMatrix.alignmentState}]
+- 12운성·묘고 교차 축: 일간 ${tombCrossAxis.dayMaster} · 최고 활력 ${tombCrossAxis.peakStage} · 묘고지 ${tombCrossAxis.storageCount}개 (${tombCrossAxis.primaryStorage})
   * 통합 실천: ${tombSynthesisMatrix.integratedAction}
 - 실천 의례: ${ritualAction}
 - 성찰 초점: ${reflectionFocus}
@@ -293,6 +306,7 @@ export function calculateSajuTwelveStagesTomb(
     synthesisPromptGuidance,
     reflectiveQuestion,
     tombSynthesisMatrix,
+    tombCrossAxis,
     interpretiveBoundary,
   };
 }

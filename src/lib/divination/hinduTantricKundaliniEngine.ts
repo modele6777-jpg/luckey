@@ -24,7 +24,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HINDU_KUNDALINI_VERSION = 'LUCKEY-HINDU-KUNDALINI-v2.3.0';
+export const HINDU_KUNDALINI_VERSION = 'LUCKEY-HINDU-KUNDALINI-v2.4.0';
 
 export interface PrimaryNadiState {
   code: 'IDA' | 'PINGALA' | 'SUSHUMNA';
@@ -90,6 +90,11 @@ export interface HinduTantricKundaliniReport {
     nadiChakraNexus: string;
     awakeningPosture: string;
     coreDirective: string;
+  };
+  kundaliniCrossAxis: {
+    nadiPolarity: string;
+    granthiAlignment: string;
+    pranaDirection: string;
   };
   synthesisMessage: string;
   ritualAction: string;
@@ -318,6 +323,11 @@ export function calculateHinduTantricKundalini(params: {
   const reflectiveQuestion = cleanedContext
     ? `"${cleanedContext}"라는 마음의 물음 앞에서 지금 내 숨을 막고 있는 매듭(${situationalKundaliniAudit.granthiFocus})은 무엇이며, ${dominantChakraNode.koreanName}의 균형을 위해 오늘 내려놓을 집착은 무엇인가요?`
     : `${primaryNadi.sanskritName} 흐름 속에서 오늘 ${dominantChakraNode.focusChallenge}을(를) 깨우기 위해 가다듬을 호흡은 무엇인가요?`;
+  const kundaliniCrossAxis = {
+    nadiPolarity: `${primaryNadi.sanskritName} (${primaryNadi.solarLunarPolarity})`,
+    granthiAlignment: `${situationalKundaliniAudit.granthiFocus} · ${dominantChakraNode.koreanName}`,
+    pranaDirection: `${pranaWindow} · ${pranayama.primaryBreathwork}`,
+  };
 
   return {
     engineVersion: HINDU_KUNDALINI_VERSION,
@@ -331,6 +341,7 @@ export function calculateHinduTantricKundalini(params: {
     situationalKundaliniAudit,
     temporalKundaliniRhythm,
     kundaliniSynthesisMatrix,
+    kundaliniCrossAxis,
     synthesisMessage,
     ritualAction,
     reflectionFocus,
@@ -367,6 +378,7 @@ export function formatHinduTantricKundaliniPrompt(report: HinduTantricKundaliniR
   - 만트라 & 무드라: ${report.pranayama.seedMantraChanting} | ${report.pranayama.mudraAndBandha}
   - 일상 지침: ${report.pranayama.dailySadhanaAdvice}
 - **나디-차크라 교차 매트릭스**: ${report.kundaliniSynthesisMatrix.nadiChakraNexus} — ${report.kundaliniSynthesisMatrix.awakeningPosture} (${report.kundaliniSynthesisMatrix.coreDirective})
+- **쿤달리니 교차 축**: ${report.kundaliniCrossAxis.nadiPolarity} | 매듭 정렬: ${report.kundaliniCrossAxis.granthiAlignment} | 프라나 방향: ${report.kundaliniCrossAxis.pranaDirection}
 - **쿤달리니 통합 나침반**: ${report.synthesisMessage}
 - **실천 의례(Ritual Action)**: ${report.ritualAction}
 - **성찰 초점(Reflection Focus)**: ${report.reflectionFocus}

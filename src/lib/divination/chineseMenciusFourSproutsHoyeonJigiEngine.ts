@@ -3,12 +3,12 @@
  *
  * 전국시대 유학자 맹자(孟子)의 《맹자(孟子)》 공손추상·고자상·등문공하 원전 기반.
  *
- * @version LUCKEY-MENCIUS-FOUR-SPROUTS-HOYEON-v2.1.0
+ * @version LUCKEY-MENCIUS-FOUR-SPROUTS-HOYEON-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const MENCIUS_FOUR_SPROUTS_HOYEON_VERSION = 'LUCKEY-MENCIUS-FOUR-SPROUTS-HOYEON-v2.3.0';
+export const MENCIUS_FOUR_SPROUTS_HOYEON_VERSION = 'LUCKEY-MENCIUS-FOUR-SPROUTS-HOYEON-v2.4.0';
 
 export interface MenciusSproutStage {
   stageLevel: number;
@@ -45,6 +45,8 @@ export interface MenciusSynthesisMatrix {
 export interface MenciusFourSproutsHoyeonResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계/신뢰' | '일/진로' | '재정/균형' | '내면/회복' | '전환/결정';
+  menciusCrossAxis: string;
   // 5대 핵심 지표 (0~100)
   hoyeonJigiGreatVitalityScore: number; // 호연지기(浩然之氣) 대기운 함양도
   fourSproutsCultivationLevel: number;  // 사단사덕(四端四德) 인의예지 확충도
@@ -226,6 +228,15 @@ function buildTemporalHoyeonRhythm(now?: Date): MenciusTemporalHoyeonRhythm {
   };
 }
 
+function classifyMenciusTopic(question?: string): MenciusFourSproutsHoyeonResult['questionTopic'] {
+  const q = (question ?? '').toLowerCase();
+  if (/(사랑|연애|관계|결혼|사람|가족|친구|갈등|화해|신뢰|타협|상처)/.test(q)) return '관계/신뢰';
+  if (/(일|직장|진로|이직|사업|공부|시험|성과|프로젝트|소임)/.test(q)) return '일/진로';
+  if (/(돈|재정|투자|소비|수입|지출|저축|자산|균형)/.test(q)) return '재정/균형';
+  if (/(마음|불안|지침|회복|휴식|수면|건강|감정|조급|초조|지치)/.test(q)) return '내면/회복';
+  return '전환/결정';
+}
+
 export function calculateMenciusFourSproutsHoyeon(
   profile: UserProfile,
   question?: string,
@@ -256,6 +267,8 @@ export function calculateMenciusFourSproutsHoyeon(
   const primaryMenciusClassic = MENCIUS_CLASSICS[classicIndex];
   const situationalMoralAudit = buildSituationalMoralAudit(question);
   const temporalHoyeonRhythm = buildTemporalHoyeonRhythm(now);
+  const questionTopic = classifyMenciusTopic(question);
+  const menciusCrossAxis = `${activeMenciusStage.stageNameHanja.split(' ')[0]} × ${temporalHoyeonRhythm.sproutFocus} (${questionTopic})`;
 
   const fourSproutsBalance = Math.min(99, Math.round((fourSproutsCultivationLevel + daejangbuNobility) / 2));
   const jiYiAccumulation = Math.min(99, Math.round((jiYiMoralAccumulation + hoyeonJigiGreatVitalityScore) / 2));
@@ -287,6 +300,8 @@ export function calculateMenciusFourSproutsHoyeon(
   return {
     engineVersion: MENCIUS_FOUR_SPROUTS_HOYEON_VERSION,
     calculatedAtKst,
+    questionTopic,
+    menciusCrossAxis,
     hoyeonJigiGreatVitalityScore,
     fourSproutsCultivationLevel,
     buDongXinSteadfastness,
@@ -326,6 +341,7 @@ export function formatMenciusFourSproutsHoyeonPrompt(res: MenciusFourSproutsHoye
     `- 대장부 당당한 기개: ${describeMenciusStage(res.daejangbuNobility)}`,
     `- 집중 확충 사단: ${res.activeMenciusStage.stageNameHanja} (${res.activeMenciusStage.stageNameKo})`,
     `- 질문 맥락 도덕 감사 (${res.situationalMoralAudit.themeKo} · ${res.situationalMoralAudit.menciusCitation}): "${res.situationalMoralAudit.translationKo}" [${res.situationalMoralAudit.hanjaQuote}]`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.menciusCrossAxis}`,
     `- 조장(助長) 함정: ${res.situationalMoralAudit.jojangTrap}`,
     `- 일일 집의(集義) 의례: ${res.dailyPracticeRitual}`,
     `- KST 호연지기 리듬: ${res.temporalHoyeonRhythm.kstWindow} (${res.temporalHoyeonRhythm.sproutFocus}, ${res.temporalHoyeonRhythm.seasonalTone}, 명료 결: ${describeMenciusStage(res.temporalHoyeonRhythm.hoyeonClarityIndex)})`,

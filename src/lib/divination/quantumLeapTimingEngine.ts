@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const QUANTUM_LEAP_VERSION = 'LUCKEY-LEAP-v2.3.0';
+export const QUANTUM_LEAP_VERSION = 'LUCKEY-LEAP-v2.4.0';
 
 function formatQuantumLeapKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -79,6 +79,7 @@ export interface QuantumLeapResult {
   calculatedAtIso: string;
   calculatedAtKst: string;
   questionTopic: string;
+  quantumLeapCrossAxis: string;
   momentumPhase: {
     phase: 'latent_coil' | 'threshold_spark' | 'breakthrough_wave';
     titleKo: string;
@@ -192,6 +193,7 @@ export function calculateQuantumLeapTiming(params?: {
           };
 
   const shadowWarning = `과잉 경계: ${currentPhase.titleKo}에서는 '${currentPhase.warningTrap}' 유혹에 휩쓸리지 않도록 실행 기준을 선명하게 붙들어야 합니다.`;
+  const quantumLeapCrossAxis = `${questionTopic} · ${momentumPhase.titleKo.split(' ')[0]} × ${currentPhase.hanja}`;
 
   const quantumLeapSynthesisMatrix = {
     dominantTension: `${currentPhase.titleKo} ↔ ${currentPhase.warningTrap}`,
@@ -207,6 +209,7 @@ export function calculateQuantumLeapTiming(params?: {
     calculatedAtIso: now.toISOString(),
     calculatedAtKst,
     questionTopic,
+    quantumLeapCrossAxis,
     momentumPhase,
     shadowWarning,
     leapReadinessScore,
@@ -228,7 +231,7 @@ export function calculateQuantumLeapTiming(params?: {
 export function formatQuantumLeapPrompt(res: QuantumLeapResult): string {
   const lines = [
     `[퀀텀 점프 & 승부수 모멘텀 타이밍 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst})]`,
-    `- 질문 맥락: ${res.questionTopic} · 모멘텀 국면: ${res.momentumPhase.titleKo} (${res.momentumPhase.description})`,
+    `- 질문 맥락: ${res.questionTopic} · 모멘텀 국면: ${res.momentumPhase.titleKo} (${res.momentumPhase.description}) · 교차 축: ${res.quantumLeapCrossAxis}`,
     `- 퀀텀 점프 준비 상태: **${res.readinessTitle}**`,
     `- 현재 우주적 국면: **${res.currentPhase.titleKo}** [${res.currentPhase.hanja}]`,
     `  • 우주적 흐름: ${res.currentPhase.cosmicTheme}`,

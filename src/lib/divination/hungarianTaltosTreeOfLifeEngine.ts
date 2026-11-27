@@ -7,6 +7,7 @@ export interface HungarianTaltosResult {
   treeRealm: string;
   companionRealm: string;
   worldTreeAxis: string;
+  topicBalanceHint: string;
   leapInsight: string;
   steppeTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const TALTOS_SHADOWS = [
   '한 계단씩 성실히 오르는 동안에도 지금 내가 오르고 있는 사다리가 진짜 내 벽에 기대어 있는지 가끔 확인하세요.',
 ];
 
+const TALTOS_TOPIC_HINTS: Record<HungarianTaltosResult['questionTopic'], string> = {
+  '도약·시야': '넓은 시야로 전체를 조망하되 오늘 발밑에서 마쳐야 할 작은 약속도 함께 챙기세요.',
+  '직관·호기심': '반짝이는 직관의 신호를 따르되 이미 맡은 일의 책임과 마감도 차분히 이어 가세요.',
+  '계단·성실': '한 계단씩 성실히 오르되 지금 오르는 방향이 내가 진짜 원하는 목적지와 맞는지 가끔 확인하세요.',
+  '세계수 전반': '하늘을 향한 도약의 시야와 땅에 디딘 발걸음이 맞물릴 때 세계수의 균형이 살아납니다.',
+};
+
 function classifyTaltosTopic(q: string): HungarianTaltosResult['questionTopic'] {
   if (/시야|조망|도약|전체|목적지/.test(q)) return '도약·시야';
   if (/직관|호기심|진실|느낌|신호/.test(q)) return '직관·호기심';
@@ -102,15 +110,17 @@ export function calculateHungarianTaltosTreeOfLife(params: {
   const picked = REALMS[idx];
   const companion = REALMS[(idx + companionOffset) % REALMS.length];
   const worldTreeAxis = `${picked.realm.split('(')[0].trim()} ↔ ${companion.realm.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = TALTOS_TOPIC_HINTS[questionTopic];
   const shadowWarning = TALTOS_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-HUNGARIAN-TALTOS-v2.3.0',
+    engineVersion: 'LUCKEY-HUNGARIAN-TALTOS-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     treeRealm: picked.realm,
     companionRealm: companion.realm,
     worldTreeAxis,
+    topicBalanceHint,
     leapInsight: picked.insight,
     steppeTone: picked.tone,
     reflectionFocus: `'${picked.realm}'의 시선처럼, 지금 갇혀 있던 작은 틀에서 한 뼘만 위로 시선을 올려 보세요. (동반 결: ${companion.realm.split('(')[0].trim()})`,
@@ -126,6 +136,7 @@ export function formatHungarianTaltosPrompt(res: HungarianTaltosResult): string 
     `[헝가리 탈토시 세계수 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 세계수·도약 축: ${res.worldTreeAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 세계수 층위: ${res.treeRealm} (${res.steppeTone})`,
     `- 동반 층위: ${res.companionRealm}`,
     `- 중심 통찰: ${res.leapInsight}`,

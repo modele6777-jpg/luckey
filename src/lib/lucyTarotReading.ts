@@ -5,11 +5,11 @@ import { formatTarotMarker, type DetectedTarotCard } from '@/utils/tarotDetector
 export const LUCY_TAROT_RESPONSE_PROFILE = {
   maxOutputTokens: 8192,
   thinkingLevel: 'LOW' as const,
-  rule: `[타로 구체적 리딩 및 말풍선 구성 — 이번 카드 추첨에 우선 적용]
-- 일반 수다의 짧은 답변이나 마스터의 15개 도구 나열 대신, 실제로 뽑힌 카드 각각의 해석에 충분한 분량을 써.
-- 카드마다 이름·배열 위치·정역방향, 전통적 의미, 대표 상징과 의미의 연결, 질문에 대한 구체적 적용을 빠짐없이 설명해.
-- 카드마다 중요한 뜻과 질문에 맞는 근거를 한 번 설명하고, 다음 카드와의 연결로 이야기를 이어가. 마지막에는 중복 종합 대신 구체적인 행동 하나만 남겨. 빈 줄로 단락을 구분하고 친근한 반말 완결문으로 말해.
-- 여러 장이면 한 장도 생략하지 말고 카드 사이의 공통점·긴장·흐름을 함께 풀어줘.`,
+  rule: `[타로 리딩 — 짧은 보고서]
+- 칸은 한 줄 결론, 카드, 종합, 다음 행동, 주의만 쓰세요.
+- 카드마다 의미는 두 문장. 다음 카드는 새 정보만.
+- 역방향 주의는 '주의' 칸에 카드당 한 줄. 본문에 같은 문장을 다시 쓰지 마세요.
+- 마지막에 행동 하나만. 리딩 전체를 다시 요약하지 마세요.`,
 };
 
 export function buildLucyTarotReadingPrompt(cards: DetectedTarotCard[], question: string): string {

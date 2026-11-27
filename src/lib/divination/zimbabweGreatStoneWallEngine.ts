@@ -7,6 +7,7 @@ export interface ZimbabweStoneResult {
   zimbabweMotif: string;
   companionMotif: string;
   stoneLockAxis: string;
+  topicBalanceHint: string;
   zimbabweInsight: string;
   graniteTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const ZIMBABWE_SHADOWS = [
   '한 걸음씩 천천히 가는 안전함에만 머물러 과감히 넘어야 할 문턱을 미루지 않도록 주의하세요.',
 ];
 
+const ZIMBABWE_TOPIC_HINTS: Record<ZimbabweStoneResult['questionTopic'], string> = {
+  '관계·자리': '억지 접착제보다 각자 제 무게로 놓일 알맞은 자리를 찾아 줄 때 관계가 오래 버팁니다.',
+  '일·축적': '한꺼번에 밀어붙이기보다 좁은 통로를 지나듯 한 단씩 차분히 쌓아 올리는 편이 단단합니다.',
+  '시야·균형': '발밑의 돌멩이에만 매달리지 말고 고개를 들어 먼 지평선과 하늘의 흐름을 함께 살펴보세요.',
+  '구조 전반': '단단한 구조 위에도 작은 리듬과 여백을 얹어 주어야 오래 숨 쉴 수 있습니다.',
+};
+
 function classifyZimbabweTopic(q: string): ZimbabweStoneResult['questionTopic'] {
   if (/관계|자리|사람|사랑|가족|맞물/.test(q)) return '관계·자리';
   if (/일|직장|진로|축적|계획|통로/.test(q)) return '일·축적';
@@ -102,15 +110,17 @@ export function calculateZimbabweGreatStoneWall(params: {
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const stoneLockAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = ZIMBABWE_TOPIC_HINTS[questionTopic];
   const shadowWarning = ZIMBABWE_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-ZIMBABWE-STONE-v2.3.0',
+    engineVersion: 'LUCKEY-ZIMBABWE-STONE-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     zimbabweMotif: picked.motif,
     companionMotif: companion.motif,
     stoneLockAxis,
+    topicBalanceHint,
     zimbabweInsight: picked.insight,
     graniteTone: picked.tone,
     reflectionFocus: `그레이트 짐바브웨 돌담의 '${picked.motif}'처럼, 억지로 묶으려 하기보다 제 무게로 알맞게 맞물리는 자리를 찾아보세요. (동반 결: ${companion.motif.split('(')[0].trim()})`,
@@ -126,6 +136,7 @@ export function formatZimbabweStonePrompt(res: ZimbabweStoneResult): string {
     `[그레이트 짐바브웨·돌담 지혜 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 석조 축: ${res.stoneLockAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 짐바브웨 모티프: ${res.zimbabweMotif} (${res.graniteTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.zimbabweInsight}`,

@@ -1,11 +1,15 @@
 import type { UserProfile } from '../sharedState';
 
+export type BretonBarzazTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'general';
+
 export interface BretonBarzazResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: BretonBarzazTopic;
   coastalMotif: string;
   companionMotif: string;
   tidePhase: string;
+  barzazCrossAxis: string;
   barzazInsight: string;
   seaTone: string;
   shadowWarning: string;
@@ -65,6 +69,22 @@ const MOTIFS = [
   },
 ];
 
+const TOPIC_AXES: Record<BretonBarzazTopic, string> = {
+  career: '일·커리어에서는 안개 너머 결과 전체보다 등대 불빛처럼 지금 비출 수 있는 한 걸음의 과제부터 실행하세요.',
+  relationship: '관계에서는 긴 설명보다 진심이 담긴 짧은 한 문장으로 마음의 결을 부드럽게 건네 보세요.',
+  wealth: '재정·계약에서는 밀물과 썰물의 때를 가려 억지로 밀어붙일 시기와 멈춰 살필 시기를 구분하세요.',
+  health: '건강·회복에서는 남들의 속도를 따르기보다 멘히르 선돌처럼 내 호흡 박자를 먼저 고르세요.',
+  general: '오늘의 흐름에서는 해안 모티프와 동반 결을 함께 짚어 나아갈 때와 숨 고를 때를 분별하세요.',
+};
+
+function classifyBretonTopic(question: string): BretonBarzazTopic {
+  if (/일|직장|사업|커리어|프로젝트|성과|실행/.test(question)) return 'career';
+  if (/사랑|연애|관계|가족|친구|갈등|진심/.test(question)) return 'relationship';
+  if (/돈|재물|재정|투자|소비|계약|밀물|썰물/.test(question)) return 'wealth';
+  if (/건강|몸|피로|휴식|수면|호흡/.test(question)) return 'health';
+  return 'general';
+}
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -97,13 +117,19 @@ export function calculateBretonBarzazSeaPoetry(params: {
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const tidePhase = TIDE_PHASES[stableHash(`${seed}|phase`) % TIDE_PHASES.length];
   const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
+  const questionTopic = classifyBretonTopic(params.question ?? '');
+  const shortPhase = tidePhase.split('(')[0].trim();
+  const shortCompanion = companion.motif.split('(')[0].trim();
+  const barzazCrossAxis = `${shortPhase} × ${shortCompanion} — ${TOPIC_AXES[questionTopic]}`;
 
   return {
-    engineVersion: 'LUCKEY-BRETON-BARZAZ-v2.3.0',
+    engineVersion: 'LUCKEY-BRETON-BARZAZ-v2.4.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     coastalMotif: picked.motif,
     companionMotif: companion.motif,
     tidePhase,
+    barzazCrossAxis,
     barzazInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     seaTone: picked.tone,
     shadowWarning,
@@ -121,6 +147,7 @@ export function formatBretonBarzazPrompt(res: BretonBarzazResult): string {
     `- 해안 모티프: ${res.coastalMotif} (${res.seaTone})`,
     `- 동반 결: ${res.companionMotif}`,
     `- 조수 국면: ${res.tidePhase}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.barzazCrossAxis}`,
     `- 중심 통찰: ${res.barzazInsight}`,
     `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,

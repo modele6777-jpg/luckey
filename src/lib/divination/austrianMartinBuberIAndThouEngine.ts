@@ -9,12 +9,12 @@
  * 4. 사이의 영역 거룩한 성찰도(Between-Sphere Meaning Index): 의미와 진리는 고립된 개인 안에 갇혀 있는 것이 아니라, 사람과 사람 사이(Das Zwischen)에서 탄생한다는 관계성.
  * 5. 영원한 너 교감 신뢰도(Eternal Thou Communion Trust Score): 삶의 모든 참된 만남의 지평 너머에 깃든 영원한 존재와의 궁극적 일체감과 영적 평정심.
  *
- * @version LUCKEY-MARTIN-BUBER-DIALOGUE-v2.0.0
+ * @version LUCKEY-MARTIN-BUBER-DIALOGUE-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_MARTIN_BUBER_VERSION = 'LUCKEY-MARTIN-BUBER-DIALOGUE-v2.3.0';
+export const AUSTRIAN_MARTIN_BUBER_VERSION = 'LUCKEY-MARTIN-BUBER-DIALOGUE-v2.4.0';
 
 export type BuberQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -69,6 +69,8 @@ export interface AustrianMartinBuberIAndThouResult {
   situationalBuberAudit: BuberSituationalAudit;
   temporalBuberRhythm: BuberTemporalRhythm;
   reflectiveQuestion: string;
+  buberCrossAxis: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
   buberSynthesisMatrix?: {
     coreInsight: string;
@@ -314,6 +316,8 @@ export function calculateAustrianMartinBuberIAndThou(
     `${temporalBuberRhythm.dailyWatchword}`;
 
   const trimmedQuery = (query ?? '').trim();
+  const buberCrossAxis = `${questionTopic} · ${activeBuberTheme.themeKey} × ${temporalBuberRhythm.timeWindowKo.split('·')[0].trim()}`;
+  const shadowWarning = `과잉·편향 경계: '나와 너(Ich-Du)'의 친밀함을 상대의 경계까지 침범하는 밀착이나 일방적 기대의 명분으로 삼지 않도록 여백을 지키십시오.`;
   const reflectiveQuestion = trimmedQuery
     ? `지금 품고 계신 "${trimmedQuery}"라는 물음 앞에서, 상대를 내 기준이나 목적에 맞추는 '그것(Es)'이 아니라 온전한 '너(Du)'로 마주할 때 어떤 대화가 열릴까요?`
     : situationalBuberAudit.reflectionFocus;
@@ -332,6 +336,8 @@ export function calculateAustrianMartinBuberIAndThou(
     situationalBuberAudit,
     temporalBuberRhythm,
     reflectiveQuestion,
+    buberCrossAxis,
+    shadowWarning,
     interpretiveBoundary: situationalBuberAudit.boundaryNotice,
     buberSynthesisMatrix: {
       coreInsight: activeBuberTheme.themeTitleKo,
@@ -360,6 +366,8 @@ export function formatAustrianMartinBuberIAndThouPrompt(
     `- 일상 의례 제안: ${res.situationalBuberAudit.ritualAction}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.buberSynthesisMatrix?.coreInsight ?? res.activeBuberTheme.themeTitleKo}) | 실행(${res.buberSynthesisMatrix?.recommendedAction ?? res.situationalBuberAudit.practiceGuidance}) | 주의(${res.buberSynthesisMatrix?.cautionNotice ?? '도구화 경계'})`,
+    `- 부버 교차 축: ${res.buberCrossAxis}`,
+    `- ${res.shadowWarning}`,
     `- 조언 요약: ${res.situationalBuberAudit.counselNote}`,
     `- 부버 원전 명언: "${res.focalBuberAphorism.aphorismKo}" [${res.focalBuberAphorism.aphorismDe}]`,
     `- 원전 출처: [${res.focalBuberAphorism.sourceContext}]`,

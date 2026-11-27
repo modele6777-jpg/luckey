@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HUANGDI_YUNQI_VERSION = 'LUCKEY-HUANGDI-YUNQI-v2.3.0';
+export const HUANGDI_YUNQI_VERSION = 'LUCKEY-HUANGDI-YUNQI-v2.4.0';
 
 export interface FiveMovementYear {
   element: '목(木)' | '화(火)' | '토(土)' | '금(金)' | '수(水)';
@@ -75,6 +75,11 @@ export interface HuangdiFiveMovementsSixQiReport {
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
+  };
+  yunqiCrossAxis: {
+    movementPolarityPair: string;
+    siTianZaiQuanSpan: string;
+    organCareAxis: string;
   };
   boundaryNotice: string;
   interpretiveBoundary: string;
@@ -269,6 +274,11 @@ export function calculateHuangdiFiveMovementsSixQi(
   const reflectiveQuestion = q
     ? `지금 "${q}" 앞에서 ${movementName}·${susceptibleOrgans}의 균형을 지키기 위해 오늘 실천할 작은 섭생 한 가지는 무엇인가요?`
     : `지금 ${birthYearGanZhi} 선천 천기와 ${heavenRulerSiTian} 기상 속에서 몸과 마음의 리듬을 지키기 위해 덜어낼 과로는 무엇인가요?`;
+  const yunqiCrossAxis = {
+    movementPolarityPair: `${birthYearGanZhi} · ${movementName}`,
+    siTianZaiQuanSpan: `${heavenRulerSiTian} ↔ ${earthRulerZaiQuan}`,
+    organCareAxis: `${susceptibleOrgans} · ${breathMindHarmonization}`,
+  };
 
   return {
     engineVersion: HUANGDI_YUNQI_VERSION,
@@ -296,6 +306,7 @@ export function calculateHuangdiFiveMovementsSixQi(
     situationalYunqiAudit,
     temporalYunqiRhythm,
     yunqiSynthesisMatrix,
+    yunqiCrossAxis,
     ritualAction,
     reflectionFocus,
     reflectiveQuestion,
@@ -321,6 +332,7 @@ export function formatHuangdiFiveMovementsSixQiPrompt(report: HuangdiFiveMovemen
 - **KST 시공간 운기 리듬**: ${report.temporalYunqiRhythm.organWatchWindow} / ${report.temporalYunqiRhythm.seasonalYunqiTone}
   - 시공간 지침: ${report.temporalYunqiRhythm.temporalGuidance}
 - **운기 교차 매트릭스**: 핵심(${report.yunqiSynthesisMatrix.coreInsight}) | 실행(${report.yunqiSynthesisMatrix.recommendedAction}) | 주의(${report.yunqiSynthesisMatrix.cautionNotice})
+- **운기 교차 축**: ${report.yunqiCrossAxis.movementPolarityPair} | 사천·재천 축: ${report.yunqiCrossAxis.siTianZaiQuanSpan} | 장부 조율: ${report.yunqiCrossAxis.organCareAxis}
 - **기상의학적 생체 나침반 (황제내경 운기 처방)**:
   - 주의 장부/경락: ${report.medicineRx.susceptibleOrgans}
   - 취약 병리 성향: ${report.medicineRx.pathologicalTendency}

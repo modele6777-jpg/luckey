@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TIEBAN_SHENSHU_VERSION = 'LUCKEY-TIEBAN-SHENSHU-v2.3.0';
+export const TIEBAN_SHENSHU_VERSION = 'LUCKEY-TIEBAN-SHENSHU-v2.4.0';
 
 function formatTiebanKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -82,6 +82,11 @@ export interface TiebanReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  tiebanCrossAxis: {
+    kuaClausePair: string;
+    cycleToneAlignment: string;
+    primeAnchor: string;
   };
   ritualAction: string;
   reflectionFocus: string;
@@ -360,6 +365,11 @@ export function calculateTiebanShenshu(
     alignmentState: `${cyclicalPhase} · 주재음(${dominantTone})`,
     integratedAction: `${wisdomClause.actionableGuidance}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const tiebanCrossAxis = {
+    kuaClausePair: `${kuaName} · 제${inherentClause.clauseNumber}조 ↔ 제${timingClause.clauseNumber}조`,
+    cycleToneAlignment: `${cyclicalPhase} · ${dominantTone}`,
+    primeAnchor: `태현수 ${inherentPrimeNumber} · 제${wisdomClause.clauseNumber}조`,
+  };
   const interpretiveBoundary = '본 철판신수(鐵板神數) 조식 리포트는 태현수·괘기·원회운세 수리에 기반한 성찰 참고 지표이며, 확정적 숙명 예언이나 법률·투자 자문이 아닙니다.';
   const ritualAction = `${wisdomClause.actionableGuidance} 오늘 하루 "${wisdomClause.classicalPoem}" 구절을 마음속 나침반으로 삼으십시오.`;
   const reflectionFocus = `선천 태현수 ${inherentPrimeNumber}·${kuaName} 괘기와 제${timingClause.clauseNumber}조(${timingClause.title}) 결단 시기의 균형`;
@@ -380,6 +390,7 @@ export function calculateTiebanShenshu(
     tacticalWindows,
     reflectiveQuestion,
     tiebanSynthesisMatrix,
+    tiebanCrossAxis,
     ritualAction,
     reflectionFocus,
     interpretiveBoundary,
@@ -397,7 +408,7 @@ export function formatTiebanShenshuPrompt(report: TiebanReport): string {
     ? `\n5. 철판 3대 결단 윈도우 및 심결 잠언:\n   * 전반기 돌파: ${report.tacticalWindows.earlyBreakthrough}\n   * 중반기 결실: ${report.tacticalWindows.midConsolidation}\n   * 후반기 수성: ${report.tacticalWindows.latePreservation}\n   * 비전 심결: ${report.tacticalWindows.masterMotto}`
     : '';
   const matrixBlock = report.tiebanSynthesisMatrix
-    ? `\n- 철판신수 교차 매트릭스: 핵심 긴장(${report.tiebanSynthesisMatrix.dominantTension}) · 조율 상태(${report.tiebanSynthesisMatrix.alignmentState}) · 통합 실천(${report.tiebanSynthesisMatrix.integratedAction})`
+    ? `\n- 철판신수 교차 매트릭스: 핵심 긴장(${report.tiebanSynthesisMatrix.dominantTension}) · 조율 상태(${report.tiebanSynthesisMatrix.alignmentState}) · 통합 실천(${report.tiebanSynthesisMatrix.integratedAction})\n- 철판 교차 축: ${report.tiebanCrossAxis.kuaClausePair} | ${report.tiebanCrossAxis.cycleToneAlignment}`
     : '';
 
   return `[고대 중국 철판신수(鐵板神數) 천기운명 조식 & 태현수비학 엔진 (${report.engineVersion} | ${report.calculatedAtKst})]

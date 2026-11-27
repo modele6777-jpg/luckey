@@ -3,12 +3,12 @@
  *
  * 명나라 유학자 왕양명(王陽明, 왕수인)의 《전습록(傳習錄)》 원전 기반.
  *
- * @version LUCKEY-WANG-YANGMING-LIANGZHI-v2.1.0
+ * @version LUCKEY-WANG-YANGMING-LIANGZHI-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const WANG_YANGMING_LIANGZHI_VERSION = 'LUCKEY-WANG-YANGMING-LIANGZHI-v2.3.0';
+export const WANG_YANGMING_LIANGZHI_VERSION = 'LUCKEY-WANG-YANGMING-LIANGZHI-v2.4.0';
 
 export interface XinxueStage {
   stageLevel: number;
@@ -45,6 +45,8 @@ export interface YangmingSynthesisMatrix {
 export interface WangYangmingXinxueResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '관계/신뢰' | '일/진로' | '재정/균형' | '내면/회복' | '전환/결정';
+  yangmingCrossAxis: string;
   // 5대 핵심 지표 (0~100)
   liangzhiIntuitionScore: number;     // 치양지(致良知) 본래직관 발현도
   zhiXingUnityPower: number;          // 지행합일(知行合一) 실천 행동력
@@ -233,6 +235,15 @@ function buildTemporalLiangzhiRhythm(now?: Date): YangmingTemporalLiangzhiRhythm
   };
 }
 
+function classifyYangmingTopic(question?: string): WangYangmingXinxueResult['questionTopic'] {
+  const q = (question ?? '').toLowerCase();
+  if (/(사랑|연애|관계|결혼|사람|가족|친구|갈등|화해|신뢰|눈치|비교)/.test(q)) return '관계/신뢰';
+  if (/(일|직장|진로|이직|사업|공부|시험|성과|업무|실행|행동)/.test(q)) return '일/진로';
+  if (/(돈|재정|투자|소비|수입|지출|저축|자산|균형)/.test(q)) return '재정/균형';
+  if (/(마음|불안|지침|회복|휴식|수면|건강|감정|두렵)/.test(q)) return '내면/회복';
+  return '전환/결정';
+}
+
 export function calculateWangYangmingXinxue(
   profile: UserProfile,
   question?: string,
@@ -263,6 +274,8 @@ export function calculateWangYangmingXinxue(
   const primaryXinxueAphorism = XINXUE_APHORISMS[aphorismIndex];
   const situationalXinxueAudit = buildSituationalXinxueAudit(question);
   const temporalLiangzhiRhythm = buildTemporalLiangzhiRhythm(now);
+  const questionTopic = classifyYangmingTopic(question);
+  const yangmingCrossAxis = `${activeXinxueStage.stageNameHanja.split(' ')[0]} × ${temporalLiangzhiRhythm.xinxueFocus} (${questionTopic})`;
 
   const liangzhiClarity = Math.min(99, Math.round((liangzhiIntuitionScore + xinZhiLiMindCoreIntegrity) / 2));
   const zhiXingUnity = Math.min(99, Math.round((zhiXingUnityPower + temporalLiangzhiRhythm.liangzhiClarityIndex) / 2));
@@ -294,6 +307,8 @@ export function calculateWangYangmingXinxue(
   return {
     engineVersion: WANG_YANGMING_LIANGZHI_VERSION,
     calculatedAtKst,
+    questionTopic,
+    yangmingCrossAxis,
     liangzhiIntuitionScore,
     zhiXingUnityPower,
     xinZhiLiMindCoreIntegrity,
@@ -333,6 +348,7 @@ export function formatWangYangmingXinxuePrompt(res: WangYangmingXinxueResult): s
     `- 발본색원(拔本塞源) 청정: ${describeYangmingStage(res.baBenSaiYuanSelflessPurity)}`,
     `- 현재 심학 수양 단계: ${res.activeXinxueStage.stageNameHanja} (${res.activeXinxueStage.stageNameKo})`,
     `- 질문 맥락 심학 처방 (${res.situationalXinxueAudit.themeKo} · ${res.situationalXinxueAudit.chuanxiluCitation}): "${res.situationalXinxueAudit.translationKo}" [${res.situationalXinxueAudit.hanjaQuote}]`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.yangmingCrossAxis}`,
     `- 마음의 도적(心中賊): ${res.situationalXinxueAudit.innerThiefTrap}`,
     `- 일일 사전마련 의례: ${res.dailyPracticeRitual}`,
     `- KST 양지 리듬: ${res.temporalLiangzhiRhythm.kstWindow} (${res.temporalLiangzhiRhythm.xinxueFocus}, ${res.temporalLiangzhiRhythm.seasonalTone}, 명료 결: ${describeYangmingStage(res.temporalLiangzhiRhythm.liangzhiClarityIndex)})`,

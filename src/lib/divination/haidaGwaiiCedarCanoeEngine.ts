@@ -7,6 +7,7 @@ export interface HaidaGwaiiResult {
   haidaMotif: string;
   companionMotif: string;
   cedarTideAxis: string;
+  topicBalanceHint: string;
   haidaInsight: string;
   cedarTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const HAIDA_SHADOWS = [
   '썰물 뒤에 남은 내 몫을 챙기는 동안 다시 밀려올 다음 밀물의 방향과 시간표도 함께 살펴 두세요.',
 ];
 
+const HAIDA_TOPIC_HINTS: Record<HaidaGwaiiResult['questionTopic'], string> = {
+  '부력·비움': '덜어낼수록 배가 가벼워져 큰 파도를 타기 쉬워지니 불필요한 걱정부터 내려놓으세요.',
+  '순환·연대': '내가 가진 여유를 먼저 나눌 때 관계의 물길도 막히지 않고 넓게 순환합니다.',
+  '호흡·거름': '잠시 멈춘 시간마저 다음 싹을 키우는 촉촉한 거름이 되니 너무 조급해하지 마세요.',
+  '항해 전반': '비움의 부력과 나눔의 순환이 어우러질 때 거친 바다도 고요히 건널 수 있습니다.',
+};
+
 function classifyHaidaTopic(q: string): HaidaGwaiiResult['questionTopic'] {
   if (/비움|짐|가볍|부력|카누/.test(q)) return '부력·비움';
   if (/나눔|순환|관계|공동체|여력/.test(q)) return '순환·연대';
@@ -102,15 +110,17 @@ export function calculateHaidaGwaiiCedarCanoe(params: {
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const cedarTideAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = HAIDA_TOPIC_HINTS[questionTopic];
   const shadowWarning = HAIDA_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-HAIDA-GWAII-v2.3.0',
+    engineVersion: 'LUCKEY-HAIDA-GWAII-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     haidaMotif: picked.motif,
     companionMotif: companion.motif,
     cedarTideAxis,
+    topicBalanceHint,
     haidaInsight: picked.insight,
     cedarTone: picked.tone,
     reflectionFocus: `하이다 과이 삼나무 카누의 '${picked.motif}'과 동반 결 '${companion.motif}'을 함께 헤아리며, 마음을 가볍게 비워 파도를 넘는 부력을 키워 보세요.`,
@@ -126,6 +136,7 @@ export function formatHaidaGwaiiPrompt(res: HaidaGwaiiResult): string {
     `[하이다 과이·삼나무 카누 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 삼나무·물때 축: ${res.cedarTideAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 하이다 모티프: ${res.haidaMotif} (${res.cedarTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.haidaInsight}`,

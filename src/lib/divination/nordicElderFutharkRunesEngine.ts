@@ -19,7 +19,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NORDIC_RUNES_VERSION = 'LUCKEY-NORDIC-RUNES-v2.3.0';
+export const NORDIC_RUNES_VERSION = 'LUCKEY-NORDIC-RUNES-v2.4.0';
 
 export type NordicRunesQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -68,6 +68,11 @@ export interface NordicElderFutharkRunesReport {
     secondaryRuneSummary: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  runesCrossAxis: {
+    birthToPresent: string;
+    nornsAxis: string;
+    bindruneFocus: string;
   };
 }
 
@@ -483,6 +488,11 @@ export function calculateNordicElderFutharkRunes(params: {
     alignmentState: describeRunesStage(cosmicWyrdResonanceScore),
     integratedAction: `${verdandiPresent.uprightInterpretation} [과잉 경계: ${verdandiPresent.reversedWarning}]${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
   };
+  const runesCrossAxis = {
+    birthToPresent: `${birthRune.runeSymbol} ${birthRune.runeName} → ${verdandiPresent.runeSymbol} ${verdandiPresent.runeName}`,
+    nornsAxis: `${urdPast.runeName} · ${verdandiPresent.runeName} · ${skuldFuture.runeName}`,
+    bindruneFocus: `${bindruneTalisman.talismanName} (${secondaryRune.wyrdWeavingKeyword})`,
+  };
 
   return {
     engineVersion: NORDIC_RUNES_VERSION,
@@ -505,6 +515,7 @@ export function calculateNordicElderFutharkRunes(params: {
     reflectiveQuestion,
     interpretiveBoundary,
     runesSynthesisMatrix,
+    runesCrossAxis,
   };
 }
 
@@ -526,6 +537,7 @@ export function formatNordicElderFutharkRunesPrompt(report: NordicElderFutharkRu
   if (report.runesSynthesisMatrix) {
     lines.push(
       `- **교차 매트릭스**: [핵심 긴장: ${report.runesSynthesisMatrix.dominantTension} | 보조 교차 룬: ${report.runesSynthesisMatrix.secondaryRuneSummary} | 조율 상태: ${report.runesSynthesisMatrix.alignmentState}]`,
+      `- **룬 교차 축**: ${report.runesCrossAxis.birthToPresent} | 노른 축: ${report.runesCrossAxis.nornsAxis} | 바인드룬: ${report.runesCrossAxis.bindruneFocus}`,
       `- **통합 실천**: ${report.runesSynthesisMatrix.integratedAction}`,
     );
   }

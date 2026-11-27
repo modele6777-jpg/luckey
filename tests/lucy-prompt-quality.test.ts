@@ -22,14 +22,18 @@ function jsonOf(prompt: string): any[] {
 }
 
 for (const { label, basic } of PROFILES) {
-  for (const depth of [1, 2, 3] as const) {
-    test(`prompt quality · ${label} · 단계 ${depth}`, () => {
+  for (const base of ['saju', 'tarot_saju'] as const) {
+    test(`prompt quality · ${label} · 루시프로 ${base}`, () => {
       for (const text of QUESTIONS) {
-        const r = routeAndExecute({ text, profile: { basic } as any, isMasterRequested: true, divinationMode: { base: depth >= 2 ? 'tarot_saju' : 'saju', depth } });
+        const r = routeAndExecute({ text, profile: { basic } as any, isMasterRequested: true, divinationMode: { base } });
         const prompt = r.promptInjection;
-        assert.ok(prompt.length < (depth === 3 ? 60000 : 15000), `${depth}단계 길이 ${prompt.length}`);
+        assert.ok(prompt.length < 60000, `통합 상담 길이 ${prompt.length}`);
         for (const word of BANNED) assert.ok(!prompt.includes(word), `금지 항목 ${word}`);
         const tools = jsonOf(prompt);
+        // 🔮 절제: 이번 고민에 고른 소수 도구만 프롬프트에 들어간다(13대 전수 주입 금지).
+        assert.ok(tools.length === r.routePlan.targetTools.length, `tools in prompt ${tools.length} vs selected ${r.routePlan.targetTools.length}`);
+        assert.ok(tools.length <= 3, `통합 상담 도구 상한 ${tools.length}`);
+        assert.ok(tools.find(t => t.tool === '사주명리'), '사주는 언제나 중심이다');
         const iching = tools.find(t => t.tool === '주역');
         if (iching?.status === 'calculated') {
           assert.match(String(iching.scope), /지금 시각의 괘/);
@@ -39,7 +43,6 @@ for (const { label, basic } of PROFILES) {
         }
         const taiyi = tools.find(t => t.tool === '태을신수');
         if (taiyi?.status === 'calculated') assert.match(String(taiyi.scope), /올해의 연국/);
-        if (depth < 3) assert.ok(!tools.some(t => t.tool === '주역' && t.status === 'calculated'), '1·2단계에는 13대 도구가 없다');
         if (!basic.birthtime) assert.ok(!prompt.includes('명궁 주성'), '생시가 없으면 자미두수 명궁 카드를 붙이지 않는다');
       }
     });
@@ -47,6 +50,6 @@ for (const { label, basic } of PROFILES) {
 }
 
 test('without a birth date no personal cards are attached', () => {
-  const r = routeAndExecute({ text: '이직 고민', profile: { basic: {} } as any, isMasterRequested: true, divinationMode: { base: 'tarot_saju', depth: 3 } });
+  const r = routeAndExecute({ text: '이직 고민', profile: { basic: {} } as any, isMasterRequested: true, divinationMode: { base: 'tarot_saju' } });
   for (const personal of ['자미두수 명궁 주성', '구성학 본명성', '숙요 본명숙']) assert.ok(!r.promptInjection.includes(personal), personal);
 });

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Copy, Loader2, Volume2, VolumeX } from 'lucide-react';
+import { Check, Copy, Loader2, Play, Volume2, VolumeX } from 'lucide-react';
 import { LucyProTypewriter } from '@/components/LucyProTypewriter';
 import { splitIntoKakaoBubbles, joinKakaoBubblesForTTS } from '@/lib/lucyChatUtils';
 import { cleanSentenceForMatching, isSentenceActive } from '@/components/common/TTSHighlightedText';
@@ -30,6 +30,7 @@ interface LucyKakaoBubbleGroupProps {
   ttsInfo?: {
     isSpeaking: boolean;
     isLoading: boolean;
+    isPaused?: boolean;
     activeText: string | null;
     activeSentence?: string | null;
   };
@@ -153,7 +154,7 @@ export function LucyKakaoBubbleGroup({
 
   // 현재 TTS가 이 메시지 그룹을 읽고 있을 때 감지 (ID 일치 또는 활성 발화문 포함 검사)
   const isThisMsgPlaying = useMemo(() => {
-    const isSpeakingOrLoading = Boolean(ttsInfo?.isSpeaking || ttsInfo?.isLoading);
+    const isSpeakingOrLoading = Boolean(ttsInfo?.isSpeaking || ttsInfo?.isLoading || ttsInfo?.isPaused);
     if (!isSpeakingOrLoading) return false;
     // playingMsgId가 명시적으로 주어진 경우 해당 ID와 엄격 일치 여부만 신뢰 (다른 메시지로의 오염 방지)
     if (playingMsgId) {
@@ -171,7 +172,7 @@ export function LucyKakaoBubbleGroup({
       return isSentenceActive(textContent, activeCandidate);
     }
     return false;
-  }, [playingMsgId, msgId, ttsInfo?.isSpeaking, ttsInfo?.isLoading, ttsInfo?.activeSentence, ttsInfo?.activeText, textContent]);
+  }, [playingMsgId, msgId, ttsInfo?.isSpeaking, ttsInfo?.isLoading, ttsInfo?.isPaused, ttsInfo?.activeSentence, ttsInfo?.activeText, textContent]);
 
   // 음성이 이 답변을 읽기 시작하면 문장 하이라이트·스크롤이 맞도록 남은 타이핑을 바로 끝낸다.
   useEffect(() => {
@@ -403,7 +404,9 @@ export function LucyKakaoBubbleGroup({
                 : 'text-slate-500 hover:text-amber-700 hover:bg-slate-100'
             }`}
             title={
-              isThisMsgPlaying && ttsInfo?.isLoading
+              isThisMsgPlaying && ttsInfo?.isPaused
+                ? '일시정지됨 · 눌러서 이어듣기'
+                : isThisMsgPlaying && ttsInfo?.isLoading
                 ? '음성 준비 중...'
                 : isThisMsgPlaying && ttsInfo?.isSpeaking
                 ? '음성 멈추기'
@@ -412,7 +415,16 @@ export function LucyKakaoBubbleGroup({
                 : '음성으로 듣기'
             }
           >
-            {isThisMsgPlaying && ttsInfo?.isLoading ? (
+            {isThisMsgPlaying && ttsInfo?.isPaused ? (
+              <>
+                <Play size={13} className="fill-current" />
+                <span>
+                  {bubbles.length > 1
+                    ? `일시정지됨 (${activeSpeakingBubbleIdx + 1}/${bubbles.length})`
+                    : '일시정지됨 · 이어듣기'}
+                </span>
+              </>
+            ) : isThisMsgPlaying && ttsInfo?.isLoading ? (
               <>
                 <Loader2 size={13} className="animate-spin text-amber-600" />
                 <span>준비 중...</span>

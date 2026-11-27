@@ -12,6 +12,7 @@ import { playAudioHaptic } from "@/lib/audioHaptics";
 import { useTheme } from "@/contexts/ThemeContext";
 import { readSafeAreaInsets } from "@/lib/visualViewportBox";
 import { PageGuideDialog } from "@/components/guide/PageGuide";
+import { SmartGuideSettingsButton } from "@/components/guide/SmartGuideSettings";
 import { resolveKeyTabGuide } from "@/lib/pageGuides";
 import { BookOpen, Search } from "lucide-react";
 import { triggerHaptic } from "@/lib/omniWarp/omniWarpHaptics";
@@ -444,15 +445,16 @@ export default function CalmApp() {
       />
       {actionsTop !== null && !keyOverlayOpen && (
         <div className="key-parent-actions absolute right-3 z-[45] flex items-center gap-1.5" style={{ top: actionsTop }}>
+          {/* 🧭 스마트 가이드 설정 (물음표) — Key 헤더 */}
+          <SmartGuideSettingsButton tone="key" className="h-10 w-10" />
           <button
             type="button"
             data-key-guide-parent
             aria-label="Key 가이드 열기"
             onClick={() => { triggerHaptic('whitehole'); setGuideOpen(activeKeyTab()); }}
-            className="inline-flex h-10 items-center gap-1 rounded-full border border-[#e9dccd] bg-[#fffdf9] px-3 text-[12px] font-bold text-[#3b2f2a] shadow-sm active:scale-95"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#e9dccd] bg-[#fffdf9] text-[#c9805c] shadow-sm active:scale-95"
           >
-            <BookOpen size={14} className="text-[#c9805c]" aria-hidden="true" />
-            가이드
+            <BookOpen size={18} aria-hidden="true" />
           </button>
           <button
             type="button"

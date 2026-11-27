@@ -9,11 +9,14 @@ export interface ShanInleRowingInput {
 export interface ShanInleRowingResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '시야·확장' | '중심·집중' | '물길·우회' | '섬세·균형' | '루틴·자유' | '인레 전반';
   lakePosture: string;
   companionPosture: string;
+  inleOarAxis: string;
   oarBalance: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,23 +68,45 @@ function hashSeed(text: string): number {
   return h >>> 0;
 }
 
+const SHAN_SHADOWS = [
+  '서서 넓은 시야를 확보하는 태도가 정작 발밑의 작은 걸림돌이나 지금 손대야 할 세세한 마감을 놓치는 부주의로 이어지지 않게 하세요.',
+  '한 발로 노를 감싸 쥐는 고요한 집중이 외부에서 들어오는 새로운 협력 신호나 변화의 물결까지 차단하는 경직이 되어서는 안 됩니다.',
+  '수초를 피해 우회로를 찾는 유연함이 꼭 정면으로 마주하고 정리해야 할 과제 앞에서도 계속 돌아가기만 하는 회피가 되지 않게 살피세요.',
+  '뜬 밭을 살피듯 섬세하게 균형을 맞추는 태도가 과도한 미세 조정으로 오히려 배의 추진력을 떨어뜨리는 망설임이 되지 않게 주의하세요.',
+] as const;
+
+function classifyShanTopic(q: string): ShanInleRowingResult['questionTopic'] {
+  if (/시야|넓|수초|멀리/.test(q)) return '시야·확장';
+  if (/중심|노|자세|한 발/.test(q)) return '중심·집중';
+  if (/물길|우회|갈대|돌아/.test(q)) return '물길·우회';
+  if (/균형|뜬 밭|섬세/.test(q)) return '섬세·균형';
+  if (/루틴|손|자유|단순/.test(q)) return '루틴·자유';
+  return '인레 전반';
+}
+
 export function calculateShanInleRowing(input: ShanInleRowingInput): ShanInleRowingResult {
   const fate = input.profile.fate ?? {};
-  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${input.question ?? ''}`;
+  const q = (input.question ?? '').trim();
+  const questionTopic = classifyShanTopic(q);
+  const seedText = `${JSON.stringify(fate)}|${input.now.toISOString().slice(0, 13)}|${q}`;
   const seed = hashSeed(seedText);
   const postureIdx = seed % POSTURES.length;
   const companionOffset = 1 + (hashSeed(`${seedText}|companion`) % (POSTURES.length - 1));
   const lakePosture = POSTURES[postureIdx];
   const companionPosture = POSTURES[(postureIdx + companionOffset) % POSTURES.length];
+  const inleOarAxis = `${lakePosture.split(' ')[0]} ↔ ${companionPosture.split(' ')[0]} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-SHAN-INLE-v2.2.0',
+    engineVersion: 'LUCKEY-SHAN-INLE-v2.3.0',
     calculatedAtKst: toKstIso(input.now),
+    questionTopic,
     lakePosture,
     companionPosture,
+    inleOarAxis,
     oarBalance: BALANCES[(seed >>> 3) % BALANCES.length],
     reflectionFocus: `인레 호수에서 한 발로 노를 저으며 넓은 시야와 두 손의 자유를 지키는 샨 족 어부처럼 주 자세('${lakePosture}')와 동반 자세('${companionPosture}')를 겹쳐 중심 잡기와 효율의 조화를 살피는 상징적 관점입니다.`,
     ritualAction: ACTIONS[postureIdx],
+    shadowWarning: SHAN_SHADOWS[postureIdx],
     reflectiveQuestion: QUESTIONS[postureIdx],
     interpretiveBoundary: '개인 점수·심리 진단·미래 예측이 아닙니다. 자기 성찰을 돕기 위한 상징적 관점 안내입니다.',
   };
@@ -91,11 +116,13 @@ export function formatShanInlePrompt(res: ShanInleRowingResult): string {
   return [
     `[샨·인레 호수 외발 노 젓기 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
+    `질문 맥락: ${res.questionTopic} | 외발 균형 축: ${res.inleOarAxis}`,
     `호수 자세: ${res.lakePosture}`,
     `동반 자세: ${res.companionPosture}`,
     `균형: ${res.oarBalance}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,
+    `과잉 경계: ${res.shadowWarning}`,
     `성찰 질문: ${res.reflectiveQuestion}`,
     `경계: ${res.interpretiveBoundary}`,
   ].join('\n');

@@ -297,7 +297,9 @@ export interface SelectedDivinationToolsResult {
   selectedTools: DivinationToolSpec[];
   firedEngineBadges?: string[];
   calculationAudit?: CalculationAuditItem[];
-  /** 도구별 실제 계산 결과 (점술모드 3단계 테이블이 핵심 값만 뽑아 쓴다). */
+  /** 이번 질문에 루시가 자동으로 고른 심층 관점 키 (도구함 표시용). */
+  deepPerspectiveKeys?: string[];
+  /** 도구별 실제 계산 결과 (루시프로 점술 테이블이 핵심 값만 뽑아 쓴다). */
   engineTools?: Record<string, { status: string; data?: unknown }>;
   isCasualMessage: boolean;
   isMasterMobilization?: boolean;
@@ -310,7 +312,7 @@ export function selectOptimalDivinationTools(
   activeChannels: SevenThemeChannel[] = [],
   profile?: UserProfile,
   isMasterMode?: boolean,
-  policy: { allowMaster?: boolean; requireBasicAndDeep?: boolean; divinationMode?: { base: 'saju' | 'tarot_saju'; deep?: boolean; depth?: 1 | 2 | 3 }; pinnedTools?: DivinationToolId[]; pinnedDeepKeys?: string[] } = {}
+  policy: { allowMaster?: boolean; requireBasicAndDeep?: boolean; divinationMode?: { base: 'saju' | 'tarot_saju'; deep?: boolean }; pinnedTools?: DivinationToolId[]; pinnedDeepKeys?: string[]; deepOnly?: boolean } = {}
 ): SelectedDivinationToolsResult {
   const clean = (userText || '').trim();
   const lower = clean.toLowerCase();
@@ -344,6 +346,7 @@ export function selectOptimalDivinationTools(
     divinationMode: policy.divinationMode,
     pinnedTools: policy.pinnedTools,
     pinnedDeepKeys: policy.pinnedDeepKeys,
+    deepOnly: policy.deepOnly,
   });
 
   // 0. Casual routing is available only when the caller does not require basic + deep coverage.
@@ -357,6 +360,21 @@ export function selectOptimalDivinationTools(
     };
   }
 
+  // 💬 일반 루시 채팅: 기초 도구 없이 심층 관점만 골라 쓴다.
+  if (policy.deepOnly && !routed.routePlan.isCasual) {
+    const insightKeys = routed.routePlan.deepEngineKeys ?? [];
+    return {
+      selectedTools: [],
+      firedEngineBadges: routed.toolsForBadge,
+      calculationAudit: [],
+      deepPerspectiveKeys: insightKeys,
+      isCasualMessage: false,
+      isMasterMobilization: false,
+      selectionReason: `일반 대화 · 심층 관점 ${insightKeys.length}개 자동 선택`,
+      promptInjection: routed.promptInjection,
+    };
+  }
+
   // 1. 올인원 종합 마스터 모드 풀가동 (명시적 종합/올인원 요청 시)
   if (isExplicitMasterRequest || routed.routePlan.isMasterMobilization) {
     const allTools = Object.values(FIFTEEN_DIVINATION_TOOLS);
@@ -364,6 +382,7 @@ export function selectOptimalDivinationTools(
       selectedTools: allTools,
       firedEngineBadges: getFiredEngineBadges(routed.engineReport, { isMasterMobilization: true }),
       calculationAudit: getCalculationAudit(routed.engineReport, { isMasterMobilization: true }),
+      deepPerspectiveKeys: routed.routePlan.deepEngineKeys ?? [],
       isCasualMessage: false,
       isMasterMobilization: true,
       selectionReason: '질문에 맞춰 계산한 결과만 비교 분석',
@@ -417,6 +436,7 @@ export function selectOptimalDivinationTools(
     selectedTools,
     firedEngineBadges: routed.toolsForBadge,
     calculationAudit,
+    deepPerspectiveKeys: routed.routePlan.deepEngineKeys ?? [],
     engineTools: routed.engineReport?.tools as Record<string, { status: string; data?: unknown }> | undefined,
     isCasualMessage: false,
     isMasterMobilization: false,

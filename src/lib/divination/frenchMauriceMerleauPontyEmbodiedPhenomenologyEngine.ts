@@ -8,12 +8,12 @@
  * 4. 예술적 감각 안목 및 창조적 표현 (Sensory Aesthetic Eye & Creative Expression): 세잔의 회화처럼 고정관념을 넘어 사물의 보이지 않는 본질을 가시화하는 심미안.
  * 5. 현상학적 접지 및 심신 회복탄력성 (Phenomenological Grounding & Vital Equanimity): 관념의 분열과 피로를 털어내고 지금 살아 숨 쉬는 대지와 삶의 감각으로 닻을 내리는 회복탄력성.
  *
- * @version LUCKEY-MERLEAU-PONTY-EMBODIED-PHENOMENOLOGY-v2.3.0
+ * @version LUCKEY-MERLEAU-PONTY-EMBODIED-PHENOMENOLOGY-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MAURICE_MERLEAU_PONTY_EMBODIED_PHENOMENOLOGY_VERSION = 'LUCKEY-MERLEAU-PONTY-EMBODIED-PHENOMENOLOGY-v2.3.0';
+export const FRENCH_MAURICE_MERLEAU_PONTY_EMBODIED_PHENOMENOLOGY_VERSION = 'LUCKEY-MERLEAU-PONTY-EMBODIED-PHENOMENOLOGY-v2.4.0';
 
 export type MerleauPontyQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -45,6 +45,7 @@ export interface FrenchMauriceMerleauPontyEmbodiedPhenomenologyResult {
   calculatedAtKst: string;
   questionTopic: MerleauPontyQuestionTopic;
   embodiedPhase: string;
+  pontyCrossAxis: string;
   shadowWarning: string;
   temporalMerleauPontyRhythm: MerleauPontyTemporalRhythm;
   // 5대 메를로퐁티 신체현상학 핵심 지표 (내부 호환용 보존, 프롬프트 비노출)
@@ -322,6 +323,7 @@ export function calculateFrenchMauriceMerleauPontyEmbodiedPhenomenology(
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const kstTimeLabel = `${kst.toISOString().slice(0, 10)} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
+  const pontyCrossAxis = `${activePontyTheme.themeTitleKo.split('—')[0].trim()} × ${companionPontyTheme.themeTitleKo.split('—')[0].trim()} (${temporalMerleauPontyRhythm.timeBand})`;
   const pontySynthesisMatrix = {
     coreInsight: `${activePontyTheme.themeTitleKo} (동반: ${companionPontyTheme.themeTitleKo})`,
     recommendedAction: `${dailyPracticeRitual} (${embodiedPhase})`,
@@ -333,6 +335,7 @@ export function calculateFrenchMauriceMerleauPontyEmbodiedPhenomenology(
     calculatedAtKst: kstTimeLabel,
     questionTopic,
     embodiedPhase,
+    pontyCrossAxis,
     shadowWarning,
     temporalMerleauPontyRhythm,
     corpsSujetEmbodimentScore,
@@ -380,6 +383,7 @@ export function formatFrenchMauriceMerleauPontyEmbodiedPhenomenologyPrompt(
     `- 맥락 맞춤 가이드: ${res.practiceGuidance}`,
     `- 오늘의 실천 의례(${res.questionTopic}): ${res.dailyPracticeRitual}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 메를로퐁티 교차 축: ${res.pontyCrossAxis}`,
     `- 교차 매트릭스: 핵심(${res.pontySynthesisMatrix.coreInsight}) | 실행(${res.pontySynthesisMatrix.recommendedAction}) | 주의(${res.pontySynthesisMatrix.cautionNotice})`,
     `- 메를로퐁티 원전 명언: "${res.focalPontyAphorism.aphorismKo}" (${res.focalPontyAphorism.aphorismFrench})`,
     `- 원전 출처: [${res.focalPontyAphorism.sourceContext}]`,

@@ -53,7 +53,7 @@
 import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, STEM_ELEMENT, BRANCH_ELEMENT } from '../sajuAnalysis';
 
-export const HONGGUK_QIMEN_ENGINE_VERSION = 'LUCKEY-HQ-v2.3.0';
+export const HONGGUK_QIMEN_ENGINE_VERSION = 'LUCKEY-HQ-v2.4.0';
 
 export const HONGGUK_QIMEN_METHOD =
   '조선 정통 홍국기문(洪局奇門) 결정론 산법: 사주 연·월·일·시 4주 천간·지지의 하도 생성수(甲1~癸10)·후천 12진수(子1~亥12) 낙서 구성환원으로 지반수(地盤數) 중궁과 천반수(天盤數) 중궁을 산출하고, 중궁 기점 건→태→간→리→감→곤→진→손 낙서 비행 경로 역행 배열로 9궁(1백 감궁~9자 리궁) 천지반 비성 포국, 세효(世爻·본신)·응효(應爻·상대)·중궁(中宮·핵심) 3대 거점 수리 식별과 3궁 오행 상생·상극·비화 대조, 인사신·축술미 삼형(三刑) 성립 및 육충 반영 파극 위험도(0~100), 수생목→목생화→화생토→토생금→금생수 상생 통기 순환 완성도(0~100), 8문(개휴생 3길문·상두경(景) 사경(驚) 평흉문) 정궁 배속과 세효 득문(得門) 판정, 길흉 격국 및 개운 처방';
@@ -224,6 +224,7 @@ export interface HonggukQimenResult {
     seasonalQimenTone: string;
     temporalGuidance: string;
   };
+  honggukCrossAxis?: string;
   honggukSynthesisMatrix?: {
     coreInsight: string;
     recommendedAction: string;
@@ -679,6 +680,8 @@ export function calculateHonggukQimen(params: {
           tacticalStep: tacticalSeasonWindows.strategicPacingAdvice,
         };
 
+    const honggukCrossAxis = `${seYao.palaceName} × ${eungYao.palaceName} (${pattern} · ${temporalHonggukRhythm.palaceWatchWindow.split('—')[0].trim()})`;
+
     const honggukSynthesisMatrix = {
       coreInsight: `[${pattern}] 세효(${seYao.palaceName})의 ${seYao.gate || '무문'}과 ${threeWondersAlliance.wondersDetected.length ? threeWondersAlliance.wondersDetected.join('·') : '기본'} 기운이 맞물립니다.`,
       recommendedAction: `${tacticalSeasonWindows.peakActionSeason} 흐름에 맞추어 ${advice.slice(0, 48)}`,
@@ -740,6 +743,7 @@ export function calculateHonggukQimen(params: {
       tacticalSeasonWindows,
       situationalHonggukAudit,
       temporalHonggukRhythm,
+      honggukCrossAxis,
       honggukSynthesisMatrix,
       ritualAction,
       reflectionFocus,
@@ -821,6 +825,7 @@ ${result.threeWondersAlliance ? `[삼기(三奇) 득기 회합]\n- 감지된 삼
 ${result.tacticalSeasonWindows ? `[4계절 거시 결단 윈도우]\n- 최적 추진기: ${result.tacticalSeasonWindows.peakActionSeason} · 내실 수성기: ${result.tacticalSeasonWindows.defensiveSeason}\n  * 전술 가이드: ${result.tacticalSeasonWindows.strategicPacingAdvice}` : ''}
 ${result.situationalHonggukAudit ? `[질문 맥락 감사]\n- ${result.situationalHonggukAudit.focusTheme}: ${result.situationalHonggukAudit.tacticalStep}` : ''}
 ${result.temporalHonggukRhythm ? `[KST 시공간 기문 리듬]\n- ${result.temporalHonggukRhythm.palaceWatchWindow} / ${result.temporalHonggukRhythm.seasonalQimenTone}\n  * 시공간 지침: ${result.temporalHonggukRhythm.temporalGuidance}` : ''}
+${result.honggukCrossAxis ? `- 홍국 교차 축: ${result.honggukCrossAxis}` : ''}
 ${result.honggukSynthesisMatrix ? `[홍국기문 교차 매트릭스]\n- 핵심(${result.honggukSynthesisMatrix.coreInsight}) | 실행(${result.honggukSynthesisMatrix.recommendedAction}) | 주의(${result.honggukSynthesisMatrix.cautionNotice})` : ''}
 ${result.ritualAction ? `- 실천 의례(Ritual Action): ${result.ritualAction}` : ''}
 ${result.reflectionFocus ? `- 성찰 초점(Reflection Focus): ${result.reflectionFocus}` : ''}

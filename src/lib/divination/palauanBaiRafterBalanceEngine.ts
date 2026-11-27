@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface PalauanBaiResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '기록·이야기' | '고요·라군' | '분담·기둥' | '기반·돌봄' | '물때·흐름' | '바이 전반';
   palauanMotif: string;
   companionMotif: string;
+  baiRafterAxis: string;
   palauanInsight: string;
   baiTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const PALAU_SHADOWS = [
+  '경험을 서까래의 이야기처럼 기록으로 남기는 성실함이 정작 지금 움직여야 할 현장 실행보다 기록 정리만 앞세우는 태도가 되지 않게 하세요.',
+  '산호초 안쪽 라군처럼 고요를 지키는 태도가 외부 피드백이나 꼭 확인해야 할 현실 신호까지 차단하는 회피로 흐르지 않게 주의하세요.',
+  '네 기둥처럼 무게를 고르게 나누는 합의가 내가 끝까지 책임져야 할 핵심 결정까지 모호하게 미루는 책임 분산이 되어서는 안 됩니다.',
+  '타로 밭의 물밑 기반을 돌보는 세심함이 완벽한 준비를 핑계로 첫 수확과 실행 시점을 계속 늦추는 지연이 되지 않도록 살피세요.',
+  '밀물과 썰물의 물때를 기다리는 신중함이 이미 들어온 기회 앞에서도 더 완벽한 파도만 기다리며 배를 띄우지 못하는 망설임이 되지 않게 하세요.',
+];
+
+function classifyPalauanTopic(q: string): PalauanBaiResult['questionTopic'] {
+  if (/기록|이야기|메모|서까래/.test(q)) return '기록·이야기';
+  if (/고요|라군|소음|산호초/.test(q)) return '고요·라군';
+  if (/기둥|함께|역할|나누/.test(q)) return '분담·기둥';
+  if (/기반|뿌리|타로|돌봄/.test(q)) return '기반·돌봄';
+  if (/물때|조수|흐름|타이밍/.test(q)) return '물때·흐름';
+  return '바이 전반';
+}
+
 export function calculatePalauanBaiRafterBalance(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): PalauanBaiResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyPalauanTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const picked = MOTIFS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const baiRafterAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-PALAU-BAI-v2.2.0',
+    engineVersion: 'LUCKEY-PALAU-BAI-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     palauanMotif: picked.motif,
     companionMotif: companion.motif,
+    baiRafterAxis,
     palauanInsight: picked.insight,
     baiTone: picked.tone,
     reflectionFocus: `팔라우 바이 회당의 '${picked.motif}'을 중심에 두고 '${companion.motif}'의 결을 곁들여, 네 기둥의 균형을 나누고 산호초 안쪽 라군의 고요를 지켜 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: PALAU_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '남태평양 팔라우 전통 바이(Bai) 회당·이야기 서까래·라군 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +121,13 @@ export function formatPalauanBaiPrompt(res: PalauanBaiResult): string {
   return [
     `[팔라우·바이 공회당 서까래 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 서까래 균형 축: ${res.baiRafterAxis}`,
     `- 팔라우 모티프: ${res.palauanMotif} (${res.baiTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.palauanInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

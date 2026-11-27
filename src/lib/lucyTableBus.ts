@@ -1,6 +1,8 @@
 import type { SajuAnalysisResult } from '@/lib/sajuAnalysis';
 import type { CalculationAuditItem } from '@/lib/divination/calculationAudit';
 import type { ToolFact } from '@/lib/lucyMasterToolFacts';
+import type { LucyActiveEngineTray } from '@/lib/lucyActiveEngineTray';
+import type { DivinationToolId } from '@/lib/lucyToolRegistry';
 
 /**
  * Lucy Master's unfolded left table listens to what Lucy is doing in the right pane:
@@ -20,11 +22,15 @@ export interface LucyTableState {
   facts: Record<string, ToolFact[]>;
   /** 도구별 계산 원자료 (전용 화면용, 계산된 도구만). */
   toolData: Record<string, unknown>;
+  /** 이번 질문에 루시가 고른 기초 도구·심층 관점 중 실제로 쓴 것만 (도구함 표시용). */
+  activeEngines: LucyActiveEngineTray;
   /** 이번 상담에서 손님이 마지막으로 직접 뽑은 카드 (접힌 화면 도구 창에서 다시 보기). */
   cards: Array<{ id: string; nameKo: string; reversed: boolean; imageUrl?: string; orientationKo?: string }>;
 }
 
-let state: LucyTableState = { saju: null, lastAnswer: '', lastAnswerHasTarot: false, answerVersion: 0, tools: [], concern: '', facts: {}, toolData: {}, cards: [] };
+const EMPTY_ACTIVE_ENGINES: LucyActiveEngineTray = { foundational: [], deep: [], total: 0 };
+
+let state: LucyTableState = { saju: null, lastAnswer: '', lastAnswerHasTarot: false, answerVersion: 0, tools: [], concern: '', facts: {}, toolData: {}, activeEngines: EMPTY_ACTIVE_ENGINES, cards: [] };
 
 export function getLucyTableState(): LucyTableState {
   return state;
@@ -40,8 +46,20 @@ export function publishTableSaju(saju: SajuAnalysisResult | null): void {
   emit();
 }
 
-export function publishTableTools(tools: readonly CalculationAuditItem[], concern: string, facts: Record<string, ToolFact[]> = {}, toolData: Record<string, unknown> = {}): void {
-  state = { ...state, tools: [...tools], concern, facts, toolData };
+export function publishTableTools(
+  tools: readonly CalculationAuditItem[],
+  concern: string,
+  facts: Record<string, ToolFact[]> = {},
+  toolData: Record<string, unknown> = {},
+  activeEngines: LucyActiveEngineTray = EMPTY_ACTIVE_ENGINES,
+): void {
+  state = { ...state, tools: [...tools], concern, facts, toolData, activeEngines };
+  emit();
+}
+
+/** 💬 일반 대화에서 루시가 고른 심층 관점만 갱신한다 (엔진함의 '이번 대화에서 쓴 관점' 표시용). */
+export function publishTableActiveEngines(activeEngines: LucyActiveEngineTray, concern = ''): void {
+  state = { ...state, activeEngines, concern };
   emit();
 }
 
@@ -62,8 +80,10 @@ if (typeof window !== 'undefined') {
 }
 
 export function clearTableTools(): void {
-  if (state.tools.length === 0 && !state.concern && state.cards.length === 0) return;
-  state = { ...state, tools: [], concern: '', facts: {}, toolData: {}, cards: [] };
+  const alreadyEmpty = state.tools.length === 0 && !state.concern && state.cards.length === 0
+    && state.activeEngines.total === 0;
+  if (alreadyEmpty) return;
+  state = { ...state, tools: [], concern: '', facts: {}, toolData: {}, activeEngines: EMPTY_ACTIVE_ENGINES, cards: [] };
   emit();
 }
 
@@ -73,7 +93,77 @@ export function publishTableAnswer(text: string): void {
   emit();
 }
 
+/* ─────────────────────────────────────────────────────────────
+ * 💬 답변 끝 버튼 → 함 이동
+ * - 관점 버튼: 엔진함을 열고 그 관점 설명으로 스크롤·하이라이트
+ * - 도구 버튼: 점술 도구함을 열고 그 도구 탭을 바로 선택
+ * 요청은 모듈에 남겨 두어, 창이 나중에 마운트되어도 같은 항목으로 이동한다.
+ * ───────────────────────────────────────────────────────────── */
+
+export interface LucyEngineFocusRequest {
+  engineKey: string;
+  requestId: number;
+}
+
+export interface LucyDivinationToolRequest {
+  toolId: DivinationToolId;
+  requestId: number;
+}
+
+/** 엔진함을 열어 달라는 요청 (관점 버튼). */
+export const LUCY_ENGINE_BOX_OPEN_EVENT = 'prism:lucy_engine_box_open';
+/** 엔진함 안에서 이 관점으로 이동해 달라는 요청. */
+export const LUCY_ENGINE_FOCUS_EVENT = 'prism:lucy_engine_focus';
+/** 점술 도구함을 열어 달라는 요청 (도구 버튼). */
+export const LUCY_DIVINATION_TOOL_EVENT = 'prism:lucy_divination_tool';
+
+let engineFocus: LucyEngineFocusRequest | null = null;
+let divinationTool: LucyDivinationToolRequest | null = null;
+let requestSequence = 0;
+
+function dispatchToWindow(name: string, detail: unknown) {
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent(name, { detail }));
+}
+
+/** 관점 버튼: 엔진함을 열고 그 관점 설명으로 이동한다. */
+export function openEngineAtPerspective(engineKey: string): void {
+  if (!engineKey) return;
+  engineFocus = { engineKey, requestId: ++requestSequence };
+  dispatchToWindow(LUCY_ENGINE_FOCUS_EVENT, engineFocus);
+  dispatchToWindow(LUCY_ENGINE_BOX_OPEN_EVENT, engineFocus);
+}
+
+/** 헤더 연필 버튼(점술모드): 엔진함을 처음부터 연다 (지난 답변의 관점 이동 요청은 지운다). */
+export function openLucyEngineBox(): void {
+  engineFocus = null;
+  dispatchToWindow(LUCY_ENGINE_BOX_OPEN_EVENT, null);
+}
+
+/** 도구 버튼: 점술 도구함을 열고 그 도구 탭을 고른다. */
+export function openDivinationToolTab(toolId: DivinationToolId): void {
+  if (!toolId) return;
+  divinationTool = { toolId, requestId: ++requestSequence };
+  dispatchToWindow(LUCY_DIVINATION_TOOL_EVENT, divinationTool);
+}
+
+export function getLastEngineFocus(): LucyEngineFocusRequest | null {
+  return engineFocus;
+}
+
+export function clearEngineFocus(): void {
+  engineFocus = null;
+}
+
+export function getLastDivinationToolRequest(): LucyDivinationToolRequest | null {
+  return divinationTool;
+}
+
+export function clearDivinationToolRequest(): void {
+  divinationTool = null;
+}
+
 /** Which parts of the chart Lucy's answer talks about, so the board can light them up. */
+
 export function sajuFocusFromAnswer(text: string): { pillars: Set<'year' | 'month' | 'day' | 'hour'>; elements: Set<string>; daeun: boolean } {
   const pillars = new Set<'year' | 'month' | 'day' | 'hour'>();
   const elements = new Set<string>();

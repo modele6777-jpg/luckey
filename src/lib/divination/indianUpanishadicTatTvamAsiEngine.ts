@@ -16,7 +16,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const UPANISHADIC_TAT_TVAM_ASI_VERSION = 'LUCKEY-UPANISHADIC-TAT-TVAM-ASI-v2.3.0';
+export const UPANISHADIC_TAT_TVAM_ASI_VERSION = 'LUCKEY-UPANISHADIC-TAT-TVAM-ASI-v2.4.0';
 
 export interface UpanishadicMahavakya {
   vakyaKey: string;
@@ -59,6 +59,11 @@ export interface UpanishadicTatTvamAsiResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  upanishadicCrossAxis: {
+    mahavakyaPair: string;
+    teachingToWisdom: string;
+    turiyaAnchor: string;
   };
 }
 
@@ -180,6 +185,11 @@ export function calculateUpanishadicTatTvamAsi(
         : '넷티 넷티 관조를 통해 환영과 집착을 걷어내는 정화 국면',
     integratedAction: `${activeMahavakya.meditativeFocus} (${focalUpanishadicTeaching.contemplativeInsight})`,
   };
+  const upanishadicCrossAxis = {
+    mahavakyaPair: `${activeMahavakya.vakyaNameKo} ↔ ${secondaryMahavakya.vakyaNameKo}`,
+    teachingToWisdom: `${focalUpanishadicTeaching.teachingKey} · ${describeUpanishadicStage(prajnaSpiritualWisdomScore)}`,
+    turiyaAnchor: activeMahavakya.meditativeFocus,
+  };
 
   const ritualAction = `[${activeMahavakya.vakyaNameKo}] ${activeMahavakya.meditativeFocus}`;
   const reflectionFocus = reflectiveQuestion;
@@ -204,6 +214,7 @@ export function calculateUpanishadicTatTvamAsi(
       spiritualGuidance,
     },
     upanishadicSynthesisMatrix,
+    upanishadicCrossAxis,
   };
 }
 
@@ -233,6 +244,7 @@ export function formatUpanishadicTatTvamAsiPrompt(res: UpanishadicTatTvamAsiResu
   if (res.upanishadicSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스 [핵심 긴장: ${res.upanishadicSynthesisMatrix.dominantTension} | 조율 상태: ${res.upanishadicSynthesisMatrix.alignmentState}]`,
+      `- 우파니샤드 교차 축: ${res.upanishadicCrossAxis.mahavakyaPair} | ${res.upanishadicCrossAxis.teachingToWisdom}`,
       `- 통합 실천: ${res.upanishadicSynthesisMatrix.integratedAction}`,
     );
   }

@@ -1,10 +1,11 @@
-import { getDestinationChannel, MessageCircleMinus } from '@/lib/channelMenuIcons';
+import { getDestinationChannel } from '@/lib/channelMenuIcons';
 import { createPortal } from 'react-dom';
 import { BigBangLuckyBreeze } from './BigBangLuckyBreeze';
 import { getOrderedLuckeyPageKeysForCurrentApp, oneStopNavigationPath, nextOrderedLuckeyPage, previousOrderedLuckeyPage } from '@/lib/omniWarp/oneStopPages';
 import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'wouter';
-import { ChevronUp, ChevronDown, Clover, KeyRound, MessageCirclePlus, MessageCircleMore, MessageCircleQuestion, MessageCircleWarning } from 'lucide-react';
+import { ChevronUp, ChevronDown, Clover, KeyRound, MessageCircle } from 'lucide-react';
+import { LucyProBubbleDotIcon } from '@/components/icons/LucyProBubbleDotIcon';
 import { motion, AnimatePresence } from 'motion/react';
 import { WarpPhase, OmniWarpTarget, OmniWarpContext, WarpForceMetrics } from '@/lib/omniWarp/types';
 import { calculateWarpMetrics, forceToAiTemperature, WARP_ABORT_DISTANCE } from '@/lib/omniWarp/forceSensor';
@@ -31,10 +32,24 @@ import { isDuoUnfoldedState } from '@/lib/perfMode';
 import { isLucyChatScreen } from '@/lib/duoPaneFocus';
 import { isSinglePaneLucyScreen } from '@/lib/workspacePaneDom';
 import { BigBangCircularMeter } from './BigBangCircularMeter';
-import { isLucyMasterModeOn, setLucyMasterMode, deepenLucyMasterDepth, shallowLucyMasterDepth, getLucyMasterDepth, LUCY_MASTER_MAX_DEPTH, useLucyMasterMode, useLucyMasterDepth } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, useLucyMasterMode } from '@/lib/lucyMasterMode';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import { isOrbCounselOpen, setOrbCounselOpen } from '@/lib/orbCounselGate';
 import { OrbShapeIcon } from '@/components/icons/OrbShapeIcon';
+import {
+  resolveSmartBigBangGuide,
+  readSmartGuideState,
+  recordSmartGuideVisit,
+  recordSmartGuideRecommendation,
+  hasSeenTodayTarot,
+  guideDateKey,
+  SMART_GUIDE_TOAST_MS,
+  type SmartGuideResult,
+} from '@/lib/omniWarp/smartBigBangGuide';
+import { resolveSmartGuidePresentation, useSmartGuideSettings } from '@/lib/omniWarp/smartGuideSettings';
+import { isGuideDouserActive, speakGuideDouser, stopGuideDouser } from '@/lib/omniWarp/guideDouser';
+import { SmartGuideBanner } from '@/components/guide/SmartGuideBanner';
+import { getPersistentUserProfile } from '@/contexts/AppContext';
 // 🎯 미세 드래그 판정 임계값 (터치스크린 미세 떨림/지문 면적 20px 노이즈 면역 + 확실한 드래그 제스처 감지)
 const DRAG_ACTIVATION_THRESHOLD = 26;
 const DOUBLE_TAP_WINDOW_MS = 300;
@@ -202,6 +217,9 @@ export function BigBangButton() {
       if (singleTapTimerRef.current) {
         clearTimeout(singleTapTimerRef.current);
       }
+      if (smartGuideTimerRef.current) {
+        clearTimeout(smartGuideTimerRef.current);
+      }
     };
   }, []);
 
@@ -238,17 +256,65 @@ export function BigBangButton() {
   const [feedbackChannel, setFeedbackChannel] = useState<{ id: string; icon: ReturnType<typeof getDestinationChannel>['icon'] } | null>(null);
   const DestinationIcon = feedbackChannel?.icon;
   const navigationFeedbackStorageKey = 'luckey-bigbang-navigation-feedback';
-  // 🔮 점술모드 상담 깊이 표시 (버튼 고리)
+  // 🔮 루시프로(점술모드) 켜짐 표시 (버튼 고리)
   const masterOn = useLucyMasterMode();
-  const masterDepth = useLucyMasterDepth();
-  // 루시로 갈 때 빅뱅 버튼 안 말풍선: 접힌 화면 루시는 −, 펼친 화면 루시 플러스는 +, 점술모드는 깊이 기호(… ? !) — 사이드바와 같다.
-  const LucyBubbleIcon = masterOn
-    ? (masterDepth >= 3 ? MessageCircleWarning : masterDepth === 2 ? MessageCircleQuestion : MessageCircleMore)
-    : isDuoUnfoldedState().unfolded ? MessageCirclePlus : MessageCircleMinus;
+  // 루시로 갈 때 빅뱅 버튼 안 말풍선: 일반 루시는 속이 빈 말풍선, 루시프로는 말풍선 안에 점 하나 — 사이드바와 같다.
+  const LucyBubbleIcon = masterOn ? LucyProBubbleDotIcon : MessageCircle;
   const CenterChannelIcon = feedbackChannel?.id === 'lucy' ? LucyBubbleIcon : DestinationIcon;
-  const lucyBubbleMarker = feedbackChannel?.id === 'lucy' && !masterOn ? (isDuoUnfoldedState().unfolded ? 'plus' : 'minus') : undefined;
   const [gestureFeedback, setGestureFeedback] = useState<'tap' | 'hold' | 'double' | null>(null);
   const gestureFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // 🧭 한 번 탭하면 지금 가장 쓸모 있는 다음 한 곳을 골라 안내하는 스마트 가이드 배너
+  const [smartGuide, setSmartGuide] = useState<SmartGuideResult | null>(null);
+  const smartGuideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // 🧭 헤더 물음표 아이콘에서 켜고 끄는 설정 (배너 · 도슨트). 이동은 설정과 무관하게 늘 한다.
+  const guideSettings = useSmartGuideSettings();
+  const guidePresentation = resolveSmartGuidePresentation(guideSettings);
+  const closeSmartGuide = useCallback(() => {
+    if (smartGuideTimerRef.current) {
+      clearTimeout(smartGuideTimerRef.current);
+      smartGuideTimerRef.current = null;
+    }
+    setSmartGuide(null);
+  }, []);
+  // 배너를 닫거나, 멈추면 도슨트도 함께 멈춘다.
+  const dismissSmartGuide = useCallback(() => {
+    closeSmartGuide();
+    stopGuideDouser();
+  }, [closeSmartGuide]);
+  // 도슨트가 읽는 동안에는 배너를 유지하고, 읽기가 끝나면 잠시 뒤 사라진다.
+  const armSmartGuideAutoHide = useCallback((delay: number = SMART_GUIDE_TOAST_MS) => {
+    if (smartGuideTimerRef.current) clearTimeout(smartGuideTimerRef.current);
+    smartGuideTimerRef.current = setTimeout(() => {
+      smartGuideTimerRef.current = null;
+      if (isGuideDouserActive()) {
+        armSmartGuideAutoHide(1200);
+        return;
+      }
+      setSmartGuide(null);
+    }, delay);
+  }, []);
+  const showSmartGuide = useCallback((guide: SmartGuideResult) => {
+    setSmartGuide(guide);
+    armSmartGuideAutoHide();
+  }, [armSmartGuideAutoHide]);
+  // 설정에서 스마트 가이드·도슨트를 끄면 지금 떠 있는 안내도 바로 정리한다.
+  useEffect(() => {
+    if (!guidePresentation.banner) closeSmartGuide();
+    if (!guidePresentation.douser) stopGuideDouser();
+  }, [guidePresentation.banner, guidePresentation.douser, closeSmartGuide]);
+  // 📅 오늘 화면별 방문(과 점술모드 사용)을 남겨 스마트 가이드가 같은 곳만 권하지 않게 한다.
+  useEffect(() => {
+    recordSmartGuideVisit(safeLocalStorage, currentCleanPath, { masterMode: masterOn }, Date.now());
+  }, [currentCleanPath, masterOn]);
+  // 도슨트가 읽던 화면을 벗어나면 낭독을 멈춘다.
+  const douserPathRef = useRef<string | null>(null);
+  useEffect(() => {
+    const spokenPath = douserPathRef.current;
+    if (spokenPath && currentCleanPath !== spokenPath) {
+      douserPathRef.current = null;
+      stopGuideDouser();
+    }
+  }, [currentCleanPath]);
   const centerGesture = isPressing && durationMs >= 220 && hoverDirection === 'none' ? 'hold' : gestureFeedback;
   const showGestureFeedback = (gesture: 'tap' | 'hold' | 'double') => {
     if (gestureFeedbackTimer.current) clearTimeout(gestureFeedbackTimer.current);
@@ -665,24 +731,20 @@ export function BigBangButton() {
 
     let currentHole: 'whitehole' | 'blackhole' = 'whitehole';
 
-    // A stationary center hold previews the divination-mode toggle used on release.
+    // A stationary center hold always opens the orb page (/voice); preview it while pressing.
     if (!touchStartSelectionRef.current && elapsed >= 500 && start.direction === 'none') {
       currentHole = 'whitehole';
       target = {
-        id: 'lucy',
-        icon: '🔮',
+        id: 'orb',
+        icon: '🌀',
         phase: 'whitehole',
         gauge: metrics.virtualForce,
         aiTemperature: temp,
-        title: isLucyMasterModeOn()
-          ? (getLucyMasterDepth() >= LUCY_MASTER_MAX_DEPTH ? '가장 깊은 상담' : `상담 깊이 ${getLucyMasterDepth() + 1}단계`)
-          : '점술모드 ON',
+        title: '오브 (음성 상담)',
         actionType: 'navigate',
-        previewLabel: isLucyMasterModeOn() ? '[홀드] 상담 더 깊게' : '[홀드] 루시 점술모드 켜기',
-        previewDescription: isLucyMasterModeOn()
-          ? '점술모드에서 길게 누를 때마다 상담이 한 단계씩(최대 3단계) 깊어집니다. 한 번 탭하면 일반 루시로 돌아갑니다.'
-          : '빅뱅 버튼을 길게 누르면 루시 점술모드(Lucy Master)에 들어갑니다.',
-        destinationPath: '/chat',
+        previewLabel: '[홀드] 오브페이지로',
+        previewDescription: '빅뱅 버튼을 길게 누르면 어느 화면에 있든 오브(음성 상담) 페이지가 열립니다.',
+        destinationPath: '/voice',
         themeColor: '#38bdf8',
         accentGlow: 'rgba(56, 189, 248, 0.85)',
       };
@@ -993,48 +1055,122 @@ export function BigBangButton() {
     window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/key' } }));
   }, [dispatchBigBangRouteTransition, isKeyChannel, navigate]);
 
-  // 🔮 가운데 홀드: 루시 점술모드(Lucy Master) 켜기/끄기 (접힘·펼침 공통)
-  const toggleDivinationMode = useCallback((metrics?: WarpForceMetrics) => {
+  // 🌀 가운데 홀드: 어느 화면·모드에 있든 항상 오브페이지(/voice)로 이동한다.
+  const goToOrbPage = useCallback((metrics?: WarpForceMetrics) => {
+    // 빅뱅 버튼 안에서 하던 말·고르던 문장·준비 중인 타이머는 모두 정리하고 움직인다.
+    void metrics;
+    if (singleTapTimerRef.current) {
+      clearTimeout(singleTapTimerRef.current);
+      singleTapTimerRef.current = null;
+    }
+    lastTapTimeRef.current = 0;
+    isPttRecordingRef.current = false;
     window.dispatchEvent(new CustomEvent('prism:abort_lucy_voice_ptt'));
-    setOrbCounselOpen(false);
     setIsQuickChatOpen(false);
     setQuickChatVoiceActive(false);
+    setQuickChatInitialPrompt('');
+    setQuickChatAutoSend(false);
     setActivePhase('idle');
     setGauge(0);
     setDurationMs(0);
-    // 루시 채팅이 화면에 보이면(단독 화면 또는 펼친 듀오의 루시 패널) 그 자리에서 전환한다.
-    const lucyVisible = checkIsInLucyChat() || Boolean(
-      document.getElementById('duo-lucy-viewport') && isDuoUnfoldedState().unfolded
-    );
-    // 홀드(사용자 제스처) 안에서 바로 배경음을 시작해야 모바일 브라우저가 소리를 허용한다.
-    const startBgmIfWanted = () => { if (isLucyMasterBgmPreferred()) void startLucyMasterBgm(); };
-    const alreadyMaster = isLucyMasterModeOn();
-    if (alreadyMaster) {
-      // 점술모드 안에서 다시 홀드: 상담이 한 단계 깊어진다 (최대 3단계). 나가기는 한 번 탭.
-      const { changed } = deepenLucyMasterDepth();
-      if (changed) playLucyMasterSuction('deepen');
-      if (lucyVisible) return;
-    } else if (lucyVisible) {
-      setLucyMasterMode(true);
-      playLucyMasterSuction('in'); // 들어갈 때: 화면이 버튼 안으로 빨려 들어간다
-      startBgmIfWanted();
-      return;
-    } else {
-      playLucyMasterSuction();
-      startBgmIfWanted();
-      // 다른 화면에서는 점술모드를 켠 채로 루시 채팅으로 이동한다.
-      setLucyMasterMode(true);
-    }
-    const tier = isDuoUnfoldedState().unfolded ? 'plus' : 'ai';
-    safeSessionStorage.setItem('lucy_tier_mode', tier);
-    safeLocalStorage.setItem('lucy_tier_mode', tier);
-    const path = tier === 'plus' ? '/' : `/chat?mode=${tier}`;
-    // 빨려 들어가는 효과가 전환 연출을 맡으므로 일반 웜홀 전환은 띄우지 않는다.
-    void metrics;
+    setActiveHole('whitehole');
+    lastValidSelectionRef.current = '';
+    touchStartSelectionRef.current = '';
+    clearPendingSelection();
+    window.getSelection()?.removeAllRanges();
+    triggerHaptic('wormhole');
+    // 이미 오브페이지(오브 상담)라면 상담을 끊거나 다시 열지 않고 그대로 둔다.
+    if (currentCleanPath === '/voice' || windowCleanPath === '/voice') return;
     (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
-    navigate(path);
-    window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path } }));
-  }, [checkIsInLucyChat, dispatchBigBangRouteTransition, navigate]);
+    navigate('/voice');
+    window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/voice' } }));
+    window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: '/voice' } }));
+  }, [currentCleanPath, windowCleanPath, navigate]);
+
+  // 🔮 스마트 가이드가 "오늘의 운세"를 권할 때: 루시프로(점술모드)를 켠다 (접힘·펼침 공통)
+  const enterDivinationMode = useCallback(() => {
+    setLucyMasterMode(true);
+    // 탭(사용자 제스처) 안에서 바로 배경음을 시작해야 모바일 브라우저가 소리를 허용한다.
+    playLucyMasterSuction('in');
+    if (isLucyMasterBgmPreferred()) void startLucyMasterBgm();
+  }, []);
+
+  // 🧭 가운데 한 번 탭: 지금 이 사람에게 가장 쓸모 있는 한 곳을 골라 데려다주고,
+  //    도착한 화면 위에 "무엇을 하면 되는지" 스마트 가이드 배너를 3.5~4초 띄운다.
+  const runSmartGuide = useCallback((metrics?: WarpForceMetrics) => {
+    void metrics;
+    const now = Date.now();
+    let profileState = { hasBirthday: false, hasBirthTime: false };
+    try {
+      const saved = getPersistentUserProfile();
+      profileState = {
+        hasBirthday: Boolean(saved?.basic?.birthdate?.trim()),
+        hasBirthTime: Boolean(saved?.basic?.birthtime?.trim()),
+      };
+    } catch {
+      /* 프로필을 못 읽어도 안내는 계속한다 */
+    }
+    const guideState = readSmartGuideState(safeLocalStorage, now);
+    const guide = resolveSmartBigBangGuide({
+      cleanPath: currentCleanPath,
+      isMasterMode: isLucyMasterModeOn(),
+      isOrbOpen: isOrbCounselOpen(),
+      isLucyChat: isChatView,
+      profile: profileState,
+      today: {
+        tarotSeen: hasSeenTodayTarot(safeLocalStorage, now),
+        divinationSeen: guideState.masterSeenDate === guideDateKey(now),
+      },
+      state: guideState,
+      now,
+    });
+
+    isPttRecordingRef.current = false;
+    window.dispatchEvent(new CustomEvent('prism:abort_lucy_voice_ptt'));
+    setIsQuickChatOpen(false);
+    setQuickChatVoiceActive(false);
+    setQuickChatInitialPrompt('');
+    setQuickChatAutoSend(false);
+    setActivePhase('idle');
+    setGauge(0);
+    setDurationMs(0);
+    lastValidSelectionRef.current = '';
+    touchStartSelectionRef.current = '';
+    clearPendingSelection();
+
+    if (guide.needsProMode) enterDivinationMode();
+
+    recordSmartGuideRecommendation(safeLocalStorage, guide.path, now);
+    // 스마트 가이드가 꺼져 있으면 배너·도슨트만 나오지 않고, 이동은 그대로 한다.
+    if (guidePresentation.banner) showSmartGuide(guide);
+    else closeSmartGuide();
+
+    if (guide.inPlace) {
+      // 루시와 대화 중이면 화면을 옮기지 않고 그 자리에서 점술모드로 바꾼다.
+      triggerHaptic('whitehole');
+      if (guidePresentation.douser) {
+        douserPathRef.current = currentCleanPath;
+        speakGuideDouser(guide);
+      }
+      return;
+    }
+
+    triggerHaptic('wormhole');
+    if (guidePresentation.douser) {
+      douserPathRef.current = guide.path;
+      speakGuideDouser(guide);
+    }
+    if (guide.path === '/') {
+      const tier = isDuoUnfoldedState().unfolded ? 'plus' : 'ai';
+      safeSessionStorage.setItem('lucy_tier_mode', tier);
+      safeLocalStorage.setItem('lucy_tier_mode', tier);
+    }
+    (window as any).__prismAllowRouteChangeUntil = Date.now() + 1500;
+    navigate(guide.path);
+    window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: guide.path } }));
+    window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: guide.path } }));
+  }, [currentCleanPath, isChatView, navigate, showSmartGuide, closeSmartGuide, enterDivinationMode, guidePresentation.banner, guidePresentation.douser]);
+
 
   // ⚡ 추천 1순위 즉시 도약 헬퍼 (더블탭 또는 추천 카드에서 실행 - 룬 문자 사이 우주 흡입 워프 연출)
   const goToNextRecommended = useCallback((customContext?: any, customMetrics?: any, immediate = false, luckyDrag = false) => {
@@ -1288,8 +1424,8 @@ export function BigBangButton() {
     const targetDir = start.pointerType === 'touch'
       ? start.direction
       : downDirectionRef.current;
-    // 🔮 루시 채팅 화면에서 좌·우 탭: 점술모드 단계를 바로 오간다.
-    // 오른쪽 = 한 단계 깊게 (루시 → 1 → 2 → 3), 왼쪽 = 한 단계 얕게 (3 → 2 → 1 → 루시).
+    // 🔮 루시 채팅 화면에서 좌·우 탭: 어느 쪽을 눌러도 루시프로(점술모드)를 바로 켜고 끈다.
+    // 왼쪽·오른쪽 모두 같은 토글(일반 루시 ↔ 루시프로).
     if (!isDragGesture && isChatView && (targetDir === 'west' || targetDir === 'east')) {
       if (singleTapTimerRef.current) {
         clearTimeout(singleTapTimerRef.current);
@@ -1301,25 +1437,14 @@ export function BigBangButton() {
       setHoverDirection('none');
       window.dispatchEvent(new CustomEvent('prism:abort_lucy_voice_ptt'));
       const masterNow = isLucyMasterModeOn();
-      if (targetDir === 'east') {
-        if (!masterNow) {
-          setLucyMasterMode(true);
-          playLucyMasterSuction('in');
-          if (isLucyMasterBgmPreferred()) void startLucyMasterBgm();
-        } else if (deepenLucyMasterDepth().changed) {
-          playLucyMasterSuction('deepen');
-        } else {
-          playLucyMasterSuction('out');
-          setLucyMasterMode(false);
-        }
-      } else if (masterNow) {
-        if (getLucyMasterDepth() > 1) {
-          shallowLucyMasterDepth();
-          playLucyMasterSuction('out');
-        } else {
-          playLucyMasterSuction('out');
-          setLucyMasterMode(false);
-        }
+      // 좌·우 모두 같은 토글: 일반 루시에서 누르면 루시프로로, 루시프로에서 누르면 일반 루시로.
+      if (!masterNow) {
+        setLucyMasterMode(true);
+        playLucyMasterSuction('in');
+        if (isLucyMasterBgmPreferred()) void startLucyMasterBgm();
+      } else {
+        playLucyMasterSuction('out');
+        setLucyMasterMode(false);
       }
       triggerHaptic('whitehole');
       showDirectionFeedback(targetDir, '/chat');
@@ -1385,7 +1510,7 @@ export function BigBangButton() {
       return;
     }
 
-    // A stationary center hold toggles Lucy divination mode; directional holds retain their direction action.
+    // A stationary center hold always opens the orb page(/voice); directional holds and drags keep their own action.
     const isHoldGesture = !isDragGesture && duration >= 500 && dist < DRAG_ACTIVATION_THRESHOLD && targetDir === 'none';
     if (isHoldGesture) {
       showGestureFeedback('hold');
@@ -1399,7 +1524,7 @@ export function BigBangButton() {
       lastValidSelectionRef.current = '';
       touchStartSelectionRef.current = '';
       clearPendingSelection();
-      toggleDivinationMode(metrics);
+      goToOrbPage(metrics);
       setActivePhase('idle');
       setGauge(0);
       setDurationMs(0);
@@ -1416,7 +1541,7 @@ export function BigBangButton() {
         lastTapTimeRef.current = 0;
         showGestureFeedback('double');
         window.getSelection()?.removeAllRanges();
-        // Double tap opens the Key channel (same as a center hold).
+        // Double tap opens the Key channel (unchanged).
         goToKeyChannel(metrics);
         return;
       }
@@ -1435,47 +1560,9 @@ export function BigBangButton() {
           triggerHaptic('whitehole');
           showGestureFeedback('tap');
 
-          // 음성모드가 켜져 있으면 탭으로 끈다. 루시 화면에서 꺼져 있으면 탭으로 켠다.
-          if (isOrbCounselOpen() || (location || '/').split(/[?#]/)[0] === '/voice') {
-            setOrbCounselOpen(false);
-            navigate('/');
-            window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/' } }));
-            return;
-          }
-
-          // 점술모드 중 한 번 탭: 일반 루시로 돌아간다 (빨려 들어가는 효과를 거꾸로).
-          if (isLucyMasterModeOn()) {
-            playLucyMasterSuction('out');
-            setLucyMasterMode(false);
-            return;
-          }
-
-          if (checkIsInLucyChat()) {
-            navigate('/voice');
-            window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: '/voice' } }));
-            return;
-          }
-
-          // A single center tap keeps the existing Lucy / Lucy+ action.
-          // - Expanded: remain on Lucy+.
-          // - Folded: remain on Lucy AI.
-          const isWide = isDuoUnfoldedState().unfolded;
-          if (isWide) {
-            safeSessionStorage.setItem('lucy_tier_mode', 'plus');
-            safeLocalStorage.setItem('lucy_tier_mode', 'plus');
-            if (currentCleanPath !== '/') dispatchBigBangRouteTransition('/', 'Lucy', metrics);
-            handleRuneNavigate('/');
-            window.dispatchEvent(new CustomEvent('prism:revert_lucy_normal', { detail: { tier: 'plus' } }));
-            return;
-          }
-
-          // 단일 뷰(접힘) 상태: 접혀있을 때는 루시 AI! (루시 플러스 진입 절대 차단)
-          const targetTier = 'ai';
-          safeSessionStorage.setItem('lucy_tier_mode', targetTier);
-          safeLocalStorage.setItem('lucy_tier_mode', targetTier);
-
-          dispatchBigBangRouteTransition(`/chat?mode=${targetTier}`, 'Lucy', metrics);
-          handleRuneNavigate(`/chat?mode=${targetTier}`);
+          // 🧭 한 번 탭 = 스마트 원클릭 가이드: 지금 가장 쓸모 있는 한 곳으로 안내하고,
+          //    도착한 화면에 무엇을 하면 되는지 배너로 알려 준다. (예전의 고정 이동은 없어짐)
+          runSmartGuide(metrics);
       }, DOUBLE_TAP_WINDOW_MS);
       return;
     }
@@ -1606,10 +1693,10 @@ export function BigBangButton() {
     // 🌌 사건의 지평선 상태 (조준 중): 해당 조준 채널의 아이콘을 최우선으로 표출!
     // 🌀 드래그 시: 추천 1순위 채널
     if (dragDistance >= DRAG_ACTIVATION_THRESHOLD) return currentTarget?.id || 'omniwarp';
-    // 💬 제자리 홀드 - 채팅 화면에서는 프리즘 홈 귀환
-    if (isChatView) return 'lucy';
-    // 💬 제자리 홀드 - 일반 화면에서는 루시 1:1 대화
-    return 'lucy';
+    // 💬 제자리 홀드 - 어느 화면에서든 오브(음성 상담) 페이지로
+    if (isChatView) return 'orb';
+    // 💬 제자리 홀드 - 일반 화면에서도 오브(음성 상담) 페이지로
+    return 'orb';
   })();
 
   const activeAppName = (() => {
@@ -1620,16 +1707,18 @@ export function BigBangButton() {
 
     // 🌀 드래그 시: 추천 1순위 채널 도약
     if (dragDistance >= DRAG_ACTIVATION_THRESHOLD) return currentTarget?.title || currentTarget?.name || 'KEY 채널로 이동';
-    // 💬 제자리 홀드 - 채팅 화면에서는 프리즘 귀환
-    if (isChatView) return '루시 (1:1 음성 대화)';
-    // 💬 제자리 홀드 - 일반 화면에서는 루시 음성 대화
-    return '루시 (1:1 음성 대화)';
+    // 💬 제자리 홀드 - 채팅 화면에서도 오브 상담
+    if (isChatView) return '오브 (음성 상담)';
+    // 💬 제자리 홀드 - 일반 화면에서도 오브 상담
+    return '오브 (음성 상담)';
   })();
 
   if (typeof document === 'undefined' || isKeyboardOpen) return null;
   return createPortal(
     <>
       {cloverWind !== 'off' && <BigBangLuckyBreeze settling={cloverWind === 'settling'} buttonRef={buttonRef} />}
+      {/* 🧭 스마트 원클릭 가이드 배너: 한 번 탭해 도착한 화면 위에 무엇을 하면 되는지 알려 준다 (탭하면 닫힘) */}
+      {smartGuide && <SmartGuideBanner guide={smartGuide} onClose={dismissSmartGuide} />}
       {/* 🚀 Crystal Ball Big Bang Button (군더더기 없는 현대적이고 웅장한 대형 코스믹 아티팩트) */}
       <div
         className={`fixed bottom-safe-fab-center w-[84px] h-[84px] pointer-events-none flex items-center justify-center select-none ${
@@ -1911,8 +2000,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title={`빅뱅 버튼 (탭: Lucy 채팅 / 더블탭: Key로 이동 / 위·아래: 사이드바 메뉴 순서 / ${isChatView ? '좌우: 점술모드 한 단계 얕게·깊게' : isKeyChannel ? '좌우: Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: 점술모드 / 드래그 후 놓기: 럭키 추천 앱으로 워프 · 범위 밖에서 놓으면 취소)`}
-              aria-label={`빅뱅 버튼 · 탭: Lucy 채팅, 루시 화면에서는 음성모드 켜기·끄기, 더블탭: Key로 이동, 위·아래는 사이드바 메뉴 순서 / ${isChatView ? '좌우는 점술모드 한 단계 얕게·깊게' : isKeyChannel ? '좌우는 Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 루시 마스터(점술모드) 켜기·끄기, 드래그 후 놓으면 럭키 추천 앱으로 워프, 범위 밖이면 취소`}
+              title={`빅뱅 버튼 (탭: 지금 가장 추천되는 곳으로 스마트 가이드 이동 / 더블탭: Key로 이동 / 위·아래: 사이드바 메뉴 순서 / ${isChatView ? '좌우: 루시프로 켜기·끄기' : isKeyChannel ? '좌우: Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: 오브(음성 상담) 페이지 열기 / 드래그 후 놓기: 럭키 추천 앱으로 워프 · 범위 밖에서 놓으면 취소)`}
+              aria-label={`빅뱅 버튼 · 탭: 지금 가장 추천되는 곳으로 스마트 가이드 이동, 더블탭: Key로 이동, 위·아래는 사이드바 메뉴 순서 / ${isChatView ? '좌우는 루시프로 켜기·끄기' : isKeyChannel ? '좌우는 Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 오브(음성 상담) 페이지 열기, 드래그 후 놓으면 럭키 추천 앱으로 워프, 범위 밖이면 취소`}
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (
@@ -2144,23 +2233,20 @@ export function BigBangButton() {
                 })}
               </div>
 
-              {/* 🔮 점술모드 상담 깊이: 단계마다 금빛 고리가 하나씩 늘어난다 (시각 전용) */}
+              {/* 🔮 루시프로(점술모드): 통합 상담 하나를 나타내는 금빛 고리 하나 (시각 전용) */}
               {masterOn && (
-                <div data-bigbang-master-depth={masterDepth} className="absolute inset-0 z-10 pointer-events-none" aria-hidden="true">
-                  {Array.from({ length: masterDepth }, (_, index) => (
-                    <motion.span
-                      key={index}
-                      className="absolute rounded-full border"
-                      style={{
-                        inset: `${-3 - index * 4}px`,
-                        borderColor: index === masterDepth - 1 ? 'rgba(253,230,138,0.85)' : 'rgba(192,132,252,0.6)',
-                        boxShadow: `0 0 ${6 + index * 4}px rgba(192,132,252,0.55)`,
-                      }}
-                      initial={{ opacity: 0, scale: 1.25 }}
-                      animate={{ opacity: [0.55, 0.95, 0.55], scale: 1 }}
-                      transition={{ opacity: { duration: 2.4, repeat: Infinity, delay: index * 0.3 }, scale: { duration: 0.5 } }}
-                    />
-                  ))}
+                <div data-bigbang-lucy-pro="true" className="absolute inset-0 z-10 pointer-events-none" aria-hidden="true">
+                  <motion.span
+                    className="absolute rounded-full border"
+                    style={{
+                      inset: '-3px',
+                      borderColor: 'rgba(253,230,138,0.85)',
+                      boxShadow: '0 0 10px rgba(192,132,252,0.55)',
+                    }}
+                    initial={{ opacity: 0, scale: 1.25 }}
+                    animate={{ opacity: [0.55, 0.95, 0.55], scale: 1 }}
+                    transition={{ opacity: { duration: 2.4, repeat: Infinity }, scale: { duration: 0.5 } }}
+                  />
                 </div>
               )}
 
@@ -2170,7 +2256,7 @@ export function BigBangButton() {
                   {cloverWind !== 'off' ? (
                     <span data-bigbang-center-drag-core="true" className="w-2.5 h-2.5 rounded-full bg-emerald-200/85 blur-[1px] animate-pulse" aria-hidden="true" />
                   ) : !isPressing && centerDirection !== 'none' && CenterChannelIcon ? (
-                    <CenterChannelIcon data-bigbang-center-channel={feedbackChannel?.id} data-bigbang-center-direction={centerDirection} data-lucy-mode-marker={lucyBubbleMarker} size={24} strokeWidth={1.8} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
+                    <CenterChannelIcon data-bigbang-center-channel={feedbackChannel?.id} data-bigbang-center-direction={centerDirection} data-lucy-pro-bubble={feedbackChannel?.id === 'lucy' && masterOn ? 'true' : undefined} size={24} strokeWidth={1.8} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
                   ) : centerDirection === 'north' || centerDirection === 'south' ? (
                     centerDirection === 'north'
                       ? <ChevronUp data-bigbang-center-arrow="north" size={24} strokeWidth={2} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />

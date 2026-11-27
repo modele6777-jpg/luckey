@@ -1,12 +1,16 @@
 import type { UserProfile } from '../sharedState';
 
+export type HaudenosauneeQuestionCategory = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
+
 export interface HaudenosauneeResult {
   engineVersion: string;
   calculatedAtKst: string;
   questionTopic: string;
+  questionCategory: HaudenosauneeQuestionCategory;
   councilPrinciple: string;
   companionPrinciple: string;
   longhousePeaceAxis: string;
+  topicBalanceHint: string;
   generationalLens: string;
   peaceTone: string;
   reflectionFocus: string;
@@ -61,6 +65,24 @@ const PRINCIPLES = [
   },
 ];
 
+const TOPIC_BALANCE_HINTS: Record<HaudenosauneeQuestionCategory, string> = {
+  career: '일·커리어에서는 단기 성과만 쫓다 신뢰를 잃지 않도록, 세 자매 농법처럼 주변과 공생하는 구조를 살피세요.',
+  relationship: '관계에서는 이기고 지는 말다툼 대신 서로의 좋은 마음(Good Mind)이 다치지 않는 표현을 고르세요.',
+  wealth: '재정·계약에서는 가볍게 던진 약속을 피하고 왐펌의 매듭처럼 끝까지 책임질 수 있는 범위만 약정하세요.',
+  health: '건강·회복에서는 흔들리는 가지에 신경 쓰기보다 수면·호흡·정리 같은 깊은 뿌리부터 먼저 돌보세요.',
+  decision: '결정의 순간에는 지금의 조급함 너머 한 달 뒤, 일 년 뒤에도 고마워할 선택을 기준으로 삼으세요.',
+  general: '오늘의 흐름에서는 평의회 원칙과 동반 원리를 함께 살피며 장기 시선과 지금의 작은 실행을 맞추세요.',
+};
+
+function classifyHaudenosauneeCategory(question: string): HaudenosauneeQuestionCategory {
+  if (/일|직장|사업|커리어|프로젝트|성과|이직/.test(question)) return 'career';
+  if (/사랑|연애|관계|가족|친구|갈등|신뢰/.test(question)) return 'relationship';
+  if (/돈|재물|재정|투자|소비|계약/.test(question)) return 'wealth';
+  if (/건강|몸|피로|휴식|수면|회복/.test(question)) return 'health';
+  if (/선택|결정|방향|고민|진로/.test(question)) return 'decision';
+  return 'general';
+}
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -96,14 +118,17 @@ export function calculateHaudenosauneeSevenGenerations(params: {
   const questionTopic = trimmedQ
     ? trimmedQ.slice(0, 36)
     : '오래 남을 신뢰와 품위를 세우는 선택';
+  const questionCategory = classifyHaudenosauneeCategory(trimmedQ);
 
   return {
-    engineVersion: 'LUCKEY-HAUDENOSAUNEE-7GEN-v2.3.0',
+    engineVersion: 'LUCKEY-HAUDENOSAUNEE-7GEN-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
+    questionCategory,
     councilPrinciple: picked.principle,
     companionPrinciple: companion.principle,
     longhousePeaceAxis,
+    topicBalanceHint: TOPIC_BALANCE_HINTS[questionCategory],
     generationalLens: `${picked.lens} (동반 원리: ${companion.principle})`,
     peaceTone: picked.tone,
     reflectionFocus: `질문 맥락('${questionTopic}')에서 호데노쇼니 대평화 법칙의 '${picked.principle}'와 평화의 집 축('${longhousePeaceAxis}')을 함께 살피며, 급한 결정 앞에서도 1년 뒤 내가 고마워할 쪽을 살펴보세요.`,
@@ -122,6 +147,7 @@ export function formatHaudenosauneePrompt(res: HaudenosauneeResult): string {
     `- 평의회 원칙: ${res.councilPrinciple} (${res.peaceTone})`,
     `- 동반 원리: ${res.companionPrinciple}`,
     `- 평화의 집 축: ${res.longhousePeaceAxis}`,
+    `- 주제별 균형 조언: ${res.topicBalanceHint}`,
     `- 장기 시선: ${res.generationalLens}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,

@@ -6,6 +6,8 @@ export interface BalkanOhridResult {
   ohridSymbol: string;
   companionSymbol: string;
   springPhase: string;
+  questionTopic: 'refresh' | 'craft' | 'balance' | 'general';
+  ohridCrossAxis: string;
   balkanInsight: string;
   lakeTone: string;
   reflectionFocus: string;
@@ -97,13 +99,26 @@ export function calculateBalkanOhridLakeReflection(params: {
   const springPhase = SPRING_PHASES[stableHash(`${baseSeed}|phase`) % SPRING_PHASES.length];
   const picked = SYMBOLS[idx];
   const companion = SYMBOLS[companionIdx];
+  const q = (params.question ?? '').trim();
+  const questionTopic: BalkanOhridResult['questionTopic'] = !q
+    ? 'general'
+    : /맑|환기|샘물|돌보|새로/.test(q)
+      ? 'refresh'
+      : /쌓|진주|성실|꾸준|단단/.test(q)
+        ? 'craft'
+        : /균형|모자이크|조율|힘을 빼|리듬/.test(q)
+          ? 'balance'
+          : 'general';
+  const ohridCrossAxis = `${questionTopic} · ${picked.symbol.split('(')[0].trim()} × ${springPhase.split('—')[0].trim()}`;
 
   return {
-    engineVersion: 'LUCKEY-BALKAN-OHRID-v2.3.0',
+    engineVersion: 'LUCKEY-BALKAN-OHRID-v2.4.0',
     calculatedAtKst: formatKstStandard(now),
     ohridSymbol: picked.symbol,
     companionSymbol: companion.symbol,
     springPhase,
+    questionTopic,
+    ohridCrossAxis,
     balkanInsight: picked.insight,
     lakeTone: picked.tone,
     reflectionFocus: `발칸 오흐리드 지혜의 '${picked.symbol}'과 '${companion.symbol}'이 '${springPhase}' 위에서 만납니다. 깊은 바닥에서부터 스스로를 맑게 돌보는 호흡을 지켜 보세요.`,
@@ -121,6 +136,7 @@ export function formatBalkanOhridPrompt(res: BalkanOhridResult): string {
     `- 호수 상징: ${res.ohridSymbol} (${res.lakeTone})`,
     `- 보조 물결: ${res.companionSymbol}`,
     `- 샘물 국면: ${res.springPhase}`,
+    `- 질문 맥락(${res.questionTopic}) · 호수 교차 축: ${res.ohridCrossAxis}`,
     `- 중심 통찰: ${res.balkanInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,

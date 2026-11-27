@@ -22,6 +22,7 @@ export interface HittiteTelepinuResult {
   activePhase: TelepinuRenewalPhase;
   companionPhase: TelepinuRenewalPhase;
   telepinuReturnAxis: string;
+  topicBalanceHint: string;
   qualitativeSynthesis: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -88,6 +89,13 @@ function classifyTelepinuTopic(q: string): HittiteTelepinuResult['questionTopic'
   return '균형 전반';
 }
 
+const TELEPINU_TOPIC_HINTS: Record<HittiteTelepinuResult['questionTopic'], string> = {
+  관계: '서로의 체온이 엇갈릴 때는 잘잘못보다 먼저 온기를 되돌리는 작은 안부가 회복의 실마리가 됩니다.',
+  '진로·일': '막힌 과제를 한 번에 뚫으려 하기보다 작게 쪼개어 오늘 15분만 손대는 흐름이 좋습니다.',
+  '마음·회복': '고갈된 화로에 억지 불을 지피지 말고 수면과 식사 같은 가장 단순한 돌봄부터 챙기세요.',
+  '균형 전반': '작은 단서를 살피는 끈기와 감정을 식히는 여유가 함께 맞물릴 때 일상의 리듬이 돌아옵니다.',
+};
+
 const TELEPINU_SHADOW_WARNINGS: Record<TelepinuRenewalPhaseId, string> = {
   bee_gentle_search: '작은 단서를 찾다가 사소한 결점까지 과도하게 파고들어 지치지 않도록 경계하세요.',
   cedar_calming_smoke: '열기를 식히는 데만 머물러 정작 필요한 대화와 정리를 미루지 않도록 주의하세요.',
@@ -119,6 +127,7 @@ export function calculateHittiteTelepinuHarmonyRenewal(params: {
   const activePhase = TELEPINU_PHASES[activeIdx];
   const companionPhase = TELEPINU_PHASES[companionIdx];
   const telepinuReturnAxis = `${activePhase.koreanLabel} → ${companionPhase.koreanLabel} (${questionTopic} 축)`;
+  const topicBalanceHint = TELEPINU_TOPIC_HINTS[questionTopic];
   const shadowWarning = TELEPINU_SHADOW_WARNINGS[activePhase.id];
 
   const qualitativeSynthesis =
@@ -138,12 +147,13 @@ export function calculateHittiteTelepinuHarmonyRenewal(params: {
 
   return {
     engineName: '고대 히타이트 테레피누 조화·회복 (Hittite Telepinu Renewal)',
-    engineVersion: 'LUCKEY-HITTITE-TELEPINU-v2.3.0',
+    engineVersion: 'LUCKEY-HITTITE-TELEPINU-v2.4.0',
     calculatedAtKst: formatHittiteKstTimestamp(now),
     questionTopic,
     activePhase,
     companionPhase,
     telepinuReturnAxis,
+    topicBalanceHint,
     qualitativeSynthesis,
     reflectionFocus,
     ritualAction,
@@ -160,6 +170,7 @@ export function formatHittiteTelepinuPrompt(res: HittiteTelepinuResult): string 
     `[보조 상징 관점 — ${res.engineName}]`,
     `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 회복 축: ${res.telepinuReturnAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 중심 국면: ${res.activePhase.hittiteMotif} · ${res.activePhase.koreanLabel}`,
     `- 연결 국면: ${res.companionPhase.hittiteMotif} · ${res.companionPhase.koreanLabel}`,
     `- 성찰 해석: ${res.qualitativeSynthesis}`,

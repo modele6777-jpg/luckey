@@ -6,12 +6,16 @@ export interface BatakSopoInput {
   question?: string;
 }
 
+export type BatakQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'general';
+
 export interface BatakSopoResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: BatakQuestionTopic;
   sopoMotif: string;
   companionMotif: string;
   sopoPhase: string;
+  sopoCrossAxis: string;
   ridgeCurveState: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -62,6 +66,22 @@ const QUESTIONS = [
   '쇠못처럼 억지로 고정하느라 삐걱거리고 있는 계획은 무엇인가요?',
 ] as const;
 
+const TOPIC_AXES: Record<BatakQuestionTopic, string> = {
+  career: '일·커리어에서는 쇠못처럼 억지로 고정하기보다 역할과 순서를 유연하게 짜맞추는 재배치가 효과적입니다.',
+  relationship: '관계에서는 벽을 세우기보다 소포 아래층 마루처럼 서로 숨 돌릴 여백을 열어 두는 편이 안전합니다.',
+  wealth: '재정·계약에서는 세 색 기준처럼 핵심 원칙 몇 가지만 선명히 세우고 불필요한 부담은 흘려보내세요.',
+  health: '건강·회복에서는 일정 사이에 열린 15분 환기 시간을 비워 두고 긴장의 물기를 처마 밖으로 흘려보내세요.',
+  general: '오늘의 흐름에서는 상징 모티프와 동반 모티프를 함께 살피며 유연한 짜맞춤과 여백의 균형을 지키세요.',
+};
+
+function classifyBatakTopic(question: string): BatakQuestionTopic {
+  if (/일|직장|사업|커리어|프로젝트|성과|짜맞추/.test(question)) return 'career';
+  if (/사랑|연애|관계|가족|친구|갈등|소통/.test(question)) return 'relationship';
+  if (/돈|재물|재정|투자|소비|계약/.test(question)) return 'wealth';
+  if (/건강|몸|피로|휴식|수면|회복/.test(question)) return 'health';
+  return 'general';
+}
+
 function toKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -99,13 +119,17 @@ export function calculateBatakSopoRoof(input: BatakSopoInput): BatakSopoResult {
   const shortPhase = sopoPhase.split('(')[0].trim();
   const ritualAction = `${RITUALS[motifIdx]} (${shortPhase} 흐름에 맞춰 '${shortCompanion}'의 구조 감각도 함께 살펴보세요.)`;
   const reflectiveQuestion = `${QUESTIONS[motifIdx]} (동반 모티프 '${shortCompanion}'과 겹쳐 보면 어떤 틈이 보이나요?)`;
+  const questionTopic = classifyBatakTopic(input.question ?? '');
+  const sopoCrossAxis = `${shortPhase} × ${shortCompanion} — ${TOPIC_AXES[questionTopic]}`;
 
   return {
-    engineVersion: 'LUCKEY-BATAK-SOPO-v2.3.0',
+    engineVersion: 'LUCKEY-BATAK-SOPO-v2.4.0',
     calculatedAtKst: toKstIso(now),
+    questionTopic,
     sopoMotif,
     companionMotif,
     sopoPhase,
+    sopoCrossAxis,
     ridgeCurveState,
     reflectionFocus: `못 없이 나무를 짜맞추고 아래층을 열어 두는 바타크 토바 소포 가옥처럼, 주 모티프와 동반 모티프('${companionMotif}')가 '${sopoPhase}'에서 어우러져 지금은 '${ridgeCurveState}'의 균형이 필요한 때입니다.`,
     ritualAction,
@@ -121,6 +145,7 @@ export function formatBatakSopoPrompt(result: BatakSopoResult): string {
     `- 상징 모티프: ${result.sopoMotif}`,
     `- 동반 모티프: ${result.companionMotif}`,
     `- 소포 국면: ${result.sopoPhase}`,
+    `- 질문 맥락(${result.questionTopic}) 교차 축: ${result.sopoCrossAxis}`,
     `- 현재 결: ${result.ridgeCurveState}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 작은 실천: ${result.ritualAction}`,

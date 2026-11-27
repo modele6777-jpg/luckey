@@ -37,7 +37,25 @@ import {
 } from '../sajuAnalysis';
 import { getAstronomicalSajuYear } from '../astronomicalSolarTerms';
 
-export const LIFE_SEASON_ENGINE_VERSION = 'LUCKEY-LIFE-SEASON-v2.2.0';
+export const LIFE_SEASON_ENGINE_VERSION = 'LUCKEY-LIFE-SEASON-v2.4.0';
+
+export type LifeSeasonQuestionTopic = 'season' | 'career' | 'wealth' | 'relation' | 'general';
+
+function classifyLifeSeasonTopic(q: string): LifeSeasonQuestionTopic {
+  if (/계절|대운|교운기|흐름|시기/.test(q)) return 'season';
+  if (/이직|창업|직장|커리어|사업/.test(q)) return 'career';
+  if (/재물|투자|돈|자산|계약/.test(q)) return 'wealth';
+  if (/관계|결혼|가족|사람|인연/.test(q)) return 'relation';
+  return 'general';
+}
+
+const LIFE_SEASON_SHADOW_WARNINGS: Record<LifeSeasonQuestionTopic, string> = {
+  season: '대운의 계절 이름만 보고 조급히 단정 짓지 마십시오. 겨울에도 내실을 다진 씨앗이 봄에 가장 먼저 싹을 틔웁니다.',
+  career: '교운기나 대운 전환점에 충동적으로 모든 기반을 한 번에 바꾸면 새 계절에 안착할 발판까지 흔들릴 수 있습니다.',
+  wealth: '확장기 대운이라 해도 리스크 분산 없이 무리한 레버리지를 쓰면 세운과의 충돌 시 큰 손실로 이어질 수 있습니다.',
+  relation: '외부 환경이 요동칠수록 가까운 사람에게 예민함을 풀기 쉬우니 말의 온도를 한 단계 낮추어 점검하십시오.',
+  general: '10년 대운은 거대한 바람의 방향일 뿐, 오늘의 작은 선택과 생활 습관이 그 바람을 타는 돛의 각도를 결정합니다.',
+};
 
 function formatLifeSeasonKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -92,6 +110,8 @@ export interface LifeSeasonTimingResult {
   calculatedAtUtc: string;
   calculatedAtKst: string;
   timestamp: number;
+  questionTopic: LifeSeasonQuestionTopic;
+  shadowWarning: string;
 
   targetYear: number;
   targetKoreanAge: number;
@@ -177,6 +197,11 @@ export interface LifeSeasonTimingResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  lifeSeasonCrossAxis: {
+    daewoonToSeason: string;
+    annualSynergyAxis: string;
+    gyowungiAnchor: string;
   };
   reflectiveQuestion?: string;
   interpretiveBoundary: string;
@@ -457,6 +482,8 @@ export function calculateLifeSeasonTiming(params: {
     : `지금 제제는 [${curD.ganKr}${curD.zhiKr} 대운]의 [${dominantPhase}]를 순항 중이야. 인생의 [${currentSeason.split(' ')[0]}] 계절에 맞춰 서두르지 말고 단단하게 나아가자!`;
 
   const q = (params.question || '').trim();
+  const questionTopic = classifyLifeSeasonTopic(q);
+  const shadowWarning = LIFE_SEASON_SHADOW_WARNINGS[questionTopic];
   const ritualAction = `현재 '${curD.ganKr}${curD.zhiKr}대운(${yearsInCurrentDaewoon}년 차 · ${currentSeason.split(' ')[0]})'의 리듬에 맞춰 ${actionProtocol}`;
   const reflectionFocus = `10년 대운 & 교운기(${curD.ganKr}${curD.zhiKr}대운 · ${gyowungiPhase}) — ${currentSeason}과 ${elementAffinity}`;
   const lifeSeasonSynthesisMatrix = {
@@ -464,12 +491,19 @@ export function calculateLifeSeasonTiming(params: {
     alignmentState: `${currentSeason} · ${elementAffinity}`,
     integratedAction: `${actionProtocol}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const lifeSeasonCrossAxis = {
+    daewoonToSeason: `${curD.ganKr}${curD.zhiKr}대운(${curD.tenGodGan}/${curD.tenGodZhi}) → ${currentSeason.split(' ')[0]}`,
+    annualSynergyAxis: `${annual.yearName.split(' ')[1] || '丙午'} ↔ ${curD.ganZhi} · ${elementAffinity.split(' ')[0]}`,
+    gyowungiAnchor: `${gyowungiPhase} · ${actionProtocol}`,
+  };
 
   return {
     engineVersion: LIFE_SEASON_ENGINE_VERSION,
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: nowKstIso,
     timestamp: now.getTime(),
+    questionTopic,
+    shadowWarning,
     targetYear,
     targetKoreanAge,
     targetWesternAge,
@@ -524,6 +558,7 @@ export function calculateLifeSeasonTiming(params: {
     ritualAction,
     reflectionFocus,
     lifeSeasonSynthesisMatrix,
+    lifeSeasonCrossAxis,
     reflectiveQuestion: q
       ? `‘${q}’에 대해 현재 ${curD.ganKr}${curD.zhiKr}대운(${currentSeason})의 리듬 속에서 지금 밀어붙일 영역과 한 템포 고를 영역은 어디입니까?`
       : `현재 ${curD.ganKr}${curD.zhiKr}대운 ${yearsInCurrentDaewoon}년 차(${gyowungiPhase})를 지나며 가장 먼저 정리하거나 심화할 인생 과제는 무엇입니까?`,
@@ -549,7 +584,7 @@ export function formatLifeSeasonTimingPrompt(result: LifeSeasonTimingResult): st
 
   return `[⏳ 10년 대운(大運) & 세운·교운기 타이밍 정밀 실측 데이터 (Life Season Timing)]
 ======================================================================
-기준 시각: ${result.calculatedAtKst} | 엔진: ${result.engineVersion}
+기준 시각: ${result.calculatedAtKst} | 엔진: ${result.engineVersion} | 질문 맥락: ${result.questionTopic}
 현재 나이: ${result.targetKoreanAge}세(만 ${result.targetWesternAge}세) | 대운수: ${result.daewoonBasics.daewunNumber} (${result.daewoonBasics.directionText})
 실시간 타이밍 헤드라인: ${result.headline}
 ======================================================================
@@ -585,9 +620,10 @@ export function formatLifeSeasonTimingPrompt(result: LifeSeasonTimingResult): st
 
 6. 📜 [8대 대운 전 생애 타임라인 참조]
 ${timelineRows}
-${result.lifeSeasonSynthesisMatrix ? `\n7. 🔗 [교차 매트릭스]\n- 핵심 긴장: ${result.lifeSeasonSynthesisMatrix.dominantTension}\n- 조율 상태: ${result.lifeSeasonSynthesisMatrix.alignmentState}\n- 통합 실천: ${result.lifeSeasonSynthesisMatrix.integratedAction}` : ''}
+${result.lifeSeasonSynthesisMatrix ? `\n7. 🔗 [교차 매트릭스]\n- 대운 교차 축: ${result.lifeSeasonCrossAxis.daewoonToSeason} | ${result.lifeSeasonCrossAxis.annualSynergyAxis}\n- 핵심 긴장: ${result.lifeSeasonSynthesisMatrix.dominantTension}\n- 조율 상태: ${result.lifeSeasonSynthesisMatrix.alignmentState}\n- 통합 실천: ${result.lifeSeasonSynthesisMatrix.integratedAction}` : ''}
 - 실천 의례: ${result.ritualAction}
 - 성찰 초점: ${result.reflectionFocus}
+- 과잉 경계: ${result.shadowWarning}
 ${result.reflectiveQuestion ? `- 성찰 질문: ${result.reflectiveQuestion}\n` : ''}- 해석 경계: ${result.interpretiveBoundary}
 
 [★ 대화 적용 절대 지침]:

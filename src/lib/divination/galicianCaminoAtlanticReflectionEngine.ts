@@ -7,6 +7,7 @@ export interface GalicianCaminoResult {
   atlanticSign: string;
   companionSign: string;
   caminoHorizonAxis: string;
+  topicBalanceHint: string;
   caminoInsight: string;
   galiciaTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const GALICIAN_SHADOWS = [
   '불안을 말로 꺼내 털어낸 뒤에도 실제 행동으로 이어지는 작은 정돈 한 가지를 빠뜨리지 마세요.',
 ];
 
+const GALICIAN_TOPIC_HINTS: Record<GalicianCaminoResult['questionTopic'], string> = {
+  '속도·걸음': '타인의 걸음에 맞춰 보폭을 급히 늘리기보다, 오늘 내가 지치지 않고 완주할 수 있는 호흡을 먼저 확인하세요.',
+  '전환·시야': '지나간 길에 대한 아쉬움과 새 바다에 대한 설렘 사이에서, 오늘 건너야 할 눈앞의 돌다리 하나를 먼저 짚어 보세요.',
+  '연대·정화': '혼자 다 짊어지려는 긴장을 내려놓고, 믿을 만한 동료나 글쓰기 의식으로 마음의 짐을 가볍게 나누세요.',
+  '순례 전반': '대서양 수평선처럼 넓은 시야를 품되, 지금 발밑에 닿아 있는 오늘의 한 걸음부터 차분히 내디디세요.',
+};
+
 function classifyGalicianTopic(q: string): GalicianCaminoResult['questionTopic'] {
   if (/속도|걸음|비교|길|걷/.test(q)) return '속도·걸음';
   if (/전환|시야|끝|시작|그리움|뿌리/.test(q)) return '전환·시야';
@@ -102,15 +110,17 @@ export function calculateGalicianCaminoAtlanticReflection(params: {
   const picked = SIGNS[idx];
   const companion = SIGNS[(idx + companionOffset) % SIGNS.length];
   const caminoHorizonAxis = `${picked.sign.split('(')[0].trim()} ↔ ${companion.sign.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = GALICIAN_TOPIC_HINTS[questionTopic];
   const shadowWarning = GALICIAN_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-GALICIAN-CAMINO-v2.3.0',
+    engineVersion: 'LUCKEY-GALICIAN-CAMINO-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     atlanticSign: picked.sign,
     companionSign: companion.sign,
     caminoHorizonAxis,
+    topicBalanceHint,
     caminoInsight: picked.insight,
     galiciaTone: picked.tone,
     reflectionFocus: `갈리시아 대서양 순례길의 '${picked.sign}'과 동반 표식 '${companion.sign}'을 함께 바라보며 나만의 호흡을 되찾아 보세요.`,
@@ -126,6 +136,7 @@ export function formatGalicianCaminoPrompt(res: GalicianCaminoResult): string {
     `[갈리시아 카미노·대서양 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 순례·수평선 축: ${res.caminoHorizonAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 대서양 상징: ${res.atlanticSign} (${res.galiciaTone})`,
     `- 동반 상징: ${res.companionSign}`,
     `- 중심 통찰: ${res.caminoInsight}`,

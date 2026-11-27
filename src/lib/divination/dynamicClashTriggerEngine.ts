@@ -21,7 +21,7 @@ import {
   EARTHLY_BRANCHES
 } from '../sajuAnalysis';
 
-export const DYNAMIC_CLASH_ENGINE_VERSION = 'LUCKEY-CLASH-v2.3.0';
+export const DYNAMIC_CLASH_ENGINE_VERSION = 'LUCKEY-CLASH-v2.4.0';
 
 export type ClashType = 'six_clash' | 'three_penalties' | 'self_penalty' | 'six_harm' | 'six_destruction' | 'wonjin';
 export type HarmonyType = 'six_harmony' | 'three_harmony';
@@ -71,6 +71,7 @@ export interface DynamicClashResult {
   volatilityScore: number; // 내부 호환용 (프롬프트 비노출)
   harmonyScore: number;    // 내부 호환용 (프롬프트 비노출)
   netStatus: 'explosive_change' | 'high_tension' | 'balanced_movement' | 'peaceful_flow';
+  clashCrossAxis: string;
   activeClashes: ClashTriggerItem[];
   activeHarmonies: HarmonyTriggerItem[];
   primaryAlert: string | null;
@@ -572,6 +573,8 @@ export function calculateDynamicClashTrigger(params?: {
     ? `‘${q}’ 상황에서 오늘의 충·합 파동(${primaryClash ? primaryClash.name : '평온 흐름'})을 어떤 창조적 결단이나 조율 행동으로 전환하시겠습니까?`
     : `오늘 일진(${currentPillars.dayGanZhiKo})이 건네는 긴장과 합의 기운 속에서 가장 먼저 내려놓을 관성과 붙잡을 행동은 무엇입니까?`;
 
+  const clashCrossAxis = `${currentPillars.dayGanZhiKo} 일진 · ${netStatus} (${temporalClashRhythm.triggerWatchWindow.split('—')[0].trim()})`;
+
   return {
     engineVersion: DYNAMIC_CLASH_ENGINE_VERSION,
     targetDateIso: now.toISOString(),
@@ -580,6 +583,7 @@ export function calculateDynamicClashTrigger(params?: {
     volatilityScore,
     harmonyScore,
     netStatus,
+    clashCrossAxis,
     activeClashes,
     activeHarmonies,
     primaryAlert,
@@ -637,6 +641,7 @@ ${harmList}
   • 골든 마인드셋: "${res.todayActionMatrix.goldenKey}"
 - 질문 맥락 감사 (${res.situationalClashAudit.focusTheme}): ${res.situationalClashAudit.clashCue}
 - KST 시공간 리듬: ${res.temporalClashRhythm.triggerWatchWindow} / ${res.temporalClashRhythm.seasonalClashTone}
+- 충·합 교차 축: ${res.clashCrossAxis}
 - 교차 매트릭스: 핵심(${res.clashSynthesisMatrix.coreInsight}) | 실행(${res.clashSynthesisMatrix.recommendedAction}) | 주의(${res.clashSynthesisMatrix.cautionNotice})
 - 성찰 질문: ${res.reflectiveQuestion}
 - 해석 경계: ${res.boundaryNotice}

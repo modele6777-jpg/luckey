@@ -8,12 +8,12 @@
  * 4. 좁은 방 흰 바람벽에 글자를 띄우듯 삶을 응시하는 심층 자아성찰도 (White Wall Contemplation & Deep Self-Reflection Index): 차가운 방안에서 자신과 운명을 조용히 반추하며 사랑과 슬픔의 무게를 오롯이 감당하는 성찰의 깊이.
  * 5. 눈 내리는 밤 나타샤와 흰 당나귀를 타고 가듯 초연한 심신 회복탄력성 (Serene Steadfast Acceptance & Poetic Resilience Score): 막막한 현실 앞에서도 고조곤히 내면의 순수한 이상을 품고 눈길을 묵묵히 걸어가는 초연한 서정적 평정심.
  *
- * @version LUCKEY-BAEK-SEOK-DEER-WHITE-WALL-POETIC-PURITY-v2.0.0
+ * @version LUCKEY-BAEK-SEOK-DEER-WHITE-WALL-POETIC-PURITY-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_BAEK_SEOK_DEER_WHITE_WALL_POETIC_PURITY_VERSION = 'LUCKEY-BAEK-SEOK-DEER-WHITE-WALL-POETIC-PURITY-v2.3.0';
+export const KOREAN_BAEK_SEOK_DEER_WHITE_WALL_POETIC_PURITY_VERSION = 'LUCKEY-BAEK-SEOK-DEER-WHITE-WALL-POETIC-PURITY-v2.4.0';
 
 export interface BaekSeokTheme {
   themeKey: string;
@@ -53,6 +53,11 @@ export interface KoreanBaekSeokDeerWhiteWallPoeticPurityResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  baekSeokCrossAxis: {
+    themeAphorismPair: string;
+    poeticStage: string;
+    sourceAnchor: string;
   };
   ritualAction: string;
   reflectionFocus: string;
@@ -197,6 +202,11 @@ export function calculateKoreanBaekSeokDeerWhiteWallPoeticPurity(
     alignmentState: describeBaekSeokStage(avgScore),
     integratedAction: `${focalBaekSeokAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
+  const baekSeokCrossAxis = {
+    themeAphorismPair: `${activeBaekSeokTheme.themeKey} ↔ ${focalBaekSeokAphorism.aphorismKey}`,
+    poeticStage: describeBaekSeokStage(avgScore).split('—')[0].trim(),
+    sourceAnchor: focalBaekSeokAphorism.sourceContext,
+  };
 
   const ritualAction = `[${focalBaekSeokAphorism.sourceContext}] ${focalBaekSeokAphorism.actionGuidance}`;
   const reflectionFocus = reflectiveQuestion;
@@ -219,6 +229,7 @@ export function calculateKoreanBaekSeokDeerWhiteWallPoeticPurity(
       philosophicalCounsel,
     },
     baekSeokSynthesisMatrix,
+    baekSeokCrossAxis,
     ritualAction,
     reflectionFocus,
   };
@@ -253,6 +264,7 @@ export function formatKoreanBaekSeokDeerWhiteWallPoeticPurityPrompt(
   if (res.baekSeokSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스 [핵심 긴장: ${res.baekSeokSynthesisMatrix.dominantTension} | 조율 상태: ${res.baekSeokSynthesisMatrix.alignmentState}]`,
+      `- 백석 서정 교차 축: ${res.baekSeokCrossAxis.poeticStage} | ${res.baekSeokCrossAxis.sourceAnchor}`,
       `- 통합 실천: ${res.baekSeokSynthesisMatrix.integratedAction}`,
     );
   }

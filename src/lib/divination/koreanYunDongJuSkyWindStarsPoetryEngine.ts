@@ -8,12 +8,30 @@
  * 4. 별을 노래하는 불멸의 사랑과 소명 지수(Star-Counting Immortal Love & Vow Index): "별을 노래하는 마음으로 모든 죽어가는 것을 사랑해야지"라는 불멸의 사랑과 자신에게 주어진 길을 묵묵히 걸어가는 소명의식.
  * 5. 어둠을 뚫고 아침을 기다리는 등불 희망 회복탄력성(Lantern of Hope Resilience Score): 시대의 혹독한 암흑 속에서도 "등불을 밝혀 어둠을 조금 내몰고 시대처럼 올 아침을 기다리는" 불굴의 실존적 희망.
  *
- * @version LUCKEY-YUN-DONG-JU-SKY-STARS-v2.2.0
+ * @version LUCKEY-YUN-DONG-JU-SKY-STARS-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_YUN_DONG_JU_VERSION = 'LUCKEY-YUN-DONG-JU-SKY-STARS-v2.3.0';
+export const KOREAN_YUN_DONG_JU_VERSION = 'LUCKEY-YUN-DONG-JU-SKY-STARS-v2.4.0';
+
+export type YunDongJuQuestionTopic = 'conscience' | 'relation' | 'work' | 'emotion' | 'general';
+
+function classifyYunDongJuTopic(q: string): YunDongJuQuestionTopic {
+  if (/진심|양심|부끄럼|하늘|다짐/.test(q)) return 'conscience';
+  if (/관계|사랑|사람|그리움|어머니/.test(q)) return 'relation';
+  if (/일|길|소명|직장|걸어가/.test(q)) return 'work';
+  if (/마음|우물|쓸쓸|슬픔|불안/.test(q)) return 'emotion';
+  return 'general';
+}
+
+const YUN_DONG_JU_SHADOW_WARNINGS: Record<YunDongJuQuestionTopic, string> = {
+  conscience: '부끄럼 없기를 바라는 맑은 마음이 스스로를 끊임없이 검열하고 자책하는 가혹함으로 변하지 않게 보듬으십시오.',
+  relation: '모든 죽어가는 것을 향한 연민이 내 정서적 경계를 무너뜨려 소진으로 이어지지 않도록 자신에게도 손을 내미십시오.',
+  work: '주어진 길을 묵묵히 걸어가되, 고독한 사색에만 머물러 오늘의 작은 실행을 놓치지 마십시오.',
+  emotion: '우물 속 자화상을 들여다보다 자기 연민의 늪에 오래 머물지 말고 돌아서는 발걸음도 함께 내디디십시오.',
+  general: '어둠을 한탄하기보다 오늘 내 자리에서 켤 수 있는 작은 등불 하나를 밝히는 데서 아침이 시작됩니다.',
+};
 
 export interface YunDongJuTheme {
   themeKey: string;
@@ -34,6 +52,8 @@ export interface YunDongJuAphorism {
 export interface KoreanYunDongJuSkyWindStarsPoetryResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: YunDongJuQuestionTopic;
+  shadowWarning: string;
   // 5대 핵심 윤동주 하늘과 바람과 별과 시 실존성찰 지표 (0~100)
   pureConscienceIntegrityScore: number;            // 순결한 양심도 (Pure Conscience Integrity)
   wellspringSelfReflectiveSincerityIndex: number;  // 우물 속 자화상 성찰력 (Self-Reflective Sincerity)
@@ -181,7 +201,9 @@ export function calculateKoreanYunDongJuSkyWindStarsPoetry(
   const focalYunDongJuAphorism = YUN_DONG_JU_APHORISMS[aphorismIndex];
   const secondaryYunDongJuAphorism = YUN_DONG_JU_APHORISMS[secondaryAphorismIndex];
 
-  const trimmedQuery = query?.trim();
+  const trimmedQuery = query?.trim() ?? '';
+  const questionTopic = classifyYunDongJuTopic(trimmedQuery);
+  const shadowWarning = YUN_DONG_JU_SHADOW_WARNINGS[questionTopic];
   const reflectiveQuestion = trimmedQuery
     ? `윤동주 시인의 《하늘과 바람과 별과 시》 '${activeYunDongJuTheme.themeTitleEn}'와 '${secondaryYunDongJuTheme.themeTitleEn}'를 비추어 볼 때, "${trimmedQuery}"에서 하늘 아래 부끄럼 없이 지켜내고 싶은 진심은 무엇인가요?`
     : `지금 자신에게 조용히 손을 내미는 자리에서, '${activeYunDongJuTheme.themeTitleKo}'와 '${secondaryYunDongJuTheme.themeTitleKo}'를 함께 비추는 등불은 무엇일까요?`;
@@ -215,6 +237,8 @@ export function calculateKoreanYunDongJuSkyWindStarsPoetry(
   return {
     engineVersion: KOREAN_YUN_DONG_JU_VERSION,
     calculatedAtKst,
+    questionTopic,
+    shadowWarning,
     pureConscienceIntegrityScore,
     wellspringSelfReflectiveSincerityIndex,
     leafBreezeCompassionSensibilityScore,
@@ -247,7 +271,7 @@ export function formatKoreanYunDongJuSkyWindStarsPoetryPrompt(res: KoreanYunDong
   );
   const lines = [
     `【윤동주 《하늘과 바람과 별과 시》 순결한 양심 & 실존성찰 지표】`,
-    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
+    `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion} | 질문 맥락: ${res.questionTopic}`,
     `- 실존 성찰 국면: ${describeYunDongJuStage(avgScore)}`,
     `- 핵심 실존성찰 테마: ${res.activeYunDongJuTheme.themeTitleKo} [${res.activeYunDongJuTheme.themeTitleEn}]`,
     `- 보조 교차 테마: ${res.secondaryYunDongJuTheme.themeTitleKo} [${res.secondaryYunDongJuTheme.themeTitleEn}]`,
@@ -260,6 +284,7 @@ export function formatKoreanYunDongJuSkyWindStarsPoetryPrompt(res: KoreanYunDong
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 실천 의례: ${res.ritualAction}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
     `- 종합 윤동주 문학·실존성찰 권면: ${res.yunDongJuComprehensiveGuidance.philosophicalCounsel}`,
   ];

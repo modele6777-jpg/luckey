@@ -7,6 +7,7 @@ export interface CornishKernowResult {
   kernowLandmark: string;
   companionLandmark: string;
   graniteCoastAxis: string;
+  topicBalanceHint: string;
   cornishInsight: string;
   atlanticTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const CORNISH_SHADOWS = [
   '물때를 기다리는 여유가 정작 지금 당장 건너야 할 작은 실행마저 미루는 핑계가 되지 않게 하세요.',
 ];
 
+const TOPIC_BALANCE_HINTS: Record<CornishKernowResult['questionTopic'], string> = {
+  '관계·포구': '어부가 돌아오는 포구의 등불처럼 거친 바깥 바람 뒤에는 마음을 쉬게 하는 따뜻한 자리를 먼저 챙기세요.',
+  '일·내공': '땅속 화강암 광맥이 시간을 견디며 단단해지듯 보이지 않는 축적을 믿고 오늘 몫을 다듬으세요.',
+  '때·신념': '모래톱은 물이 빠질 때 드러나니, 조급하게 건너기보다 바람을 견디며 때와 기준을 함께 살피세요.',
+  '인내 전반': '파도를 정면으로 막기보다 해안의 절벽처럼 중심을 세우고 물때의 리듬을 기다리는 여유를 두세요.',
+};
+
 function classifyCornishTopic(q: string): CornishKernowResult['questionTopic'] {
   if (/관계|포구|쉼터|사람|사랑|대화/.test(q)) return '관계·포구';
   if (/일|직장|내공|습관|성실|축적/.test(q)) return '일·내공';
@@ -102,15 +110,17 @@ export function calculateCornishKernowSeaGranite(params: {
   const picked = LANDMARKS[idx];
   const companion = LANDMARKS[(idx + companionOffset) % LANDMARKS.length];
   const graniteCoastAxis = `${picked.landmark.split('(')[0].trim()} ↔ ${companion.landmark.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = CORNISH_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-CORNISH-KERNOW-v2.3.0',
+    engineVersion: 'LUCKEY-CORNISH-KERNOW-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     kernowLandmark: picked.landmark,
     companionLandmark: companion.landmark,
     graniteCoastAxis,
+    topicBalanceHint,
     cornishInsight: picked.insight,
     atlanticTone: picked.tone,
     reflectionFocus: `콘월 케르노우의 '${picked.landmark}'과 동반 지형 '${companion.landmark}'을 겹쳐 보며, 지금 당장 결과를 재촉하기보다 바람을 견디며 단단해지는 시간을 믿어 보세요.`,
@@ -126,6 +136,7 @@ export function formatCornishKernowPrompt(res: CornishKernowResult): string {
     `[콘월 케르노우·화강암 인내 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 해안 축: ${res.graniteCoastAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 케르노우 상징: ${res.kernowLandmark} (${res.atlanticTone})`,
     `- 동반 지형: ${res.companionLandmark}`,
     `- 중심 통찰: ${res.cornishInsight}`,

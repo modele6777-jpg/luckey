@@ -9,12 +9,12 @@
  * 4. 사랑의 투쟁 실존적 소통력(Loving Struggle Authentic Communication Score): 가면을 벗고 온 인격으로 마주하여 서로의 실존을 일깨우는 진실한 영혼의 소통력.
  * 5. 이성과 실존의 조화 균형도(Reason & Existenz Harmonization Index): 비합리적 광신이나 맹목적 허무에 빠지지 않고, 명철한 이성과 깊은 실존적 깊이를 통합하는 원숙도.
  *
- * @version LUCKEY-KARL-JASPERS-EXISTENZ-v2.1.0
+ * @version LUCKEY-KARL-JASPERS-EXISTENZ-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_KARL_JASPERS_VERSION = 'LUCKEY-KARL-JASPERS-EXISTENZ-v2.3.0';
+export const GERMAN_KARL_JASPERS_VERSION = 'LUCKEY-KARL-JASPERS-EXISTENZ-v2.4.0';
 
 export interface JaspersTheme {
   themeKey: string;
@@ -45,6 +45,7 @@ export interface GermanKarlJaspersExistenzGrenzsituationenResult {
   activeJaspersTheme: JaspersTheme;
   focalJaspersAphorism: JaspersAphorism;
   secondaryJaspersAphorism: JaspersAphorism;
+  jaspersCrossAxis: string;
   reflectiveQuestion: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -196,6 +197,7 @@ export function calculateGermanKarlJaspersExistenzGrenzsituationen(
   const activeJaspersTheme = JASPERS_THEMES[themeIndex];
   const focalJaspersAphorism = JASPERS_APHORISMS[aphorismIndex];
   const secondaryJaspersAphorism = JASPERS_APHORISMS[secondaryAphorismIndex];
+  const jaspersCrossAxis = `${activeJaspersTheme.themeTitleKo} × ${focalJaspersAphorism.sourceContext} ↔ ${secondaryJaspersAphorism.sourceContext}`;
   const reflectiveQuestion = buildJaspersReflectiveQuestion(activeJaspersTheme, query);
   const ritualAction = focalJaspersAphorism.actionGuidance;
   const reflectionFocus = reflectiveQuestion;
@@ -227,6 +229,7 @@ export function calculateGermanKarlJaspersExistenzGrenzsituationen(
     activeJaspersTheme,
     focalJaspersAphorism,
     secondaryJaspersAphorism,
+    jaspersCrossAxis,
     reflectiveQuestion,
     ritualAction,
     reflectionFocus,
@@ -251,6 +254,7 @@ export function formatGermanKarlJaspersExistenzGrenzsituationenPrompt(
     `- 사랑의 투쟁 실존적 소통력(Loving Struggle Communication): ${describeJaspersStage(res.lovingStruggleCommunicationScore)}`,
     `- 이성과 실존의 조화 균형도(Reason & Existenz Harmonization): ${describeJaspersStage(res.reasonExistenzHarmonizationIndex)}`,
     `- 핵심 실존 테마: ${res.activeJaspersTheme.themeTitleKo} [${res.activeJaspersTheme.themeTitleDe}]`,
+    `- 실존 교차 축: ${res.jaspersCrossAxis}`,
     `- 실존적 통찰: ${res.activeJaspersTheme.existentialInsight}`,
     `- 실천적 조언: ${res.activeJaspersTheme.practicalCounsel}`,
     `- 야스퍼스 원전 명언: "${res.focalJaspersAphorism.aphorismKo}"`,

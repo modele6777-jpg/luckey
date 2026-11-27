@@ -11,6 +11,7 @@ export interface PashtunRoshaniyaResult {
   pashtunInsight: string;
   hinduKushTone: string;
   innerLightAxis: string;
+  topicBalanceHint: string;
   shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -66,6 +67,15 @@ function classifyPashtunTopic(question?: string): PashtunQuestionTopic {
   return 'general';
 }
 
+const TOPIC_BALANCE_HINTS: Record<PashtunQuestionTopic, string> = {
+  career: '일·커리어에서는 눈앞의 평가나 소음보다 내 전문성과 양심의 기준을 한 줄로 세워 두는 편이 흔들림을 줄여 줍니다.',
+  relationship: '관계에서는 시비를 가리기 전에 호자라의 열린 환대와 먼저 한 걸음 내미는 여유를 남겨 두세요.',
+  wealth: '재정·계약에서는 조급한 비교를 걷어 내고 내가 감당할 수 있는 명료한 선부터 확인하는 것이 안전합니다.',
+  health: '몸과 마음의 회복에서는 스스로를 몰아세우는 날카로움을 내려놓고 조용한 호흡의 자리를 마련하세요.',
+  decision: '선택의 갈림길에서는 남의 시선을 벗겨 낸 뒤 내 안에서 가장 맑게 빛나는 기준 하나를 등불로 삼으세요.',
+  general: '오늘의 흐름에서는 바깥의 소란과 거리를 두고 내 안의 등불과 동반 등불의 균형을 함께 살펴보세요.',
+};
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -101,7 +111,7 @@ export function calculatePashtunRoshaniyaInnerLight(params: {
   const shadowWarning = `[${picked.lamp.split('(')[0].trim()} 과잉 경계] 내 기준의 맑음을 지키는 데 몰두해 타인의 다른 속도와 사정을 성급히 재단하지 않도록 살피십시오.`;
 
   return {
-    engineVersion: 'LUCKEY-PASHTUN-ROSHANIYA-v2.3.0',
+    engineVersion: 'LUCKEY-PASHTUN-ROSHANIYA-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     roshaniyaLamp: picked.lamp,
@@ -109,6 +119,7 @@ export function calculatePashtunRoshaniyaInnerLight(params: {
     pashtunInsight: `${picked.insight} (동반 등불: ${companion.lamp})`,
     hinduKushTone: picked.tone,
     innerLightAxis,
+    topicBalanceHint: TOPIC_BALANCE_HINTS[questionTopic],
     shadowWarning,
     reflectionFocus: `파슈툰 시학과 로샤니야 철학의 '${picked.lamp}'와 동반 등불 '${companion.lamp}'처럼, 바깥의 평가에 흔들리기 전에 내 안의 맑은 등불이 무엇을 비추는지 먼저 들여다보세요.`,
     ritualAction: picked.ritual,
@@ -124,6 +135,7 @@ export function formatPashtunRoshaniyaPrompt(res: PashtunRoshaniyaResult): strin
     `- 빛의 상징: ${res.roshaniyaLamp} (${res.hinduKushTone})`,
     `- 동반 등불: ${res.companionLamp}`,
     `- 내면 등불 축: ${res.innerLightAxis}`,
+    `- 주제별 균형 조언: ${res.topicBalanceHint}`,
     `- 중심 통찰: ${res.pashtunInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,

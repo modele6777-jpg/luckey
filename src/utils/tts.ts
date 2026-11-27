@@ -17,7 +17,7 @@ import {
   configureAmbientAudioSession,
 } from '../lib/audio';
 import { playAiResultNotification } from '../lib/audioHaptics';
-import { preloadCompletionChime } from '../lib/completionChime';
+import { preloadCompletionBowl } from '../lib/completionBowl';
 import { setTTSSessionActive, clearTTSSession, initTTSSessionHandlers, pauseTTSSession, resumeTTSSession } from '../lib/ttsMediaSession';
 import { acquireScreenWakeLock, releaseScreenWakeLock } from '../lib/wakeLock';
 import { prepareNaturalSpeechText } from './speechText';
@@ -447,7 +447,7 @@ export const playTTS = async (
     // Synchronously unlock audio during user gesture (required for mobile iOS/Android WebAudio playback)
     try {
       unlockAudioPlayback();
-      preloadCompletionChime(getSharedAudioContext());
+      preloadCompletionBowl(getSharedAudioContext());
     } catch (e) {
       console.warn("[TTS] Failed to warm up audio systems:", e);
     }
@@ -804,7 +804,7 @@ export const playTTSInChunks = async (
       if (ctx.state === 'suspended') {
         ctx.resume().catch(() => {});
       }
-      preloadCompletionChime(ctx);
+      preloadCompletionBowl(ctx);
       primeTTSAudioElement();
     } catch (_) {}
 
@@ -908,6 +908,8 @@ export const playConversation = async (
   try {
     for (let i = 0; i < messages.length; i++) {
       if (ttsState.activeSessionId !== mySessionId) break;
+      // 일시정지 중에는 다음 발화로 넘어가지 않고 기다렸다가 이어 읽는다.
+      if (!await waitForTTSResume(mySessionId)) break;
       const m = messages[i];
       const isUser = m.role === 'user';
       const voice = isUser ? resolvedUserVoice : resolvedAiVoice;
@@ -992,6 +994,7 @@ export const playQAndATTS = async (
 
       for (let i = 0; i < qChunks.length; i++) {
         if (ttsState.activeSessionId !== sequenceSessionId || !isPlayingSequence) break;
+        if (!await waitForTTSResume(sequenceSessionId)) break;
         updateTTSState({
           isLoading: false,
           isSpeaking: true,
@@ -1032,6 +1035,7 @@ export const playQAndATTS = async (
 
       for (let i = 0; i < aChunks.length; i++) {
         if (ttsState.activeSessionId !== sequenceSessionId || !isPlayingSequence) break;
+        if (!await waitForTTSResume(sequenceSessionId)) break;
         updateTTSState({
           isLoading: false,
           isSpeaking: true,

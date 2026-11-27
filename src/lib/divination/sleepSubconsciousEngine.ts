@@ -16,7 +16,14 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SLEEP_SUBCONSCIOUS_VERSION = 'LUCKEY-SLEEP-v2.2.0';
+export const SLEEP_SUBCONSCIOUS_VERSION = 'LUCKEY-SLEEP-v2.4.0';
+
+function classifySleepTopic(q: string): '숙면·이완' | '꿈·직관' | '생각·비움' | '야간 전반' {
+  if (/꿈|해몽|상징|직관|무의식/.test(q)) return '꿈·직관';
+  if (/생각|걱정|불안|잠들|비우/.test(q)) return '생각·비움';
+  if (/숙면|피로|회복|수면|잠/.test(q)) return '숙면·이완';
+  return '야간 전반';
+}
 
 function formatSleepKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -44,10 +51,12 @@ export interface SleepSubconsciousResult {
   engineVersion: string;
   calculatedAtIso: string;
   calculatedAtKst: string;
+  questionTopic: '숙면·이완' | '꿈·직관' | '생각·비움' | '야간 전반';
 
   // 수면 회복 잠재력 지수 (0~100)
   sleepRecoveryScore: number;
   sleepQualityTitle: string;
+  sleepRhythmAxis: string;
 
   // 편안한 수면 환경을 위한 일반 사운드 안내
   soundscape: {
@@ -64,11 +73,17 @@ export interface SleepSubconsciousResult {
   summary: string;
   ritualAction: string;
   reflectionFocus: string;
+  shadowWarning: string;
   reflectiveQuestion?: string;
   sleepSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  sleepCrossAxis: {
+    qualityToDream: string;
+    ritualSequence: string;
+    soundscapeAnchor: string;
   };
   interpretiveBoundary: string;
 }
@@ -124,10 +139,24 @@ export function calculateSleepSubconscious(params?: {
 
   const calculatedAtKst = formatSleepKstTimestamp(now);
   const q = (params?.question || '').trim();
+  const questionTopic = classifySleepTopic(q);
+  const sleepRhythmAxis = sleepRecoveryScore >= 88
+    ? '수(水) 기운의 깊은 이완과 야간 신경 회복이 자연스럽게 맞물리는 숙면 순환의 축'
+    : sleepRecoveryScore >= 78
+      ? '낮의 잔여 사고를 비우고 꿈 인큐베이션으로 넘기는 안정 재충전의 축'
+      : '눈·어깨·호흡의 긴장을 먼저 낮추어 잠의 문턱을 부드럽게 여는 감압 이완의 축';
+  const shadowWarning = sleepRecoveryScore >= 88
+    ? '회복 여력이 좋다고 밤늦게까지 화면과 작업을 이어 가다 수면 골든타임을 넘기지 않도록 유의하세요.'
+    : '잠을 잘 자야 한다는 강박 자체가 신경을 깨울 수 있으니, 오늘은 점수나 시간보다 몸의 이완감만 가볍게 살피세요.';
   const sleepSynthesisMatrix = {
     dominantTension: `${sleepQualityTitle} ↔ ${dreamDecoding.dreamSymbolCategory}`,
     alignmentState: `사운드: ${soundscape.recommendedSounds}`,
     integratedAction: `${nightRitual.step3Incubation}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+  const sleepCrossAxis = {
+    qualityToDream: `${sleepQualityTitle} → ${dreamDecoding.dreamSymbolCategory}`,
+    ritualSequence: '비움 → 온열 감압 → 꿈 인큐베이션',
+    soundscapeAnchor: `${soundscape.recommendedSounds} (${questionTopic})`,
   };
 
   const interpretiveBoundary = '본 수면 회복 & 무의식 직관 리포트는 사주 12운성과 상징 수리에 기반한 정성적 야간 이완 안내이며, 수면의학적·정신의학적 진단을 대신하지 않습니다.';
@@ -141,16 +170,20 @@ export function calculateSleepSubconscious(params?: {
     engineVersion: SLEEP_SUBCONSCIOUS_VERSION,
     calculatedAtIso: now.toISOString(),
     calculatedAtKst,
+    questionTopic,
     sleepRecoveryScore,
     sleepQualityTitle,
+    sleepRhythmAxis,
     soundscape,
     nightRitual,
     dreamDecoding,
     summary,
     ritualAction,
     reflectionFocus,
+    shadowWarning,
     reflectiveQuestion,
     sleepSynthesisMatrix,
+    sleepCrossAxis,
     interpretiveBoundary,
   };
 }
@@ -160,8 +193,9 @@ export function calculateSleepSubconscious(params?: {
  */
 export function formatSleepSubconsciousPrompt(res: SleepSubconsciousResult): string {
   const lines = [
-    `[수면 회복 & 무의식 직관 디코딩 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst})]`,
+    `[수면 회복 & 무의식 직관 디코딩 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic})]`,
     `- 수면 회복 잠재력 상태: **${res.sleepQualityTitle}**`,
+    `- 야간 리듬 축: ${res.sleepRhythmAxis}`,
     `- 수면 사운드 가이드:`,
     `  • 추천 사운드: ${res.soundscape.recommendedSounds}`,
     `  • 활용 안내: ${res.soundscape.listeningGuidance}`,
@@ -177,12 +211,14 @@ export function formatSleepSubconsciousPrompt(res: SleepSubconsciousResult): str
   if (res.sleepSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스: [핵심 긴장: ${res.sleepSynthesisMatrix.dominantTension} | 조율 상태: ${res.sleepSynthesisMatrix.alignmentState}]`,
+      `  • 수면 교차 축: ${res.sleepCrossAxis.qualityToDream} | ${res.sleepCrossAxis.ritualSequence} | ${res.sleepCrossAxis.soundscapeAnchor}`,
       `  • 통합 실천: ${res.sleepSynthesisMatrix.integratedAction}`,
     );
   }
   if (res.reflectiveQuestion) {
     lines.push(`- 실천 의례: ${res.ritualAction}`);
     lines.push(`- 성찰 초점: ${res.reflectionFocus}`);
+    lines.push(`- 과잉 경계: ${res.shadowWarning}`);
     lines.push(`- 성찰 질문: ${res.reflectiveQuestion}`);
   }
   lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);

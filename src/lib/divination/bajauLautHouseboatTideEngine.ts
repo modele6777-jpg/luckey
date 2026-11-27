@@ -13,6 +13,8 @@ export interface BajauLautResult {
   companionAnchor: string;
   horizonDrift: string;
   tidalPhase: string;
+  questionTopic: 'breath' | 'release' | 'shelter' | 'general';
+  tidalCrossAxis: string;
   shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -92,14 +94,27 @@ export function calculateBajauLautTide(input: BajauLautInput): BajauLautResult {
   const companionAnchor = ANCHORS[(anchorIdx + companionOffset) % ANCHORS.length];
   const tidalPhase = TIDAL_PHASES[phaseIdx];
   const shadowWarning = SHADOW_WARNINGS[(phaseIdx + companionOffset) % SHADOW_WARNINGS.length];
+  const q = (input.question ?? '').trim();
+  const questionTopic: BajauLautResult['questionTopic'] = !q
+    ? 'general'
+    : /호흡|숨|물때|리듬|집중/.test(q)
+      ? 'breath'
+      : /비우|가볍|집착|내려|짐/.test(q)
+        ? 'release'
+        : /피하|쉼|만|안전|파도/.test(q)
+          ? 'shelter'
+          : 'general';
+  const tidalCrossAxis = `${questionTopic} · ${tidalAnchor.split('(')[0].trim()} × ${tidalPhase.split('(')[0].trim()}`;
 
   return {
-    engineVersion: 'LUCKEY-BAJAU-LAUT-v2.3.0',
+    engineVersion: 'LUCKEY-BAJAU-LAUT-v2.4.0',
     calculatedAtKst: toKstIso(input.now),
     tidalAnchor,
     companionAnchor,
     horizonDrift: DRIFTS[(seed >>> 3) % DRIFTS.length],
     tidalPhase,
+    questionTopic,
+    tidalCrossAxis,
     shadowWarning,
     reflectionFocus: `동남아 술루해·셀레베스해를 집 삼아 물때와 호흡으로 살아가는 바야우 라우트 바다 유목민의 레파(Lepa) 항해처럼, 주 닻 자리('${tidalAnchor}')와 동반 자리('${companionAnchor}')가 '${tidalPhase}' 물때 위에서 겹쳐 가벼움과 호흡의 리듬을 읽는 상징적 관점입니다.`,
     ritualAction: `${ACTIONS[anchorIdx]} (${tidalPhase} 흐름에서 동반 자리 '${companionAnchor}'의 감각도 함께 맞춰 보세요.)`,
@@ -115,6 +130,7 @@ export function formatBajauLautPrompt(res: BajauLautResult): string {
     `닻의 자리: ${res.tidalAnchor}`,
     `동반 자리: ${res.companionAnchor}`,
     `물때 국면: ${res.tidalPhase}`,
+    `질문 맥락(${res.questionTopic}) · 물때 교차 축: ${res.tidalCrossAxis}`,
     `과잉 경계: ${res.shadowWarning}`,
     `항해 흐름: ${res.horizonDrift}`,
     `성찰 초점: ${res.reflectionFocus}`,

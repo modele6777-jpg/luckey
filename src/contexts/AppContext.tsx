@@ -54,6 +54,7 @@ import {
 } from '../utils/suggestions';
 import { hasUnlockedPinToday, markPinUnlockedToday, clearPinUnlockedToday } from '../lib/dailyCache';
 import { PERSONA_GREETINGS, PRISM_VOICE_RULES, LUCY_CHAT_VOICE_RULES, resolveLucyResponseLength, LUCY_RESPONSE_PROFILES } from '../lib/copyTone';
+import { requiresBasicAndDeepForTurn } from '../lib/lucyTurnMode';
 import { isMobileDevice, isPerfReduced, isStandalonePWA } from '../lib/perfMode';
 import { validateAndExtractKeyExercise } from '../lib/keyExercisesCatalog';
 import { resetLucyContextOnTaskSwitch } from '../lib/lucyChatUtils';
@@ -74,6 +75,8 @@ export interface UnifiedMessage {
   keyExerciseIndex?: number;
   usedTools?: string[];
   calculationAudit?: CalculationAuditItem[];
+  /** 이 답변에서 루시가 골라 쓴 심층 관점 키 (답변 맨 처음 '이 답변 관점' 배지용). */
+  deepPerspectiveKeys?: string[];
   divinationContext?: string;
 }
 
@@ -93,6 +96,8 @@ export interface SendUnifiedMessageOptions {
   customUserProfile?: UserProfile;
   usedTools?: string[];
   calculationAudit?: CalculationAuditItem[];
+  /** 이 답변에 쓴 심층 관점 키. assistant 메시지에 저장되어 답변 맨 처음 배지가 읽는다. */
+  deepPerspectiveKeys?: string[];
   isLucyPlus?: boolean;
   isLucyPro?: boolean;
   isPro?: boolean;
@@ -1991,7 +1996,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         channel: options?.channel,
         channels: options?.channels,
         mode: options?.mode,
-        usedTools: []
+        usedTools: options?.usedTools || [],
+        // 💬 답변 맨 처음 관점·도구 배지가 답변 시작과 함께 뜨도록, 계산 기록·관점 키를 미리 들려 보낸다
+        calculationAudit: options?.calculationAudit || [],
+        deepPerspectiveKeys: options?.deepPerspectiveKeys || []
       }
     ]);
 
@@ -2094,21 +2102,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       options?.extraSystemContext?.includes('[이번 질문의 계산 근거 및 한계]') ||
       options?.extraSystemContext?.includes('루시 15대 운명학 마스터') ||
       options?.extraSystemContext?.includes('루시 올인원 마스터 모드 — 15대 운명학 도구 전원 총동원') ||
-      options?.extraSystemContext?.includes('선별된 도구별 맞춤 풀이 가이드');
+      options?.extraSystemContext?.includes('선별된 도구별 맞춤 풀이 가이드') ||
+      // 💬 일반 채팅의 심층 관점 주입(페이지가 이미 골라 넣은 경우 다시 돌리지 않는다)
+      options?.extraSystemContext?.includes('[🧭 이번 이야기에 고른 심층 관점');
     const activeThemeList = (options?.channels || (options?.channel ? [options.channel] : [])) as SevenThemeChannel[];
     const isMasterCall = Boolean(isLucyPro);
-    const requireBasicAndDeep = options?.voiceTurn
-      ? false
-      : sourcePersona === 'lucy' || isMasterCall || Boolean(options?.requireBasicAndDeep);
+    // 💬 일반 루시 채팅(점술모드 아님·채널 없음·음성 아님): 기초 도구 없이 엔진함의 심층 관점만 소수 골라 쓴다.
+    const isLucyCompanionTurn = sourcePersona === 'lucy' && !isMasterCall && activeThemeList.length === 0 && !options?.voiceTurn;
+    // 💬 일반 루시 채팅(수다모드)은 기초·심층 운명학 엔진을 돌리지 않는다.
+    //    점술모드(isMasterCall)나 도구 사용을 명시한 호출만 엔진을 가동한다.
+    const requireBasicAndDeep = requiresBasicAndDeepForTurn({
+      persona: sourcePersona,
+      optionMode: options?.mode,
+      channelCount: activeThemeList.length,
+      requireBasicAndDeep: Boolean(options?.requireBasicAndDeep),
+      isMasterCall,
+      voiceTurn: Boolean(options?.voiceTurn),
+    });
     const isCasualMode =
-      !options?.tarotCardMarkers && !requireBasicAndDeep && (
+      !options?.tarotCardMarkers && !requireBasicAndDeep && !isLucyCompanionTurn && (
         options?.mode === 'casual' ||
         (!options?.mode && responseLength === 'short' && activeThemeList.length === 0)
       );
     const toolSelection: SelectedDivinationToolsResult = isCasualMode
       ? { isCasualMessage: true, selectedTools: [], promptInjection: '', selectionReason: '가벼운 일상 인사', firedEngineBadges: [] }
       : !hasDivinationInjection
-      ? selectOptimalDivinationTools(effectiveUserText, isMasterCall ? (['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] as SevenThemeChannel[]) : activeThemeList, profile, isMasterCall, { allowMaster: requireBasicAndDeep, requireBasicAndDeep })
+      ? selectOptimalDivinationTools(effectiveUserText, isMasterCall ? (['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] as SevenThemeChannel[]) : activeThemeList, profile, isMasterCall, { allowMaster: requireBasicAndDeep, requireBasicAndDeep, deepOnly: isLucyCompanionTurn })
       : { isCasualMessage: false, selectedTools: [], promptInjection: '', selectionReason: '', firedEngineBadges: [] };
     const toolsIncludedInPrompt = isCasualMode
       ? []
@@ -2513,6 +2532,7 @@ ${responseProfile.rule}`;
                   mode: options?.mode || m.mode,
                   usedTools: toolsIncludedInPrompt,
                   calculationAudit: options?.calculationAudit || toolSelection.calculationAudit || [],
+                  deepPerspectiveKeys: options?.deepPerspectiveKeys || m.deepPerspectiveKeys || [],
                   divinationContext: chatDivinationContext,
                   keyExerciseIndex: resolvedKeyExIndex ?? m.keyExerciseIndex
                 };
@@ -2531,6 +2551,7 @@ ${responseProfile.rule}`;
                 mode: options?.mode,
                 usedTools: toolsIncludedInPrompt,
                   calculationAudit: options?.calculationAudit || toolSelection.calculationAudit || [],
+                  deepPerspectiveKeys: options?.deepPerspectiveKeys || [],
                   divinationContext: chatDivinationContext,
                 keyExerciseIndex: resolvedKeyExIndex
               });

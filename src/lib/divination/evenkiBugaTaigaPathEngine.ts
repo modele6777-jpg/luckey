@@ -7,6 +7,7 @@ export interface EvenkiBugaResult {
   taigaSign: string;
   companionSign: string;
   taigaTrailAxis: string;
+  topicBalanceHint: string;
   bugaInsight: string;
   siberianTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const EVENKI_SHADOWS = [
   '바뀐 바람을 따르느라 아직 충분히 익지 않은 시도까지 성급히 접어 버리지 않도록 주의하세요.',
 ];
 
+const TOPIC_BALANCE_HINTS: Record<EvenkiBugaResult['questionTopic'], string> = {
+  '신호·관찰': '눈밭의 순록 발자국처럼 눈앞의 단서를 세심히 살피되, 전체 여정의 큰 방향도 함께 확인하세요.',
+  '유연·비움': '언제든 접고 펴는 춤(Chum)처럼 불필요한 짐은 덜어 내되, 지켜야 할 핵심 자리는 가볍게 남기세요.',
+  '나눔·순응': '니마트 규칙처럼 여력을 곁과 따뜻하게 나누되, 먼저 내 기본 휴식과 체력도 비우지 마세요.',
+  '길잡이 전반': '이케엔의 계절 감각처럼 바뀐 바람을 읽되, 익어 가는 시도는 성급히 접지 말고 호흡을 맞추세요.',
+};
+
 function classifyEvenkiTopic(q: string): EvenkiBugaResult['questionTopic'] {
   if (/신호|관찰|발자국|단서|길/.test(q)) return '신호·관찰';
   if (/유연|비움|가볍|짐|이동/.test(q)) return '유연·비움';
@@ -102,15 +110,17 @@ export function calculateEvenkiBugaTaigaPath(params: {
   const picked = SIGNS[idx];
   const companion = SIGNS[(idx + companionOffset) % SIGNS.length];
   const taigaTrailAxis = `${picked.sign.split('(')[0].trim()} ↔ ${companion.sign.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = EVENKI_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-EVENKI-BUGA-v2.3.0',
+    engineVersion: 'LUCKEY-EVENKI-BUGA-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     taigaSign: picked.sign,
     companionSign: companion.sign,
     taigaTrailAxis,
+    topicBalanceHint,
     bugaInsight: picked.insight,
     siberianTone: picked.tone,
     reflectionFocus: `시베리아 에벤키 지혜의 '${picked.sign}'과 동반 결 '${companion.sign}'을 함께 헤아리며, 무거운 집착을 덜어내고 눈앞의 작은 신호를 세심히 읽어 보세요.`,
@@ -126,6 +136,7 @@ export function formatEvenkiBugaPrompt(res: EvenkiBugaResult): string {
     `[에벤키 부가·타이가 길잡이 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 타이가 길 축: ${res.taigaTrailAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 타이가 상징: ${res.taigaSign} (${res.siberianTone})`,
     `- 동반 상징: ${res.companionSign}`,
     `- 중심 통찰: ${res.bugaInsight}`,

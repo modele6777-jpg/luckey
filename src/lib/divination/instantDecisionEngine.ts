@@ -34,7 +34,25 @@
 import { hexagram, type Yao } from './iching';
 import { calculateQimen } from './eventCharts';
 
-export const INSTANT_DECISION_ENGINE_VERSION = 'LUCKEY-IDE-v2.2.0';
+export const INSTANT_DECISION_ENGINE_VERSION = 'LUCKEY-IDE-v2.4.0';
+
+export type InstantDecisionQuestionTopic = 'decision' | 'timing' | 'relation' | 'contract' | 'general';
+
+function classifyInstantDecisionTopic(q: string): InstantDecisionQuestionTopic {
+  if (/계약|서명|투자|돈|거래/.test(q)) return 'contract';
+  if (/연락|사람|관계|만남|고백/.test(q)) return 'relation';
+  if (/지금|타이밍|언제|오늘|바로/.test(q)) return 'timing';
+  if (/할까|말까|선택|결정|추진/.test(q)) return 'decision';
+  return 'general';
+}
+
+const INSTANT_DECISION_SHADOW_WARNINGS: Record<InstantDecisionQuestionTopic, string> = {
+  contract: '길문이나 상승 괘가 떴더라도 세부 약관·숫자 검증을 생략하면 사소한 문구 하나에 발목을 잡힐 수 있습니다.',
+  relation: '즉시 결단 신호를 핑계로 상대방의 호흡과 준비 상태를 살피지 않고 일방적으로 밀어붙이지 마세요.',
+  timing: '시진(時辰)의 기운만 믿고 사전 준비 없이 움직이면 정작 문이 열렸을 때 잡을 손이 비어 있을 수 있습니다.',
+  decision: '양자택일의 승부수에만 집중해 제3의 절충안이나 단계적 실험 가능성을 지워버리지 않도록 주의하세요.',
+  general: '지금 당장의 길흉에 일희일비하기보다, DO·AVOID 행동 한 가지씩을 실제 일정에 반영하는 것이 핵심입니다.',
+};
 
 function formatInstantDecisionKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -142,10 +160,18 @@ export interface InstantDecisionResult {
     };
   };
 
+  questionTopic: InstantDecisionQuestionTopic;
+  chronoDecisionAxis: string;
+  shadowWarning: string;
   instantDecisionSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  decisionCrossAxis: {
+    hexagramTransition: string;
+    cheYongDynamics: string;
+    gateTimingAnchor: string;
   };
   ritualAction: string;
   reflectionFocus: string;
@@ -437,10 +463,20 @@ export function calculateInstantDecision(options?: {
     optimalWindow = `이 안건은 잠시 내려놓고 본래의 본업과 평온에 집중하기`;
   }
 
+  const qText = (options?.questionText || '').trim();
+  const questionTopic = classifyInstantDecisionTopic(qText);
+  const chronoDecisionAxis = `${primaryHex.name} ↔ ${changedHex.name} · ${dominantGate}`;
+  const shadowWarning = INSTANT_DECISION_SHADOW_WARNINGS[questionTopic];
+
   const instantDecisionSynthesisMatrix = {
     dominantTension: `${primaryHex.name}(${cheYongPrimary.relationType}) ↔ ${changedHex.name}(${cheYongChanged.relationType})`,
     alignmentState: `${grade} · ${dominantGate}(${gateNature})`,
     integratedAction: `${doNow}${options?.questionText ? ` [질문 맥락: ${options.questionText.slice(0, 40)}]` : ''}`,
+  };
+  const decisionCrossAxis = {
+    hexagramTransition: `${primaryHex.name} → ${huguaHex.name} → ${changedHex.name}`,
+    cheYongDynamics: `${cheYongPrimary.relationType}(${cheYongPrimary.relationQuality}) → ${cheYongChanged.relationType}(${cheYongChanged.relationQuality})`,
+    gateTimingAnchor: `${dominantGate}(${gateNature}) · ${optimalWindow}`,
   };
 
   return {
@@ -448,6 +484,9 @@ export function calculateInstantDecision(options?: {
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: nowKstIso,
     timestamp: now.getTime(),
+    questionTopic,
+    chronoDecisionAxis,
+    shadowWarning,
 
     questionSnippet: (options?.questionText || '즉시 결단 질의').slice(0, 50),
     targetInstantTime: `${year}년 ${month}월 ${day}일 ${hours}시 ${minutes}분 (${hourBranchKr}시)`,
@@ -509,6 +548,7 @@ export function calculateInstantDecision(options?: {
       },
     },
     instantDecisionSynthesisMatrix,
+    decisionCrossAxis,
     ritualAction: `본괘 ${primaryHex.name}과 ${dominantGate}(${gateNature}) 흐름에 맞추어 지금 당장 '${doNow}'를 실행하고, '${avoidNow}'는 보류하세요.`,
     reflectionFocus: `즉시 결단(${primaryHex.name} → ${changedHex.name}) — ${cheYongPrimary.relationType} · ${dominantGate}(${grade})`,
     reflectiveQuestion: options?.questionText
@@ -552,10 +592,13 @@ export function formatInstantDecisionPrompt(res: InstantDecisionResult): string 
    - 지금 취할 행동(DO): ${v.actionProtocol.doNow}
    - 지금 피할 행동(AVOID): ${v.actionProtocol.avoidNow}
    - 최적의 실행 시간대: ${v.actionProtocol.optimalWindow}
-${res.instantDecisionSynthesisMatrix ? `4. [교차 매트릭스]:
+${res.instantDecisionSynthesisMatrix ? `4. [교차 매트릭스 · 질문 맥락: ${res.questionTopic}]:
+   - 시공간 결단 축: ${res.chronoDecisionAxis}
+   - 결단 교차 축: ${res.decisionCrossAxis.hexagramTransition} | ${res.decisionCrossAxis.cheYongDynamics}
    - 핵심 긴장: ${res.instantDecisionSynthesisMatrix.dominantTension}
    - 조율 상태: ${res.instantDecisionSynthesisMatrix.alignmentState}
-   - 통합 실천: ${res.instantDecisionSynthesisMatrix.integratedAction}` : ''}
+   - 통합 실천: ${res.instantDecisionSynthesisMatrix.integratedAction}
+   - 과잉 경계: ${res.shadowWarning}` : ''}
 ${res.reflectiveQuestion ? `- 성찰 질문: ${res.reflectiveQuestion}\n` : ''}- 실천 의례: ${res.ritualAction}
 - 성찰 초점: ${res.reflectionFocus}
 - 해석 경계: ${res.interpretiveBoundary}

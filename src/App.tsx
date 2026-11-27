@@ -21,6 +21,7 @@ import { BigBangExpansionOverlay } from "./components/omniwarp/BigBangExpansionO
 import { KeyChannelTransition } from "./components/omniwarp/KeyChannelTransition";
 import { LuckyChannelTransition } from "./components/omniwarp/LuckyChannelTransition";
 import { PageGuideButton } from "./components/guide/PageGuide";
+import { SmartGuideSettingsButton } from "./components/guide/SmartGuideSettings";
 import { resolvePageGuide, resolveDappGuide } from "./lib/pageGuides";
 import { getCurrentOneStopPage } from "./lib/omniWarp/contextNavCycleEngine";
 import { isKeyChannelPath } from "./components/omniwarp/KeyChannelTransition";
@@ -49,7 +50,7 @@ import { useFoldState, subscribeFoldState } from "./lib/foldState";
 import { isDuoDividerDoubleTap, mapDuoPaneSide, shouldResetDuoPaneSwapOnFold, type DuoDividerTap } from "./lib/duoPaneSwap";
 import { DuoCosmicAmbientRoom } from "./components/duo/DuoCosmicAmbientRoom";
 import { DuoDivinationTarotPane } from "./components/duo/DuoDivinationTarotPane";
-import { useLucyMasterMode, setLucyMasterToolsRequested } from "./lib/lucyMasterMode";
+import { useLucyMasterMode, setLucyMasterToolsRequested, applyLucyMasterModeForFoldChange } from "./lib/lucyMasterMode";
 import AuroraBackground from "./components/AuroraBackground";
 import EpilogueApp from "./pages/EpilogueApp";
 
@@ -245,8 +246,10 @@ function ChannelPage({ location }: { location: string }) {
       </div>
       {/* 📘 우측 상단 가이드 (Lucy·Key는 각자 헤더 안에 버튼이 있다) */}
       {!isLucyThemeRoute(path) && !isKeyChannelPath(path) && path !== '/voice' && (
-        <div className="channel-page-guide absolute z-[45] flex items-center" style={{ top: 0, right: 14, height: 'var(--duo-pane-header-height)' }}>
+        <div className="channel-page-guide absolute z-[45] flex items-center gap-1.5" style={{ top: 0, right: 14, height: 'var(--duo-pane-header-height)' }}>
           <PageGuideButton guide={resolvePageGuide(path)} resolve={() => resolveDappGuide(getCurrentOneStopPage(window.location.pathname + window.location.search))} tone={isLuckyChannel ? 'dark' : resolveChannelThemeFromPath(path) === 'light' ? 'light' : 'dark'} />
+          {/* 🧭 스마트 가이드 설정 (물음표) — 모든 채널·서브페이지 공통 헤더 */}
+          <SmartGuideSettingsButton tone={isLuckyChannel ? 'dark' : resolveChannelThemeFromPath(path) === 'light' ? 'light' : 'dark'} />
         </div>
       )}
     </motion.div>
@@ -332,6 +335,10 @@ function AppContent() {
       const isNowUnfolded = next.unfolded;
       previousUnfoldedRef.current = isNowUnfolded;
       if (wasUnfolded !== isNowUnfolded) markFoldRuntime(isNowUnfolded ? 'unfold-commit' : 'fold-commit');
+
+      // 📱 접힘 = 일반 루시 채팅, 펼침 = 루시 점술모드: 전환된 화면의 기본 화면으로 맞춘다.
+      // 이미 그 모드면 건드리지 않아 인사말이 중복 예약되지 않고, 빅뱅 버튼·사이드바로 직접 켜고 끈 상태는 유지된다.
+      if (wasUnfolded !== isNowUnfolded) applyLucyMasterModeForFoldChange(wasUnfolded, isNowUnfolded);
 
       // 펼침 → 접힘: 좌우 순서를 초기화해 다음 재펼침 때 Lucy를 오른쪽에 둔다.
       // 진행 중이던 경계 더블탭도 취소한다.

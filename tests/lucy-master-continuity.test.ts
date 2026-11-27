@@ -19,22 +19,23 @@ const session = [
   msg('u2', 'user', '석 달 전부터'),
 ];
 
-test('depth 1 adds no continuity; depth 2 and 3 carry the earlier turns', () => {
-  assert.equal(buildDepthContinuityContext(session, 1), '');
-  const two = buildDepthContinuityContext(session, 2);
-  assert.match(two, /지금 2단계/);
-  assert.match(two, /이직을 해야 할지/);
-  assert.match(two, /중심 고민/);
-  assert.doesNotMatch(two, /새로 시작할래/);
-  assert.doesNotMatch(two, /답변선택/);
-  assert.doesNotMatch(two, /타로 하우스에 온 걸/);
+test('the unified session carries the earlier turns and nothing before them', () => {
+  const context = buildDepthContinuityContext(session);
+  assert.match(context, /같은 상담/);
+  assert.match(context, /이직을 해야 할지/);
+  assert.match(context, /중심 고민/);
+  assert.doesNotMatch(context, /새로 시작할래/);
+  assert.doesNotMatch(context, /답변선택/);
+  assert.doesNotMatch(context, /타로 하우스에 온 걸/);
+  // 아직 사용자가 말하지 않은 인사만 있으면 이어받을 내용이 없다.
+  assert.equal(buildDepthContinuityContext([session[0]]), '');
 });
 
 test('past Master sessions are archived per account and exclude the current one', () => {
   archiveMasterSession('acct-a', session);
   archiveMasterSession('acct-a', session); // same session twice → one entry
   const past = buildPastMasterSessionsContext('acct-a');
-  assert.match(past, /지난 점술모드 상담 기록/);
+  assert.match(past, /지난 루시프로 상담 기록/);
   assert.equal(past.match(/상담 — 고민/g)?.length, 1);
   assert.equal(buildPastMasterSessionsContext('acct-b'), '');
   assert.equal(buildPastMasterSessionsContext('acct-a', 'u0'), '');
@@ -43,9 +44,9 @@ test('past Master sessions are archived per account and exclude the current one'
   assert.equal(buildPastMasterSessionsContext('acct-c'), '');
 });
 
-test('depth 3 links recent regular Lucy turns as reference', () => {
+test('recent regular Lucy turns are linked as reference', () => {
   const linked = buildDepthLinkedLucyContext([msg('r1', 'user', '오늘 회사에서 상사랑 부딪혔어'), msg('r2', 'model', '많이 속상했겠다')]);
-  assert.match(linked, /3단계 연결/);
+  assert.match(linked, /일반 루시와의 최근 대화/);
   assert.match(linked, /상사랑 부딪혔어/);
   assert.equal(buildDepthLinkedLucyContext([]), '');
 });

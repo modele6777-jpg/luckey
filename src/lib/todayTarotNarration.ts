@@ -1,5 +1,5 @@
 import { getTodayDateKey } from '@/lib/dailyCache';
-import { getTarotCardImageUrl, TAROT_DECK, getEffectiveTarotKeywords, getTarotReversedData, getTarotCardCaution, type TarotCard } from '@/data/tarotData';
+import { getTarotCardImageUrl, TAROT_DECK, getEffectiveTarotKeywords, type TarotCard } from '@/data/tarotData';
 import { prepareNaturalSpeechText } from '@/utils/speechText';
 import { stripSummaryFromTarotText, deduplicateReadingText } from '@/lib/tarotSummaryUtils';
 import { ensureCompleteTarotReading } from '@/lib/trinity/utils';
@@ -125,8 +125,6 @@ export function buildTarotNarrationContent(dailyResult: any, summaryBullets: str
   const keywords = effectiveKeywords.length > 0
     ? effectiveKeywords
     : ['변화', '직관', '도약', '조율'];
-  const revData = isReversed && drawnCard ? getTarotReversedData(drawnCard) : null;
-  const cardCaution = isReversed && drawnCard ? getTarotCardCaution(drawnCard) : '';
   const imageUrl = getTarotCardImageUrl(drawnCard);
 
   const rawSourceText = String(
@@ -171,16 +169,9 @@ export function buildTarotNarrationContent(dailyResult: any, summaryBullets: str
 
   // Chapter 1: 카드 선언과 상징 파동
   const ch1Speech = prepareNaturalSpeechText(
-    isReversed
-      ? `오늘 당신의 우주적 나침반이 비춘 타로 카드는 ${nameKo}, 역방향입니다. 역방향 핵심 키워드는 ${keywords.slice(0, 3).join(', ')}이며, ${revData?.meaning || ''} 특히 이 카드와 관련된 주의점 한 가지는, ${cardCaution}`
-      : `오늘 당신의 우주적 나침반이 비춘 타로 카드는 ${nameKo}, ${orientationSpeech}입니다. 이 카드는 ${keywords.slice(0, 3).join(', ')}의 상징 파동을 품고 있습니다.`
+    `오늘 카드는 ${nameKo}, ${isReversed ? '역방향' : orientationSpeech}입니다. 키워드는 ${keywords.slice(0, 3).join(', ')}입니다.`
   );
-  const ch1Display = isReversed
-    ? `✨ 오늘의 지배 카드: [${nameKo}${nameEn ? ` (${nameEn})` : ''}] · ${orientationStr}\n` +
-      `역방향 핵심 키워드는 ${keywords.join(', ')}입니다. ${revData?.meaning || ''}\n` +
-      `⚠️ [${nameKo} 역방향 주의점 1가지] ${cardCaution}`
-    : `✨ 오늘의 지배 카드: [${nameKo}${nameEn ? ` (${nameEn})` : ''}] · ${orientationStr}\n` +
-      `카드의 핵심 에너지 키워드는 ${keywords.join(', ')}입니다. 오늘 하루 내면의 나침반을 이 카드의 상징에 조율하세요.`;
+  const ch1Display = `오늘의 카드: [${nameKo}${nameEn ? ` (${nameEn})` : ''}] · ${orientationStr}\n키워드: ${keywords.slice(0, 3).join(', ')}`;
 
   // Chapter 2: 핵심 3줄 요약
   const chSummarySpeech = summarySpeechText;

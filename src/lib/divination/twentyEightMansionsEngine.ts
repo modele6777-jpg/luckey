@@ -48,7 +48,36 @@
  *    향후 28일(4주기 1순환) 내 최적 택일 후보일을 함께 제시한다.
  */
 
-export const TWENTY_EIGHT_MANSIONS_ENGINE_VERSION = 'LUCKEY-TM-v2.2.0';
+export const TWENTY_EIGHT_MANSIONS_ENGINE_VERSION = 'LUCKEY-TM-v2.3.0';
+
+export type MansionsQuestionTopic =
+  | 'contract'
+  | 'businessLaunch'
+  | 'travel'
+  | 'finance'
+  | 'relationship'
+  | 'healing'
+  | 'general';
+
+function classifyMansionsTopic(q: string): MansionsQuestionTopic {
+  if (/계약|협상|서명|합의|조건/.test(q)) return 'contract';
+  if (/개업|런칭|창업|시작|발표|사업/.test(q)) return 'businessLaunch';
+  if (/이동|출행|여행|이사|출장|길/.test(q)) return 'travel';
+  if (/재물|투자|돈|자금|매매|수익/.test(q)) return 'finance';
+  if (/인연|만남|혼인|연애|관계|배우자/.test(q)) return 'relationship';
+  if (/휴식|치유|건강|내실|회복|정리/.test(q)) return 'healing';
+  return 'general';
+}
+
+const MANSIONS_SHADOW_WARNINGS: Record<MansionsQuestionTopic, string> = {
+  contract: '길일이라도 상대의 구두 약속만 믿지 말고 핵심 조항과 기한을 문서로 남겨 빈틈을 줄이십시오.',
+  businessLaunch: '좋은 기운에 취해 준비가 덜 된 상태에서 일정을 앞당기면 초반 피로가 커질 수 있으니 체크리스트를 먼저 확인하십시오.',
+  travel: '길방위라도 무리한 동선이나 빠듯한 환승을 잡으면 변수가 생기기 쉬우니 이동 여백을 확보하십시오.',
+  finance: '상승 점수에 기대어 비중을 한꺼번에 키우기보다 손실 상한과 분산 원칙을 먼저 세우십시오.',
+  relationship: '분위기가 좋다고 상대의 속도나 경계를 앞질러 해석하지 않도록 확인 대화를 곁들이십시오.',
+  healing: '쉬는 날을 죄책감으로 채우거나 밀린 일을 몰아서 처리하지 않도록 완전한 비움 시간을 정해 두십시오.',
+  general: '28수 직성의 길흉은 하루의 결을 읽는 나침반일 뿐, 성패를 가르는 것은 당일의 차분한 준비와 절제입니다.',
+};
 
 function formatMansionsKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -129,6 +158,8 @@ export interface TwentyEightMansionsResult {
   status: 'calculated';
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: MansionsQuestionTopic;
+  shadowWarning: string;
   method: string;
   targetDate: string; // 한국 표준시(KST) 기준 대상 일자 (YYYY-MM-DD)
   julianDayNumber: number;
@@ -529,6 +560,8 @@ export function calculateTwentyEightMansions(params: { targetDate?: Date; questi
     gradeMeaning: oppRaw.gradeMeaning,
   };
   const q = (params.question || '').trim();
+  const questionTopic = classifyMansionsTopic(q);
+  const shadowWarning = MANSIONS_SHADOW_WARNINGS[questionTopic];
   const reflectiveQuestion = q
     ? `‘${q}’에 대해 오늘 ${mansion.fullName}의 흐름을 취하고 대칭 별자리 ${oppositeMansion.fullName}이 비추는 반대편 균형을 어떻게 보완하시겠습니까?`
     : `오늘 직성 ${mansion.fullName}(${mansion.grade})이 열어 주는 ${bestDomain.domainKo}의 창을 어떻게 활용하고, 대칭 별자리 ${oppositeMansion.fullName}의 절제를 어디에 적용하시겠습니까?`;
@@ -546,6 +579,8 @@ export function calculateTwentyEightMansions(params: { targetDate?: Date; questi
     status: 'calculated',
     engineVersion: TWENTY_EIGHT_MANSIONS_ENGINE_VERSION,
     calculatedAtKst,
+    questionTopic,
+    shadowWarning,
     method: TWENTY_EIGHT_MANSIONS_METHOD,
     targetDate: targetDateString,
     julianDayNumber: jdn,
@@ -613,7 +648,7 @@ export function formatTwentyEightMansionsPrompt(result: TwentyEightMansionsResul
     : '';
 
   return `
-[천상열차분야지도(天象列次分野之圖) 28수 일진·택일 결정론적 산출 리포트 (${TWENTY_EIGHT_MANSIONS_ENGINE_VERSION} | ${result.calculatedAtKst})]
+[천상열차분야지도(天象列次分野之圖) 28수 일진·택일 결정론적 산출 리포트 (${TWENTY_EIGHT_MANSIONS_ENGINE_VERSION} | ${result.calculatedAtKst} | 질문 맥락: ${result.questionTopic})]
 - 대상 일자: ${result.targetDate} (한국 표준시) · 율리우스적일 ${result.julianDayNumber}
 - 당일 일진(日辰): ${result.dayGanZhi}일 · ${result.weekday} (요일 칠요: ${result.weekdayLuminary})
 - 28수 직성(直星): ${result.mansion.fullName} — ${result.mansion.group} · ${result.mansion.index + 1}번째 수
@@ -623,7 +658,8 @@ export function formatTwentyEightMansionsPrompt(result: TwentyEightMansionsResul
 - 6대 영역 택일(擇日) 등급:
 ${domainLines}
 - 종합 판정: ${result.overallVerdict}
-- 종합 개운 가이드: ${result.overallGuide}${matrixBlock}${reflectionBlock}${ritualBlock}${focusBlock}${boundaryBlock}
+- 종합 개운 가이드: ${result.overallGuide}${matrixBlock}${reflectionBlock}${ritualBlock}${focusBlock}
+- 과잉 경계: ${result.shadowWarning}${boundaryBlock}
 - [AI 해석 지침]: 본 리포트는 율리우스 적일 기준 28수 순환 규칙을 적용한 결정론 계산 참고 자료입니다. 영역별 등급은 규칙 기반 참고값이며 통계적 확률이나 길흉의 보장을 뜻하지 않습니다. 직성 등급과 택일 권고일, 행동 가이드는 확정 예언이 아닌 선택을 돕는 성찰 정보로 안내하십시오.
 `.trim();
 }

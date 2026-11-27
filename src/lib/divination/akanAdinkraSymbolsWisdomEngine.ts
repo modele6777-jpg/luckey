@@ -18,12 +18,12 @@
  * 1. 개인 점수·심리 진단·미래 예측이 아닙니다. 모든 산출은 상징 성찰 문장입니다.
  * 2. 특정 구전 인용을 만들어 귀속하지 않고 상징의 보편적 의미만 정성적으로 씁니다.
  *
- * @version LUCKEY-AKAN-ADINKRA-v2.3.0
+ * @version LUCKEY-AKAN-ADINKRA-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AKAN_ADINKRA_WISDOM_VERSION = 'LUCKEY-AKAN-ADINKRA-v2.3.0';
+export const AKAN_ADINKRA_WISDOM_VERSION = 'LUCKEY-AKAN-ADINKRA-v2.4.0';
 
 export type AdinkraQuestionTopic = 'decision' | 'relationship' | 'healing' | 'reflection';
 
@@ -57,6 +57,7 @@ export interface AkanAdinkraSymbolsWisdomResult {
   symbolArchetype: string;
   companionSymbol: string;
   adinkraPhase: string;
+  adinkraCrossAxis: string;
   shadowWarning: string;
   situationalAdinkraAudit: SituationalAdinkraAudit;
   temporalSymbolPulse: AdinkraSymbolPulse;
@@ -213,10 +214,17 @@ export function calculateAkanAdinkraSymbolsWisdom(
     phaseHash |= 0;
   }
   const adinkraPhase = ADINKRA_PHASES[Math.abs(phaseHash) % ADINKRA_PHASES.length];
-  const shadowWarning = ADINKRA_SHADOW_WARNINGS[Math.abs(phaseHash >> 3) % ADINKRA_SHADOW_WARNINGS.length];
+  const topicWarningByType: Record<AdinkraQuestionTopic, string> = {
+    decision: '과거의 교훈을 되새기다 정작 오늘 앞으로 내디뎌야 할 선택의 기한을 놓치지 않도록 살피세요.',
+    relationship: '겸손과 조화를 지키려다 분명히 세워야 할 자기 기준과 요구선까지 흐려지지 않도록 점검하세요.',
+    healing: '큰 흐름에 맡긴다는 이유로 오늘 당장 챙겨야 할 수면·식사·휴식 루틴까지 미루지 마세요.',
+    reflection: ADINKRA_SHADOW_WARNINGS[Math.abs(phaseHash >> 3) % ADINKRA_SHADOW_WARNINGS.length],
+  };
+  const shadowWarning = topicWarningByType[topic];
 
   const situationalAdinkraAudit = buildSituationalAdinkraAudit(topic, symbolArchetype);
   const temporalSymbolPulse = buildTemporalSymbolPulse(now, symbolArchetype);
+  const adinkraCrossAxis = `${topic} · ${temporalSymbolPulse.kstTimeWindow.split('—')[0].trim()} · ${adinkraPhase.split('(')[0].trim()}`;
 
   const trimmedQ = (question ?? '').trim();
   const ritualAction = `${situationalAdinkraAudit.adinkraPractice} 이어서 ${situationalAdinkraAudit.humbleStrengthAdvice} (${adinkraPhase})`;
@@ -251,6 +259,7 @@ export function calculateAkanAdinkraSymbolsWisdom(
     symbolArchetype,
     companionSymbol,
     adinkraPhase,
+    adinkraCrossAxis,
     shadowWarning,
     situationalAdinkraAudit,
     temporalSymbolPulse,
@@ -269,6 +278,7 @@ export function formatAkanAdinkraSymbolsWisdomPrompt(res: AkanAdinkraSymbolsWisd
     `- 중심 상징: ${res.symbolArchetype}`,
     `- 보조 상징: ${res.companionSymbol}`,
     `- 상징 국면: ${res.adinkraPhase}`,
+    `- 교차 조율 축: ${res.adinkraCrossAxis}`,
     `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 질문 비춤: ${res.situationalAdinkraAudit.symbolMirror}`,
     `- 되돌아봄 교훈: ${res.situationalAdinkraAudit.retrospectiveLesson}`,

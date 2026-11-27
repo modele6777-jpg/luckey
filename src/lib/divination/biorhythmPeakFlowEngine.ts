@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const BIORHYTHM_PEAK_FLOW_VERSION = 'LUCKEY-BIOFLOW-v2.3.0';
+export const BIORHYTHM_PEAK_FLOW_VERSION = 'LUCKEY-BIOFLOW-v2.4.0';
 
 export type ChronotypeType = 
   | '사자형 (Lion · 새벽형 몰입 개척자)'
@@ -72,6 +72,9 @@ export interface BiorhythmPeakFlowReport {
   reflectiveQuestion: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
+  questionTopic: 'focus' | 'recovery' | 'decision' | 'general';
+  biorhythmCrossAxis: string;
+  shadowWarning: string;
   synthesisPromptGuidance: string;
 }
 
@@ -215,7 +218,18 @@ export function runBiorhythmPeakFlowEngine(
     val >= 40 ? '상승 고점' : val <= -40 ? '이완·회복기' : '전환 완만기';
 
   const q = (question || '').trim();
+  const questionTopic: BiorhythmPeakFlowReport['questionTopic'] = !q
+    ? 'general'
+    : /피곤|휴식|수면|건강|감정|회복/.test(q)
+      ? 'recovery'
+      : /결정|회의|계약|협상|선택/.test(q)
+        ? 'decision'
+        : /집중|일|공부|몰입|작업/.test(q)
+          ? 'focus'
+          : 'general';
   const temporalBioRhythm = getTemporalBioRhythm(targetDate);
+  const biorhythmCrossAxis = `${questionTopic} · ${chronotype.split(' ')[0]} × ${isCriticalDay ? '전환위험일' : '순항국면'}`;
+  const shadowWarning = `과잉·편향 경계: 바이오리듬 고점이라고 수면과 휴식을 건너뛰거나, 저점·전환일이라는 이유로 하루 전체를 포기하지 말고 호흡과 페이스를 조절하세요.`;
   const situationalBioAudit = /일|결정|회의|집중|공부/.test(q)
     ? {
         focusTheme: `${chronotype.split(' ')[0]} 기반 딥워크·결단 황금 시간대 활용`,
@@ -255,6 +269,7 @@ export function runBiorhythmPeakFlowEngine(
   * 신체(Physical): ${describeWave(physical)} | 감성(Emotional): ${describeWave(emotional)} | 지성(Intellectual): ${describeWave(intellectual)}
 - 전환기 진단: ${criticalWarningText}
 - 질문 맥락 감사 (${situationalBioAudit.focusTheme}): ${situationalBioAudit.rhythmNote}
+- 질문 맥락: ${questionTopic} · 바이오 교차 축: ${biorhythmCrossAxis}
 - KST 시공간 일주기 리듬: ${temporalBioRhythm.currentPhaseWindow} / ${temporalBioRhythm.seasonalCircadianTone}
   * 시공간 지침: ${temporalBioRhythm.temporalGuidance}
 - 바이오 교차 매트릭스: 핵심(${bioSynthesisMatrix.coreInsight}) | 실행(${bioSynthesisMatrix.recommendedAction}) | 주의(${bioSynthesisMatrix.cautionNotice})
@@ -264,6 +279,7 @@ export function runBiorhythmPeakFlowEngine(
   * [재충전 리셋] ${goldenWindows.rechargeWindow}
 - 바이오해킹 행동 처방: ${biohackingPrescription.circadianLightAction}
 - 질문 맞춤 성찰 질문: ${reflectionFocus}
+- ${shadowWarning}
 - 해석 경계: ${boundaryNotice}`;
 
   return {
@@ -289,6 +305,9 @@ export function runBiorhythmPeakFlowEngine(
     reflectiveQuestion: reflectionFocus,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
+    questionTopic,
+    biorhythmCrossAxis,
+    shadowWarning,
     synthesisPromptGuidance
   };
 }

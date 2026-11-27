@@ -8,12 +8,12 @@
  * 4. 경세구민(經世救民) 실천적 보살행 지표 (Pragmatic Bodhisattva Action Index): 추상적 명분이나 형식에 얽매이지 않고 고통받는 현실의 백성을 구원하기 위해 분연히 행동하는 실천력.
  * 5. 출세간적 무소유 청빈 및 초연한 회복탄력성 (Renunciation & Magnanimous Resilience Score): 지극한 공을 세운 뒤에도 권력과 영화에 연연하지 않고 산사로 돌아가 평정을 지키는 초연한 무소유.
  *
- * @version LUCKEY-SAMYEONGDAESA-SONGUN-YUJEONG-v2.2.0
+ * @version LUCKEY-SAMYEONGDAESA-SONGUN-YUJEONG-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_SAMYEONGDAESA_SONGUN_YUJEONG_VERSION = 'LUCKEY-SAMYEONGDAESA-SONGUN-YUJEONG-v2.3.0';
+export const KOREAN_SAMYEONGDAESA_SONGUN_YUJEONG_VERSION = 'LUCKEY-SAMYEONGDAESA-SONGUN-YUJEONG-v2.4.0';
 
 export interface SamyeongTheme {
   themeKey: string;
@@ -34,6 +34,7 @@ export interface SamyeongAphorism {
 export interface KoreanSamyeongdaesaSongunYujeongResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '대의·헌신' | '담판·협상' | '자비·포용' | '실천·구제' | '초연·무소유' | '호국 전반';
   // 5대 사명대사 호국 자비 핵심 지표 (0~100)
   righteousDevotionScore: number;             // 살신성인 호국대의 및 용기 지표 (Righteous Devotion & Sacrifice)
   diplomaticRescueIndex: number;              // 외교적 담판 지략 및 자비구제 실천력 (Diplomatic Rescue & Statesmanship)
@@ -47,6 +48,7 @@ export interface KoreanSamyeongdaesaSongunYujeongResult {
   secondarySamyeongAphorism: SamyeongAphorism;
   ritualAction: string;
   reflectionFocus: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   samyeongComprehensiveGuidance: {
@@ -154,6 +156,23 @@ function hashString(str: string): number {
   return hash;
 }
 
+const SAMYEONG_SHADOWS: Record<string, string> = {
+  righteousDevotion: '공동체와 대의를 위해 온몸을 던지는 헌신이 정작 자신의 지속 가능성과 소중한 일상의 경계를 돌보지 않는 자기 소모가 되지 않게 하세요.',
+  diplomaticStatesmanship: '물러서지 않는 당당한 담판의 기개가 상대의 입장과 숨은 맥락을 헤아리는 유연한 경청까지 닫아거는 대립으로 굳지 않게 살피세요.',
+  compassionOverEnmity: '원한을 녹이는 너른 자비와 포용이 꼭 선을 긋고 바로잡아야 할 부당함이나 책임 문제마저 모호하게 덮어버리는 유약함이 되지 않게 주의하세요.',
+  pragmaticBodhisattva: '현실의 결핍을 즉시 풀어내는 실천력이 그 일이 왜 반복되는지에 대한 근본 성찰과 장기적 구조를 돌아볼 틈을 없애지 않도록 균형을 잡으세요.',
+  pureRenunciation: '공과 보상을 털고 물러나는 초연한 무소유가 정작 내가 끝까지 챙겨야 할 후속 책임이나 정당한 몫까지 성급히 놓아버리는 회피가 되지 않게 하세요.',
+};
+
+function classifySamyeongTopic(q: string): KoreanSamyeongdaesaSongunYujeongResult['questionTopic'] {
+  if (/대의|소명|헌신|안위|용기/.test(q)) return '대의·헌신';
+  if (/담판|협상|상대|논리|설득/.test(q)) return '담판·협상';
+  if (/자비|용서|원한|화해|포용/.test(q)) return '자비·포용';
+  if (/현실|실천|구제|고통|해결/.test(q)) return '실천·구제';
+  if (/내려놓|집착|무소유|초연|평정/.test(q)) return '초연·무소유';
+  return '호국 전반';
+}
+
 export function calculateKoreanSamyeongdaesaSongunYujeong(
   profile?: UserProfile,
   query?: string,
@@ -165,7 +184,9 @@ export function calculateKoreanSamyeongdaesaSongunYujeong(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `SAMYEONGDAESA-SONGUN-YUJEONG:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const trimmedQuery = (query ?? '').trim();
+  const questionTopic = classifySamyeongTopic(trimmedQuery);
+  const seedString = `SAMYEONGDAESA-SONGUN-YUJEONG:${name}:${birthDate}:${birthTime}:${gender}:${trimmedQuery}`;
   const baseHash = hashString(seedString);
   const absHash = Math.abs(baseHash);
 
@@ -185,8 +206,8 @@ export function calculateKoreanSamyeongdaesaSongunYujeong(
   const focalSamyeongAphorism = SAMYEONG_APHORISMS[aphorismIndex];
   const secondarySamyeongAphorism = SAMYEONG_APHORISMS[secondaryAphorismIndex];
 
-  const trimmedQuery = query?.trim();
   const ritualAction = `[${activeSamyeongTheme.themeTitleKo.split(' — ')[0]}] ${focalSamyeongAphorism.actionGuidance}`;
+  const shadowWarning = SAMYEONG_SHADOWS[activeSamyeongTheme.themeKey] ?? SAMYEONG_SHADOWS.righteousDevotion;
   const reflectiveQuestion = trimmedQuery
     ? `사명대사의 '${activeSamyeongTheme.themeTitleKo}'와 '${secondarySamyeongTheme.themeTitleKo}'를 비추어 볼 때, "${trimmedQuery}"에서 사적인 안위를 넘어 끝까지 지켜야 할 대의와 자비의 결단은 무엇인가요?`
     : `지금 당신이 마주한 갈등이나 위기 속에서, '${activeSamyeongTheme.themeTitleKo}'의 담대한 기개와 '${secondarySamyeongTheme.themeTitleKo}'의 초연함을 함께 세우려면 무엇을 내려놓고 무엇을 지켜야 할까요?`;
@@ -219,6 +240,7 @@ export function calculateKoreanSamyeongdaesaSongunYujeong(
   return {
     engineVersion: KOREAN_SAMYEONGDAESA_SONGUN_YUJEONG_VERSION,
     calculatedAtKst,
+    questionTopic,
     righteousDevotionScore,
     diplomaticRescueIndex,
     transcendentCompassionScore,
@@ -230,6 +252,7 @@ export function calculateKoreanSamyeongdaesaSongunYujeong(
     secondarySamyeongAphorism,
     ritualAction,
     reflectionFocus,
+    shadowWarning,
     reflectiveQuestion,
     interpretiveBoundary,
     samyeongComprehensiveGuidance: {
@@ -254,7 +277,7 @@ export function formatKoreanSamyeongdaesaSongunYujeongPrompt(
   const lines = [
     `【사명대사 송운 유정 《분충서난록》 호국대의 및 자비구제 지표】`,
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
-    `- 호국 자비 국면: ${describeSamyeongStage(avgScore)}`,
+    `- 질문 맥락: ${res.questionTopic} | 호국 자비 국면: ${describeSamyeongStage(avgScore)}`,
     `- 핵심 사명대사 테마: ${res.activeSamyeongTheme.themeTitleKo} [${res.activeSamyeongTheme.themeTitleEn}]`,
     `- 보조 교차 테마: ${res.secondarySamyeongTheme.themeTitleKo} [${res.secondarySamyeongTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeSamyeongTheme.pragmaticInsight}`,
@@ -264,6 +287,7 @@ export function formatKoreanSamyeongdaesaSongunYujeongPrompt(
     `- 원전 출처: [${res.focalSamyeongAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalSamyeongAphorism.actionGuidance}`,
     `- 실천 의례: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,

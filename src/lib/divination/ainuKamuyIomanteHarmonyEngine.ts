@@ -1,5 +1,23 @@
 import type { UserProfile } from '../sharedState';
 
+export type AinuQuestionTopic = 'warmth' | 'gratitude' | 'release' | 'coexistence' | 'general';
+
+function classifyAinuTopic(q: string): AinuQuestionTopic {
+  if (/화로|온기|기초|리듬|생활|공간/.test(q)) return 'warmth';
+  if (/감사|고마|대지|바탕|지탱|순환/.test(q)) return 'gratitude';
+  if (/비우|놓아|미련|정리|배웅|끝/.test(q)) return 'release';
+  if (/관계|사람|공존|마을|거리|대화/.test(q)) return 'coexistence';
+  return 'general';
+}
+
+const AINU_TOPIC_WARNINGS: Record<AinuQuestionTopic, string> = {
+  warmth: '기초 온기를 지키는 일에 집중하되, 바깥 일정과의 연결까지 완전히 닫아 버리지 않도록 창 하나는 열어 두세요.',
+  gratitude: '감사하는 태도가 현재의 불편한 문제를 무조건 참는 순응으로 흐르지 않도록, 고칠 지점 한 가지는 분리해 두세요.',
+  release: '보낼 것을 정중히 배웅하되, 아직 쓸모가 남은 핵심 습관까지 한꺼번에 비우지 않도록 남길 것 1가지를 먼저 적으세요.',
+  coexistence: '상대의 자리를 배려한다는 이유로 내 경계선까지 지워 버리지 않도록, 필요한 거절 한 줄은 분명히 지키세요.',
+  general: '돌봄이 과해져 내면의 화로 온기까지 소진하지 않도록, 오늘의 쉼표 한 칸을 먼저 확보하세요.',
+};
+
 export interface AinuKamuyAspect {
   name: string;
   koreanLabel: string;
@@ -10,9 +28,11 @@ export interface AinuKamuyAspect {
 }
 
 export interface AinuKamuyResult {
-  engineVersion: 'LUCKEY-AINU-KAMUY-v2.3.0';
+  engineVersion: 'LUCKEY-AINU-KAMUY-v2.4.0';
   calculatedAtKst: string;
   questionFocus: string;
+  questionTopic: AinuQuestionTopic;
+  kamuyBalanceAxis: string;
   primaryAspect: AinuKamuyAspect;
   companionAspect: AinuKamuyAspect;
   seasonalBreath: string;
@@ -99,6 +119,7 @@ export function calculateAinuKamuyIomanteHarmony(params: {
 }): AinuKamuyResult {
   const now = params.now ?? new Date();
   const questionFocus = (params.question ?? '').trim() || '존중과 감사의 순환 리듬';
+  const questionTopic = classifyAinuTopic(questionFocus);
   const seedBase = `${JSON.stringify(params.profile.fate ?? {})}|${now.toISOString().slice(0, 13)}|${questionFocus}|ainu-kamuy`;
   const seed = stableHash(seedBase);
   const companionSeed = stableHash(`${seedBase}|companion`);
@@ -110,12 +131,15 @@ export function calculateAinuKamuyIomanteHarmony(params: {
   const primaryAspect = AINU_ASPECTS[primaryIdx];
   const companionAspect = AINU_ASPECTS[companionIdx];
   const seasonalBreath = SEASONAL_BREATHS[(breathSeed + now.getUTCHours()) % SEASONAL_BREATHS.length];
-  const shadowWarning = SHADOW_WARNINGS[primaryIdx];
+  const shadowWarning = questionTopic === 'general' ? SHADOW_WARNINGS[primaryIdx] : AINU_TOPIC_WARNINGS[questionTopic];
+  const kamuyBalanceAxis = `${primaryAspect.koreanLabel} ↔ ${companionAspect.koreanLabel} (${seasonalBreath})`;
 
   return {
-    engineVersion: 'LUCKEY-AINU-KAMUY-v2.3.0',
+    engineVersion: 'LUCKEY-AINU-KAMUY-v2.4.0',
     calculatedAtKst: formatKstTimestamp(now),
     questionFocus,
+    questionTopic,
+    kamuyBalanceAxis,
     primaryAspect,
     companionAspect,
     seasonalBreath,
@@ -132,8 +156,9 @@ export function calculateAinuKamuyIomanteHarmony(params: {
 export function formatAinuKamuyPrompt(result: AinuKamuyResult): string {
   return [
     `[아이누 카무이·이오만테 존중과 순환 엔진 ${result.engineVersion}]`,
-    `- 연산 시각: ${result.calculatedAtKst}`,
+    `- 연산 시각: ${result.calculatedAtKst} | 질문 맥락: ${result.questionTopic}`,
     `- 질문 초점: ${result.questionFocus}`,
+    `- 균형 축: ${result.kamuyBalanceAxis}`,
     `- 중심 결: ${result.primaryAspect.name} (${result.primaryAspect.koreanLabel}) — ${result.primaryAspect.coreInsight}`,
     `- 이어지는 결: ${result.companionAspect.name} (${result.companionAspect.koreanLabel})`,
     `- 순환 호흡 국면: ${result.seasonalBreath}`,

@@ -3,12 +3,12 @@
  *
  * 프랑스 문학의 불멸의 거장이자 1957년 노벨 문학상 최연소 수상 철학자 알베르 카뮈(Albert Camus, 1913~1960)의 핵심 원전 기반.
  *
- * @version LUCKEY-ALBERT-CAMUS-ABSURD-REVOLT-v2.1.0
+ * @version LUCKEY-ALBERT-CAMUS-ABSURD-REVOLT-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_ALBERT_CAMUS_VERSION = 'LUCKEY-ALBERT-CAMUS-ABSURD-REVOLT-v2.3.0';
+export const FRENCH_ALBERT_CAMUS_VERSION = 'LUCKEY-ALBERT-CAMUS-ABSURD-REVOLT-v2.4.0';
 
 export type CamusQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -67,6 +67,7 @@ export interface AlbertCamusAbsurdRevoltResult {
   situationalAbsurdAudit: CamusSituationalAbsurdAudit;
   temporalRevoltRhythm: CamusTemporalRevoltRhythm;
   camusSynthesisMatrix: CamusSynthesisMatrix;
+  camusCrossAxis: string;
   questionTopic: CamusQuestionTopic;
   dailyPracticeRitual: string;
   reflectiveQuestion: string;
@@ -344,6 +345,7 @@ export function calculateAlbertCamusAbsurdRevolt(
     presentPassion,
     overallSynthesis,
   };
+  const camusCrossAxis = `${activeCamusTheme.themeKey} ↔ ${temporalRevoltRhythm.revoltFocus} (${questionTopic})`;
 
   const guidanceTitle = `알베르 카뮈 부조리와 반항 지혜: ${activeCamusTheme.themeTitleKo}`;
   const philosophicalCounsel = `알베르 카뮈의 철학은 무의미한 세계 앞에서 절망하거나 비겁한 도피에 빠지지 않고, 당당한 반항과 뜨거운 열정으로 삶을 긍정하도록 촉구합니다. ` +
@@ -367,6 +369,7 @@ export function calculateAlbertCamusAbsurdRevolt(
     situationalAbsurdAudit,
     temporalRevoltRhythm,
     camusSynthesisMatrix,
+    camusCrossAxis,
     questionTopic,
     dailyPracticeRitual: qualitativePractice.dailyPracticeRitual,
     reflectiveQuestion: qualitativePractice.reflectiveQuestion,
@@ -391,6 +394,7 @@ export function formatAlbertCamusAbsurdRevoltPrompt(res: AlbertCamusAbsurdRevolt
     `- 거짓 도피 경계: ${res.situationalAbsurdAudit.falseEscapeTrap}`,
     `- 시지프의 첫걸음: ${res.situationalAbsurdAudit.sisyphusFirstStep}`,
     `- KST 반항 리듬: ${res.temporalRevoltRhythm.kstWindow} (${res.temporalRevoltRhythm.revoltFocus} · ${res.temporalRevoltRhythm.seasonalTone}) — ${res.temporalRevoltRhythm.rhythmDirective}`,
+    `- 카뮈 실존 교차 축: ${res.camusCrossAxis}`,
     `- 카뮈 매트릭스: 자각(${describeCamusLevel(res.camusSynthesisMatrix.absurdLucidity)}) · 반항 지속(${describeCamusLevel(res.camusSynthesisMatrix.revoltPersistence)}) · 현재 열정(${describeCamusLevel(res.camusSynthesisMatrix.presentPassion)})`,
     `- 오늘의 실천 의례(${res.questionTopic}): ${res.dailyPracticeRitual}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,

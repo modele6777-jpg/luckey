@@ -38,9 +38,12 @@ test('smart agent router routes love relationship to Jung archetype, Sehando, Pa
   assert.ok(plan.deepEngineKeys?.includes('frenchPascalPenseesHeartReason'));
   assert.ok(plan.deepEngineKeys?.includes('islamicSufiRumiMasnaviDivineLove'));
 
+  // 실제 답변에는 이 의도에서 가장 앞선 소수(상한) 관점만 쓸다 — 무더기 주입 금지.
   const routed = routeAndExecute({ text: '남친과의 연애 궁합을 봐줘', profile, isMasterRequested: true });
-  assert.match(routed.promptInjection, /추사 김정희 세한도/);
-  assert.match(routed.promptInjection, /파스칼 팡세/);
+  const selected = routed.routePlan.deepEngineKeys ?? [];
+  assert.match(routed.promptInjection, /Lucy 심층 선택 관점/);
+  assert.ok(selected.length >= 1 && selected.length <= 3, `deep perspectives stayed within the cap: ${selected.length}`);
+  assert.ok(selected.every(key => plan.deepEngineKeys?.includes(key)));
 });
 
 test('ordinary mode enforces basic engine >= 1 (excluding casual) and excludes deep engines', () => {
@@ -104,21 +107,22 @@ test('Lucy and Lucy+ require a basic tool and one symbolic deep perspective, eve
   }
 });
 
-test('Lucy selects a broad, relevant deep set per question while master retains every catalog perspective', () => {
+test('Lucy picks only a few relevant deep perspectives per question while master retains every catalog perspective', () => {
   const text = '이번 이직 면접과 커리어 전략, 다음 진로 방향을 어떻게 잡을까?';
   const preferred = analyzeQuestionIntent(text).deepEngineKeys ?? [];
   const routed = routeAndExecute({ text, profile, requireBasicAndDeep: true, allowMaster: false });
   const selected = routed.routePlan.deepEngineKeys ?? [];
-  const availablePreferred = preferred.filter(key => ALL_DCE_ENGINES.some(engine => engine.key === key && engine.category === 'deep_master'));
 
-  assert.ok(selected.length >= availablePreferred.length);
-  assert.ok(selected.length <= 12);
+  // 절제: 질문 하나에 심층 관점은 소수(최대 3개)만 쓴다. 12개를 무더기로 주입하지 않는다.
+  assert.ok(selected.length >= 1);
+  assert.ok(selected.length <= 3, `deep perspectives stayed within the cap: ${selected.length}`);
+  assert.ok(selected.length < preferred.length);
   assert.equal(new Set(selected).size, selected.length);
   assert.ok(selected.every(key => ALL_DCE_ENGINES.some(engine => engine.key === key && engine.category === 'deep_master')));
   assert.equal(routed.routePlan.deepEnginesKo?.length, selected.length);
 
   const master = routeAndExecute({ text: '올인원 종합 인생 분석', profile, isMasterRequested: true });
-  // 카탈로그가 늘어도 마스터는 심층 관점을 빠짐없이 모두 검토한다.
+  // 카탈로그가 늘어도 마스터(올인원 명시 요청)는 심층 관점을 빠짐없이 모두 검토한다.
   assert.equal(master.routePlan.deepEngineKeys?.length, ALL_DCE_ENGINES.filter(engine => engine.category === 'deep_master').length);
 });
 

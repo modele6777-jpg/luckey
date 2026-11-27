@@ -1,8 +1,37 @@
 import type { UserProfile } from '../sharedState';
 
+export type YapeseQuestionTopic = 'trust' | 'patience' | 'consensus' | 'pace' | 'general';
+
+function classifyYapeseTopic(q: string): YapeseQuestionTopic {
+  if (/신뢰|믿음|증명|약속|성실/.test(q)) return 'trust';
+  if (/시간|오래|기다|인내|가라앉/.test(q)) return 'patience';
+  if (/합의|대화|갈등|관계|목소리/.test(q)) return 'consensus';
+  if (/비교|속도|조급|리듬|토양/.test(q)) return 'pace';
+  return 'general';
+}
+
+const YAPESE_AXES = [
+  '라이 돌화폐 신뢰 축(옮기지 않아도 공동체가 기억하는 축적의 무게)',
+  '팔라우 항해길 가치 축(긴 정성과 시간으로 다져 온 기준의 단단함)',
+  '페바이 집회소 합의 축(큰 목소리 대신 조용한 수긍을 끌어내는 품)',
+  '타로 밭 물길 절제 축(바깥 속도와 비교하지 않고 내 토양의 수분을 지키는 균형)',
+  '바다 밑 라이 약속 축(당장 드러나지 않아도 양심 속에 살아 있는 성실함)',
+] as const;
+
+const YAPESE_SHADOW_WARNINGS: Record<YapeseQuestionTopic, string> = {
+  trust: '조용한 신뢰를 지킨다는 이유로 꼭 필요한 중간 공유나 확인 연락까지 생략하지 않도록 핵심 한 줄은 전하십시오.',
+  patience: '시간의 무게를 믿되, 이미 방향이 어긋난 일까지 인내라는 이름으로 방치하지 않도록 점검 기한을 두십시오.',
+  consensus: '합의를 찾으려다 내 핵심 기준까지 무르게 양보하지 않도록, 지킬 선 하나는 미리 정해 두십시오.',
+  pace: '내 속도를 지키는 것이 나태함으로 흐르지 않게 오늘 마칠 작은 매듭 하나를 분명히 세우십시오.',
+  general: '보이지 않는 신뢰는 억지로 과시할 때보다 약속을 조용히 지킬 때 가장 단단하게 자리 잡습니다.',
+};
+
 export interface YapeseRaiResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: YapeseQuestionTopic;
+  raiTrustAxis: string;
+  shadowWarning: string;
   stoneTrust: string;
   companionTrust: string;
   yapeseInsight: string;
@@ -71,15 +100,22 @@ export function calculateYapeseRaiStoneTrust(params: {
   question?: string;
 }): YapeseRaiResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyYapeseTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % STONES.length;
   const picked = STONES[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (STONES.length - 1));
   const companion = STONES[(idx + companionOffset) % STONES.length];
+  const raiTrustAxis = YAPESE_AXES[idx];
+  const shadowWarning = YAPESE_SHADOW_WARNINGS[questionTopic];
 
   return {
-    engineVersion: 'LUCKEY-YAPESE-RAI-v2.2.0',
+    engineVersion: 'LUCKEY-YAPESE-RAI-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
+    raiTrustAxis,
+    shadowWarning,
     stoneTrust: picked.stone,
     companionTrust: companion.stone,
     yapeseInsight: picked.insight,
@@ -94,13 +130,15 @@ export function calculateYapeseRaiStoneTrust(params: {
 export function formatYapeseRaiPrompt(res: YapeseRaiResult): string {
   return [
     `[야프 라이 돌·공동체 신뢰 성찰 · ${res.engineVersion}]`,
-    `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `- 섬의 상징: ${res.stoneTrust} (${res.lagoonTone})`,
     `- 동반 상징: ${res.companionTrust}`,
+    `- 신뢰 축: ${res.raiTrustAxis}`,
     `- 중심 통찰: ${res.yapeseInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');
 }

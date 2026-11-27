@@ -28,7 +28,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAOIST_HUANGTING_VERSION = 'LUCKEY-TAOIST-HUANGTING-v2.3.0';
+export const TAOIST_HUANGTING_VERSION = 'LUCKEY-TAOIST-HUANGTING-v2.4.0';
 
 export type HuangtingQuestionTopic = 'career' | 'relationship' | 'decision' | 'inner' | 'general';
 
@@ -78,6 +78,11 @@ export interface TaoistHuangtingJingReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  huangtingCrossAxis: {
+    palaceToViscera: string;
+    spiritPair: string;
+    breathAnchor: string;
   };
 }
 
@@ -195,6 +200,11 @@ export function calculateTaoistHuangtingJing(
     alignmentState: `${huangtingPhase} · 진신 ${guardianSpirit.spiritName} · 보조 ${secondarySpirit.spiritName}`,
     integratedAction: `${guardianSpirit.innerPreservationMantra}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const huangtingCrossAxis = {
+    palaceToViscera: `${dominantPalace.split('(')[0].trim()} ↔ ${guardianSpirit.organ.split('(')[0].trim()}`,
+    spiritPair: `${guardianSpirit.spiritName} ↔ ${secondarySpirit.spiritName}`,
+    breathAnchor: guardianSpirit.robedColor,
+  };
 
   return {
     engineVersion: TAOIST_HUANGTING_VERSION,
@@ -219,12 +229,13 @@ export function calculateTaoistHuangtingJing(
     reflectiveQuestion,
     interpretiveBoundary,
     huangtingSynthesisMatrix,
+    huangtingCrossAxis,
   };
 }
 
 export function formatTaoistHuangtingJingPrompt(report: TaoistHuangtingJingReport): string {
   const matrixLine = report.huangtingSynthesisMatrix
-    ? `\n- **황정 교차 매트릭스**: 핵심 긴장(${report.huangtingSynthesisMatrix.dominantTension}) · 조율 상태(${report.huangtingSynthesisMatrix.alignmentState}) · 통합 실천(${report.huangtingSynthesisMatrix.integratedAction})`
+    ? `\n- **황정 교차 매트릭스**: 핵심 긴장(${report.huangtingSynthesisMatrix.dominantTension}) · 조율 상태(${report.huangtingSynthesisMatrix.alignmentState}) · 황정 교차 축(${report.huangtingCrossAxis.palaceToViscera} | ${report.huangtingCrossAxis.spiritPair}) · 통합 실천(${report.huangtingSynthesisMatrix.integratedAction})`
     : '';
   return `### ☯️ 도교 상청파 황정경(黃庭經) 신체 오장 신성좌 & 존사 엔진 (${TAOIST_HUANGTING_VERSION} | ${report.calculatedAtKst})
 - **질문 맥락**: ${report.questionTopic} | **내관 국면**: ${report.huangtingPhase}

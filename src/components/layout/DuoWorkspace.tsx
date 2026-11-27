@@ -22,9 +22,11 @@ export function WorkspacePortal({ children, onClose }: { children: ReactNode; on
   const [host, setHostKey] = useState<HTMLElement | null>(null);
   const layers = useScreenOverlayLayer(portalRef, host);
   const pane = useOverlayPane(portalRef, host);
-  const paneHost = usePaneOverlayHost(pane);
+  // A dialog fills the visible canvas, not the pane it was opened from, so its
+  // size never depends on the pane's (half-screen, sometimes vw-derived) box.
+  const paneHost = usePaneOverlayHost(pane, 'canvas');
   useLayoutEffect(() => { setHostKey(paneHost); }, [paneHost]);
-  const viewportStyle = useMainOverlayViewport(pane);
+  const viewportStyle = useMainOverlayViewport('main');
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
   useEffect(() => {
@@ -92,7 +94,7 @@ export function WorkspacePortal({ children, onClose }: { children: ReactNode; on
   return createPortal(
     <OverlayPaneContext.Provider value={pane}>
       <ScreenOverlayContext.Provider value={layers}>
-        <div ref={portalRef} className="duo-portal" data-responsive-canvas="true" style={paneHost ? paneLayerStyle(viewportStyle) : viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
+        <div ref={portalRef} className="duo-portal" data-overlay-scope="canvas" data-responsive-canvas="true" style={paneHost ? paneLayerStyle(viewportStyle) : viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
       </ScreenOverlayContext.Provider>
     </OverlayPaneContext.Provider>, paneHost ?? document.body
   );

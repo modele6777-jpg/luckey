@@ -47,11 +47,14 @@ export interface ContextualRelationshipEntity {
   confidence: number; // 0.0 ~ 1.0
 }
 
+export const CONTEXTUAL_SYNASTRY_VERSION = 'LUCKEY-CS-DME-v2.4.0';
+
 export interface ContextualSynastryResult {
   engineVersion: string;
   calculatedAtUtc: string;
   calculatedAtKst: string;
   timestamp: number;
+  synastryCrossAxis: string;
 
   hasRelationshipContext: boolean;
   relationshipEntity: ContextualRelationshipEntity | null;
@@ -371,11 +374,14 @@ export function calculateContextualSynastry(options: {
     ? `${matchedPartner.name} 님과의 ${compatibilityMatrix.grade}(${compatibilityMatrix.title}) 흐름 속에서 오늘 서로의 경계를 지키며 먼저 건넬 따뜻한 말 한마디는 무엇입니까?`
     : `${relEntity ? `${relEntity.categoryKoName}의 ` : ''}관계 흐름을 조율하기 위해 지금 상대에게 확인하거나 표현하고 싶은 본심은 무엇입니까?`;
 
+  const synastryCrossAxis = `${relEntity ? relEntity.categoryKoName : '일반 인연'} ↔ ${matchedPartner && compatibilityMatrix ? `${matchedPartner.name}(${compatibilityMatrix.grade})` : '가이드 모드'} (${temporalSynastryRhythm.dialogueWindow.split('—')[0].trim()})`;
+
   return {
-    engineVersion: 'LUCKEY-CS-DME-v2.3.0',
+    engineVersion: CONTEXTUAL_SYNASTRY_VERSION,
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: temporalSynastryRhythm.kstTimeLabel,
     timestamp: now.getTime(),
+    synastryCrossAxis,
 
     hasRelationshipContext: Boolean(relEntity || matchedPartner),
     relationshipEntity: relEntity,
@@ -461,6 +467,7 @@ export function formatContextualSynastryPrompt(res: ContextualSynastryResult): s
 ${matrixBlock}
 - 질문 맥락 감사 (${res.situationalSynastryAudit.focusTheme}): ${res.situationalSynastryAudit.tacticalStep}
 - KST 시공간 리듬: ${res.temporalSynastryRhythm.dialogueWindow} / ${res.temporalSynastryRhythm.seasonalBondTone}
+- 시나스트리 교차 축: ${res.synastryCrossAxis}
 - 교차 매트릭스: 핵심(${res.synastrySynthesisMatrix.coreInsight}) | 실행(${res.synastrySynthesisMatrix.recommendedAction}) | 주의(${res.synastrySynthesisMatrix.cautionNotice})
 - 성찰 질문: ${res.reflectiveQuestion}
 - 해석 경계: ${res.boundaryNotice}

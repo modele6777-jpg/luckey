@@ -25,7 +25,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SOMATIC_ARMORING_VERSION = 'LUCKEY-SOMATIC-v2.3.0';
+export const SOMATIC_ARMORING_VERSION = 'LUCKEY-SOMATIC-v2.4.0';
 
 function formatSomaticKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -52,6 +52,7 @@ export interface SomaticBodyArmoringReport {
   calculatedAtKst: string;
   primaryArmorSegment: BodyArmorSegment;
   secondaryArmorSegment: BodyArmorSegment;
+  somaticCrossAxis: string;
   lifeForceEnergyFlowScore: number; // 오르곤(생명력) 순환 지수 (0 ~ 100)
   groundingSomaticChecklist: string[];
   vagusNerveResetPrescription: {
@@ -198,6 +199,7 @@ export function runSomaticBodyArmoringEngine(
 
   const calculatedAtKst = formatSomaticKstTimestamp(targetDate);
   const q = (question || '').trim();
+  const somaticCrossAxis = `${primarySegment.segmentName} × ${secondarySegment.segmentName} (오행: ${element})`;
   const somaticSynthesisMatrix = {
     dominantTension: `${primarySegment.segmentName} ↔ ${secondarySegment.segmentName}`,
     alignmentState: `미주신경 리셋: ${vagusNerveResetPrescription.technique} · 오행: ${element}`,
@@ -221,6 +223,7 @@ export function runSomaticBodyArmoringEngine(
 - 미주신경 리셋 처방: [${vagusNerveResetPrescription.technique} ${vagusNerveResetPrescription.durationSeconds}초] ${vagusNerveResetPrescription.guide}
 - 실천 의례: ${ritualAction}
 - 성찰 초점: ${reflectionFocus}
+- 신체 갑옷 교차 축: ${somaticCrossAxis}
 - 교차 매트릭스: [핵심 긴장: ${somaticSynthesisMatrix.dominantTension} | 조율 상태: ${somaticSynthesisMatrix.alignmentState}]
   * 통합 실천: ${somaticSynthesisMatrix.integratedAction}
 - 질문 맞춤 성찰 질문: ${reflectiveQuestion}
@@ -232,6 +235,7 @@ export function runSomaticBodyArmoringEngine(
     calculatedAtKst,
     primaryArmorSegment: primarySegment,
     secondaryArmorSegment: secondarySegment,
+    somaticCrossAxis,
     lifeForceEnergyFlowScore,
     groundingSomaticChecklist,
     vagusNerveResetPrescription,

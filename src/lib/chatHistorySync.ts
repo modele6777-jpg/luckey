@@ -30,6 +30,8 @@ export interface UnifiedMessage {
   mode?: string;
   usedTools?: string[];
   calculationAudit?: CalculationAuditItem[];
+  /** 이 답변에 쓴 심층 관점 키 (답변 끝 '이 답변 관점' 버튼용). */
+  deepPerspectiveKeys?: string[];
   divinationContext?: string;
 }
 
@@ -394,6 +396,7 @@ export function mergeUnifiedMessages(
         mode: msg.mode || existing.mode,
         usedTools: msg.usedTools || existing.usedTools,
         calculationAudit: msg.calculationAudit || existing.calculationAudit,
+        deepPerspectiveKeys: msg.deepPerspectiveKeys || existing.deepPerspectiveKeys,
         divinationContext: msg.divinationContext || existing.divinationContext,
       });
     }

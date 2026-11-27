@@ -13,7 +13,7 @@ export interface TemplumSector {
 }
 
 export interface EtruscanTemplumResult {
-  engineVersion: 'LUCKEY-ETRUSCAN-TEMPLUM-v2.3.0';
+  engineVersion: 'LUCKEY-ETRUSCAN-TEMPLUM-v2.4.0';
   calculatedAtKst: string;
   questionFocus: string;
   questionTopic: EtruscanQuestionTopic;
@@ -22,6 +22,7 @@ export interface EtruscanTemplumResult {
   companionSector: TemplumSector;
   horizonAxis: string;
   templumCycle: string;
+  topicCrossDirective: string;
   shadowWarning: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -77,6 +78,33 @@ function classifyEtruscanTopic(question: string): EtruscanQuestionTopic {
   return 'general';
 }
 
+const ETRUSCAN_TOPIC_DIRECTIVES: Record<EtruscanQuestionTopic, { directive: string; warning: string }> = {
+  career: {
+    directive: '역할의 경계(Pars Hostilis)와 이미 보유한 숙련 자원(Pars Familiaris)을 분리해 핵심 업무 1건에 먼저 깃발을 꽂으세요.',
+    warning: '직업적 성취와 확장 구획에만 시선을 두다 일상 회복 리듬을 놓치지 마세요.',
+  },
+  relationship: {
+    directive: '상대의 영역을 침범하지 않는 경계선 위에서 진솔한 대화 창구 하나를 열어 두세요.',
+    warning: '관계의 조화를 지키려다 내가 감당하기 어려운 선까지 무리하게 양보하지 마세요.',
+  },
+  wealth: {
+    directive: '수입과 지출의 4방위 구획을 먼저 종이에 나누어 보고, 검증되지 않은 변수에는 보수적 선을 그으세요.',
+    warning: '단기 지평의 변수에 흔들려 장기 원칙(Cardo)의 안전망을 풀지 마세요.',
+  },
+  health: {
+    directive: '몸의 신호가 보내는 동서 지평의 피로도를 먼저 살피고, 오늘 일정에서 1가지를 덜어 내세요.',
+    warning: '해야 할 일의 구획을 촘촘히 채우다 정작 숨 돌릴 여백의 구획을 비워두지 못할 수 있습니다.',
+  },
+  decision: {
+    directive: '지킬 원칙(Cardo)과 오늘 바로 옮길 첫걸음(Decumanus)을 한 줄씩 나란히 적어 우선순위를 확정하세요.',
+    warning: '모든 가능성을 동시에 열어두려다 정작 지금 집중할 1개 구획마저 흐려지지 않도록 선을 그으세요.',
+  },
+  general: {
+    directive: '현재 시야에서 가장 먼저 정리할 구획 하나를 골라 10분 안에 가시적인 매듭을 지어 보세요.',
+    warning: '여러 방위의 징조를 한꺼번에 해석하려 하기보다 지금 당장 손닿는 구획부터 정돈하세요.',
+  },
+};
+
 function formatKstTimestamp(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -116,10 +144,12 @@ export function calculateEtruscanTemplumSkyDivision(params: {
   const companionSector = TEMPLUM_SECTORS[companionIdx];
   const questionTopic = classifyEtruscanTopic(questionFocus);
   const templumCycle = `${primarySector.vantageAspect} 주축 ↔ ${companionSector.vantageAspect} 보조 조율`;
-  const shadowWarning = `[${primarySector.name} 과잉 경계] ${primarySector.overuseTrap}을 경계하고, 대칭 구획(${mirrorSector.koreanLabel})의 균형을 함께 살피십시오.`;
+  const topicGuide = ETRUSCAN_TOPIC_DIRECTIVES[questionTopic];
+  const topicCrossDirective = `${questionTopic} 맥락 · ${topicGuide.directive}`;
+  const shadowWarning = `[${primarySector.name} 과잉 경계] ${primarySector.overuseTrap}을 경계하고, 대칭 구획(${mirrorSector.koreanLabel})의 균형을 함께 살피십시오. (${topicGuide.warning})`;
 
   return {
-    engineVersion: 'LUCKEY-ETRUSCAN-TEMPLUM-v2.3.0',
+    engineVersion: 'LUCKEY-ETRUSCAN-TEMPLUM-v2.4.0',
     calculatedAtKst: formatKstTimestamp(now),
     questionFocus,
     questionTopic,
@@ -128,6 +158,7 @@ export function calculateEtruscanTemplumSkyDivision(params: {
     companionSector,
     horizonAxis: `${primarySector.koreanLabel} · ${mirrorSector.koreanLabel} · ${companionSector.koreanLabel}이 교차하는 관찰 지평`,
     templumCycle,
+    topicCrossDirective,
     shadowWarning,
     ritualAction: primarySector.practicalChoice,
     reflectionFocus: `${primarySector.name}(${primarySector.vantageAspect})을 기준으로 보조 구획 ${companionSector.name}과 함께 지금 시야의 우선순위를 가늠합니다.`,
@@ -143,6 +174,7 @@ export function formatEtruscanTemplumPrompt(result: EtruscanTemplumResult): stri
     `- 연산 시각: ${result.calculatedAtKst} | 질문 맥락: ${result.questionTopic}`,
     `- 질문 초점: ${result.questionFocus}`,
     `- 구획 순환 축: ${result.templumCycle}`,
+    `- 맥락 교차 지침: ${result.topicCrossDirective}`,
     `- 중심 구획: ${result.primarySector.name} (${result.primarySector.koreanLabel}) — ${result.primarySector.coreInsight}`,
     `- 대칭 구획: ${result.mirrorSector.name} (${result.mirrorSector.koreanLabel})`,
     `- 보조 구획: ${result.companionSector.name} (${result.companionSector.koreanLabel})`,

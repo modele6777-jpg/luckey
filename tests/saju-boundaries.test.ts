@@ -100,7 +100,7 @@ test('independent known sexagenary day anchors and midnight rollover', async () 
 });
 
 test('calculateChronoTransit produces valid pillars, transits, and prompt', async () => {
-  const { calculateChronoTransit, formatChronoTransitPrompt } = await import('../src/lib/divination/chronoTransitEngine');
+  const { calculateChronoTransit, formatChronoTransitPrompt, CHRONO_TRANSIT_VERSION } = await import('../src/lib/divination/chronoTransitEngine');
   
   // 2026-11-01 03:00:00 UTC = 2026-11-01 12:00:00 KST
   const testDate = new Date('2026-11-01T03:00:00Z');
@@ -117,7 +117,7 @@ test('calculateChronoTransit produces valid pillars, transits, and prompt', asyn
 
   const result = calculateChronoTransit({ profile: mockProfile, targetDate: testDate });
   assert.ok(result);
-  assert.equal(result.engineVersion, 'LUCKEY-CHRONO-TRANSIT-v2.3.0');
+  assert.equal(result.engineVersion, CHRONO_TRANSIT_VERSION);
   assert.ok(result.temporalChronoRhythm.kstTimeLabel.includes('+09:00 (KST)'));
   assert.ok(result.reflectiveQuestion.length > 0);
   assert.ok(result.ritualAction.length > 0 && result.reflectionFocus.length > 0);

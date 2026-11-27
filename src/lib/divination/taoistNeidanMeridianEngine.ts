@@ -20,7 +20,25 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const TAOIST_NEIDAN_VERSION = 'LUCKEY-TAOIST-NEIDAN-v2.2.0';
+export const TAOIST_NEIDAN_VERSION = 'LUCKEY-TAOIST-NEIDAN-v2.3.0';
+
+export type NeidanQuestionTopic = 'energy' | 'emotion' | 'focus' | 'sleep' | 'general';
+
+function classifyNeidanTopic(q: string): NeidanQuestionTopic {
+  if (/기혈|순환|피로|체력|기력|건강|몸/.test(q)) return 'energy';
+  if (/감정|화|스트레스|답답|불안|마음/.test(q)) return 'emotion';
+  if (/집중|명료|결단|일|공부/.test(q)) return 'focus';
+  if (/수면|잠|휴식|회복|밤/.test(q)) return 'sleep';
+  return 'general';
+}
+
+const NEIDAN_SHADOW_WARNINGS: Record<NeidanQuestionTopic, string> = {
+  energy: '기력을 빠르게 끌어올리려 과도한 호흡이나 무리한 각성을 시도하면 오히려 진기가 흩어지니 호흡의 길이를 자연스럽게 유지하십시오.',
+  emotion: '상단전에 열이 오른 상태에서 억지로 감정을 누르면 가슴이 답답해지므로, 먼저 날숨을 길게 빼며 어깨와 턱의 힘을 푸십시오.',
+  focus: '집중력을 쥐어짜기보다 단전에 무게중심을 내려두어야 판단의 흔들림이 줄어듭니다.',
+  sleep: '취침 직전에 강한 의념으로 소주천을 돌리면 각성도가 높아질 수 있으니, 하단전에 따뜻한 손만 얹고 편안히 이완하십시오.',
+  general: '내단 양생은 무리한 변화가 아니라 하루 몇 분의 고른 호흡과 절제된 리듬에서 서서히 축적됩니다.',
+};
 
 function formatNeidanKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -51,6 +69,8 @@ export interface TaoistNeidanMeridianReport {
   engineVersion: string;
   calculatedAt: string;
   calculatedAtKst: string;
+  questionTopic: NeidanQuestionTopic;
+  shadowWarning: string;
   dantianArchetype: string;       // 단전 에너지 아키타입
   threeTreasures: ThreeTreasuresLevel;
   meridianCirculation: MeridianCirculationStatus;
@@ -183,6 +203,8 @@ export function runTaoistNeidanMeridianEngine(
   const meridianVitalityIndex = 80 + (seed % 18);
   const calculatedAtKst = formatNeidanKstTimestamp(targetDate);
   const q = (question || '').trim();
+  const questionTopic = classifyNeidanTopic(q);
+  const shadowWarning = NEIDAN_SHADOW_WARNINGS[questionTopic];
   const ritualAction = `[${methodName} · ${targetDantian}] ${practiceSteps}`;
   const reflectionFocus = `도교 내단 경락(${currentMeridian.name}) — ${predominantTreasureState}`;
   const reflectiveQuestion = q
@@ -196,7 +218,7 @@ export function runTaoistNeidanMeridianEngine(
     integratedAction: `${methodName} (${targetDantian}) — ${practiceSteps}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
 
-  const synthesisPromptGuidance = `[LUCKEY 도교 내단 양생 & 진기 순환 경락 시계 ${TAOIST_NEIDAN_VERSION} | ${calculatedAtKst}]
+  const synthesisPromptGuidance = `[LUCKEY 도교 내단 양생 & 진기 순환 경락 시계 ${TAOIST_NEIDAN_VERSION} | ${calculatedAtKst} | 질문 맥락: ${questionTopic}]
 - 단전 에너지 아키타입: [${dantianArchetype}]
 - 삼보(三寶) 연단 상태:
   * 연단 단계: ${predominantTreasureState}
@@ -212,12 +234,15 @@ export function runTaoistNeidanMeridianEngine(
 - 실천 의례: ${ritualAction}
 - 성찰 초점: ${reflectionFocus}
 - 성찰 질문: ${reflectiveQuestion}
+- 과잉 경계: ${shadowWarning}
 - 해석 경계: ${interpretiveBoundary}`;
 
   return {
     engineVersion: TAOIST_NEIDAN_VERSION,
     calculatedAt: targetDate.toISOString(),
     calculatedAtKst,
+    questionTopic,
+    shadowWarning,
     dantianArchetype,
     threeTreasures: {
       jingLevelScore,

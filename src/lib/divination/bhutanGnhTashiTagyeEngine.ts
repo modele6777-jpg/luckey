@@ -8,13 +8,17 @@ export interface BhutanGnhPillar {
   question: string;
 }
 
+export type BhutanGnhTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'general';
+
 export interface BhutanGnhResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: BhutanGnhTopic;
   activePillar: BhutanGnhPillar;
   companionPillar: BhutanGnhPillar;
   auspiciousSymbol: string;
   harmonyPhase: string;
+  gnhCrossAxis: string;
   shadowWarning: string;
   interpretation: string;
   ritualAction: string;
@@ -73,6 +77,22 @@ const AUSPICIOUS_SYMBOLS = [
   '법륜(Dharmachakra) — 멈춰 있던 습관을 부드럽게 다시 굴리는 첫 바퀴',
 ];
 
+const TOPIC_AXES: Record<BhutanGnhTopic, string> = {
+  career: '일·커리어에서는 더 많이 해내기보다 오늘 나를 지탱할 적정한 호흡과 정직한 기준 하나를 먼저 세우세요.',
+  relationship: '관계에서는 혼자 앞서는 속도보다 함께 얽힌 이들의 박자를 맞추는 다정한 확인이 길을 엽니다.',
+  wealth: '재정·계약에서는 조급함을 걷어 내고 황금 물고기처럼 맑고 공정한 기준을 적어 가늠해 보세요.',
+  health: '건강·회복에서는 3분 책상 정리와 따뜻한 차 한 잔 같은 작은 일상 의례로 마음의 평온을 세우세요.',
+  general: '오늘의 흐름에서는 중심 기둥과 보조 기둥을 함께 살피며 지속 가능한 평온의 리듬을 지키세요.',
+};
+
+function classifyBhutanTopic(question: string): BhutanGnhTopic {
+  if (/일|직장|사업|커리어|프로젝트|성과|기준/.test(question)) return 'career';
+  if (/사랑|연애|관계|가족|친구|갈등|존중/.test(question)) return 'relationship';
+  if (/돈|재물|재정|투자|소비|계약/.test(question)) return 'wealth';
+  if (/건강|몸|피로|휴식|수면|평온|마음/.test(question)) return 'health';
+  return 'general';
+}
+
 function formatKstTimestamp(date: Date): string {
   const kstMs = date.getTime() + 9 * 60 * 60 * 1000;
   const kst = new Date(kstMs);
@@ -110,14 +130,19 @@ export function calculateBhutanGnhTashiTagye(params: {
   const auspiciousSymbol = AUSPICIOUS_SYMBOLS[(hash >>> 3) % AUSPICIOUS_SYMBOLS.length];
   const harmonyPhase = HARMONY_PHASES[stableHash(`${seed}|phase`) % HARMONY_PHASES.length];
   const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
+  const questionTopic = classifyBhutanTopic(params.question ?? '');
+  const shortPhase = harmonyPhase.split('(')[0].trim();
+  const gnhCrossAxis = `${shortPhase} × ${companionPillar.symbol} — ${TOPIC_AXES[questionTopic]}`;
 
   return {
-    engineVersion: 'LUCKEY-BHUTAN-GNH-v2.3.0',
+    engineVersion: 'LUCKEY-BHUTAN-GNH-v2.4.0',
     calculatedAtKst: formatKstTimestamp(now),
+    questionTopic,
     activePillar,
     companionPillar,
     auspiciousSymbol,
     harmonyPhase,
+    gnhCrossAxis,
     shadowWarning,
     interpretation: `부탄 국민총행복(GNH)과 타시 타게이(팔길상) 상징으로 보면 지금은 '${harmonyPhase}' 흐름 위에서 '${activePillar.name}'(${activePillar.symbol})을 중심으로 '${companionPillar.name}'의 결이 함께 받쳐 줍니다. ${activePillar.guidance}`,
     ritualAction: `${activePillar.ritual} (보조 기둥: ${companionPillar.name})`,
@@ -134,6 +159,7 @@ export function formatBhutanGnhPrompt(result: BhutanGnhResult): string {
     `- 중심 기둥: ${result.activePillar.name} (${result.activePillar.symbol})`,
     `- 보조 기둥: ${result.companionPillar.name} (${result.companionPillar.symbol})`,
     `- 조화 국면: ${result.harmonyPhase}`,
+    `- 질문 맥락(${result.questionTopic}) 교차 축: ${result.gnhCrossAxis}`,
     `- 길상 상징: ${result.auspiciousSymbol}`,
     `- 과잉·경계 점검: ${result.shadowWarning}`,
     `- 해석 요지: ${result.interpretation}`,

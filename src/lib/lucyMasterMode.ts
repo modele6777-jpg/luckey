@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { safeSessionStorage } from '@/utils/safeStorage';
+import { getFoldState } from '@/lib/foldState';
 import type { DetectedTarotCard } from '@/utils/tarotDetector';
 import { getTarotCardImageUrl, type TarotCard } from '@/data/tarotData';
 import type { UnifiedMessage } from '@/lib/chatHistorySync';
@@ -9,8 +10,15 @@ import type { UnifiedMessage } from '@/lib/chatHistorySync';
  * 빅뱅 버튼 가운데를 길게 누르면 켜고/끄며, 접힘·펼침 상태 모두 같은 값을 공유한다.
  * - 접힘: 사주 베이스
  * - 펼침: 왼쪽 화면 타로 + 사주 베이스
+ *
+ * 기본 화면(2026-11-26 사용자 지시 "접혔을때는 루시채팅, 펼쳤을때는 루시점술"):
+ * - 접힌 화면은 일반 루시 채팅, 펼친 화면은 루시 점술모드가 기본이다.
+ * - sessionStorage 에 남은 기록이 이번 화면(접힘/펼침)에 대한 것이 아니면 새 화면의 기본값을 쓴다.
+ * - 사용자가 빅뱅 버튼·사이드바로 직접 켜고 끈 선택은 같은 화면에 머무는 동안 유지된다.
  */
 export const LUCY_MASTER_MODE_KEY = 'lucy_master_mode';
+/** 이번 화면(접힘/펼침)에서의 현재 모드와, 그것이 사용자의 직접 선택인지 남긴다. */
+export const LUCY_MASTER_STATE_KEY = 'lucy_master_mode_state';
 export const LUCY_MASTER_MODE_EVENT = 'prism:lucy_master_mode';
 export const LUCY_TAROT_DRAWN_EVENT = 'prism:lucy_tarot_drawn';
 export type LucyBubbleMarker = 'plus' | 'minus' | null;
@@ -83,15 +91,83 @@ export function requestLucyTableFace(face: 'engines'): void {
   window.dispatchEvent(new CustomEvent(LUCY_TABLE_FACE_EVENT, { detail: { face } }));
 }
 
-export function isLucyMasterModeOn(): boolean {
+/* ───────────── 📱 접힘·펼침 기본 화면 ───────────── */
+
+export interface LucyMasterModeState {
+  /** 이 화면에서의 모드 */
+  on: boolean;
+  /** 이 값이 기록된 화면(펼침 여부) */
+  unfolded: boolean;
+  /** 사용자가 직접 켜고 끈 선택인지 (아니면 화면 기본값) */
+  explicit: boolean;
+}
+
+/** 접힌 화면은 일반 루시 채팅, 펼친 화면은 루시 점술모드가 기본이다. */
+export function defaultLucyMasterModeForFold(unfolded: boolean): boolean {
+  return unfolded;
+}
+
+/** 이번 화면에 대한 기록이 있으면 그 값을, 없으면 이번 화면의 기본값을 쓴다. */
+export function resolveLucyMasterModeForFold(unfolded: boolean, state: LucyMasterModeState | null): boolean {
+  if (state && state.unfolded === unfolded) return state.on;
+  return defaultLucyMasterModeForFold(unfolded);
+}
+
+/** 접힘 ↔ 펼침이 실제로 바뀌었을 때 맞출 기본 화면. 전환이 아니면 null. */
+export function lucyMasterModeForFoldChange(wasUnfolded: boolean, isNowUnfolded: boolean): boolean | null {
+  if (wasUnfolded === isNowUnfolded) return null;
+  return defaultLucyMasterModeForFold(isNowUnfolded);
+}
+
+/** Unit tests replace how the current fold is read (this module has no DOM in node tests). */
+let foldUnfoldedReader: () => boolean = () => getFoldState().unfolded;
+
+function currentFoldUnfolded(): boolean {
   try {
-    return safeSessionStorage.getItem(LUCY_MASTER_MODE_KEY) === 'on';
+    return foldUnfoldedReader();
   } catch {
     return false;
   }
 }
 
-export function setLucyMasterMode(on: boolean): void {
+function readLucyMasterModeState(): LucyMasterModeState | null {
+  try {
+    const raw = safeSessionStorage.getItem(LUCY_MASTER_STATE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<LucyMasterModeState> | null;
+    if (!parsed || typeof parsed.on !== 'boolean' || typeof parsed.unfolded !== 'boolean') return null;
+    return { on: parsed.on, unfolded: parsed.unfolded, explicit: parsed.explicit !== false };
+  } catch {
+    return null;
+  }
+}
+
+function writeLucyMasterModeState(state: LucyMasterModeState): void {
+  try {
+    safeSessionStorage.setItem(LUCY_MASTER_STATE_KEY, JSON.stringify(state));
+  } catch { /* storage unavailable: the in-session event still applies */ }
+}
+
+/** 접힌 화면은 일반 루시 채팅, 펼친 화면은 점술모드가 기본이다. */
+export function isLucyMasterModeOn(): boolean {
+  return modeForScreen(currentFoldUnfolded());
+}
+
+/** 특정 화면(접힘/펼침)에서의 모드: 그 화면에 대한 기록이 있으면 그 값, 없으면 기본값. */
+function modeForScreen(unfolded: boolean): boolean {
+  return resolveLucyMasterModeForFold(unfolded, readLucyMasterModeState());
+}
+
+export interface LucyMasterModeChangeOptions {
+  /** false 면 사용자의 직접 선택이 아니라 이번 화면의 기본값으로 기록한다. */
+  explicit?: boolean;
+  /** 이미 켜져 있어도 타로집 인사를 한 번 준비한다. */
+  greet?: boolean;
+}
+
+export function setLucyMasterMode(on: boolean, options: LucyMasterModeChangeOptions = {}): void {
+  const unfolded = currentFoldUnfolded();
+  const wasOn = isLucyMasterModeOn();
   if (on) {
     setLucyBubbleMarker(null);
     setLucyMasterToolsRequested(false);
@@ -99,9 +175,9 @@ export function setLucyMasterMode(on: boolean): void {
   else setLucyMasterToolsRequested(false);
   try {
     if (on) {
-      if (!isLucyMasterModeOn()) {
+      if (!wasOn || options.greet) {
         safeSessionStorage.setItem(GREETING_PENDING_KEY, '1');
-        // 새로 들어올 때마다 상담 깊이는 1단계부터
+        // 단계 개념은 폐지됐다. 예전 세션에 남은 값을 지워 둔다.
         safeSessionStorage.removeItem(LUCY_MASTER_DEPTH_KEY);
       }
       safeSessionStorage.setItem(LUCY_MASTER_MODE_KEY, 'on');
@@ -112,9 +188,67 @@ export function setLucyMasterMode(on: boolean): void {
       safeSessionStorage.removeItem(LINK_KEY);
     }
   } catch { /* storage unavailable: the event still updates the open chat */ }
+  writeLucyMasterModeState({ on, unfolded, explicit: options.explicit !== false });
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent(LUCY_MASTER_MODE_EVENT, { detail: { on } }));
   }
+}
+
+let foldDefaultApplied = false;
+
+/**
+ * 앱이 열릴 때 한 번: 지금 화면(접힘/펼침)의 기본 화면을 맞춘다.
+ * 같은 화면에서 남긴 기록(사용자의 직접 선택 포함)이 있으면 그것을 그대로 쓴다.
+ */
+export function initializeLucyMasterModeForFold(): boolean {
+  if (foldDefaultApplied) return isLucyMasterModeOn();
+  foldDefaultApplied = true;
+  const unfolded = currentFoldUnfolded();
+  const state = readLucyMasterModeState();
+  if (state && state.unfolded === unfolded) return state.on;
+  try {
+    if (!state && safeSessionStorage.getItem(LUCY_MASTER_MODE_KEY) === 'on') {
+      // 이 기능 이전 세션에서 켜 둔 점술모드는 사용자가 켠 것으로 존중한다.
+      setLucyMasterMode(true, { explicit: true });
+      return true;
+    }
+  } catch { /* storage unavailable */ }
+  const next = defaultLucyMasterModeForFold(unfolded);
+  // 펼친 화면으로 열리면 점술모드로 들어가며 타로집 인사를 한 번 준비한다.
+  setLucyMasterMode(next, { explicit: false, greet: next });
+  return next;
+}
+
+/**
+ * 접힘 ↔ 펼침 전환: 새 화면의 기본 화면으로 맞춘다.
+ * 이전 화면에서 이미 그 모드였다면 인사말을 다시 예약하지 않고 기록만 새 화면으로 옮긴다.
+ */
+export function applyLucyMasterModeForFoldChange(wasUnfolded: boolean, isNowUnfolded: boolean): boolean | null {
+  const target = lucyMasterModeForFoldChange(wasUnfolded, isNowUnfolded);
+  if (target === null) return null;
+  if (modeForScreen(wasUnfolded) === target) {
+    writeLucyMasterModeState({ on: target, unfolded: isNowUnfolded, explicit: false });
+    return target;
+  }
+  setLucyMasterMode(target, { explicit: false, greet: target });
+  return target;
+}
+
+/** Test-only: choose the fold the store reads, or reset to the real fold store. */
+export function setLucyMasterFoldReaderForTests(reader: (() => boolean) | null): void {
+  foldUnfoldedReader = reader ?? (() => getFoldState().unfolded);
+}
+
+/** Test-only: forget the once-per-load default so it can run again. */
+export function resetLucyMasterModeForTests(options: { keepStorage?: boolean } = {}): void {
+  foldDefaultApplied = false;
+  foldUnfoldedReader = () => getFoldState().unfolded;
+  if (options.keepStorage) return;
+  try {
+    safeSessionStorage.removeItem(LUCY_MASTER_STATE_KEY);
+    safeSessionStorage.removeItem(LUCY_MASTER_MODE_KEY);
+    safeSessionStorage.removeItem(GREETING_PENDING_KEY);
+  } catch { /* storage unavailable */ }
 }
 
 export function toggleLucyMasterMode(): boolean {
@@ -123,62 +257,37 @@ export function toggleLucyMasterMode(): boolean {
   return next;
 }
 
-/* ── 상담 깊이: 점술모드 안에서 빅뱅 버튼을 홀드할 때마다 한 단계씩 깊어진다 (최대 3). ── */
-export type LucyMasterDepth = 1 | 2 | 3;
+/* ── 루시프로(점술모드)는 하나의 통합 상담이다 ──
+ * 예전에는 빅뱅 홀드마다 1단계(사주) → 2단계(타로) → 3단계(13대 도구)로 깊어졌지만,
+ * 이제 켜면 사주 원국 + 타로 + 13대 도구 + 12대 양피지 + 엔진함이 처음부터 모두 열린다.
+ * 단계(깊이)는 폐지됐고, 호환을 위해 이름과 상수만 단일 값으로 남긴다.
+ */
+export type LucyMasterDepth = 1;
 export const LUCY_MASTER_DEPTH_KEY = 'lucy_master_depth';
 export const LUCY_MASTER_DEPTH_EVENT = 'prism:lucy_master_depth';
-export const LUCY_MASTER_MAX_DEPTH: LucyMasterDepth = 3;
+export const LUCY_MASTER_MAX_DEPTH: LucyMasterDepth = 1;
 export const LUCY_MASTER_DEPTH_INFO: Record<LucyMasterDepth, { name: string; note: string }> = {
-  1: { name: '기본', note: '사주를 중심으로 고민을 들어볼게' },
-  2: { name: '심화', note: '사주에 타로를 더해, 앞에서 나눈 이야기 위에서 원인과 흐름까지 짚어볼게' },
-  3: { name: '심층', note: '13개 도구를 펼치는 중… 사주·타로에 13대 도구와 심층 관점까지 더해 깊이 풀어볼게' },
+  1: { name: '통합', note: '사주 원국·타로·13대 도구·12대 양피지를 한자리에서 함께 볼게' },
 };
 
+/** 단계가 없으므로 언제나 통합 상태(1)다. */
 export function getLucyMasterDepth(): LucyMasterDepth {
-  try {
-    const value = Number(safeSessionStorage.getItem(LUCY_MASTER_DEPTH_KEY) || 1);
-    return value >= 3 ? 3 : value >= 2 ? 2 : 1;
-  } catch {
-    return 1;
-  }
+  return LUCY_MASTER_MAX_DEPTH;
 }
 
-/** One step deeper (max 3). Returns the new depth and whether it changed. */
+/** 단계 순환 폐지: 아무것도 바뀌지 않는다(호출부 호환용). */
 export function deepenLucyMasterDepth(): { depth: LucyMasterDepth; changed: boolean } {
-  const current = getLucyMasterDepth();
-  const next = Math.min(LUCY_MASTER_MAX_DEPTH, current + 1) as LucyMasterDepth;
-  const changed = next !== current;
-  try { safeSessionStorage.setItem(LUCY_MASTER_DEPTH_KEY, String(next)); } catch { /* storage optional */ }
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent(LUCY_MASTER_DEPTH_EVENT, { detail: { depth: next, changed } }));
-  }
-  return { depth: next, changed };
+  return { depth: LUCY_MASTER_MAX_DEPTH, changed: false };
 }
 
-/** One step shallower (min 1). Used by the Big Bang left tap in Lucy chat. */
+/** 단계 순환 폐지: 아무것도 바뀌지 않는다(호출부 호환용). */
 export function shallowLucyMasterDepth(): { depth: LucyMasterDepth; changed: boolean } {
-  const current = getLucyMasterDepth();
-  const next = Math.max(1, current - 1) as LucyMasterDepth;
-  const changed = next !== current;
-  try { safeSessionStorage.setItem(LUCY_MASTER_DEPTH_KEY, String(next)); } catch { /* storage optional */ }
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent(LUCY_MASTER_DEPTH_EVENT, { detail: { depth: next, changed, shallower: true } }));
-  }
-  return { depth: next, changed };
+  return { depth: LUCY_MASTER_MAX_DEPTH, changed: false };
 }
 
+/** 단계가 없으므로 언제나 통합 상태(1)다. */
 export function useLucyMasterDepth(): LucyMasterDepth {
-  const [depth, setDepth] = useState<LucyMasterDepth>(() => getLucyMasterDepth());
-  useEffect(() => {
-    const sync = () => setDepth(getLucyMasterDepth());
-    window.addEventListener(LUCY_MASTER_DEPTH_EVENT, sync);
-    window.addEventListener(LUCY_MASTER_MODE_EVENT, sync);
-    return () => {
-      window.removeEventListener(LUCY_MASTER_DEPTH_EVENT, sync);
-      window.removeEventListener(LUCY_MASTER_MODE_EVENT, sync);
-    };
-  }, []);
-  return depth;
+  return LUCY_MASTER_MAX_DEPTH;
 }
 
 /** React components that only need to read the switch (e.g. the unfolded left pane). */
@@ -218,7 +327,6 @@ export function createTarotHouseGreeting(userName: string | undefined, layout: '
   const content = layout === 'unfolded'
     ? `어서 와, ${name}루시의 타로 하우스에 온 걸 환영해 🕯️🔮\n촛불 켜두고 왼쪽엔 네 사주 원국판을 펼쳐뒀어. 차 한 잔 마신다 생각하고 편하게 얘기해줘. 이야기 듣다가 카드가 필요해지면 그때 같이 뽑아보자.`
     : `어서 와, ${name}루시의 타로 하우스에 온 걸 환영해 🕯️🔮\n오늘은 네 사주를 바탕에 깔고 천천히 이야기 나눠보자. 듣다가 필요하면 카드도 한 장 뽑아볼게.`;
-  const depthHint = '\n\n💡 더 깊게 보고 싶으면 빅뱅 버튼을 꾹 눌러줘. 누를 때마다 상담이 한 단계씩(최대 3단계) 깊어져. 버튼을 한 번 탭하면 일반 루시로 돌아가.';
   const choices = askToLink
     ? '\n\n아, 그리고 하나만 먼저 물어볼게. 일반 루시랑 나눴던 이야기를 여기로 이어서 가져올까, 아니면 오늘은 새로 시작할까?\n[답변선택: 루시랑 하던 얘기 이어서 | 새로 시작할래]'
     : `\n\n${CONCERN_QUESTION}\n${CONCERN_CHOICES}`;
@@ -228,7 +336,7 @@ export function createTarotHouseGreeting(userName: string | undefined, layout: '
     persona: 'lucy',
     timestamp: Date.now(),
     mode: 'master',
-    content: content + depthHint + choices,
+    content: content + choices,
   };
 }
 
@@ -244,10 +352,10 @@ export function isAcceptingTarotDrawOffer(userText: string, lastLucyText: string
 }
 
 /** 점술모드 동안 루시에게 주는 타로집 상담 가이드. */
-export function buildTarotHouseGuide(layout: 'folded' | 'unfolded', cardsDrawnNow: boolean, deepEngines = false, concernAnchor = '', depth: LucyMasterDepth = 1): string {
+export function buildTarotHouseGuide(layout: 'folded' | 'unfolded', cardsDrawnNow: boolean, deepEngines = false, concernAnchor = ''): string {
   const lines = [
     '[🔮 점술모드 · 루시의 타로 하우스]',
-    '- 이 상담의 메인은 사주야. 타로는 화면을 펼쳤을 때 더해지는 보조 상담이야.',
+    '- 이 상담의 메인은 사주야. 타로와 13대 도구·12대 양피지는 왼쪽 점술 테이블에 처음부터 펼쳐져 있어.',
     '- 너는 지금 아늑한 타로집의 상담가 루시야. 손님을 맞이하듯 따뜻하고 차분하게, 실제 타로집에 온 것 같은 분위기로 대화해.',
     '- 서두르지 말고 먼저 고민을 충분히 들어. 공감하고, 한두 개의 짧은 질문으로 상황을 구체화해.',
     '- 사주 계산 결과를 대화의 기본 베이스로 삼아 성향과 지금의 흐름을 자연스럽게 녹여 말해.',
@@ -275,18 +383,13 @@ export function buildTarotHouseGuide(layout: 'folded' | 'unfolded', cardsDrawnNo
       '- 실제로 뽑힌 카드가 전달되지 않았다면 카드 이름이나 결과를 지어내지 마.',
     );
   }
-  if (depth >= 2) {
-    lines.push(depth === 3
-      ? '- [상담 깊이 3단계 · 심층] 사용자가 빅뱅 버튼으로 가장 깊은 상담을 골랐어. 주 구성은 사주 + 타로(고른 카드가 있을 때) + 13대 도구야. 13개를 하나씩 읊지 말고, 여러 도구가 공통으로 가리키는 신호 3~4개를 사주와 엮어 고민의 뿌리(마음), 관계의 흐름, 시기를 입체적으로 풀고, 나머지 도구는 한두 줄로만 요약해. 정보가 없어 계산되지 않은 도구는 못 봤다고 솔직히 말해. 답이 조금 길어져도 괜찮지만 대화체를 유지하고, 마지막엔 지금 할 수 있는 구체적인 행동 하나로 정리해.'
-      : '- [상담 깊이 2단계 · 심화] 사용자가 빅뱅 버튼으로 상담을 한 단계 깊게 골랐어. 주 구성은 사주 + 타로야. 손님이 고른 카드가 있으면 카드와 사주 흐름을 엮어 고민의 원인과 앞으로의 흐름까지 짚어줘. 아직 카드를 안 골랐다면 결과를 지어내지 말고, 필요할 때 "카드로 마음을 볼까?" 하고 권해. 평소보다 조금 길어도 괜찮아.');
-    lines.push('- 도구·관점이 많아도 실제로 전달된 계산 결과만 "계산했다"고 말하고, 심층 관점은 상징 참고라고 구분해. 전달되지 않은 도구를 썼다고 말하지 마.');
-    lines.push(depth === 3
-      ? '- 질문과 [답변선택] 보기도 3단계답게 마음의 뿌리·두려움·삶의 의미·운명과 선택처럼 심오하고 깊은 쪽으로 골라. (예: "그 밑의 두려움 볼래", "이 일의 의미가 궁금해")'
-      : '- 질문과 [답변선택] 보기도 2단계답게 원인·반복되는 패턴·시기처럼 한 층 깊은 쪽으로 골라. (예: "왜 반복되는지 볼래", "풀리는 시기 궁금해")');
-  }
+  // 사주 + 타로(고른 카드) + 13대 도구 + 12대 양피지가 한 번에 열려 있는 통합 상담이다.
+  lines.push('- [루시프로 · 통합 상담] 주 구성은 사주 + 타로(손님이 고른 카드가 있을 때) + 13대 도구 + 12대 양피지야. 13개를 하나씩 읊지 말고, 여러 도구가 공통으로 가리키는 신호 3~4개를 사주와 엮어 고민의 뿌리(마음), 관계의 흐름, 시기를 입체적으로 풀고 나머지 도구는 한두 줄로만 요약해. 도구끼리 엇갈리면 엇갈린다고 솔직히 말하고, 정보가 없어 계산되지 않은 도구는 못 봤다고 밝혀. 답이 조금 길어져도 괜찮지만 대화체는 유지하고, 마지막엔 지금 할 수 있는 구체적인 행동 하나로 정리해.');
+  lines.push('- 도구·관점이 많아도 실제로 전달된 계산 결과만 "계산했다"고 말하고, 심층 관점은 상징 참고라고 구분해. 전달되지 않은 도구를 썼다고 말하지 마.');
+  lines.push('- 질문과 [답변선택] 보기는 원인·반복되는 패턴·시기·마음의 뿌리처럼 한 층 깊은 쪽으로 골라도 좋아. (예: "왜 반복되는지 볼래", "풀리는 시기 궁금해")');
   if (deepEngines) {
     lines.push('- 사용자가 고민과 관련된 엔진을 더 보길 원했어. 이번 답변은 평소보다 조금 길어도 괜찮으니, 함께 전달된 관련 도구·관점을 사주와 엮어 하나씩 짚어줘.');
-  } else if (depth < 3) {
+  } else {
     lines.push('- 고민이 충분히 구체화되면 한 번쯤 "이 고민이랑 관련된 다른 관점들도 더 볼래?" 하고 물어보고 [답변선택: 응, 더 깊게 볼래 | 지금은 괜찮아] 를 붙여. 원하지 않으면 다시 권하지 마.');
   }
   return lines.join('\n');
@@ -302,16 +405,16 @@ export function isAskingForDeepEngines(userText: string, lastLucyText: string): 
   return /^(응|어|웅|그래|좋아|좋지|오케이|ㅇㅋ|ㅇㅇ|콜|넵|네|예|당연|보자|볼래)/.test(clean);
 }
 
-/** 2단계(심화)로 들어갈 때 루시가 건네는 타로 제안. 카드는 손님이 직접 섞고 고른다. */
+/** 고민이 어느 정도 드러났을 때 루시가 건네는 타로 제안. 카드는 손님이 직접 섞고 고른다. */
 export function createDepthTwoTarotOffer(layout: 'folded' | 'unfolded'): UnifiedMessage {
   const where = layout === 'unfolded' ? '왼쪽 테이블에 카드를 깔아뒀어.' : '카드를 섞어둘게.';
   return {
-    id: `tarot-house-depth2-${Date.now()}`,
+    id: `tarot-house-offer-${Date.now()}`,
     role: 'model',
     persona: 'lucy',
     timestamp: Date.now(),
     mode: 'master',
-    content: `한 단계 더 들어가 보자 🃏 지금까지 사주로 본 흐름 위에, 이번엔 카드로 마음을 같이 볼까? ${where} 직접 섞고 골라줘.\n[답변선택: 응, 한 장 뽑아볼래 | 세 장 뽑아줘 | 사주로만 계속할래]`,
+    content: `지금까지 사주로 본 흐름 위에, 이번엔 카드로 마음을 같이 볼까? 🃏 ${where} 직접 섞고 골라줘.\n[답변선택: 응, 한 장 뽑아볼래 | 세 장 뽑아줘 | 사주로만 계속할래]`,
   };
 }
 

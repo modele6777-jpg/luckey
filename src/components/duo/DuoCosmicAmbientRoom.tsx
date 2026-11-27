@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Sparkles, Music, Activity, Headphones, Pause, Play } from 'lucide-react';
 import './duo-cosmic-room.css';
 import { PageGuideButton } from '@/components/guide/PageGuide';
+import { SmartGuideSettingsButton } from '@/components/guide/SmartGuideSettings';
 import { getPageGuide } from '@/lib/pageGuides';
 import { ALL_DCE_ENGINES, type DceEngineMeta } from '@/lib/divination/deterministicEngine';
 import { LUCY_PRO_CATALOG_DUPLICATE_KEYS } from '@/lib/divination/catalogDuplicateKeys';
@@ -638,7 +639,11 @@ export function CosmicRoomHeader({ isLight, title = 'Cosmic Room', guideId = 'co
       }}
     >
       <h2 className="min-w-0 truncate text-base sm:text-xl font-black tracking-tight">{title}</h2>
-      <PageGuideButton guide={getPageGuide(guideId)} tone={isLight ? 'light' : 'dark'} />
+      <div className="flex shrink-0 items-center gap-1.5">
+        <PageGuideButton guide={getPageGuide(guideId)} tone={isLight ? 'light' : 'dark'} />
+        {/* 🧭 스마트 가이드 설정 (물음표) — 코스믹 룸 헤더 */}
+        <SmartGuideSettingsButton tone={isLight ? 'light' : 'dark'} />
+      </div>
     </header>
   );
 }

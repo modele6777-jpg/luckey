@@ -18,7 +18,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const HERO_MONOMYTH_VERSION = 'LUCKEY-MONOMYTH-v2.3.0';
+export const HERO_MONOMYTH_VERSION = 'LUCKEY-MONOMYTH-v2.4.0';
 
 export interface HeroJourneyStage {
   stepNumber: number;          // 1 ~ 12
@@ -43,6 +43,11 @@ export interface HeroMythMonomythReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  monomythCrossAxis: {
+    stageArchetype: string;
+    thresholdMomentum: string;
+    elixirDirection: string;
   };
   ritualAction: string;
   reflectionFocus: string;
@@ -154,8 +159,13 @@ export function runHeroMythMonomythEngine(
     ? `"${cleanedQuestion}"라는 여정의 물음 앞에서 지금 내가 넘어야 할 문턱은 무엇이며, ${currentStage.archetypalRole}로서 선택할 가장 용기 있는 한 걸음은 무엇인가요?`
     : `${currentStage.stageName}의 관문에서 '${theUltimateOrdeal}'을(를) 통과해 얻고자 하는 나만의 영약은 무엇인가요?`;
   const interpretiveBoundary = '본 조셉 캠벨 영웅의 여정 모노미스 리포트는 신화학 원형과 명리 흐름에 기반한 정성적 서사 성찰 안내이며, 확정적 미래 예언이 아닙니다.';
+  const monomythCrossAxis = {
+    stageArchetype: `${currentStage.stageName} · ${currentStage.archetypalRole}`,
+    thresholdMomentum: describeMonomythStage(monomythPowerScore),
+    elixirDirection: `${theSacredElixir} → ${heroicBreakthroughAction}`,
+  };
 
-  const synthesisPromptGuidance = `[LUCKEY 조셉 캠벨 영웅의 여정 12단계 모노미스 v2.3.0]
+  const synthesisPromptGuidance = `[LUCKEY 조셉 캠벨 영웅의 여정 12단계 모노미스 v2.4.0]
 - 연산 시각: ${calculatedAtKst}
 - 영웅의 신화적 정체성: [${heroicArchetype}]
 - 현재 위치한 여정의 관문: ${currentStage.stageName}
@@ -167,6 +177,7 @@ export function runHeroMythMonomythEngine(
 - 문턱을 넘는 영웅적 돌파 결단: ${heroicBreakthroughAction}
 - 신화적 서사 추진력: ${describeMonomythStage(monomythPowerScore)}
 - 교차 매트릭스 [핵심 긴장: ${monomythSynthesisMatrix.dominantTension} | 조율 상태: ${monomythSynthesisMatrix.alignmentState}]
+- 모노미스 교차 축 [관문·배역: ${monomythCrossAxis.stageArchetype} | 돌파 추진력: ${monomythCrossAxis.thresholdMomentum}]
 - 통합 실천: ${monomythSynthesisMatrix.integratedAction}
 - 실천 의례(Ritual Action): ${ritualAction}
 - 성찰 초점(Reflection Focus): ${reflectionFocus}
@@ -185,6 +196,7 @@ export function runHeroMythMonomythEngine(
     monomythPowerScore,
     synthesisPromptGuidance,
     monomythSynthesisMatrix,
+    monomythCrossAxis,
     ritualAction,
     reflectionFocus,
     reflectiveQuestion,

@@ -17,7 +17,15 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SOUL_JOURNEY_TAROT_VERSION = 'LUCKEY-JOURNEY-v2.2.0';
+export const SOUL_JOURNEY_TAROT_VERSION = 'LUCKEY-JOURNEY-v2.4.0';
+
+function classifySoulJourneyTopic(q: string): '정체성·방향' | '관계·선택' | '시련·전환' | '현실·결실' | '영혼 전반' {
+  if (/관계|사랑|연애|인연|사람/.test(q)) return '관계·선택';
+  if (/시련|힘들|변화|전환|고민/.test(q)) return '시련·전환';
+  if (/일|돈|현실|실행|결실/.test(q)) return '현실·결실';
+  if (/여정|방향|나|영혼|정체/.test(q)) return '정체성·방향';
+  return '영혼 전반';
+}
 
 function formatSoulJourneyKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -55,8 +63,10 @@ export interface SoulJourneyTarotReport {
   engineVersion: string;
   calculatedAt: string;
   calculatedAtKst: string;
+  questionTopic: '정체성·방향' | '관계·선택' | '시련·전환' | '현실·결실' | '영혼 전반';
   currentArchetype: MajorArchetypeDetail;
   elementalBalance: ElementalSuitBalance;
+  alchemyAxis: string;
   riteOfPassage: {
     title: string;
     currentTrial: string;
@@ -66,11 +76,17 @@ export interface SoulJourneyTarotReport {
   synthesisPromptGuidance: string;
   ritualAction: string;
   reflectionFocus: string;
+  shadowWarning: string;
   reflectiveQuestion?: string;
   soulJourneySynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  tarotCrossAxis: {
+    archetypeStage: string;
+    elementalPolarity: string;
+    transcendenceAnchor: string;
   };
   interpretiveBoundary: string;
 }
@@ -349,10 +365,18 @@ export function runSoulJourneyTarotEngine(
 
   const calculatedAtKst = formatSoulJourneyKstTimestamp(targetDate);
   const q = (question || '').trim();
+  const questionTopic = classifySoulJourneyTopic(q);
+  const alchemyAxis = `${currentArchetype.nameKo}의 핵심 레슨을 중심으로 우세 원소(${dominantSuit})를 절제하고 보완 원소(${lackingSuit})를 채우는 연금술 균형 축`;
+  const shadowWarning = `${currentArchetype.shadowTrap}에 빠지지 않도록 주의하고, 우세한 ${dominantSuit} 에너지만 과하게 쓰다 ${lackingSuit} 영역을 비워 두지 마세요.`;
   const soulJourneySynthesisMatrix = {
     dominantTension: `${currentArchetype.nameKo} ↔ ${currentArchetype.shadowTrap}`,
     alignmentState: `우세 원소: ${dominantSuit} · 보완 원소: ${lackingSuit}`,
     integratedAction: `${currentArchetype.transcendenceKey}${q ? ` [질문 맥락: ${q}]` : ''}`,
+  };
+  const tarotCrossAxis = {
+    archetypeStage: `${currentArchetype.nameKo} (${currentArchetype.stage})`,
+    elementalPolarity: `${dominantSuit} → ${lackingSuit}`,
+    transcendenceAnchor: `${currentArchetype.transcendenceKey} (${questionTopic})`,
   };
 
   const interpretiveBoundary = '본 영혼의 타로 여정 & 4원소 연금술 리포트는 타로 메이저 아르카나 원형과 생년월일 수비학에 기반한 정성적 성찰 안내이며, 확정적 미래 예언이 아닙니다.';
@@ -362,15 +386,18 @@ export function runSoulJourneyTarotEngine(
     ? `"${q}"의 자리에서 ${currentArchetype.nameKo}의 그림자 함정(${currentArchetype.shadowTrap})을 넘어 보완 원소(${lackingSuit})를 한 스푼 더한다면 어떤 선택이 열릴까요?`
     : `오늘 ${currentArchetype.nameKo} 원형과 부족한 ${lackingSuit} 원소의 균형을 맞추기 위해 삶에 초대해 보고 싶은 태도는 무엇인가요?`;
 
-  const synthesisPromptGuidance = `[LUCKEY 영혼 타로 여정 지능 ${SOUL_JOURNEY_TAROT_VERSION} | ${calculatedAtKst}]
+  const synthesisPromptGuidance = `[LUCKEY 영혼 타로 여정 지능 ${SOUL_JOURNEY_TAROT_VERSION} | ${calculatedAtKst} | 질문 맥락: ${questionTopic}]
 - 현재 활성 메이저 아키타입: ${currentArchetype.number}번 ${currentArchetype.nameKo} (${currentArchetype.nameEn})
 - 영혼의 여정 단계: ${currentArchetype.stage}
+- 연금술 균형 축: ${alchemyAxis}
 - 핵심 레슨 & 통과 의례: ${currentArchetype.coreLesson} (주의 함정: ${currentArchetype.shadowTrap})
 - 초월 열쇠 리추얼: ${currentArchetype.transcendenceKey}
 - 4원소 마이너 슈트 균형: 우세=${dominantSuit} / 보완필요=${lackingSuit}
 - 실천 의례: ${ritualAction}
 - 성찰 초점: ${reflectionFocus}
+- 과잉 경계: ${shadowWarning}
 - 교차 매트릭스: [핵심 긴장: ${soulJourneySynthesisMatrix.dominantTension} | 조율 상태: ${soulJourneySynthesisMatrix.alignmentState}]
+  * 타로 교차 축: ${tarotCrossAxis.archetypeStage} | ${tarotCrossAxis.elementalPolarity}
   * 통합 실천: ${soulJourneySynthesisMatrix.integratedAction}
 - 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${interpretiveBoundary}`;
@@ -379,14 +406,18 @@ export function runSoulJourneyTarotEngine(
     engineVersion: SOUL_JOURNEY_TAROT_VERSION,
     calculatedAt: targetDate.toISOString(),
     calculatedAtKst,
+    questionTopic,
     currentArchetype,
     elementalBalance,
+    alchemyAxis,
     riteOfPassage,
     synthesisPromptGuidance,
     ritualAction,
     reflectionFocus,
+    shadowWarning,
     reflectiveQuestion,
     soulJourneySynthesisMatrix,
+    tarotCrossAxis,
     interpretiveBoundary,
   };
 }

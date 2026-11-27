@@ -61,7 +61,9 @@ test('Orb defaults to hold-to-talk on the input itself; a short Orb tap still sw
   assert.match(liveSession, /onAudioLevel\?: \(level: number\) => void/);
   assert.match(liveSession, /handlers\.onAudioLevel\?\.\(Math\.max\(0, Math\.min\(1,/);
   assert.match(component, /if \(voiceMode === 'hold'\) chooseVoiceMode\('realtime'\)/);
-  assert.match(component, /aria-pressed=\{voiceMode === 'realtime'\}[\s\S]*?aria-pressed=\{voiceMode === 'hold'\}/);
+  // 음성 방식 설정 버튼(실시간 대화 / 누르고 말하기)은 화면에서 빠졌다. 방식 상태와 오브 탭 전환만 남는다.
+  assert.doesNotMatch(component, /lucy-orb-voice-controls/);
+  assert.doesNotMatch(component, /음성 대화 방식/);
   assert.match(liveSession, /if \(!ready \|\| muted \|\| socket\?\.readyState !== WebSocket\.OPEN\) \{/);
   assert.match(component, /const generation = \+\+voiceModeGeneration\.current/);
   assert.match(component, /generation !== voiceModeGeneration\.current \|\| voiceModeRef\.current !== 'realtime'/);
@@ -125,6 +127,47 @@ test('Gemini Live hold-to-talk session does not send audio until unmuted and mut
     assert.equal(JSON.parse(socket.sent[2]).realtimeInput.audioStreamEnd, true);
     processor.onaudioprocess?.(event);
     assert.equal(socket.sent.length, 3, 'audio stops immediately after release');
+  } finally {
+    session.stop();
+    for (const undo of restore.reverse()) undo();
+  }
+});
+
+test('Live requests browser permission before the provider, and stopping during the prompt closes the late stream', async () => {
+  let allow!: (stream: MediaStream) => void;
+  const approval = new Promise<MediaStream>(resolve => { allow = resolve; });
+  const events: string[] = [];
+  const track = { enabled: true, stop: () => events.push('stop') };
+  const media = { getAudioTracks: () => [track], getTracks: () => [track] } as unknown as MediaStream;
+  const restore = [
+    replaceGlobal('AudioContext', FakeAudioContext),
+    replaceGlobal('navigator', { mediaDevices: { getUserMedia: () => { events.push('prompt'); return approval; } } }),
+    replaceGlobal('fetch', async () => { events.push('provider'); throw new Error('Unexpected provider request'); }),
+  ];
+  const session = startGeminiLiveVoice({});
+  try {
+    assert.deepEqual(events, ['prompt']);
+    session.stop();
+    allow(media);
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert.deepEqual(events, ['prompt', 'stop']);
+  } finally {
+    session.stop();
+    for (const undo of restore.reverse()) undo();
+  }
+});
+
+test('Live starts no provider call after denial without a text alternative', async () => {
+  const events: string[] = [];
+  const restore = [
+    replaceGlobal('AudioContext', FakeAudioContext),
+    replaceGlobal('navigator', { mediaDevices: { getUserMedia: async () => { throw new DOMException('', 'NotAllowedError'); } } }),
+    replaceGlobal('fetch', async () => { events.push('provider'); throw new Error('Unexpected provider request'); }),
+  ];
+  const session = startGeminiLiveVoice({ onError: error => events.push(error.code) });
+  try {
+    await new Promise(resolve => setTimeout(resolve, 0));
+    assert.deepEqual(events, ['mic-denied']);
   } finally {
     session.stop();
     for (const undo of restore.reverse()) undo();

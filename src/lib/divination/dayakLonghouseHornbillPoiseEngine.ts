@@ -7,6 +7,7 @@ export interface DayakHornbillResult {
   dayakMotif: string;
   companionMotif: string;
   canopyRiverAxis: string;
+  topicBalanceHint: string;
   dayakInsight: string;
   riverTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const DAYAK_SHADOWS = [
   '유연하게 경로를 트는 습관이 핵심 목표까지 흐려 버리는 핑계가 되지 않게 중심을 잡으세요.',
 ];
 
+const TOPIC_BALANCE_HINTS: Record<DayakHornbillResult['questionTopic'], string> = {
+  '관계·나눔': '롱하우스의 긴 마루처럼 곁과 온기를 나누되, 혼자 정돈하고 쉴 내면의 자리도 함께 지키세요.',
+  '일·시야': '코뿔새처럼 숲 전체의 계절을 내려다본 뒤, 오늘 바로 밟을 수 있는 작은 한 걸음을 고르세요.',
+  '유연·휴식': '등나무 바구니의 탄력처럼 흐름을 따라 휘어지되 내가 지키고 싶은 핵심 방향은 놓지 마세요.',
+  '균형 전반': '거센 여울 뒤에는 넓은 강굽이가 이어지니, 급한 몰입과 짧은 숨 고르기를 나란히 배치하세요.',
+};
+
 function classifyDayakTopic(q: string): DayakHornbillResult['questionTopic'] {
   if (/관계|나눔|혼자|곁|사람|사랑/.test(q)) return '관계·나눔';
   if (/일|직장|시야|전체|흐름|문제/.test(q)) return '일·시야';
@@ -102,15 +110,17 @@ export function calculateDayakLonghouseHornbillPoise(params: {
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const canopyRiverAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = DAYAK_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-DAYAK-HORNBILL-v2.3.0',
+    engineVersion: 'LUCKEY-DAYAK-HORNBILL-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     dayakMotif: picked.motif,
     companionMotif: companion.motif,
     canopyRiverAxis,
+    topicBalanceHint,
     dayakInsight: picked.insight,
     riverTone: picked.tone,
     reflectionFocus: `보르네오 다약 롱하우스의 '${picked.motif}'과 동반 결 '${companion.motif}'을 겹쳐 보며, 혼자 짊어지던 긴장을 내려놓고 등나무처럼 유연한 탄력으로 오늘을 지나가 보세요.`,
@@ -126,6 +136,7 @@ export function formatDayakHornbillPrompt(res: DayakHornbillResult): string {
     `[보르네오 다약·롱하우스 코뿔새 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 수관·강변 축: ${res.canopyRiverAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 다약 모티프: ${res.dayakMotif} (${res.riverTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.dayakInsight}`,

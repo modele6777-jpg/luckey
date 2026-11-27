@@ -12,10 +12,12 @@ test('typing in the composer no longer runs live AI mode detection or shows its 
   assert.doesNotMatch(page, /liveDetection/);
 });
 
-test('pending Lucy questions require an answer before another suggested prompt can be used', () => {
+test('pending choices keep ordinary Lucy focused on the reply while Master keeps its recommendations', () => {
   assert.match(page, /getPendingAnswerChoices\(lucyMessages\)/);
-  assert.match(page, /if \(hasPendingAnswer\) return;/);
-  assert.match(page, /!hasPendingAnswer && currentPrompts\.length > 0/);
+  assert.match(page, /const showSuggestedQuestions = isMasterMode \|\| !hasPendingAnswer/);
+  assert.match(page, /if \(!showSuggestedQuestions\) return;/);
+  assert.match(page, /showSuggestedQuestions && currentPrompts\.length > 0/);
+  assert.match(page, /\{isMasterMode && <LucyLibraryTrigger/);
   assert.match(page, /data-lucy-answer-required="true"/);
   assert.match(page, /placeholder=\{\s*(?:holdTalk\.holding\s*\?\s*''\s*:\s*)?hasPendingAnswer\s*\?/);
   assert.match(page, /disabled=\{!input\.trim\(\) && !attachedImage && \(hasPendingAnswer/);

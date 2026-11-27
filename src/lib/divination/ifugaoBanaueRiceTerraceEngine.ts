@@ -7,6 +7,7 @@ export interface IfugaoTerraceResult {
   ifugaoMotif: string;
   companionMotif: string;
   terraceWaterAxis: string;
+  topicBalanceHint: string;
   ifugaoInsight: string;
   terraceTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const IFUGAO_SHADOWS = [
   '물논 거울에 하늘을 비추어 보는 고요한 시간 뒤에는 다시 내일 아침 물꼬를 트는 실제 행동이 이어져야 합니다.',
 ];
 
+const IFUGAO_TOPIC_HINTS: Record<IfugaoTerraceResult['questionTopic'], string> = {
+  '원천·숲': '아래 논을 적시는 힘은 위쪽 무용 숲에서 나옵니다. 당장 수확만 재촉하지 말고 내 안의 원천 시간부터 먼저 확보하세요.',
+  '계단·나눔': '가파른 비탈도 돌담 한 단씩 쪼개어 쌓으면 평평한 자리가 됩니다. 여력 한 줄기를 아래 이웃과 나누면 산자락이 함께 살아납니다.',
+  '리듬·거울': '고된 노동 속에서도 후드후드 노랫가락 같은 리듬을 잃지 마세요. 하루 끝에는 물논 거울에 하늘빛을 비추듯 숨을 고르세요.',
+  '계단논 전반': '위쪽 숲을 아끼는 절제와 대나무 수로로 흘려보내는 나눔이 어우러질 때 계단논의 순환이 오래 이어집니다.',
+};
+
 function classifyIfugaoTopic(q: string): IfugaoTerraceResult['questionTopic'] {
   if (/숲|원천|에너지|휴식|물줄기/.test(q)) return '원천·숲';
   if (/계단|비탈|나눔|수로|쪼개/.test(q)) return '계단·나눔';
@@ -102,15 +110,17 @@ export function calculateIfugaoBanaueRiceTerrace(params: {
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const terraceWaterAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = IFUGAO_TOPIC_HINTS[questionTopic];
   const shadowWarning = IFUGAO_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-IFUGAO-TERRACE-v2.3.0',
+    engineVersion: 'LUCKEY-IFUGAO-TERRACE-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     ifugaoMotif: picked.motif,
     companionMotif: companion.motif,
     terraceWaterAxis,
+    topicBalanceHint,
     ifugaoInsight: picked.insight,
     terraceTone: picked.tone,
     reflectionFocus: `이푸가오 계단논의 '${picked.motif}'처럼, 당장의 결과물뿐 아니라 그 물을 대어 주는 내 안의 무용 숲을 먼저 돌보세요. (동반 결: ${companion.motif.split('(')[0].trim()})`,
@@ -126,6 +136,7 @@ export function formatIfugaoTerracePrompt(res: IfugaoTerraceResult): string {
     `[이푸가오·바나우에 계단논 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 계단논·물길 축: ${res.terraceWaterAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 이푸가오 모티프: ${res.ifugaoMotif} (${res.terraceTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.ifugaoInsight}`,

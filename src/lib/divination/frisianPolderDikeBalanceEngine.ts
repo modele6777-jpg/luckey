@@ -1,12 +1,16 @@
 import type { UserProfile } from '../sharedState';
 
+export type FrisianQuestionCategory = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
+
 export interface FrisianPolderResult {
   engineVersion: string;
   calculatedAtKst: string;
   questionTopic: string;
+  questionCategory: FrisianQuestionCategory;
   polderPrinciple: string;
   companionPrinciple: string;
   dikeWaterAxis: string;
+  topicBalanceHint: string;
   frisianInsight: string;
   northSeaTone: string;
   reflectionFocus: string;
@@ -61,6 +65,24 @@ const PRINCIPLES = [
   },
 ];
 
+const TOPIC_BALANCE_HINTS: Record<FrisianQuestionCategory, string> = {
+  career: '일·커리어에서는 혼자 둑을 다 막으려 하기보다 팀과 역할 분담의 수위를 먼저 맞추는 편이 오래 갑니다.',
+  relationship: '관계에서는 상대를 설득하기 전에 서로의 둑이 어느 지점에서 넘치고 있는지 조용히 살피세요.',
+  wealth: '재정·계약에서는 밀물이 닥치기 전 테르프 언덕을 돋우듯 예비 여력과 안전마진부터 확보하세요.',
+  health: '건강·회복에서는 한꺼번에 무리하게 비우기보다 배수 풍차처럼 매일 일정한 박자로 피로를 덜어내세요.',
+  decision: '결정의 순간에는 물이 빠지는 간조의 틈이 보일 때까지 잠시 호흡을 고른 뒤 건너가세요.',
+  general: '오늘의 흐름에서는 주 원리와 동반 원리를 함께 보며 지킬 경계와 열어야 할 수문의 균형을 맞추세요.',
+};
+
+function classifyFrisianCategory(question: string): FrisianQuestionCategory {
+  if (/일|직장|사업|커리어|프로젝트|성과|이직/.test(question)) return 'career';
+  if (/사랑|연애|관계|가족|친구|갈등|소통/.test(question)) return 'relationship';
+  if (/돈|재물|재정|투자|소비|계약/.test(question)) return 'wealth';
+  if (/건강|몸|피로|휴식|수면|회복/.test(question)) return 'health';
+  if (/선택|결정|방향|수위|조절|진로/.test(question)) return 'decision';
+  return 'general';
+}
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -96,14 +118,17 @@ export function calculateFrisianPolderDikeBalance(params: {
   const questionTopic = trimmedQ
     ? trimmedQ.slice(0, 36)
     : '삶의 수위와 경계를 맞추는 오늘의 균형';
+  const questionCategory = classifyFrisianCategory(trimmedQ);
 
   return {
-    engineVersion: 'LUCKEY-FRISIAN-POLDER-v2.3.0',
+    engineVersion: 'LUCKEY-FRISIAN-POLDER-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
+    questionCategory,
     polderPrinciple: picked.principle,
     companionPrinciple: companion.principle,
     dikeWaterAxis,
+    topicBalanceHint: TOPIC_BALANCE_HINTS[questionCategory],
     frisianInsight: `${picked.insight} (동반 원리: ${companion.principle})`,
     northSeaTone: picked.tone,
     reflectionFocus: `질문 맥락('${questionTopic}')에서 프리슬란트 폴데르 지혜의 '${picked.principle}'와 제방 수위 축('${dikeWaterAxis}')을 함께 살피며, 넘치는 걱정과 외부 요구를 한 번에 막으려 하기보다 수문을 열듯 천천히 수위를 맞춰 보세요.`,
@@ -122,6 +147,7 @@ export function formatFrisianPolderPrompt(res: FrisianPolderResult): string {
     `- 북해 원리: ${res.polderPrinciple} (${res.northSeaTone})`,
     `- 동반 원리: ${res.companionPrinciple}`,
     `- 제방 수위 축: ${res.dikeWaterAxis}`,
+    `- 주제별 균형 조언: ${res.topicBalanceHint}`,
     `- 중심 통찰: ${res.frisianInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,

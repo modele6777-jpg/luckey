@@ -7,6 +7,7 @@ export interface GoguryeoSamjokoResult {
   muralMotif: string;
   companionMotif: string;
   samjokoMuralAxis: string;
+  topicBalanceHint: string;
   goguryeoInsight: string;
   spiritTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const GOGURYEO_SHADOWS = [
   '변치 않는 북두칠성의 기준을 세우되 작은 현실 변화에 맞춘 유연한 경로 수정까지 막아 버리지 마세요.',
 ];
 
+const GOGURYEO_TOPIC_HINTS: Record<GoguryeoSamjokoResult['questionTopic'], string> = {
+  '기상·도약': '넓은 하늘을 보며 힘차게 날아오르되 오늘 발밑의 작은 걸음도 놓치지 않는 균형이 필요합니다.',
+  '방위·책임': '내가 지킬 한 방위를 또렷이 세우면 불필요한 짐을 덜고 본래의 기세를 회복할 수 있습니다.',
+  '이정표·신념': '밤하늘의 북두칠성처럼 흔들리지 않는 기준 하나를 세우면 좁은 길에서도 방향을 잃지 않습니다.',
+  '벽화 전반': '높은 기상과 든든한 방위의 균형을 맞출 때 오늘의 발걸음이 한층 경쾌해집니다.',
+};
+
 function classifyGoguryeoTopic(q: string): GoguryeoSamjokoResult['questionTopic'] {
   if (/시야|도약|기상|시작|당당/.test(q)) return '기상·도약';
   if (/방위|책임|자리|역할|일/.test(q)) return '방위·책임';
@@ -102,15 +110,17 @@ export function calculateGoguryeoSamjokoMuralSpirit(params: {
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const samjokoMuralAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = GOGURYEO_TOPIC_HINTS[questionTopic];
   const shadowWarning = GOGURYEO_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-GOGURYEO-SAMJOKO-v2.3.0',
+    engineVersion: 'LUCKEY-GOGURYEO-SAMJOKO-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     muralMotif: picked.motif,
     companionMotif: companion.motif,
     samjokoMuralAxis,
+    topicBalanceHint,
     goguryeoInsight: picked.insight,
     spiritTone: picked.tone,
     reflectionFocus: `고구려 벽화·삼족오 기상의 '${picked.motif}'처럼, 좁은 걱정 속에 움츠러들지 말고 시야를 넓혀 당당하고 경쾌한 한 걸음을 내디뎌 보세요. (동반 결: ${companion.motif.split('(')[0].trim()})`,
@@ -126,6 +136,7 @@ export function formatGoguryeoSamjokoPrompt(res: GoguryeoSamjokoResult): string 
     `[고구려 삼족오·벽화 기상 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 벽화·삼족오 축: ${res.samjokoMuralAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 벽화 모티프: ${res.muralMotif} (${res.spiritTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.goguryeoInsight}`,

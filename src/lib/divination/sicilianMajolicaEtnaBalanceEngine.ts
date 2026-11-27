@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface SicilianMajolicaResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '고비·마졸리카' | '회복·에트나' | '순환·움직임' | '여유·곡선' | '쉼·레몬' | '시칠리아 전반';
   islandMotif: string;
   companionMotif: string;
+  etnaMajolicaAxis: string;
   sicilianInsight: string;
   mediterraneanTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const SICILIAN_SHADOWS = [
+  '뜨거운 고비를 가마의 열기로 해석하는 긍정성이 지금 나를 실제로 소진시키는 과열이나 무리한 환경까지 그대로 견디는 인내로 굳지 않게 하세요.',
+  '흔들린 자리 위에서도 새 싹을 키우려는 회복력이 왜 그 자리가 흔들렸는지에 대한 구조적 점검을 건너뛰는 성급한 재도전이 되어서는 안 됩니다.',
+  '완벽한 결론 대신 작은 순환을 먼저 돌리는 기민함이 정작 방향 자체를 점검하고 멈춰야 할 때에도 무작정 움직이기만 하는 관성이 되지 않게 살피세요.',
+  '스스로에게 곡선과 여유를 허락하는 너그러움이 꼭 지켜야 할 마감이나 명확한 약속까지 흐지부지 미루는 느슨함으로 번지지 않게 균형을 잡으세요.',
+  '레몬 나무 그늘에서 한낮의 열기를 식히는 쉼이 다시 걸음을 떼어야 할 오후의 실행 시간까지 길어지는 회피가 되지 않도록 돌아갈 때를 정하세요.',
+];
+
+function classifySicilianTopic(q: string): SicilianMajolicaResult['questionTopic'] {
+  if (/가마|유약|고비|열기/.test(q)) return '고비·마졸리카';
+  if (/흔들|싹|토양|에트나/.test(q)) return '회복·에트나';
+  if (/순환|움직|발짝|고여/.test(q)) return '순환·움직임';
+  if (/곡선|여유|부드|다그/.test(q)) return '여유·곡선';
+  if (/레몬|그늘|식히|쉼/.test(q)) return '쉼·레몬';
+  return '시칠리아 전반';
+}
+
 export function calculateSicilianMajolicaEtnaBalance(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): SicilianMajolicaResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifySicilianTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const picked = MOTIFS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const etnaMajolicaAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-SICILIAN-MAJOLICA-v2.2.0',
+    engineVersion: 'LUCKEY-SICILIAN-MAJOLICA-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     islandMotif: picked.motif,
     companionMotif: companion.motif,
+    etnaMajolicaAxis,
     sicilianInsight: picked.insight,
     mediterraneanTone: picked.tone,
     reflectionFocus: `시칠리아 마졸리카·에트나 지혜의 '${picked.motif}'을 중심에 두고 '${companion.motif}'의 결을 곁들여, 뜨거운 고비를 지난 경험도 내 삶을 더 선명하게 빚는 유약과 토양으로 바라보세요.`,
     ritualAction: picked.action,
+    shadowWarning: SICILIAN_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '지중해 시칠리아(Sicily)의 마졸리카 도자기·에트나 화산 토양 회복 지혜를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +121,13 @@ export function formatSicilianMajolicaPrompt(res: SicilianMajolicaResult): strin
   return [
     `[시칠리아 마졸리카·에트나 균형 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 섬의 회복 축: ${res.etnaMajolicaAxis}`,
     `- 섬의 상징: ${res.islandMotif} (${res.mediterraneanTone})`,
     `- 동반 상징: ${res.companionMotif}`,
     `- 중심 통찰: ${res.sicilianInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

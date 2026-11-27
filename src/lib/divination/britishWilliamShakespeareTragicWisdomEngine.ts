@@ -8,12 +8,12 @@
  * 4. 시간의 무상함을 넘어서는 예술적 영원성 지수 (Poetic Immortality & Creative Aesthetic Index): 소네트 18번처럼 세월의 풍화를 이겨내고 참된 아름다움과 진실을 영원히 꽃피우는 창조적 생명력.
  * 5. "준비되어 있음이 전부다" 초연한 섭리 수용 회복탄력성 (Serene Fortitude & "Readiness is All" Resilience Score): "참새 한 마리의 추락에도 특별한 섭리가 있다. 지금이 아니라면 언젠가 올 것이요, 준비되어 있음이 전부다"라는 초연한 내면 평정심.
  *
- * @version LUCKEY-SHAKESPEARE-TRAGIC-WISDOM-v2.3.0
+ * @version LUCKEY-SHAKESPEARE-TRAGIC-WISDOM-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION = 'LUCKEY-SHAKESPEARE-TRAGIC-WISDOM-v2.3.0';
+export const BRITISH_WILLIAM_SHAKESPEARE_TRAGIC_WISDOM_VERSION = 'LUCKEY-SHAKESPEARE-TRAGIC-WISDOM-v2.4.0';
 
 export type ShakespeareQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -52,6 +52,7 @@ export interface BritishWilliamShakespeareTragicWisdomResult {
   // 세부 분석
   questionTopic: ShakespeareQuestionTopic;
   dramaticPhase: string;
+  shakespeareCrossAxis: string;
   shadowWarning: string;
   temporalShakespeareRhythm: ShakespeareTemporalRhythm;
   activeShakespeareTheme: ShakespeareTheme;
@@ -278,6 +279,9 @@ export function calculateBritishWilliamShakespeareTragicWisdom(
   const focalShakespeareAphorism = SHAKESPEARE_APHORISMS[aphorismIndex];
   const dramaticPhase = SHAKESPEARE_DRAMATIC_PHASES[(absHash >> 11) % SHAKESPEARE_DRAMATIC_PHASES.length];
   const shadowWarning = SHAKESPEARE_SHADOW_WARNINGS[(absHash >> 14) % SHAKESPEARE_SHADOW_WARNINGS.length];
+  const shortPhase = dramaticPhase.split('(')[0].trim();
+  const shortCompanion = companionShakespeareTheme.themeTitleKo.split('—')[0].trim();
+  const shakespeareCrossAxis = `${shortPhase} × ${shortCompanion} (${questionTopic}) — ${topicGuidance.practiceGuidance}`;
 
   const guidanceTitle = `윌리엄 셰익스피어 비극적 지혜와 실존적 결단: ${activeShakespeareTheme.themeTitleKo}`;
   const philosophicalCounsel = `영국 문학의 거장이자 불멸의 극작가 윌리엄 셰익스피어 선생은 《햄릿》, 《맥베스》, 《템페스트》를 통해 ` +
@@ -311,6 +315,7 @@ export function calculateBritishWilliamShakespeareTragicWisdom(
     sereneFortitudeResilienceScore,
     questionTopic,
     dramaticPhase,
+    shakespeareCrossAxis,
     shadowWarning,
     temporalShakespeareRhythm,
     activeShakespeareTheme,
@@ -338,6 +343,7 @@ export function formatBritishWilliamShakespeareTragicWisdomPrompt(
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- 극적 국면: ${res.dramaticPhase}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.shakespeareCrossAxis}`,
     `- KST 시공간 리듬: ${res.temporalShakespeareRhythm.kstDateLabel} · ${res.temporalShakespeareRhythm.timeWindowKo} (${res.temporalShakespeareRhythm.dramaticTone}) — ${res.temporalShakespeareRhythm.rhythmDirective}`,
     `- 핵심 셰익스피어 테마: ${res.activeShakespeareTheme.themeTitleKo} [${res.activeShakespeareTheme.themeTitleEn}]`,
     `- 동반 셰익스피어 테마: ${res.companionShakespeareTheme.themeTitleKo}`,

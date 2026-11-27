@@ -8,12 +8,12 @@
  * 4. 삼가회통(三家會通): 유교의 인(仁)과 예(禮), 도교의 무위청정(無爲淸淨), 불교의 자비와 해탈이 궁극적으로 한마음(一心)의 다른 표현임을 밝히는 포용적 통찰.
  * 5. 살신구세(殺身救世)의 보살행: 산중의 적막한 선정에만 안주하지 않고, 임진왜란 국난 속에서 팔도 의승군을 이끌어 백성을 지켜낸 자비와 대의(大義)의 거룩한 실천.
  *
- * @version LUCKEY-SEOSAN-SEONGA-GWIGAM-v2.2.0
+ * @version LUCKEY-SEOSAN-SEONGA-GWIGAM-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const SEOSAN_SEONGA_GWIGAM_VERSION = 'LUCKEY-SEOSAN-SEONGA-GWIGAM-v2.3.0';
+export const SEOSAN_SEONGA_GWIGAM_VERSION = 'LUCKEY-SEOSAN-SEONGA-GWIGAM-v2.4.0';
 
 export interface SeosanTheme {
   themeKey: string;
@@ -34,6 +34,7 @@ export interface SeosanMaxim {
 export interface SeosanHyujeongSeongaGwigamResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '본심·자각' | '활구·결단' | '선교·균형' | '회통·포용' | '구세·실천' | '선가 전반';
   // 5대 핵심 선지 지표 (0~100)
   ilmulYeongmyeongClarityScore: number;       // 일물영명(一物靈明) 본래 마음의 청정 지혜도
   hwalkuDirectPiercingScore: number;          // 활구참선(活句參禪) 사변 탈피 본질 관통력
@@ -47,6 +48,7 @@ export interface SeosanHyujeongSeongaGwigamResult {
   secondarySeosanMaxim: SeosanMaxim;
   ritualAction: string;
   reflectionFocus: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   seosanPersonalCounsel: {
@@ -147,16 +149,35 @@ const SEOSAN_MAXIMS: SeosanMaxim[] = [
   },
 ];
 
+const SEOSAN_SHADOWS: Record<string, string> = {
+  IlmulYeongmyeong: '내면의 밝은 본마음에 의지하는 고요함이 바깥세상에서 필요한 구체적 피드백과 현실 검증을 소홀히 하는 자폐적 안주로 흐르지 않게 하세요.',
+  HwalkuChamseon: '알음알이를 깨고 본질로 바로 들어가는 활구의 결단이 꼼꼼히 따져 보아야 할 실무 절차와 타인의 사정까지 건너뛰는 성급함이 되지 않게 살피세요.',
+  SeonGyoWonYung: '원리의 깊이와 현실의 법도를 함께 세우는 원융함이 이쪽도 저쪽도 분명히 선택하지 못한 채 중간에 머무르는 모호한 절충이 되지 않게 균형을 잡으세요.',
+  SamgaHoetong: '서로 다른 관점을 품어 안는 큰 그릇의 태도가 정작 지금 지켜야 할 핵심 기준선과 잘못된 관행에 대한 분명한 분별까지 흐리지 않도록 주의하세요.',
+  BodhisattvaSalvation: '세상의 고통에 곧바로 뛰어드는 자비구제의 실천력이 스스로의 마음을 돌보고 숨을 고를 선정의 고요함마저 잃어버리는 과열이 되지 않게 하세요.',
+};
+
+function classifySeosanTopic(q: string): SeosanHyujeongSeongaGwigamResult['questionTopic'] {
+  if (/본심|본마음|내면|밝|자각/.test(q)) return '본심·자각';
+  if (/화두|활구|분별|본질|결단/.test(q)) return '활구·결단';
+  if (/원리|실천|균형|법도|조화/.test(q)) return '선교·균형';
+  if (/다름|포용|갈등|통합|관점/.test(q)) return '회통·포용';
+  if (/고통|구제|도움|용기|행동/.test(q)) return '구세·실천';
+  return '선가 전반';
+}
+
 export function calculateSeosanHyujeongSeongaGwigam(
   profile: UserProfile,
   query?: string,
   now: Date = new Date(),
 ): SeosanHyujeongSeongaGwigamResult {
+  const trimmedQuery = (query ?? '').trim();
+  const questionTopic = classifySeosanTopic(trimmedQuery);
   const seedString =
     (profile?.basic?.birthdate ?? (profile as any)?.birthdate ?? '1990-01-01') +
     (profile?.basic?.name ?? (profile as any)?.name ?? 'User') +
     (profile?.basic?.birthtime ?? (profile as any)?.birthtime ?? '12:00') +
-    (query ?? '') +
+    trimmedQuery +
     'SeosanHyujeongSeongaGwigam';
 
   let hash = 0;
@@ -182,8 +203,8 @@ export function calculateSeosanHyujeongSeongaGwigam(
   const focalSeosanMaxim = SEOSAN_MAXIMS[maximIndex];
   const secondarySeosanMaxim = SEOSAN_MAXIMS[secondaryMaximIndex];
 
-  const trimmedQuery = query?.trim();
   const ritualAction = `[${activeSeosanTheme.themeTitleHanja}] ${focalSeosanMaxim.mindDirective}`;
+  const shadowWarning = SEOSAN_SHADOWS[activeSeosanTheme.themeKey] ?? SEOSAN_SHADOWS.IlmulYeongmyeong;
   const reflectiveQuestion = trimmedQuery
     ? `서산대사의 '${activeSeosanTheme.themeTitleKo}'와 '${secondarySeosanTheme.themeTitleKo}'를 비추어 볼 때, "${trimmedQuery}"에서 죽은 글귀(사구)의 분별을 끊고 본질로 바로 들어갈 활구(活句)는 무엇인가요?`
     : `지금 머릿속을 맴도는 번민 앞에서, '${activeSeosanTheme.themeTitleKo}'의 밝음과 '${secondarySeosanTheme.themeTitleKo}'의 조화를 함께 살리려면 어떤 껍질 같은 생각을 내려놓아야 할까요?`;
@@ -215,6 +236,7 @@ export function calculateSeosanHyujeongSeongaGwigam(
   return {
     engineVersion: SEOSAN_SEONGA_GWIGAM_VERSION,
     calculatedAtKst,
+    questionTopic,
     ilmulYeongmyeongClarityScore,
     hwalkuDirectPiercingScore,
     seonGyoHarmoniousIntegrationScore,
@@ -226,6 +248,7 @@ export function calculateSeosanHyujeongSeongaGwigam(
     secondarySeosanMaxim,
     ritualAction,
     reflectionFocus,
+    shadowWarning,
     reflectiveQuestion,
     interpretiveBoundary,
     seosanPersonalCounsel: {
@@ -248,7 +271,7 @@ export function formatSeosanHyujeongSeongaGwigamPrompt(res: SeosanHyujeongSeonga
   const lines = [
     `【서산대사 선가귀감(禪家龜鑑) 일물영명 & 활구참선 지표】`,
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
-    `- 선교원융 국면: ${describeSeosanStage(avgScore)}`,
+    `- 질문 맥락: ${res.questionTopic} | 선교원융 국면: ${describeSeosanStage(avgScore)}`,
     `- 핵심 선지 테마: ${res.activeSeosanTheme.themeTitleKo} [${res.activeSeosanTheme.themeTitleHanja}]`,
     `- 보조 교차 테마: ${res.secondarySeosanTheme.themeTitleKo} [${res.secondarySeosanTheme.themeTitleHanja}]`,
     `- 선학적 통찰: ${res.activeSeosanTheme.philosophicalInsight}`,
@@ -258,6 +281,7 @@ export function formatSeosanHyujeongSeongaGwigamPrompt(res: SeosanHyujeongSeonga
     `- 한문 원문: "${res.focalSeosanMaxim.maximHanja}" [${res.focalSeosanMaxim.dharmaDimension}]`,
     `- 마음가짐 실천 지침: ${res.focalSeosanMaxim.mindDirective}`,
     `- 실천 의례: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,

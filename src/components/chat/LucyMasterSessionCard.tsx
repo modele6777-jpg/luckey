@@ -10,8 +10,8 @@ import {
   type MasterSessionCardSource,
 } from '@/lib/lucyMasterSessionCard';
 
-const DEPTH_NAME = { 1: '기본', 2: '심화', 3: '심층' } as const;
-const DEPTH_ROMAN = { 1: 'I', 2: 'II', 3: 'III' } as const;
+// 루시프로는 단계 없는 통합 상담이라 카드에도 깊이 대신 이름을 적는다.
+const SESSION_LABEL = '루시프로 통합 상담';
 const LINE_LABELS = ['지금', '방향', '해볼 일'];
 // 4:5 portrait — Instagram feed size (1080×1350 at 3×), also fine for KakaoTalk.
 const CARD_W = 360;
@@ -49,7 +49,6 @@ function formatDate(at: number, dotted = false): string {
 }
 
 interface FaceProps {
-  depth: 1 | 2 | 3;
   endedAt: number;
   concern: string;
   status: 'loading' | 'ready' | 'error';
@@ -74,7 +73,7 @@ function Placeholder({ status, color }: { status: FaceProps['status']; color: st
 const clamp2 = { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' };
 
 /** A · 아이보리 아치: 크림 바탕, 금색 아치 테두리, 달 문양. */
-function ArchFace({ depth, endedAt, concern, status, content }: FaceProps) {
+function ArchFace({ endedAt, concern, status, content }: FaceProps) {
   return (
     <div className="relative h-full w-full" style={{ background: 'radial-gradient(120% 90% at 50% 0%, #fffaf1 0%, #f6ecdc 60%, #ecdcc4 100%)', color: '#3a2e26', fontFamily: SANS, wordBreak: 'keep-all' }}>
       <div className="absolute" style={{ inset: 18, border: '1px solid #b8925a', borderRadius: '150px 150px 10px 10px' }} />
@@ -87,7 +86,7 @@ function ArchFace({ depth, endedAt, concern, status, content }: FaceProps) {
           <circle cx="38" cy="38" r="1.2" fill="#b8925a" />
         </svg>
         <p className="mt-2" style={{ fontFamily: CORMORANT, letterSpacing: '0.35em', fontSize: 11, color: '#9a7445' }}>LUCY MASTER</p>
-        <p className="mt-0.5" style={{ fontSize: 9.5, color: '#9b8a78', letterSpacing: '0.05em' }}>{formatDate(endedAt)} · {DEPTH_NAME[depth]}</p>
+        <p className="mt-0.5" style={{ fontSize: 9.5, color: '#9b8a78', letterSpacing: '0.05em' }}>{formatDate(endedAt)} · {SESSION_LABEL}</p>
         {concern && <p className="mt-3" style={{ fontFamily: SERIF, fontSize: 13.5, lineHeight: 1.5, ...clamp2 }}>“{concern}”</p>}
         <p className="my-2.5" style={{ color: '#b8925a', fontSize: 9, letterSpacing: '0.6em' }}>✦ ✦ ✦</p>
         {status === 'ready' && content ? (
@@ -113,7 +112,7 @@ function ArchFace({ depth, endedAt, concern, status, content }: FaceProps) {
 }
 
 /** B · 파스텔 그라데이션: 루시의 한마디를 크게. */
-function PastelFace({ depth, endedAt, concern, status, content }: FaceProps) {
+function PastelFace({ endedAt, concern, status, content }: FaceProps) {
   return (
     <div className="relative h-full w-full overflow-hidden" style={{ background: 'linear-gradient(160deg, #ffd9e8 0%, #e6d4ff 45%, #c9e4ff 100%)', color: '#2d2440', fontFamily: SANS, wordBreak: 'keep-all' }}>
       <div className="absolute rounded-full" style={{ width: 240, height: 240, right: -70, top: -80, background: 'radial-gradient(circle, rgba(255,243,176,0.85) 0%, rgba(255,243,176,0) 70%)' }} />
@@ -138,7 +137,7 @@ function PastelFace({ depth, endedAt, concern, status, content }: FaceProps) {
           </>
         ) : <Placeholder status={status} color="#6b5a8a" />}
         <p className="mt-3 text-center" style={{ fontSize: 9, letterSpacing: '0.3em', color: '#7d6c9c' }}>
-          LUCKY · 깊이 {[1, 2, 3].map(level => (level <= depth ? '●' : '○')).join('')}
+          LUCKY · 루시프로
         </p>
       </div>
     </div>
@@ -146,7 +145,7 @@ function PastelFace({ depth, endedAt, concern, status, content }: FaceProps) {
 }
 
 /** C · 딥네이비 별자리: 별 나침반 문양, 오로라 빛 글씨. */
-function StellarFace({ depth, endedAt, concern, status, content }: FaceProps) {
+function StellarFace({ endedAt, concern, status, content }: FaceProps) {
   const aurora = 'linear-gradient(90deg, #ffe7a3, #ffd1f0, #b9e9ff)';
   return (
     <div className="relative h-full w-full overflow-hidden" style={{ background: 'radial-gradient(90% 60% at 50% 38%, #1b2b5e 0%, #0b1230 55%, #05081a 100%)', color: '#e8ecff', fontFamily: SANS, wordBreak: 'keep-all' }}>
@@ -165,7 +164,7 @@ function StellarFace({ depth, endedAt, concern, status, content }: FaceProps) {
       </svg>
       <div className="relative flex h-full flex-col items-center px-7 pt-[26px] pb-5 text-center">
         <p style={{ fontFamily: CINZEL, fontSize: 12, letterSpacing: '0.4em', color: '#e9dcff' }}>LUCY MASTER</p>
-        <p className="mt-1" style={{ fontSize: 9, color: '#8f9bd0', letterSpacing: '0.1em' }}>{formatDate(endedAt, true)} · DEPTH {DEPTH_ROMAN[depth]}</p>
+        <p className="mt-1" style={{ fontSize: 9, color: '#8f9bd0', letterSpacing: '0.1em' }}>{formatDate(endedAt, true)} · LUCY PRO</p>
         <div className="flex items-center justify-center" style={{ height: 170, marginTop: 8 }}>
           {concern && <p style={{ fontFamily: SERIF, fontSize: 12.5, lineHeight: 1.5, color: '#fff', maxWidth: 150, textShadow: '0 0 12px #05081a', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>“{concern}”</p>}
         </div>
@@ -206,7 +205,7 @@ export function LucyMasterSessionCard({ source, onClose }: { source: MasterSessi
   const frameRef = useRef<HTMLDivElement | null>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const concern = masterSessionConcern(source.messages);
-  const faceProps: FaceProps = { depth: source.depth, endedAt: source.endedAt, concern, status, content };
+  const faceProps: FaceProps = { endedAt: source.endedAt, concern, status, content };
 
   useEffect(() => {
     const controller = new AbortController();

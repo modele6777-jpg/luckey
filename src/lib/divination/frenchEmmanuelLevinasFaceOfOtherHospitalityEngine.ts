@@ -8,12 +8,12 @@
  * 4. 전체성 탈피 및 무한 지향 지수 (Beyond Totality & Transcendence of Infinity Index): 인간과 세계를 획일적인 효율성이나 계산된 손익의 전체성(Totalité)에 가두지 않고, 무한(Infini)의 신비로 열어두는 비판적 통찰.
  * 5. 취약성 응답 및 비폭력 수호 지표 (Vulnerability Protection & Non-Violent Care Score): 약자의 눈물과 벌거벗은 취약함 앞에 폭력성과 오만을 거두고, 생명을 보살피는 평화적 연대와 배려의 힘.
  *
- * @version LUCKEY-EMMANUEL-LEVINAS-ETHICS-v2.3.0
+ * @version LUCKEY-EMMANUEL-LEVINAS-ETHICS-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION = 'LUCKEY-EMMANUEL-LEVINAS-ETHICS-v2.3.0';
+export const FRENCH_EMMANUEL_LEVINAS_ETHICS_VERSION = 'LUCKEY-EMMANUEL-LEVINAS-ETHICS-v2.4.0';
 
 export type LevinasQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -52,6 +52,7 @@ export interface FrenchEmmanuelLevinasFaceOfOtherHospitalityResult {
   // 세부 분석
   questionTopic: LevinasQuestionTopic;
   hospitalityPhase: string;
+  levinasCrossAxis: string;
   shadowWarning: string;
   temporalLevinasRhythm: LevinasTemporalRhythm;
   activeLevinasTheme: LevinasTheme;
@@ -277,6 +278,7 @@ export function calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(
   const companionLevinasTheme = LEVINAS_THEMES[(themeIndex + companionOffset) % LEVINAS_THEMES.length];
   const focalLevinasAphorism = LEVINAS_APHORISMS[aphorismIndex];
   const hospitalityPhase = LEVINAS_HOSPITALITY_PHASES[(absHash >> 11) % LEVINAS_HOSPITALITY_PHASES.length];
+  const levinasCrossAxis = `${activeLevinasTheme.themeKey} ↔ ${companionLevinasTheme.themeKey} (${hospitalityPhase.split('(')[0].trim()} · ${questionTopic})`;
   const shadowWarning = LEVINAS_SHADOW_WARNINGS[(absHash >> 14) % LEVINAS_SHADOW_WARNINGS.length];
 
   const guidanceTitle = `에마뉘엘 레비나스 타자의 얼굴과 무한한 책임의 지혜: ${activeLevinasTheme.themeTitleKo}`;
@@ -311,6 +313,7 @@ export function calculateFrenchEmmanuelLevinasFaceOfOtherHospitality(
     vulnerabilityProtectionScore,
     questionTopic,
     hospitalityPhase,
+    levinasCrossAxis,
     shadowWarning,
     temporalLevinasRhythm,
     activeLevinasTheme,
@@ -338,6 +341,7 @@ export function formatFrenchEmmanuelLevinasFaceOfOtherHospitalityPrompt(
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- 환대 국면: ${res.hospitalityPhase}`,
+    `- 레비나스 윤리 교차 축: ${res.levinasCrossAxis}`,
     `- KST 시공간 리듬: ${res.temporalLevinasRhythm.kstDateLabel} · ${res.temporalLevinasRhythm.timeWindowKo} (${res.temporalLevinasRhythm.ethicsTone}) — ${res.temporalLevinasRhythm.rhythmDirective}`,
     `- 핵심 레비나스 테마: ${res.activeLevinasTheme.themeTitleKo} [${res.activeLevinasTheme.themeTitleEn}]`,
     `- 동반 레비나스 테마: ${res.companionLevinasTheme.themeTitleKo}`,

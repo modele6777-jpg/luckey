@@ -1,5 +1,7 @@
 import type { UserProfile } from '../sharedState';
 
+export type SumbaQuestionTopic = 'relation' | 'work' | 'emotion' | 'decision' | 'general';
+
 export interface SumbaIkatInput {
   profile: UserProfile;
   now?: Date;
@@ -9,14 +11,33 @@ export interface SumbaIkatInput {
 export interface SumbaIkatResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: SumbaQuestionTopic;
   ikatMotif: string;
   companionMotif: string;
   dyeThreadState: string;
+  ikatLoomAxis: string;
+  shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+function classifySumbaTopic(q: string): SumbaQuestionTopic {
+  if (/관계|사람|가족|연애|친구/.test(q)) return 'relation';
+  if (/마음|감정|불안|지침|여백/.test(q)) return 'emotion';
+  if (/일|직장|진로|서사|루틴/.test(q)) return 'work';
+  if (/선택|결정|방향|매듭|짜/.test(q)) return 'decision';
+  return 'general';
+}
+
+const SUMBA_SHADOW_WARNINGS: Record<SumbaQuestionTopic, string> = {
+  relation: '매듭을 너무 꽉 묶어 여백을 지키려다 상대방이 들어올 자리까지 막아 두지 않도록 주의하세요.',
+  work: '완벽한 색이 나올 때까지 담그고 말리기만 반복하다 정작 베틀에 올리는 시기를 놓칠 수 있습니다.',
+  emotion: '오래된 기억의 실타래를 묵직하게 엮는 과정에서 현재의 가벼운 기쁨까지 무겁게 만들지 마세요.',
+  decision: '여백을 남기는 것과 결정을 미루는 것은 다릅니다. 오늘 묶을 매듭과 풀 매듭을 분명히 가리세요.',
+  general: '깊이를 기다리는 인내가 답답한 정체로 굳지 않도록, 작은 씨실 한 줄은 오늘 건너가게 두세요.',
+};
 
 const MOTIFS = [
   '힌기 천의 묶음 매듭(Ikat Binding): 염색 전에 실을 단단히 묶어 두어 물들지 않은 흰 여백으로 무늬를 피우는 절제',
@@ -68,7 +89,9 @@ function stableHash(seed: string): number {
 export function calculateSumbaIkatStory(input: SumbaIkatInput): SumbaIkatResult {
   const now = input.now ?? new Date();
   const fate = input.profile?.fate ?? {};
-  const seedText = `${JSON.stringify(fate)}|${input.question ?? ''}|${now.toISOString().slice(0, 10)}|sumba-ikat`;
+  const q = (input.question ?? '').trim();
+  const questionTopic = classifySumbaTopic(q);
+  const seedText = `${JSON.stringify(fate)}|${q}|${now.toISOString().slice(0, 10)}|sumba-ikat`;
   const h = stableHash(seedText);
 
   const motifIdx = h % MOTIFS.length;
@@ -78,14 +101,18 @@ export function calculateSumbaIkatStory(input: SumbaIkatInput): SumbaIkatResult 
   const dyeThreadState = THREAD_STATES[(h >>> 3) % THREAD_STATES.length];
   const ritualAction = RITUALS[motifIdx];
   const reflectiveQuestion = QUESTIONS[motifIdx];
+  const ikatLoomAxis = `${ikatMotif.split(':')[0].trim()} ↔ ${companionMotif.split(':')[0].trim()}`;
 
   return {
-    engineVersion: 'LUCKEY-SUMBA-IKAT-v2.2.0',
+    engineVersion: 'LUCKEY-SUMBA-IKAT-v2.3.0',
     calculatedAtKst: toKstIso(now),
+    questionTopic,
     ikatMotif,
     companionMotif,
     dyeThreadState,
-    reflectionFocus: `실을 먼저 묶어 여백을 지키고 수차례 천연 염료에 담가 서사를 짜는 숨바 섬의 이카트 직조처럼, 주 모티프와 동반 모티프('${companionMotif}')가 어우러져 지금은 '${dyeThreadState}'의 호흡이 빛나는 시점입니다.`,
+    ikatLoomAxis,
+    shadowWarning: SUMBA_SHADOW_WARNINGS[questionTopic],
+    reflectionFocus: `실을 먼저 묶어 여백을 지키고 수차례 천연 염료에 담가 서사를 짜는 숨바 섬의 이카트 직조(${questionTopic})처럼, 주 모티프와 동반 모티프('${companionMotif}')가 어우러져 지금은 '${dyeThreadState}'의 호흡이 빛나는 시점입니다.`,
     ritualAction,
     reflectiveQuestion,
     interpretiveBoundary: '인도네시아 숨바 섬의 전통 이카트 염색·직조 서사를 빌린 상징적 성찰 관점입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
@@ -94,11 +121,13 @@ export function calculateSumbaIkatStory(input: SumbaIkatInput): SumbaIkatResult 
 
 export function formatSumbaIkatPrompt(result: SumbaIkatResult): string {
   return [
-    `[숨바 이카트 염색 베틀 (${result.engineVersion}) · ${result.calculatedAtKst}]`,
+    `[숨바 이카트 염색 베틀 (${result.engineVersion}) · ${result.calculatedAtKst} | 질문 맥락: ${result.questionTopic}]`,
     `- 상징 모티프: ${result.ikatMotif}`,
     `- 동반 모티프: ${result.companionMotif}`,
     `- 현재 결: ${result.dyeThreadState}`,
+    `- 이카트 직조 균형 축: ${result.ikatLoomAxis}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
+    `- 과잉 경계: ${result.shadowWarning}`,
     `- 작은 실천: ${result.ritualAction}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 해석 경계: ${result.interpretiveBoundary}`,

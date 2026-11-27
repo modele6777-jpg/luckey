@@ -1,15 +1,36 @@
 import type { UserProfile } from '../sharedState';
 
+export type SiwaQuestionTopic = 'relation' | 'work' | 'emotion' | 'decision' | 'general';
+
 export interface SiwaOasisResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: SiwaQuestionTopic;
   reflectionFocus: string;
   symbolicMotif: string;
   companionMotif: string;
+  saltBuoyancyAxis: string;
+  shadowWarning: string;
   ritualAction: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
+
+function classifySiwaTopic(q: string): SiwaQuestionTopic {
+  if (/관계|사람|가족|연애|친구|소통/.test(q)) return 'relation';
+  if (/일|직장|진로|사업|돈|공부/.test(q)) return 'work';
+  if (/마음|감정|불안|우울|지침|피곤/.test(q)) return 'emotion';
+  if (/선택|결정|방향|힘|떠오/.test(q)) return 'decision';
+  return 'general';
+}
+
+const SIWA_SHADOW_WARNINGS: Record<SiwaQuestionTopic, string> = {
+  relation: '고유한 거리를 지킨다는 이유로 꼭 필요한 안부와 진심까지 닫아 두면 오아시스도 고립될 수 있습니다.',
+  work: '힘을 빼고 부력을 믿는 것과 손에 쥔 노를 완전히 놓는 것은 다릅니다. 핵심 방향키 하나는 쥐고 계세요.',
+  emotion: '서늘한 그늘에서 쉬는 동안 자책까지 함께 가져가면 회복 샘물이 흐려집니다. 쉼 자체에만 집중하세요.',
+  decision: '완벽한 조건을 기다리며 흙벽돌을 굽기만 하다 해가 질 수 있습니다. 지금 가진 재료로 작은 틀부터 세우세요.',
+  general: '떠오름을 믿는 여유가 나태로 기울지 않도록, 오늘 꼭 마칠 작은 물길 하나만 정해 두세요.',
+};
 
 function getKstTimeString(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
@@ -67,14 +88,21 @@ export function calculateSiwaOasisSaltSpring(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (SIWA_MOTIFS.length - 1));
   const companion = SIWA_MOTIFS[(idx + companionOffset) % SIWA_MOTIFS.length];
 
+  const trimmedQ = question.trim();
+  const questionTopic = classifySiwaTopic(trimmedQ);
+  const saltBuoyancyAxis = `${picked.motif.slice(0, 26)}… ↔ ${companion.motif.slice(0, 22)}…`;
+
   return {
-    engineVersion: 'LUCKEY-SIWA-OASIS-v2.2.0',
+    engineVersion: 'LUCKEY-SIWA-OASIS-v2.3.0',
     calculatedAtKst: getKstTimeString(now),
-    reflectionFocus: question.trim()
-      ? `질문 "${question.trim()}" 속에서 주 모티프와 '${companion.motif.slice(0, 22)}…'의 결을 함께 곁들여 힘을 빼고 떠오르게 하는 시와 오아시스 소금샘 관점`
+    questionTopic,
+    reflectionFocus: trimmedQ
+      ? `질문 "${trimmedQ}" (${questionTopic}) 속에서 주 모티프와 '${companion.motif.slice(0, 22)}…'의 결을 함께 곁들여 힘을 빼고 떠오르게 하는 시와 오아시스 소금샘 관점`
       : '사막 한가운데서 부력과 그늘의 교차 균형으로 숨을 고르게 하는 시와 오아시스 소금샘 관점',
     symbolicMotif: picked.motif,
     companionMotif: companion.motif,
+    saltBuoyancyAxis,
+    shadowWarning: SIWA_SHADOW_WARNINGS[questionTopic],
     ritualAction: picked.action,
     reflectiveQuestion: picked.question,
     interpretiveBoundary:
@@ -84,11 +112,13 @@ export function calculateSiwaOasisSaltSpring(params: {
 
 export function formatSiwaOasisPrompt(result: SiwaOasisResult): string {
   return [
-    `[시와·오아시스 소금샘 관점 (${result.engineVersion})]`,
+    `[시와·오아시스 소금샘 관점 (${result.engineVersion}) | 질문 맥락: ${result.questionTopic}]`,
     `- 기준 시각: ${result.calculatedAtKst}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 상징 모티프: ${result.symbolicMotif}`,
     `- 동반 모티프: ${result.companionMotif}`,
+    `- 소금 부력 균형 축: ${result.saltBuoyancyAxis}`,
+    `- 과잉 경계: ${result.shadowWarning}`,
     `- 제안 의식: ${result.ritualAction}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 경계: ${result.interpretiveBoundary}`

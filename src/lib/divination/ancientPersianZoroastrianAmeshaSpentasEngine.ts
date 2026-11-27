@@ -16,7 +16,7 @@
  *    - 아샤의 거룩한 불길로 거짓(Druj)을 물리치고 빛의 세계를 회복함.
  * 3. 질문 맥락 감사·KST 아타르(성화) 시공간 리듬·교차 매트릭스 산출
  *
- * @version LUCKEY-ZOROASTRIAN-AMESHA-SPENTAS-v2.3.0
+ * @version LUCKEY-ZOROASTRIAN-AMESHA-SPENTAS-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
@@ -80,6 +80,9 @@ export interface ZoroastrianAmeshaSpentasResult {
   ritualAction: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
+  questionTopic: 'relationship' | 'decision' | 'healing' | 'general';
+  ameshaCrossAxis: string;
+  shadowWarning: string;
   interpretiveBoundary: string;
 }
 
@@ -243,6 +246,17 @@ export function calculateZoroastrianAmeshaSpentas(
   const ritualAction = primaryZoroastrianTriad.actionableDirective;
   const reflectionFocus = situationalAvestaAudit.ashaVsDrujDiagnosis;
   const trimmedQ = question.trim();
+  const questionTopic: ZoroastrianAmeshaSpentasResult['questionTopic'] = !trimmedQ
+    ? 'general'
+    : /연애|관계|사람|가족|동료|갈등|화해|상처/.test(trimmedQ)
+      ? 'relationship'
+      : /결정|선택|진로|이직|사업|계약|돈|정의/.test(trimmedQ)
+        ? 'decision'
+        : /불안|지침|치유|건강|회복|우울|슬픔/.test(trimmedQ)
+          ? 'healing'
+          : 'general';
+  const ameshaCrossAxis = `${questionTopic} · ${primaryZoroastrianTriad.avestanMotto} × ${temporalAtarRhythm.gahWatchWindow.split('(')[0].trim()}`;
+  const shadowWarning = `과잉·편향 경계: 아샤(선·진리)와 드루지(거짓·어둠)의 대비를 타인을 정죄하는 흑백 도그마로 쓰지 말고, 자신의 말과 행동을 비추는 거울로 삼으십시오.`;
   const reflectiveQuestion = trimmedQ
     ? `지금 "${trimmedQ}"의 선택 앞에서, 내 생각(후마타)·말(후크타)·행동(흐바르시타) 중 가장 먼저 진리(Asha)의 빛으로 바로잡을 부분은 무엇인가요?`
     : '내 생각(후마타)·말(후크타)·행동(흐바르시타) 중 오늘 가장 먼저 진리(Asha)의 빛으로 비추어 바로잡고 싶은 한 가지는 무엇인가요?';
@@ -265,6 +279,9 @@ export function calculateZoroastrianAmeshaSpentas(
     ritualAction,
     reflectionFocus,
     reflectiveQuestion,
+    questionTopic,
+    ameshaCrossAxis,
+    shadowWarning,
     interpretiveBoundary,
   };
 }
@@ -288,5 +305,7 @@ export function formatZoroastrianAmeshaSpentasPrompt(result: ZoroastrianAmeshaSp
   → 빛의 불멸 지혜: "${result.avestaSacredFireEpiphany.luminousWisdom}"
 - 성찰 초점: ${result.reflectionFocus}
 - 성찰 질문: ${result.reflectiveQuestion}
+- 아메샤 교차 축: ${result.questionTopic} · ${result.ameshaCrossAxis}
+- ${result.shadowWarning}
 - 해석 경계: ${result.interpretiveBoundary}`;
 }

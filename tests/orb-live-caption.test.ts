@@ -46,13 +46,18 @@ test('captions fill from the start of the sentence like TV subtitles, never show
 
 test('the Orb shows captions from the timed onCaption, not from the raw transcript', () => {
   const component = readFileSync(new URL('../src/components/lucy/LucyOrbCounsel.tsx', import.meta.url), 'utf8');
-  assert.match(component, /onCaption: \(text\) => \{\n\s*const \{ steps, page \} = captionSteps\(captionPageRef\.current, text\);/);
-  assert.match(component, /step\.afterChars \* CAPTION_CHAR_MS/);
+  assert.match(component, /onCaption: \(text, audioDurationMs\) => \{\n\s*const \{ steps, page \} = captionSteps\(captionPageRef\.current, text\);/);
+  assert.match(component, /step\.afterChars \* charMs/);
   assert.doesNotMatch(component, /captionLine\(/);
 });
 
 class FakeAudioContext {
-  currentTime = 0; sampleRate = 48_000; destination = {};
+  started = performance.now();
+  get currentTime() { return (performance.now() - this.started) / 1000; }
+  getOutputTimestamp() {
+    return { contextTime: Math.max(0, this.currentTime - 0.08), performanceTime: performance.now() };
+  }
+  sampleRate = 48_000; destination = {};
   resume() { return Promise.resolve(); }
   close() { return Promise.resolve(); }
   createMediaStreamSource() { return { connect() {}, disconnect() {} }; }
@@ -105,14 +110,16 @@ test('each caption fragment is released when its voice chunk starts playing, and
     const second = Buffer.alloc(24000 * 2 * 0.4).toString('base64'); // 0.4초 분량
     const chunk = (text: string) => socket.onmessage?.({ data: JSON.stringify({ serverContent: { modelTurn: { parts: [{ inlineData: { data: second, mimeType: 'audio/pcm;rate=24000' } }] }, outputTranscription: { text } } }) });
     // 세 조각이 한꺼번에 도착한다 (목소리 1.2초 분량).
-    await chunk('하나');
+    await socket.onmessage?.({ data: JSON.stringify({ serverContent: { outputTranscription: { text: '하나' } } }) });
+    assert.deepEqual(shown, [], 'text received before audio waits for the first clip');
+    await chunk('');
     await chunk(' 둘');
     await chunk(' 셋');
     assert.deepEqual(raw, ['하나', ' 둘', ' 셋'], 'the transcript itself still arrives at once');
-    assert.equal(shown.length, 1, 'only the first fragment is shown right away');
-    await new Promise(resolve => setTimeout(resolve, 480));
+    assert.equal(shown.length, 0, 'audio is buffered, but has not reached the speakers');
+    await new Promise(resolve => setTimeout(resolve, 540));
     assert.equal(shown.length, 2, 'the second appears when its voice starts (~0.4s)');
-    assert.ok(shown[1][1] >= 350, `second caption waited for its voice (${shown[1][1]}ms)`);
+    assert.ok(shown[1][1] >= 490, `second caption waited for its voice (${shown[1][1]}ms)`);
     socket.onmessage?.({ data: JSON.stringify({ serverContent: { interrupted: true } }) });
     await new Promise(resolve => setTimeout(resolve, 500));
     assert.equal(shown.length, 2, 'interruption drops captions that were never heard');

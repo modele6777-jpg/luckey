@@ -16,7 +16,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const RUNE_MATRIX_VERSION = 'LUCKEY-RUNE-v2.3.0';
+export const RUNE_MATRIX_VERSION = 'LUCKEY-RUNE-v2.4.0';
 
 export interface RuneDetail {
   id: number;                  // 1~24
@@ -207,6 +207,12 @@ export interface RuneMatrixResult {
     alignmentState: string;
     integratedAction: string;
   };
+  runeCrossAxis: {
+    originAett: string;
+    challengeAett: string;
+    horizonAett: string;
+    oraclePhase: string;
+  };
   interpretiveBoundary: string;
 }
 
@@ -279,6 +285,12 @@ export function calculateRuneMatrix(params?: {
     alignmentState: `${oracleStateTitle} · ${horizonRune.name}(${horizonRune.symbol})`,
     integratedAction: `${challengeRune.prescribedAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const runeCrossAxis = {
+    originAett: originRune.aett,
+    challengeAett: challengeRune.aett,
+    horizonAett: horizonRune.aett,
+    oraclePhase: oracleStateTitle,
+  };
 
   return {
     engineVersion: RUNE_MATRIX_VERSION,
@@ -296,6 +308,7 @@ export function calculateRuneMatrix(params?: {
     reflectionFocus: `엘더 푸타르크 룬(${originRune.name} → ${horizonRune.name}) — ${oracleStateTitle}`,
     reflectiveQuestion,
     runeSynthesisMatrix,
+    runeCrossAxis,
     interpretiveBoundary: '본 엘더 푸타르크 룬 동시성 리포트는 북유럽 룬 상징 체계에 기반한 정성적 성찰 안내이며, 확정적 미래 예언이 아닙니다.',
   };
 }
@@ -323,6 +336,7 @@ export function formatRuneMatrixPrompt(res: RuneMatrixResult): string {
   if (res.runeSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스 [핵심 긴장: ${res.runeSynthesisMatrix.dominantTension} | 조율 상태: ${res.runeSynthesisMatrix.alignmentState}]`,
+      `- 룬 아에트 교차 축: ${res.runeCrossAxis.originAett} → ${res.runeCrossAxis.challengeAett} → ${res.runeCrossAxis.horizonAett}`,
       `  • 통합 실천: ${res.runeSynthesisMatrix.integratedAction}`,
     );
   }

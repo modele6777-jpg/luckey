@@ -11,6 +11,7 @@ import './styles/layout-guardrails.css';
 import { installSingleAppReload } from './lib/appUpdateReload';
 import { initPerfMode, initNarrowPhoneClass, getSwUpdateIntervalMs } from './lib/perfMode';
 import { initHorizontalWheelScroll } from './lib/horizontalWheelScroll';
+import { initializeLucyMasterModeForFold } from './lib/lucyMasterMode';
 
 // Guard against external browser extension unhandled rejections (MetaMask, Web3 wallet extensions)
 if (typeof window !== 'undefined') {
@@ -45,6 +46,9 @@ if (typeof window !== 'undefined') installSingleAppReload(window);
 initPerfMode();
 initNarrowPhoneClass();
 initHorizontalWheelScroll();
+// 📱 앱을 열었을 때의 기본 화면: 접힘 = 루시 채팅, 펼침 = 루시 점술모드.
+// 첫 렌더 전에 맞춰 두어야 루시 화면이 처음부터 올바른 모드로 뜨고, 펼친 채로 열면 타로집 인사를 한 번 건넨다.
+initializeLucyMasterModeForFold();
 
 const SW_UPDATE_INTERVAL_MS = getSwUpdateIntervalMs();
 

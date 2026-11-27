@@ -7,6 +7,7 @@ export interface ChechenVainakhResult {
   vainakhCode: string;
   companionCode: string;
   honorBalanceAxis: string;
+  topicBalanceHint: string;
   kovakhInsight: string;
   caucasusTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const VAINAKH_SHADOWS = [
   '스스로를 다스리는 자유에 집중하다 주변 사람들과의 따뜻한 호흡을 놓치지 않도록 균형을 두세요.',
 ];
 
+const TOPIC_BALANCE_HINTS: Record<ChechenVainakhResult['questionTopic'], string> = {
+  '관계·신의': '작은 약속 하나의 무게를 지키는 것이 거창한 맹세보다 관계의 품격을 오래 지킵니다.',
+  '일·기개': '어려운 과제 앞에서도 핑계를 찾기보다 지금 내가 버텨 낼 핵심 한 걸음을 먼저 세우세요.',
+  '내면·절제': '감정이 올라올 때 한 호흡 멈추고 내 안의 조급함을 다스리는 절제가 참된 자유로 이어집니다.',
+  '품격 전반': '단단한 기개와 타인을 향한 너그러운 관용 사이에서 오늘 내 말의 무게를 고르게 맞추세요.',
+};
+
 function classifyVainakhTopic(q: string): ChechenVainakhResult['questionTopic'] {
   if (/관계|신의|약속|사람|관용|사랑/.test(q)) return '관계·신의';
   if (/일|직장|진로|기개|책임|버티/.test(q)) return '일·기개';
@@ -102,15 +110,17 @@ export function calculateChechenVainakhKovakhHonor(params: {
   const picked = CODES[idx];
   const companion = CODES[(idx + companionOffset) % CODES.length];
   const honorBalanceAxis = `${picked.code.split('(')[0].trim()} ↔ ${companion.code.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = VAINAKH_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-CHECHEN-VAINAKH-v2.3.0',
+    engineVersion: 'LUCKEY-CHECHEN-VAINAKH-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     vainakhCode: picked.code,
     companionCode: companion.code,
     honorBalanceAxis,
+    topicBalanceHint,
     kovakhInsight: `${picked.insight} (동반 덕목: ${companion.code})`,
     caucasusTone: picked.tone,
     reflectionFocus: `바이나흐 코카서스 지혜의 '${picked.code}'와 동반 덕목 '${companion.code}'처럼, 바깥의 소란에 휩쓸리지 않고 내 말의 무게와 내면의 절제를 단단히 지켜 보세요.`,
@@ -126,6 +136,7 @@ export function formatChechenVainakhPrompt(res: ChechenVainakhResult): string {
     `[체첸 바이나흐·카바흐 명예 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 명예 축: ${res.honorBalanceAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 바이나흐 덕목: ${res.vainakhCode} (${res.caucasusTone})`,
     `- 동반 덕목: ${res.companionCode}`,
     `- 중심 통찰: ${res.kovakhInsight}`,

@@ -24,7 +24,25 @@ import {
   type FiveElement
 } from '../sajuAnalysis';
 
-export const ENERGETIC_PRESCRIPTION_ENGINE_VERSION = 'LUCKEY-EPE-v2.2.0';
+export const ENERGETIC_PRESCRIPTION_ENGINE_VERSION = 'LUCKEY-EPE-v2.4.0';
+
+export type EnergeticQuestionTopic = 'vitality' | 'work' | 'emotion' | 'relation' | 'general';
+
+function classifyEnergeticTopic(q: string): EnergeticQuestionTopic {
+  if (/활력|피로|건강|수면|회복|체력|몸/.test(q)) return 'vitality';
+  if (/일|직장|집중|진로|업무|생산/.test(q)) return 'work';
+  if (/마음|감정|불안|우울|지침|스트레스/.test(q)) return 'emotion';
+  if (/관계|사람|가족|연애|소통/.test(q)) return 'relation';
+  return 'general';
+}
+
+const ENERGETIC_SHADOW_WARNINGS: Record<EnergeticQuestionTopic, string> = {
+  vitality: '부족한 오행을 한 번에 채우려 과한 운동이나 자극적인 보양에 몰두하면 오히려 기운이 더 소진될 수 있습니다.',
+  work: '용신 기운을 쓰겠다고 휴식 없이 밀어붙이면 과다 오행의 편중이 심해져 판단력이 흐려질 수 있습니다.',
+  emotion: '신체 피로를 마음의 문제로만 돌리거나 반대로 감정 소진을 신체 관리로만 덮으면 근본 회복이 늦어집니다.',
+  relation: '내 에너지가 고갈된 상태에서 타인의 기운까지 맞추려 하면 작은 말에도 예민해지기 쉽습니다.',
+  general: '60초 마이크로 루틴을 완벽한 의식으로 만들려 부담을 느끼기보다, 오늘 가볍게 1회 실행하는 편이 낫습니다.',
+};
 
 function formatEnergeticKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -116,6 +134,10 @@ export interface EnergeticPrescriptionResult {
   lifestyleRemedy: LifestyleRemedy;
 
   // 5. 교차 매트릭스
+  questionTopic: EnergeticQuestionTopic;
+  energeticBalanceAxis: string;
+  energeticCrossAxis: string;
+  shadowWarning: string;
   energeticSynthesisMatrix?: {
     dominantTension: string;
     alignmentState: string;
@@ -499,6 +521,8 @@ export function calculateEnergeticPrescription(options: {
   };
 
   const q = (options.question || '').trim();
+  const questionTopic = classifyEnergeticTopic(q);
+  const energeticBalanceAxis = `결핍 ${primaryLacking}(${counts[primaryLacking]}자) 보충 ↔ 용신 ${therapeuticYongsin} 순환`;
   const energeticSynthesisMatrix = {
     dominantTension: `결핍 ${primaryLacking}(${counts[primaryLacking]}자) ↔ ${vitalityLevel}`,
     alignmentState: `용신 ${therapeuticYongsin} · 희신 ${supportiveHeeshin} (${primaryMeta.chakra})`,
@@ -515,6 +539,9 @@ export function calculateEnergeticPrescription(options: {
     calculatedAtUtc: nowUtcIso,
     calculatedAtKst: nowKstIso,
     timestamp: now.getTime(),
+    questionTopic,
+    energeticBalanceAxis,
+    shadowWarning: ENERGETIC_SHADOW_WARNINGS[questionTopic],
 
     profileDigest: {
       solarDateString: saju.solarEquivalentDate || saju.birthdate,
@@ -546,6 +573,7 @@ export function calculateEnergeticPrescription(options: {
 
     microRituals,
     lifestyleRemedy,
+    energeticCrossAxis: `${primaryLacking} 결핍 × ${therapeuticYongsin} 용신 (${questionTopic} · ${vitalityLevel})`,
     energeticSynthesisMatrix,
     reflectiveQuestion,
     ritualAction,
@@ -597,10 +625,13 @@ ${ritualLines}
    - 아로마 에센셜 오일: ${l.aromaEssentialOils.join(', ')}
    - 풍수 방위 & 소품: ${l.fengShuiDirection} 방향 | 추천 오브제: ${l.spatialObject}
    - 데일리 확언 문장: "${l.dailyAffirmation}"
-${res.energeticSynthesisMatrix ? `5. [교차 매트릭스]:
+${res.energeticSynthesisMatrix ? `5. [교차 매트릭스 · 질문 맥락: ${res.questionTopic}]:
+   - 에너지 교차 축: ${res.energeticCrossAxis}
+   - 에너지 균형 축: ${res.energeticBalanceAxis}
    - 핵심 긴장: ${res.energeticSynthesisMatrix.dominantTension}
    - 조율 상태: ${res.energeticSynthesisMatrix.alignmentState}
-   - 통합 실천: ${res.energeticSynthesisMatrix.integratedAction}` : ''}
+   - 통합 실천: ${res.energeticSynthesisMatrix.integratedAction}
+   - 과잉 경계: ${res.shadowWarning}` : ''}
    ${res.reflectiveQuestion ? `- 성찰 질문: ${res.reflectiveQuestion}\n   ` : ''}- 해석 경계: ${res.interpretiveBoundary}
 ======================================================================
 [★ 루시 답변 가이드]:

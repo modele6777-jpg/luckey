@@ -5,14 +5,12 @@ import { auth, db } from '@/lib/firebase';
 import { deleteLucyCloudBackup, readLucyCloudBackup, writeLucyCloudBackup } from '@/lib/lucyMemoryCloudBackup';
 import { exportLucyMemoryBackup, LUCY_MEMORY_BACKUP_MAX_BYTES, restoreLucyMemoryBackup } from '@/lib/lucyMemoryBackup';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
-import { deleteOrbMemory, orbMemorySettings, setOrbMemoryEnabled } from '@/lib/orbConsult';
+import { deleteOrbMemory, importLegacyOrbMemory, orbMemorySettings } from '@/lib/orbConsult';
 import {
   deleteLucyConsultMemory,
   editLucyConsultMemory,
   LUCY_CONSULT_MODES,
   readLucyConsultMemorySettings,
-  setLucyConsultMemoryEnabled,
-  setLucyConsultMemorySharing,
   type LucyConsultMemory,
   type LucyConsultMode,
 } from '@/lib/lucyConsultMemory';
@@ -32,9 +30,9 @@ export function LucyConsultMemorySettings({ account, mode, onChange, light }: {
   const legacyCount = open ? orbMemorySettings(account).legacyCount : 0;
   const changed = () => { setRevision(value => value + 1); onChange?.(); };
   const close = (next: boolean) => { setOpen(next); setConfirmAll(false); setConfirmCloudDelete(false); setEditing(null); };
-  const toggle = (source: LucyConsultMode, enabled: boolean) => {
-    if (source === 'voice') setOrbMemoryEnabled(account, enabled);
-    else setLucyConsultMemoryEnabled(account, source, enabled);
+  const importLegacy = () => {
+    importLegacyOrbMemory(account);
+    setBackupMessage('예전 오브 기록을 음성모드 기억으로 가져왔어요.');
     changed();
   };
   const deleteAll = () => {
@@ -123,22 +121,10 @@ export function LucyConsultMemorySettings({ account, mode, onChange, light }: {
               <Dialog.Close className="font-bold">닫기</Dialog.Close>
             </div>
             <Dialog.Description className="break-keep">
-              모드별로 켜면 이 기기에 상담 요약을 최대 8건, 90일 동안 저장해 같은 모드에서 참고해요.
-              공유를 켜면 기억이 켜진 모드끼리만 요약을 참고해요.
+              채팅 · 점술 · 음성 세 모드의 상담 요약을 늘 기억해 이 기기에 모드별 최대 8건, 90일 동안 저장하고,
+              세 모드가 서로 참고해요. 기록은 언제든 고치거나 지울 수 있어요.
             </Dialog.Description>
-            <fieldset className="flex flex-wrap gap-x-4 gap-y-2">
-              <legend className="mb-2 font-semibold">기억할 모드</legend>
-              {(Object.keys(LUCY_CONSULT_MODES) as LucyConsultMode[]).map(source => (
-                <label key={source} className="flex items-center gap-2">
-                  <input type="checkbox" checked={settings.enabled[source] === true} onChange={event => toggle(source, event.target.checked)} />
-                  {LUCY_CONSULT_MODES[source]}
-                </label>
-              ))}
-            </fieldset>
-            <label className="flex items-center gap-2 font-semibold">
-              <input type="checkbox" checked={settings.sharing} onChange={event => { setLucyConsultMemorySharing(account, event.target.checked); changed(); }} />
-              켜진 모드끼리 기억 공유
-            </label>
+            <p className="font-semibold">{LUCY_CONSULT_MODES.chat} · {LUCY_CONSULT_MODES.divination} · {LUCY_CONSULT_MODES.voice} 기억 중</p>
             <div className="flex flex-wrap gap-3">
               <button type="button" onClick={downloadBackup} className="underline">기억 백업</button>
               <label className="cursor-pointer underline">
@@ -168,7 +154,12 @@ export function LucyConsultMemorySettings({ account, mode, onChange, light }: {
               </fieldset>
             )}
             {backupMessage && <p role="status">{backupMessage}</p>}
-            {legacyCount > 0 && <p>이전 오브 기록 {legacyCount}건은 음성모드 기억에 동의하면 가져와요. 전체 삭제로 함께 지울 수 있어요.</p>}
+            {legacyCount > 0 && (
+              <p className="break-keep">
+                이전 방식으로 저장된 오브 기록 {legacyCount}건이 있어요.
+                <button type="button" className="ml-2 underline" onClick={importLegacy}>음성모드 기억으로 가져오기</button>
+              </p>
+            )}
             {settings.entries.length === 0 && <p>저장된 상담 기억이 없어요.</p>}
             <ul className="space-y-2">
               {settings.entries.map(entry => (

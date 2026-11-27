@@ -12,7 +12,7 @@
  */
 
 import { getSharedAudioContext, getMasterAudioBus } from './audio';
-import { playCompletionChime } from './completionChime';
+import { playCompletionBowl } from './completionBowl';
 
 export type HapticCategory =
   | 'success'      // Sharp pulse confirmation & triumphant achievements
@@ -97,8 +97,8 @@ export const HAPTIC_PATTERNS: Record<AudioHapticType, HapticPatternMeta> = {
   ai_result_chime: {
     vibration: [18, 35, 22],
     category: 'success',
-    label: '메시지 전송 완료 효과음',
-    description: 'TTS 완독 뒤 한 번 재생되는 짧은 아이폰 메시지 전송 확인음 (대화 제외)',
+    label: 'TTS 완료 싱잉볼',
+    description: 'TTS 완독 뒤 한 번 울리는 부드러운 티베탄 싱잉볼 — 따뜻한 기본음과 은은한 맥놀이, 긴 여운 (대화 제외)',
   },
 
   // Breathing (Soft Rhythmic)
@@ -556,7 +556,8 @@ export function playAudioHaptic(type: AudioHapticType, options?: AudioHapticOpti
       }
 
       case 'ai_result_chime': {
-        playCompletionChime(ctx, bus, volScale);
+        // TTS 완독음은 딱 떨어지는 알림음 대신 부드러운 싱잉볼 한 번으로 마무리한다.
+        playCompletionBowl(ctx, bus, volScale);
         break;
       }
 

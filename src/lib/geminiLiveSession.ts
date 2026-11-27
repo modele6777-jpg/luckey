@@ -5,11 +5,18 @@ import { parseOrbLivePrices, type OrbLivePrices } from './orb/orbSessionMetrics'
 
 export type LiveVoiceState = 'listening' | 'speaking';
 
+/** 손님이 입력창에 붙인 사진·파일 (사진은 data URL, 글 파일은 읽은 글자). */
+export type LiveAttachment =
+  | { kind: 'image'; dataUrl: string; caption?: string }
+  | { kind: 'text'; text: string; caption?: string };
+
 export type LiveVoiceSession = {
   stop: () => void;
   setMuted: (muted: boolean, measureTurn?: boolean) => void;
   interrupt: () => void;
   sendText: (text: string, measureTurn?: boolean) => boolean;
+  /** 사진·글 파일을 손님 한 차례로 보낸다. 연결 전이면 연결되는 순간 보낸다. */
+  sendAttachment: (attachment: LiveAttachment, measureTurn?: boolean) => boolean;
   /** 마이크를 완전히 닫는다 (아이폰 마이크 표시도 꺼진다). 연결은 그대로 둔다. */
   releaseMic: () => void;
   /** 닫힌 마이크를 다시 연다. 열렸으면 true. */
@@ -19,6 +26,7 @@ export type LiveVoiceSession = {
 };
 
 import { setMicCaptureActive } from './audioMixingPolicy';
+import { lucyMicrophonePermissionMessage, requestLucyMicrophone } from './lucyMicrophone';
 
 const LIVE_MODEL = 'gemini-3.8-live';
 
@@ -44,12 +52,12 @@ type LiveVoiceHandlers = {
   releaseMicWhileMuted?: boolean;
   /** When set, a missing microphone is not fatal: the session continues with typed input and spoken answers. */
   onNotice?: (message: string) => void;
-  /** 🔮 오브 통합 마스터: 마스터가 도구를 함수로 부른다. persona = 말투, rules = 도구 사용 규칙. */
-  orb?: { persona: string; rules: string };
+  /** 🔮 오브 통합 마스터: 마스터가 도구를 함수로 부른다. persona = 말투, rules = 도구 사용 규칙, profile = 이번 상담 대상의 사주 데이터. */
+  orb?: { persona: string; rules: string; profile?: string };
   /** 마스터가 부른 함수를 실행하고 결과(JSON)를 돌려준다. */
   onToolCall?: (call: { id?: string; name: string; args?: Record<string, unknown> }) => Promise<Record<string, unknown>>;
   /** 실시간 자막: 마스터 말 조각을 그 목소리가 실제로 들리는 순간에 준다 (글자는 목소리보다 훨씬 먼저 도착한다). */
-  onCaption?: (text: string) => void;
+  onCaption?: (text: string, audioDurationMs: number) => void;
   /** 재생이 끊겨(끼어들기 등) 아직 안 나온 자막을 버렸다. */
   onCaptionReset?: () => void;
   /** 마스터의 한 차례 답이 끝났다 (생각 중 표시를 끈다). */
@@ -103,10 +111,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   const capture = new AudioContext();
   void playback.resume();
   void capture.resume();
-  // The Orb requests permission inside the tap. Its promise can reject before the
-  // network request returns, so attach a rejection handler immediately.
   const primedMic = handlers.micStream;
-  void primedMic?.catch(() => undefined);
   let stopped = false;
   let failed = false;
   let muted = handlers.startMuted ?? false;
@@ -147,35 +152,40 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     handlers.onError?.({ code, message });
   };
 
-  // 실시간 자막: 글자 조각마다 재생 시각을 정해 두고 그때 보여 준다.
-  let lastChunkAt = 0;
-  let lastCaptionAt = 0;
-  const captionTimers = new Set<ReturnType<typeof setTimeout>>();
-  const clearCaptions = () => {
-    for (const timer of captionTimers) clearTimeout(timer);
-    captionTimers.clear();
-    lastCaptionAt = 0;
+  // Captions follow the audio output clock, including device buffering and playback pauses.
+  let lastAudio: { start: number; end: number } | null = null;
+  let captionTimer: ReturnType<typeof setTimeout> | null = null;
+  const pendingCaptionText: string[] = [];
+  const captions: { text: string; start: number; durationMs: number }[] = [];
+
+  const pumpCaptions = () => {
+    captionTimer = null;
+    const timestamp = playback.getOutputTimestamp?.();
+    const outputTime = timestamp && timestamp.performanceTime > 0
+      ? timestamp.contextTime
+      : playback.currentTime - (playback.baseLatency || 0) - (playback.outputLatency || 0);
+    while (captions.length && captions[0].start <= outputTime) {
+      const caption = captions.shift()!;
+      handlers.onCaption?.(caption.text, caption.durationMs);
+    }
+    if (captions.length) {
+      const delay = (captions[0].start - outputTime) * 1000;
+      captionTimer = setTimeout(pumpCaptions, Math.max(12, Math.min(250, delay)));
+    }
   };
-  const scheduleCaption = (text: string) => {
-    if (!handlers.onCaption) return;
-    const now = playback.currentTime;
-    // 글자 조각은 자기 목소리 조각 바로 뒤에 도착한다: 가장 최근 목소리 조각이 시작되는 때에 보여 준다.
-    const audioPending = nextAt > now + 0.02;
-    const at = Math.max(now, lastCaptionAt, audioPending ? lastChunkAt : now);
-    lastCaptionAt = at;
-    const delay = Math.max(0, (at - now) * 1000);
-    if (delay < 60) { handlers.onCaption(text); return; }
-    const timer = setTimeout(() => {
-      captionTimers.delete(timer);
-      if (!stopped) handlers.onCaption?.(text);
-    }, delay);
-    captionTimers.add(timer);
+
+  const scheduleCaption = (text: string, audio: { start: number; end: number }) => {
+    captions.push({ text, start: audio.start, durationMs: (audio.end - audio.start) * 1000 });
+    if (captionTimer === null) pumpCaptions();
   };
 
   const stopPlayback = () => {
-    const hadCaptions = captionTimers.size > 0;
-    clearCaptions();
-    if (hadCaptions) handlers.onCaptionReset?.();
+    if (captionTimer !== null) clearTimeout(captionTimer);
+    captionTimer = null;
+    captions.length = 0;
+    pendingCaptionText.length = 0;
+    lastAudio = null;
+    handlers.onCaptionReset?.();
     for (const source of sources) {
       try { source.stop(); } catch { /* already ended */ }
     }
@@ -211,15 +221,19 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     source.connect(analyser || playback.destination);
     const startAt = Math.max(playback.currentTime + 0.02, nextAt);
     source.start(startAt);
-    lastChunkAt = startAt;
     nextAt = startAt + buffer.duration;
     sources.add(source);
     source.onended = () => sources.delete(source);
     handlers.onAudioScheduled?.((startAt - playback.currentTime) * 1000);
     markSpeaking();
+    return { start: startAt, end: nextAt };
   };
 
-  let pendingText: { line: string; measureTurn: boolean } | null = null;
+  // 연결이 끝나기 전에 보낸 말·첨부는 보낸 순서대로 보관했다가 setupComplete 에서 그대로 보낸다.
+  const pendingSends: Array<
+    | { kind: 'text'; line: string; measureTurn: boolean }
+    | { kind: 'attachment'; attachment: LiveAttachment; measureTurn: boolean }
+  > = [];
 
   const sendTyped = (text: string, measureTurn = false) => {
     const line = text.replace(/\s+/g, ' ').trim().slice(0, 500);
@@ -234,6 +248,41 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     if (measureTurn) handlers.onInputSent?.('text');
     handlers.onState?.('listening');
     return true;
+  };
+
+  // 사진은 inlineData, 글 파일은 글자로 손님 한 차례에 담아 보낸다 (caption 은 자료 설명).
+  const sendAttachmentNow = (attachment: LiveAttachment, measureTurn = true) => {
+    if (stopped || socket?.readyState !== WebSocket.OPEN) return false;
+    const caption = String(attachment.caption || '').replace(/\s+/g, ' ').trim().slice(0, 1200);
+    const parts: Array<Record<string, unknown>> = [];
+    if (attachment.kind === 'image') {
+      const match = /^data:([^;,]+);base64,(.+)$/.exec(String(attachment.dataUrl || ''));
+      if (!match) return false;
+      parts.push({ inlineData: { mimeType: match[1], data: match[2] } });
+      if (caption) parts.push({ text: caption });
+    } else {
+      const body = String(attachment.text || '').trim().slice(0, 8000);
+      if (!body) return false;
+      parts.push({ text: caption ? `${body}\n\n${caption}` : body });
+    }
+    stopPlayback();
+    socket.send(JSON.stringify({
+      clientContent: {
+        turns: [{ role: 'user', parts }],
+        turnComplete: true,
+      },
+    }));
+    if (measureTurn) handlers.onInputSent?.('text');
+    handlers.onState?.('listening');
+    return true;
+  };
+
+  const flushPendingSends = () => {
+    const queued = pendingSends.splice(0, pendingSends.length);
+    for (const item of queued) {
+      if (item.kind === 'text') sendTyped(item.line, item.measureTurn);
+      else sendAttachmentNow(item.attachment, item.measureTurn);
+    }
   };
 
   const cancelledCalls = new Set<string>();
@@ -283,11 +332,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       ready = true;
       if (setupTimer) clearTimeout(setupTimer);
       handlers.onState?.('listening');
-      if (pendingText) {
-        const queued = pendingText;
-        pendingText = null;
-        sendTyped(queued.line, queued.measureTurn);
-      }
+      if (pendingSends.length) flushPendingSends();
       return;
     }
     const toolCall = message.toolCall || message.tool_call;
@@ -304,15 +349,27 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     const lucyText = content.outputTranscription?.text || content.output_transcription?.text;
     if (userText) handlers.onUserText?.(String(userText));
     const parts = content.modelTurn?.parts || content.model_turn?.parts || [];
+    let messageAudio: typeof lastAudio = null;
     for (const part of parts) {
       const inline = part.inlineData || part.inline_data;
-      if (inline?.data) playPcm(String(inline.data), inline.mimeType || inline.mime_type);
+      if (!inline?.data) continue;
+      const audio = playPcm(String(inline.data), inline.mimeType || inline.mime_type);
+      if (audio) messageAudio = { start: messageAudio?.start ?? audio.start, end: audio.end };
     }
-    if (lucyText) {
-      handlers.onLucyText?.(String(lucyText));
-      scheduleCaption(String(lucyText));
+    if (messageAudio) lastAudio = messageAudio;
+    if (lucyText) handlers.onLucyText?.(String(lucyText));
+    if (handlers.onCaption) {
+      if (messageAudio && pendingCaptionText.length) {
+        scheduleCaption(pendingCaptionText.splice(0).join(''), messageAudio);
+      }
+      if (lucyText) {
+        if (lastAudio) scheduleCaption(String(lucyText), lastAudio);
+        else pendingCaptionText.push(String(lucyText));
+      }
     }
     if (content.turnComplete || content.turn_complete) {
+      lastAudio = null;
+      pendingCaptionText.length = 0;
       handlers.onTurnComplete?.();
       // 아직 재생할 목소리가 남았으면 말하기가 끝날 때(markSpeaking 타이머) 듣기로 바꾼다.
       if (nextAt <= playback.currentTime + 0.05) handlers.onState?.('listening');
@@ -322,6 +379,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   const stop = () => {
     if (stopped) return;
     stopped = true;
+    pendingSends.length = 0;
     micGeneration += 1;
     micAcquire = null;
     setMicCaptureActive(false);
@@ -329,17 +387,11 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     if (setupTimer) clearTimeout(setupTimer);
     handlers.onAudioLevel?.(0);
     stopPlayback();
-    if (processor) processor.onaudioprocess = null;
-    try { processor?.disconnect(); } catch { /* ignore */ }
-    try { micSource?.disconnect(); } catch { /* ignore */ }
-    if (!stream) void primedMic?.then(value => value.getTracks().forEach(track => track.stop())).catch(() => undefined);
     try { socket?.close(); } catch { /* ignore */ }
-    stream?.getTracks().forEach(track => track.stop());
+    detachStream();
     void playback.close().catch(() => undefined);
     void capture.close().catch(() => undefined);
     socket = null;
-    stream = null;
-    processor = null;
   };
 
   let micSource: MediaStreamAudioSourceNode | null = null;
@@ -371,7 +423,6 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       silent.connect(capture.destination);
   };
   const detachStream = () => {
-    if (processor) processor.onaudioprocess = null;
     try { processor?.disconnect(); } catch { /* ignore */ }
     try { micSource?.disconnect(); } catch { /* ignore */ }
     stream?.getTracks().forEach(track => track.stop());
@@ -382,6 +433,38 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   };
 
   const run = async () => {
+    // Ask for permission while still inside the user's action, before waiting
+    // on a provider token. An Orb guest can continue by text after refusal.
+    if (handlers.micStream !== null) {
+      try {
+        setMicCaptureActive(true);
+        const next = await (primedMic || requestLucyMicrophone());
+        if (stopped) {
+          next.getTracks().forEach(track => track.stop());
+          return;
+        }
+        if (muted && handlers.releaseMicWhileMuted) {
+          next.getTracks().forEach(track => track.stop());
+          setMicCaptureActive(false);
+        } else {
+          stream = next;
+          next.getAudioTracks().forEach(track => { track.enabled = false; });
+        }
+      } catch (error) {
+        if (stopped) return;
+        setMicCaptureActive(false);
+        const message = lucyMicrophonePermissionMessage(error);
+        if (!handlers.onNotice) {
+          fail('mic-denied', message);
+          return;
+        }
+        handlers.onNotice(`${message} 지금은 글로 상담할 수 있어요.`);
+      }
+    } else {
+      // null is an explicit no-capture sentinel used by automatic reconnects.
+      setMicCaptureActive(false);
+    }
+
     let token = '';
     let model = LIVE_MODEL;
     try {
@@ -401,7 +484,12 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       });
       const body = await response.json().catch(() => ({}));
       if (!response.ok || !body?.token) {
-        fail(body?.code || 'live-unavailable', handlers.orb ? '음성 서버에 연결하지 못했어요. 다시 연결을 눌러 주세요.' : '실시간 음성을 열지 못해 기본 마이크로 듣습니다.');
+        const code = typeof body?.code === 'string' ? body.code : 'live-unavailable';
+        const needsServerSetup = code === 'GEMINI_API_KEY_INVALID' || code === 'GEMINI_API_KEY_MISSING';
+        const orbMessage = needsServerSetup
+          ? '음성 서버에서 인증을 거부했어요. 음성 서버 설정을 확인해야 합니다.'
+          : '음성 서버에 연결하지 못했어요. 잠시 후 다시 연결해 주세요.';
+        fail(code, handlers.orb ? orbMessage : '실시간 음성을 열지 못해 기본 마이크로 듣습니다.');
         return;
       }
       token = String(body.token);
@@ -414,40 +502,19 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     if (stopped) return;
 
     if (handlers.micStream === null) {
-      setMicCaptureActive(false);
       const message = handlers.orb
         ? '마이크는 아직 연결되지 않았어요. 개인정보 보호를 위해 아래 마이크 권한/다시 연결 버튼을 눌러 주세요. 글로 상담은 계속할 수 있어요.'
         : '마이크를 사용할 수 없어요. 브라우저의 Luckey 마이크 권한을 허용한 뒤 음성 모드를 다시 시작해 주세요.';
-      if (!handlers.onNotice) { fail('mic-denied', message); return; }
-      handlers.onNotice(message);
-    } else {
-      try {
-        setMicCaptureActive(true);
-        stream = await (primedMic || navigator.mediaDevices.getUserMedia({
-          audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-        }));
-        stream.getAudioTracks().forEach(track => { track.enabled = !muted; });
-      } catch {
-        stream = null;
-        setMicCaptureActive(false);
-        if (!handlers.onNotice) {
-          fail('mic-denied', '마이크 권한이 차단되어 있습니다. 브라우저 설정에서 마이크를 허용해 주세요.');
-          return;
-        }
-        // 마이크 없이도 상담은 이어 간다: 글로 보내면 마스터가 목소리로 답한다.
-        handlers.onNotice('마이크를 쓸 수 없어 글로 상담해요. 브라우저의 이 사이트에 대한 마이크 권한과 기기의 브라우저 마이크 권한을 확인해 주세요.');
+      if (!handlers.onNotice) {
+        fail('mic-denied', message);
+        return;
       }
-    }
-    if (stopped) {
-      stream?.getTracks().forEach(track => track.stop());
-      return;
+      handlers.onNotice(message);
     }
 
-    if (stream) attachStream(stream);
-    // 누르고 말하기 모드는 처음엔 음소거라 권한만 확인하고 마이크를 바로 닫는다 (아이폰 마이크 표시가 켜진 채 남지 않게).
-    if (stream && muted && handlers.releaseMicWhileMuted) {
-      detachStream();
-      setMicCaptureActive(false);
+    if (stream) {
+      stream.getAudioTracks().forEach(track => { track.enabled = !muted; });
+      attachStream(stream);
     }
 
     const url = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(token)}`;
@@ -470,7 +537,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
           outputAudioTranscription: {},
           systemInstruction: {
             parts: [{ text: handlers.orb
-              ? buildOrbLiveInstruction(handlers.nickname || '', handlers.orb.persona, handlers.greet || '', handlers.notes || '', handlers.orb.rules)
+              ? buildOrbLiveInstruction(handlers.nickname || '', handlers.orb.persona, handlers.greet || '', handlers.notes || '', handlers.orb.rules, handlers.orb.profile || '')
               : buildLucyLiveInstruction(handlers.nickname || '', handlers.chart || '', handlers.cards || '', handlers.focus || '', handlers.greet || '', handlers.notes || '') }],
           },
           // 🔮 오브 마스터는 15가지 도구를 함수로 부른다.
@@ -521,18 +588,9 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       if (stream) return true;
       if (micAcquire?.generation === micGeneration) return micAcquire.promise;
       const generation = ++micGeneration;
-      // iOS는 녹음 가능한 오디오 세션에서만 마이크를 연다. getUserMedia는 이 호출 안에서 바로 시작해 사용자 동작을 유지한다.
+      // Start the permission request in this user action and share it with overlapping taps.
       setMicCaptureActive(true);
-      let request: Promise<MediaStream>;
-      try {
-        request = navigator.mediaDevices.getUserMedia({
-          audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-        });
-      } catch {
-        if (!stopped && generation === micGeneration) setMicCaptureActive(false);
-        return false;
-      }
-      const promise = request.then(next => {
+      const promise = requestLucyMicrophone().then(next => {
         if (stopped || generation !== micGeneration) {
           next.getTracks().forEach(track => track.stop());
           return false;
@@ -560,10 +618,18 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       const line = text.replace(/\s+/g, ' ').trim().slice(0, 500);
       if (!line || stopped) return false;
       if (!ready || socket?.readyState !== WebSocket.OPEN) {
-        pendingText = { line, measureTurn };
+        pendingSends.push({ kind: 'text', line, measureTurn });
         return true;
       }
       return sendTyped(line, measureTurn);
+    },
+    sendAttachment: (attachment: LiveAttachment, measureTurn = true) => {
+      if (stopped) return false;
+      if (!ready || socket?.readyState !== WebSocket.OPEN) {
+        pendingSends.push({ kind: 'attachment', attachment, measureTurn });
+        return true;
+      }
+      return sendAttachmentNow(attachment, measureTurn);
     },
   };
 }

@@ -11,6 +11,7 @@ export interface SakhaOlonkhoResult {
   olonkhoInsight: string;
   lenaTone: string;
   worldAxisBreath: string;
+  sakhaCrossAxis: string;
   shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -66,6 +67,15 @@ function classifySakhaTopic(question?: string): SakhaQuestionTopic {
   return 'general';
 }
 
+const SAKHA_TOPIC_WARNINGS: Record<SakhaQuestionTopic, string> = {
+  career: '일과 성취의 윗가지(확장)에만 힘을 쏟느라 오늘 몸과 루틴의 뿌리(안정)가 마르지 않도록 살피십시오.',
+  relationship: '상대와 원무를 맞추려다 나 자신의 중심 줄기까지 흔들리지 않도록 고요한 내면의 틈을 남겨 두십시오.',
+  wealth: '먼 결실의 계산에만 매달리지 말고 지금 발 딛고 선 중간 세계(오르토 도이두)의 현실 자원을 먼저 정돈하십시오.',
+  health: '회복과 휴식에 머물면서도 오늘 나를 깨어 있게 하는 작은 리듬 1가지는 손에서 놓지 마십시오.',
+  decision: '완벽한 빛의 질서를 기다리다 정작 지금 옮겨야 할 작은 한 걸음까지 미루지 마십시오.',
+  general: '한 세계의 기준에만 치우쳐 뿌리(안정)와 가지(확장)의 균형을 잃지 않도록 살피십시오.',
+};
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -98,10 +108,11 @@ export function calculateSakhaOlonkhoThreeWorlds(params: {
   const companion = PILLARS[(idx + companionOffset) % PILLARS.length];
   const questionTopic = classifySakhaTopic(params.question);
   const worldAxisBreath = `${picked.pillar.split('(')[0].trim()} ↔ ${companion.pillar.split('(')[0].trim()} 세 세계 공명`;
-  const shadowWarning = `[${picked.pillar.split('(')[0].trim()} 과잉 경계] 한 세계의 기준에만 치우쳐 뿌리(안정)와 가지(확장)의 균형을 잃지 않도록 살피십시오.`;
+  const sakhaCrossAxis = `${questionTopic} · ${picked.pillar.split('(')[0].trim()} × ${companion.pillar.split('(')[0].trim()}`;
+  const shadowWarning = `[${picked.pillar.split('(')[0].trim()} 과잉 경계] ${SAKHA_TOPIC_WARNINGS[questionTopic]}`;
 
   return {
-    engineVersion: 'LUCKEY-SAKHA-OLONKHO-v2.3.0',
+    engineVersion: 'LUCKEY-SAKHA-OLONKHO-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     worldPillar: picked.pillar,
@@ -109,6 +120,7 @@ export function calculateSakhaOlonkhoThreeWorlds(params: {
     olonkhoInsight: `${picked.insight} (동반 기둥: ${companion.pillar})`,
     lenaTone: picked.tone,
     worldAxisBreath,
+    sakhaCrossAxis,
     shadowWarning,
     reflectionFocus: `시베리아 사하 올론호의 '${picked.pillar}'와 동반 기둥 '${companion.pillar}'처럼, 뿌리(기반)와 가지(목표) 사이의 중심을 지금 내가 서 있는 오늘에 두어 보세요.`,
     ritualAction: picked.ritual,
@@ -124,6 +136,7 @@ export function formatSakhaOlonkhoPrompt(res: SakhaOlonkhoResult): string {
     `- 세계수 기둥: ${res.worldPillar} (${res.lenaTone})`,
     `- 동반 기둥: ${res.companionPillar}`,
     `- 세 세계 공명 축: ${res.worldAxisBreath}`,
+    `- 맥락 교차 축: ${res.sakhaCrossAxis}`,
     `- 중심 통찰: ${res.olonkhoInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,

@@ -26,7 +26,7 @@ const LucyTarotAdviceSchema = z.object({
   headline: z.string().max(24).describe("루시의 짧은 핵심 제목 (24자 이내, 존댓말 어조)"),
   advice: z.string().max(140).describe("따뜻하고 명쾌한 조언 (해요체 존댓말, 1~2문장, 140자 이내)"),
   actionTip: z.string().max(80).describe("구체적인 실천 팁 1가지 (해요체 존댓말, 1문장, 80자 이내)"),
-  keyword: z.string().describe("에너지 키워드 태그 (예: #직관과확신 #마음의평온)"),
+  keyword: z.string().max(48).describe("에너지 키워드 태그"),
 });
 
 // Cache for quick recall without redundant generation
@@ -50,7 +50,7 @@ export function buildLucyAdviceSpeechText(headline: string, advice: string, acti
 }
 
 function isConcisePoliteKorean(text: string, maxChars: number, maxSentences: number): boolean {
-  const value = text.trim();
+  const value = (text || '').trim();
   if (!value || value.length > maxChars) return false;
   const sentences = value.split(/(?<=[.!?。！？])\s+/).filter(Boolean);
   if (sentences.length === 0 || sentences.length > maxSentences) return false;
@@ -58,8 +58,7 @@ function isConcisePoliteKorean(text: string, maxChars: number, maxSentences: num
 }
 
 /**
- * Generates an instantaneous, rich, deterministic advice from Lucy based on the drawn cards and concern.
- * 100% reliable offline, sub-millisecond latency.
+ * 카드와 질문에서 바로 만드는 짧은 조언. 리딩 본문·주의점은 여기서 다시 풀지 않습니다.
  */
 export function buildDeterministicLucyAdvice(params: LucyTarotAdviceParams): LucyTarotAdvice {
   const concern = (params.tarotConcern || '').trim();
@@ -78,12 +77,10 @@ export function buildDeterministicLucyAdvice(params: LucyTarotAdviceParams): Luc
     : primaryCard?.id?.startsWith('pent_') ? 'pentacles'
     : primaryCard?.type === 'major' ? 'major' : 'general';
   const mode = params.mode === 'oracle' ? params.oracleMode : params.mode;
-
   let headline = `${cardName}${isReversed ? ' 역방향' : ''}의 핵심`;
-  let advice = `${cardName}${isReversed ? ' 역방향' : ''}은 ${meaningObject} 살펴보라는 뜻이에요. 지금은 중요한 결정을 서두르기보다 확인할 조건을 먼저 점검해요.`;
+  let advice = `${cardName}${isReversed ? ' 역방향' : ''}은 ${meaningObject} 살펴보라는 뜻이에요. 중요한 결정을 서두르기보다 확인할 조건을 먼저 점검해요.`;
   let actionTip = '확인할 조건 한 가지를 메모하고, 사실과 추측을 나누어 살펴보세요.';
   let keyword = '#차분한점검 #현실적인선택';
-
   if (mode === 'healing') {
     headline = '마음에 필요한 쉼';
     advice = isReversed
@@ -137,10 +134,8 @@ export function buildDeterministicLucyAdvice(params: LucyTarotAdviceParams): Luc
     actionTip = '선택에서 가장 중요한 기준 한 가지를 적어 보세요.';
     keyword = '#전환과선택 #자기이해';
   }
-
   if (concern && (concern.includes('연애') || concern.includes('사랑') || concern.includes('재회'))) keyword += ' #마음의나침반';
   else if (concern && (concern.includes('취업') || concern.includes('이직') || concern.includes('사업') || concern.includes('돈'))) keyword += ' #풍요의기운';
-
   return { headline, advice, actionTip, speechText: buildLucyAdviceSpeechText(headline, advice, actionTip), keyword };
 }
 
@@ -170,7 +165,7 @@ export async function getEnhancedLucyTarotAdvice(
             const effKws = getEffectiveTarotKeywords(c);
             const revData = c.reversed ? getTarotReversedData(c) : null;
             const detailStr = d
-              ? ` (원형: ${d.archetype}, 상징: ${d.symbolWord}, 본래 뜻: ${c.reversed ? (revData?.meaning || d.reversedCore) : d.uprightCore})`
+              ? ` (원형: ${d.archetype}, 본래 뜻: ${c.reversed ? (revData?.meaning || d.reversedCore) : d.uprightCore})`
               : '';
             return `${c.nameKo} (${orient}${effKws.length > 0 ? ` - ${effKws.slice(0, 3).join(', ')}` : ''})${detailStr}`;
           })
@@ -188,8 +183,8 @@ export async function getEnhancedLucyTarotAdvice(
 ${isMiracleOracle ? `\n기적수업 모드에서는 두려움보다 평화와 용서의 관점을 간결하게 안내하세요.\n` : ''}
 [필수 원칙]
 1. 문장 전체를 일관된 해요체 존댓말로 쓰세요. 반말을 섞지 마세요.
-2. 닉네임은 '${params.nickname || '여행자'}'입니다. 부를 때만 '${params.nickname || '여행자'}님'으로 정확히 쓰고, 닉네임을 줄이거나 쪼개지 마세요.
-3. 기능 이름이나 시스템 설명은 쓰지 마세요. 카드가 역방향이면 역방향 고유 의미만 간결히 설명하고 정방향 의미는 섞지 마세요. 화면에 주의 안내가 따로 있으므로 조언에서 주의 문구를 반복하지 마세요.
+2. 닉네임은 '${params.nickname || '여행자'}'입니다. 부를 때만 '${params.nickname || '여행자'}님'으로 정확히 쓰고, 닉네임을 줄이거나 쪼개지 마세요. 조언 본문에서는 닉네임을 굳이 반복하지 마세요.
+3. 기능 이름이나 시스템 설명은 쓰지 마세요. 카드가 역방향이면 역방향 고유 의미만 간결히 설명하고 정방향 의미는 섞지 마세요. 화면에 역방향 주의 안내가 별도로 한 번 표시되므로 조언에서 주의 문구를 반복하지 마세요.
 4. headline은 24자 이내, advice는 1~2문장·140자 이내, actionTip은 1문장·80자 이내로 쓰세요. 핵심을 반복하지 말고 구체적인 실천은 하나만 제안하세요.`;
 
         const userMsg = `질문자: ${params.nickname || '여행자'}
@@ -205,10 +200,16 @@ ${isMiracleOracle ? `\n기적수업 모드에서는 두려움보다 평화와 �
           ],
         });
 
+        const generatedText = `${aiResult?.headline || ''} ${aiResult?.advice || ''} ${aiResult?.actionTip || ''}`;
+        const hasReversedCard = (params.cards || []).some((card) => Boolean(card?.reversed));
+        const repeatsCaution = hasReversedCard && /주의|조심|경고|위험/u.test(generatedText);
+        const truncatesZezeNickname = params.nickname?.trim() === '제제' && /(?<!제)제님/u.test(generatedText);
         if (
           aiResult?.headline &&
           isConcisePoliteKorean(aiResult.advice, 140, 2) &&
-          isConcisePoliteKorean(aiResult.actionTip || '', 80, 1)
+          isConcisePoliteKorean(aiResult.actionTip || '', 80, 1) &&
+          !repeatsCaution &&
+          !truncatesZezeNickname
         ) {
           const enhanced: LucyTarotAdvice = {
             headline: aiResult.headline,

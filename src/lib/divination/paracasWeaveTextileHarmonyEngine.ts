@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface ParacasWeaveResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '고유·색결' | '긴장·이완' | '이면·전환' | '인내·안개' | '매듭·마감' | '파라카스 전반';
   paracasMotif: string;
   companionMotif: string;
+  paracasLoomAxis: string;
   paracasInsight: string;
   loomTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const PARACAS_SHADOWS = [
+  '나만의 고유한 색과 결을 지키는 자부심이 시대가 바뀌며 보태야 할 새로운 실과 배움마저 거부하는 고집이 되지 않게 하세요.',
+  '긴장과 쉼을 번갈아 엮는 리듬이 막상 속도를 올려 집중해야 할 마감 구간에서조차 느슨함을 핑계로 손을 놓는 태도가 되어서는 안 됩니다.',
+  '불편한 상황의 이면에서 새 쓰임을 찾는 시선이 분명히 선을 그어야 할 부당한 요구나 실수까지 무조건 미화하는 합리화가 되지 않게 주의하세요.',
+  '안개가 걷히길 기다리는 인내심이 안개 속에서라도 당장 확인해야 할 사실 점검이나 방향 수정까지 미루는 방치가 되지 않게 살피세요.',
+  '작은 일의 끝단을 단정히 매듭짓는 꼼꼼함이 사소한 마감 완성도에 매달려 정작 다음 큰 직조로 넘어가지 못하는 집착이 되지 않게 하세요.',
+];
+
+function classifyParacasTopic(q: string): ParacasWeaveResult['questionTopic'] {
+  if (/고유|색|취향|기준/.test(q)) return '고유·색결';
+  if (/긴장|쉼|이완|균형/.test(q)) return '긴장·이완';
+  if (/이면|뒤집|반전|쓰임/.test(q)) return '이면·전환';
+  if (/안개|기다|흐릿|조급/.test(q)) return '인내·안개';
+  if (/매듭|마감|마무리|끝/.test(q)) return '매듭·마감';
+  return '파라카스 전반';
+}
+
 export function calculateParacasWeaveTextileHarmony(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): ParacasWeaveResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyParacasTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % MOTIFS.length;
   const picked = MOTIFS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (MOTIFS.length - 1));
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
+  const paracasLoomAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-PARACAS-WEAVE-v2.2.0',
+    engineVersion: 'LUCKEY-PARACAS-WEAVE-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     paracasMotif: picked.motif,
     companionMotif: companion.motif,
+    paracasLoomAxis,
     paracasInsight: picked.insight,
     loomTone: picked.tone,
     reflectionFocus: `파라카스 직조 매듭의 '${picked.motif}'을 중심에 두고 '${companion.motif}'의 결을 곁들여, 팽팽한 긴장과 느슨한 쉼의 균형을 맞추며 나만의 결을 한 줄씩 이어 가 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: PARACAS_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '고대 페루 파라카스의 직조·매듭 지혜 전통을 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +121,13 @@ export function formatParacasWeavePrompt(res: ParacasWeaveResult): string {
   return [
     `[파라카스·직조 매듭 조화 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 직조 베틀 축: ${res.paracasLoomAxis}`,
     `- 직조 모티프: ${res.paracasMotif} (${res.loomTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.paracasInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

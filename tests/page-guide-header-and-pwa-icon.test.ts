@@ -25,45 +25,36 @@ test('header guide buttons show only the book icon and retain accessible naming'
 
   assert.match(button, /aria-label=\{`\$\{guide\.title\} 가이드 열기`\}/);
   assert.match(button, /title="가이드"/);
-  assert.match(button, /<BookOpen size=\{16\} aria-hidden="true" \/>/);
+  assert.match(button, /<BookOpen size=\{15\} aria-hidden="true" \/>/);
   assert.doesNotMatch(button, />\s*가이드\s*<\/button>/, 'visible guide text is removed');
 });
 
 test('main PWA, browser, and iOS icon references use the Lucky Key artwork', async () => {
   const expected = [
-    { src: '/luckey-key-v4-192.png', sizes: '192x192', purpose: 'any' },
-    { src: '/luckey-key-v4-512.png', sizes: '512x512', purpose: 'any' },
-    { src: '/luckey-key-v4-512.png', sizes: '512x512', purpose: 'maskable' },
-    { src: '/luckey-key-v4-180.png', sizes: '180x180', purpose: 'any' },
-    { src: '/luckey-key-v4.svg', sizes: 'any', purpose: 'any' },
+    { src: '/lucky-key-192.png?v=4', sizes: '192x192', purpose: 'any' },
+    { src: '/lucky-key-512.png?v=4', sizes: '512x512', purpose: 'any' },
+    { src: '/lucky-key-512.png?v=4', sizes: '512x512', purpose: 'maskable' },
   ];
-  const actual = manifest.icons
-    .filter(icon => icon.src.includes('luckey-key-v4'))
-    .map(({ src, sizes, purpose }) => ({ src, sizes, purpose }));
+  const actual = manifest.icons.map(({ src, sizes, purpose }) => ({ src, sizes, purpose }));
   assert.deepEqual(actual, expected);
   for (const icon of expected) assert.ok(existsSync(publicPath(icon.src)), `${icon.src} exists`);
 
   for (const [name, size] of [
-    ['luckey-key-v4-64.png', 64],
-    ['luckey-key-v4-192.png', 192],
-    ['luckey-key-v4-180.png', 180],
-    ['luckey-key-v4-512.png', 512],
+    ['lucky-key-64.png', 64],
+    ['lucky-key-192.png', 192],
+    ['lucky-key-180.png', 180],
+    ['lucky-key-512.png', 512],
   ] as const) {
     const metadata = await sharp(fileURLToPath(new URL(name, publicRoot))).metadata();
     assert.equal(metadata.width, size, `${name} width`);
     assert.equal(metadata.height, size, `${name} height`);
   }
 
-  const keySvg = readFileSync(new URL('../public/luckey-key-v4.svg', import.meta.url), 'utf8');
-  assert.match(keySvg, /id="keyHead"/);
-  assert.match(keySvg, /id="keyTeeth"/);
-  assert.match(keySvg, /4-LEAF CLOVER/);
   for (const path of [
-    '/luckey-key-v4-64.png',
-    '/luckey-key-v4-192.png',
-    '/luckey-key-v4-512.png',
-    '/luckey-key-v4.svg',
-    '/luckey-key-v4-180.png',
+    '/lucky-key-64.png?v=4',
+    '/lucky-key-192.png?v=4',
+    '/lucky-key-512.png?v=4',
+    '/lucky-key-180.png?v=4',
   ]) assert.ok(html.includes(`href="${path}"`), `index.html references ${path}`);
   assert.doesNotMatch(html, /icon-clover-v3|icon-192-v3|icon-512-v3|apple-touch-icon-v3/);
 

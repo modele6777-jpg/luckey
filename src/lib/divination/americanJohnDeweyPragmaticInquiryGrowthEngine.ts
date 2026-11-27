@@ -7,12 +7,12 @@
  * 3. 성장 그 자체로서의 삶(Growth as an End in Itself): 완결된 결과보다 배우며 확장하는 과정의 생명력
  * 4. 유기체-환경 상호작용(Transaction): 주어진 조건과 호흡하며 새로운 질서를 빚어내는 개척력
  *
- * @version LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v2.1.0
+ * @version LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION = 'LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v2.3.0';
+export const AMERICAN_JOHN_DEWEY_PRAGMATIC_INQUIRY_GROWTH_VERSION = 'LUCKEY-JOHN-DEWEY-PRAGMATIC-INQUIRY-GROWTH-v2.4.0';
 
 export type DeweyQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -37,6 +37,8 @@ export interface AmericanJohnDeweyPragmaticInquiryGrowthResult {
   calculatedAtKst: string;
   questionTopic: DeweyQuestionTopic;
   inquiryPosture: string;
+  deweyCrossAxis: string;
+  deweyShadowWarning: string;
   // 내부 계산 호환 필드 (프롬프트 비노출)
   reflectiveThinkingInquiryScore: number;
   instrumentalIntelligenceAdaptabilityIndex: number;
@@ -220,6 +222,13 @@ function classifyQuestionTopic(question?: string): DeweyQuestionTopic {
   return 'reflection';
 }
 
+const DEWEY_TOPIC_WARNINGS: Record<DeweyQuestionTopic, string> = {
+  relationship: '공동 탐구와 대화에 집중하다 상대가 지금 당장 원하는 정서적 공감과 숨 고르기를 분석으로 덮지 않도록 살피십시오.',
+  decision: '작은 가설과 실험을 검증하는 데 몰두해 이미 확보된 신뢰와 핵심 원칙까지 유보하지 않도록 균형을 잡으십시오.',
+  healing: '경험에서 배움을 건져 올리려다 아직 충분히 쉬지 못한 마음에게 성급한 성장 과제부터 쥐여 주지 마십시오.',
+  reflection: '끊임없는 재구성과 개선을 좇다 오늘 이미 잘 작동하고 있는 일상의 안정감을 과소평가하지 않도록 살피십시오.',
+};
+
 function getKstDateString(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   return kst.toISOString().slice(0, 10);
@@ -280,6 +289,8 @@ export function calculateAmericanJohnDeweyPragmaticInquiryGrowth(
   const counselNote = `'${activeDeweyTheme.themeTitleKo}' 테마와 '${focalDeweyAphorism.aphorismKo}' 테제가 만나 '${topicGuide.posture}'를 제안합니다.`;
   const boundaryNotice = '이 관점은 존 듀이의 실용주의·도구주의 철학을 빌린 상징적 성찰 안내이며, 확정적 예측이나 전문 자문이 아닙니다.';
   const temporalDeweyRhythm = getTemporalDeweyRhythm(now);
+  const deweyCrossAxis = `${questionTopic} · ${activeDeweyTheme.themeKey} × ${temporalDeweyRhythm.inquiryWindow.split('—')[0].trim()}`;
+  const deweyShadowWarning = DEWEY_TOPIC_WARNINGS[questionTopic];
   const situationalDeweyAudit = {
     focusTheme: `${questionTopic} · 반성적 탐구`,
     inquiryCue: topicGuide.posture,
@@ -301,6 +312,8 @@ export function calculateAmericanJohnDeweyPragmaticInquiryGrowth(
     calculatedAtKst: temporalDeweyRhythm.kstTimeLabel,
     questionTopic,
     inquiryPosture: topicGuide.posture,
+    deweyCrossAxis,
+    deweyShadowWarning,
     reflectiveThinkingInquiryScore,
     instrumentalIntelligenceAdaptabilityIndex,
     growthAsLifeProcessVitalityScore,
@@ -332,6 +345,8 @@ export function formatAmericanJohnDeweyPragmaticInquiryGrowthPrompt(
     `【존 듀이 《경험과 자연·민주주의와 교육》 반성적 사고(Reflective Inquiry)·성장 지표 (${res.engineVersion})】`,
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락 초점: ${res.questionTopic} | 탐구 태도: ${res.inquiryPosture}`,
+    `- 듀이 교차 축: ${res.deweyCrossAxis}`,
+    `- 과잉·편향 경계: ${res.deweyShadowWarning}`,
     `- KST 시공간 리듬: ${res.temporalDeweyRhythm.inquiryWindow} / ${res.temporalDeweyRhythm.seasonalGrowthTone}`,
     `- 핵심 듀이 테마: ${res.activeDeweyTheme.themeTitleKo} [${res.activeDeweyTheme.themeTitleEn}]`,
     `- 실천적 통찰: ${res.activeDeweyTheme.pragmaticInsight}`,

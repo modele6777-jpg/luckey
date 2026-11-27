@@ -6,6 +6,8 @@ export interface AndalusianPatioResult {
   patioMotif: string;
   companionMotif: string;
   courtyardPhase: string;
+  questionTopic: 'calm' | 'focus' | 'boundary' | 'general';
+  patioCrossAxis: string;
   shadowWarning: string;
   andalusianInsight: string;
   courtyardTone: string;
@@ -101,13 +103,26 @@ export function calculateAndalusianPatioFountainCalm(params: {
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const courtyardPhase = COURTYARD_PHASES[phaseIdx];
   const shadowWarning = PATIO_SHADOW_WARNINGS[idx];
+  const q = (params.question ?? '').trim();
+  const questionTopic: AndalusianPatioResult['questionTopic'] = !q
+    ? 'general'
+    : /물소리|안뜰|열기|피곤|쉼|식히|고요/.test(q)
+      ? 'calm'
+      : /집중|에너지|일|업무|수로|계획/.test(q)
+        ? 'focus'
+        : /경계|비교|뉴스|소음|사람|거르/.test(q)
+          ? 'boundary'
+          : 'general';
+  const patioCrossAxis = `${questionTopic} · ${picked.motif.split('(')[0].trim()} × ${courtyardPhase.split('(')[0].trim()}`;
 
   return {
-    engineVersion: 'LUCKEY-ANDALUSIAN-PATIO-v2.3.0',
+    engineVersion: 'LUCKEY-ANDALUSIAN-PATIO-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     patioMotif: picked.motif,
     companionMotif: companion.motif,
     courtyardPhase,
+    questionTopic,
+    patioCrossAxis,
     shadowWarning,
     andalusianInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     courtyardTone: picked.tone,
@@ -125,6 +140,7 @@ export function formatAndalusianPatioPrompt(res: AndalusianPatioResult): string 
     `- 파티오 모티프: ${res.patioMotif} (${res.courtyardTone})`,
     `- 동반 결: ${res.companionMotif}`,
     `- 안뜰 온도 국면: ${res.courtyardPhase}`,
+    `- 질문 맥락(${res.questionTopic}) · 파티오 교차 축: ${res.patioCrossAxis}`,
     `- 과잉·차단 경계: ${res.shadowWarning}`,
     `- 중심 통찰: ${res.andalusianInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,

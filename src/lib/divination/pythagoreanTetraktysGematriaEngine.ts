@@ -26,7 +26,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PYTHAGOREAN_TETRAKTYS_VERSION = 'LUCKEY-PYTHAGOREAN-TETRAKTYS-v2.3.0';
+export const PYTHAGOREAN_TETRAKTYS_VERSION = 'LUCKEY-PYTHAGOREAN-TETRAKTYS-v2.4.0';
 
 export type TetraktysQuestionTopic = 'career' | 'relationship' | 'decision' | 'inner' | 'general';
 
@@ -66,6 +66,11 @@ export interface PythagoreanTetraktysReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  tetraktysCrossAxis: {
+    tierPair: string;
+    harmonicRoot: string;
+    phaseAnchor: string;
   };
 }
 
@@ -196,6 +201,11 @@ export function calculatePythagoreanTetraktys(
     alignmentState: `${tetraktysPhase} | 맥락(${questionTopic})`,
     integratedAction: `${manifestationObstacleBreakthrough}${queryStr.trim() ? ` [질문 맥락: ${queryStr.trim()}]` : ''}`,
   };
+  const tetraktysCrossAxis = {
+    tierPair: `${dominantTier.split('(')[0].trim()} ↔ ${secondaryTier.split('(')[0].trim()}`,
+    harmonicRoot: `루트수 ${soulRootNumber} · ${sacredRatio.name.split('(')[0].trim()}`,
+    phaseAnchor: tetraktysPhase.split('—')[0].trim(),
+  };
 
   return {
     engineVersion: PYTHAGOREAN_TETRAKTYS_VERSION,
@@ -226,6 +236,7 @@ export function calculatePythagoreanTetraktys(
     reflectiveQuestion,
     interpretiveBoundary,
     tetraktysSynthesisMatrix,
+    tetraktysCrossAxis,
   };
 }
 
@@ -247,6 +258,7 @@ export function formatPythagoreanTetraktysPrompt(report: PythagoreanTetraktysRep
   if (report.tetraktysSynthesisMatrix) {
     lines.push(
       `- **교차 매트릭스**: [핵심 긴장: ${report.tetraktysSynthesisMatrix.dominantTension} | 조율 상태: ${report.tetraktysSynthesisMatrix.alignmentState}]`,
+      `- **테트락티스 교차 축**: ${report.tetraktysCrossAxis.tierPair} | ${report.tetraktysCrossAxis.harmonicRoot}`,
       `- **통합 실천**: ${report.tetraktysSynthesisMatrix.integratedAction}`,
     );
   }

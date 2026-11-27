@@ -7,6 +7,7 @@ export interface GayaIronCrownResult {
   gayaMotif: string;
   companionMotif: string;
   forgeEstuaryAxis: string;
+  topicBalanceHint: string;
   gayaInsight: string;
   riverTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const GAYA_SHADOWS = [
   '부드러운 곡선과 단정한 태도를 지키려다 꼭 짚고 넘어가야 할 원칙까지 모호하게 넘기지 마세요.',
 ];
 
+const GAYA_TOPIC_HINTS: Record<GayaIronCrownResult['questionTopic'], string> = {
+  '열정·절도': '쇠를 달구는 열정만큼 식히는 틈을 의식적으로 배치해야 강철 같은 탄성이 유지됩니다.',
+  '기초·균형': '바깥의 과제를 더 얹기 전에 내 몸과 일상을 받치는 기초 굽부터 반듯하게 점검하세요.',
+  '소통·품격': '날 선 설득보다 한 톤 낮고 단정한 태도가 상대의 경계를 자연스럽게 열어 줍니다.',
+  '조화 전반': '대장간의 불꽃과 낙동강 하구의 물길이 만나듯, 추진과 수용의 리듬을 나란히 맞추어 보세요.',
+};
+
 function classifyGayaTopic(q: string): GayaIronCrownResult['questionTopic'] {
   if (/열정|식힘|절도|불꽃|일/.test(q)) return '열정·절도';
   if (/기초|균형|굽|중심|수면/.test(q)) return '기초·균형';
@@ -102,15 +110,17 @@ export function calculateGayaIronCrownRiverHarmony(params: {
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const forgeEstuaryAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = GAYA_TOPIC_HINTS[questionTopic];
   const shadowWarning = GAYA_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-GAYA-IRON-v2.3.0',
+    engineVersion: 'LUCKEY-GAYA-IRON-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     gayaMotif: picked.motif,
     companionMotif: companion.motif,
     forgeEstuaryAxis,
+    topicBalanceHint,
     gayaInsight: picked.insight,
     riverTone: picked.tone,
     reflectionFocus: `가야 금관·철기 조화의 '${picked.motif}'처럼, 열정과 식힘의 절도를 맞추며 부드럽고 단정한 중심을 세워 보세요. (동반 결: ${companion.motif.split('(')[0].trim()})`,
@@ -126,6 +136,7 @@ export function formatGayaIronCrownPrompt(res: GayaIronCrownResult): string {
     `[가야·금관 철기 조화 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 대장간·하구 축: ${res.forgeEstuaryAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 가야 모티프: ${res.gayaMotif} (${res.riverTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.gayaInsight}`,

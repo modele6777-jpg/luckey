@@ -9,12 +9,14 @@
  * 4. 비폭력 평화와 용서 지수(Non-Violence Peace Equanimity Index): 악을 악으로 갚지 않고 온유한 선과 용서로 갈등의 매듭을 푸는 도덕적 평정심.
  * 5. 실존적 양심 진실성 및 평정 지수(Existential Conscience Integrity Score): 삶의 유한성을 직시하고 매 순간 신과 인류 앞에 부끄럼 없이 서는 내적 진실성.
  *
- * @version LUCKEY-LEO-TOLSTOY-WISDOM-v1.0.0
+ * @version LUCKEY-LEO-TOLSTOY-WISDOM-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const RUSSIAN_LEO_TOLSTOY_VERSION = 'LUCKEY-LEO-TOLSTOY-WISDOM-v2.3.0';
+export const RUSSIAN_LEO_TOLSTOY_VERSION = 'LUCKEY-LEO-TOLSTOY-WISDOM-v2.4.0';
+
+export type TolstoyQuestionTopic = 'career' | 'relationship' | 'wealth' | 'decision' | 'general';
 
 export interface TolstoyTheme {
   themeKey: string;
@@ -41,6 +43,9 @@ export interface RussianLeoTolstoyCalendarOfWisdomResult {
   simpleLifeLaborHarmonyScore: number;        // 단순한 삶과 노동 조화도 (Simple Life & Labor Harmony)
   nonViolencePeaceEquanimityIndex: number;    // 비폭력 평화와 용서 지수 (Non-Violence Peace & Forgiveness)
   existentialConscienceIntegrityScore: number;// 실존적 양심 진실성 및 평정 지수 (Existential Conscience Integrity)
+  questionTopic: TolstoyQuestionTopic;
+  tolstoyCrossAxis: string;
+  shadowWarning: string;
   // 세부 분석
   activeTolstoyTheme: TolstoyTheme;
   focalTolstoyAphorism: TolstoyAphorism;
@@ -147,6 +152,38 @@ export const TOLSTOY_APHORISMS: TolstoyAphorism[] = [
   },
 ];
 
+function classifyTolstoyQuestionTopic(query?: string): TolstoyQuestionTopic {
+  const q = (query ?? '').trim();
+  if (!q) return 'general';
+  if (/일|직장|사업|커리어|노동|프로젝트|성과|이직/.test(q)) return 'career';
+  if (/사랑|연애|관계|가족|친구|갈등|화해|용서/.test(q)) return 'relationship';
+  if (/돈|재물|재정|소비|투자|계약|소유/.test(q)) return 'wealth';
+  if (/선택|결정|진로|방향|고민|결단/.test(q)) return 'decision';
+  return 'general';
+}
+
+function buildTolstoyCrossAxis(
+  topic: TolstoyQuestionTopic,
+  awakening: number,
+  agape: number,
+  simplicity: number,
+): string {
+  const topicNote: Record<TolstoyQuestionTopic, string> = {
+    career: '정직한 땀과 소박한 노동이 허영을 이기는 일·소명 축',
+    relationship: '계산 없는 아가페 사랑과 온유한 용서가 이어지는 관계 축',
+    wealth: '불필요한 소유를 덜어내고 내면 양심을 지키는 절제 축',
+    decision: '세속의 평판보다 순결한 양심의 소리를 따르는 결단 축',
+    general: '영적 각성과 소박한 실천이 하루의 숨결로 합일되는 균형 축',
+  };
+  if (agape >= awakening && agape >= simplicity) {
+    return `${topicNote[topic]} · 타인을 향한 사랑이 앞서는 열린 포용 국면`;
+  }
+  if (simplicity >= awakening) {
+    return `${topicNote[topic]} · 군더더기를 비우고 소박한 일상으로 돌아가는 정돈 국면`;
+  }
+  return `${topicNote[topic]} · 내면의 신성한 양심이 깨어 중심을 세우는 각성 국면`;
+}
+
 export function calculateRussianLeoTolstoyCalendarOfWisdom(
   profile: UserProfile,
   query?: string,
@@ -185,6 +222,15 @@ export function calculateRussianLeoTolstoyCalendarOfWisdom(
 
   // 질문에 반응하는 정성 성찰 질문: 지금 붙잡은 테마의 언어로 되묻는다.
   const trimmedTolstoyQuery = (query ?? '').trim();
+  const questionTopic = classifyTolstoyQuestionTopic(trimmedTolstoyQuery);
+  const tolstoyCrossAxis = buildTolstoyCrossAxis(
+    questionTopic,
+    spiritualAwakeningScore,
+    agapeLoveAltruismIndex,
+    simpleLifeLaborHarmonyScore,
+  );
+  const shadowWarning =
+    '도덕적 이상과 자기 성찰이 지나쳐 스스로를 혹독하게 재단하거나 현실의 작은 즐거움마저 죄책감으로 밀어내지 않도록 살피세요.';
   const reflectiveTolstoyQuestion =
     `지금 내가 '${activeTolstoyTheme.themeTitleKo}'의 자리에서 본다면, ` +
     `나를 지치게 하는 허영을 조용히 내려놓고 오늘 이웃에게 건넬 수 있는 소박한 사랑의 구체적 행동은 무엇일까요?` +
@@ -217,6 +263,9 @@ export function calculateRussianLeoTolstoyCalendarOfWisdom(
     simpleLifeLaborHarmonyScore,
     nonViolencePeaceEquanimityIndex,
     existentialConscienceIntegrityScore,
+    questionTopic,
+    tolstoyCrossAxis,
+    shadowWarning,
     activeTolstoyTheme,
     focalTolstoyAphorism,
     tolstoyComprehensiveGuidance: {
@@ -240,6 +289,7 @@ export function formatRussianLeoTolstoyCalendarOfWisdomPrompt(res: RussianLeoTol
   const lines = [
     `【레프 톨스토이 《인생독본·사람은 무엇으로 사는가》 영적 각성 & 아가페 사랑 지표】`,
     `- 연산 시각: ${res.calculatedAtKst} | 엔진 버전: ${res.engineVersion}`,
+    `- 질문 맥락: ${res.questionTopic} | 영혼·아가페 교차 축: ${res.tolstoyCrossAxis}`,
     `- 영성 각성 국면: ${describeTolstoyStage(composite)}`,
     `- 핵심 영적 테마: ${res.activeTolstoyTheme.themeTitleKo} [${res.activeTolstoyTheme.themeTitleRu}]`,
     `- 실존적 통찰: ${res.activeTolstoyTheme.existentialInsight}`,
@@ -266,6 +316,7 @@ export function formatRussianLeoTolstoyCalendarOfWisdomPrompt(res: RussianLeoTol
     `- 실천 의례: ${res.ritualAction}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveTolstoyQuestion}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   );
   return lines.join('\n');

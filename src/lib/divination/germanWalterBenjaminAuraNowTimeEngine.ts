@@ -8,12 +8,12 @@
  * 4. 산책자(Flâneur)의 변증법적 직관 및 수집가 안목 (Flâneur Intuition & Collector Gaze Index): 일상의 사소하고 잊힌 파편, 거리의 풍경 속에서 시대의 본질과 숨겨진 보물을 번뜩이는 직관으로 길어 올리는 관찰력.
  * 5. 파편의 알레고리 및 구원의 희망 점화력 (Allegorical Fragment Redemption Score): 부서지고 미완성된 한계 상황 속에서도 절망에 함몰되지 않고, 작은 틈새에서 구원의 불꽃을 재구성하는 회복탄력성.
  *
- * @version LUCKEY-WALTER-BENJAMIN-AURA-NOWTIME-v2.1.0
+ * @version LUCKEY-WALTER-BENJAMIN-AURA-NOWTIME-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_WALTER_BENJAMIN_AURA_NOWTIME_VERSION = 'LUCKEY-WALTER-BENJAMIN-AURA-NOWTIME-v2.3.0';
+export const GERMAN_WALTER_BENJAMIN_AURA_NOWTIME_VERSION = 'LUCKEY-WALTER-BENJAMIN-AURA-NOWTIME-v2.4.0';
 
 export interface BenjaminTheme {
   themeKey: string;
@@ -44,6 +44,7 @@ export interface GermanWalterBenjaminAuraNowTimeResult {
   activeBenjaminTheme: BenjaminTheme;
   focalBenjaminAphorism: BenjaminAphorism;
   secondaryBenjaminAphorism: BenjaminAphorism;
+  benjaminCrossAxis: string;
   reflectiveQuestion: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -185,6 +186,7 @@ export function calculateGermanWalterBenjaminAuraNowTime(
   const activeBenjaminTheme = BENJAMIN_THEMES[themeIndex];
   const focalBenjaminAphorism = BENJAMIN_APHORISMS[aphorismIndex];
   const secondaryBenjaminAphorism = BENJAMIN_APHORISMS[secondaryAphorismIndex];
+  const benjaminCrossAxis = `${activeBenjaminTheme.themeTitleKo.split('—')[0].trim()} × ${focalBenjaminAphorism.sourceContext}`;
   const reflectiveQuestion = buildBenjaminReflectiveQuestion(activeBenjaminTheme, query);
   const interpretiveBoundary = '발터 벤야민 비판미학 관점은 사건의 성패나 미래 예언이 아니라, 지금-여기의 고유성과 일상의 파편을 읽는 문화·철학적 성찰 렌즈입니다.';
 
@@ -216,6 +218,7 @@ export function calculateGermanWalterBenjaminAuraNowTime(
     activeBenjaminTheme,
     focalBenjaminAphorism,
     secondaryBenjaminAphorism,
+    benjaminCrossAxis,
     reflectiveQuestion,
     ritualAction: focalBenjaminAphorism.actionGuidance,
     reflectionFocus: reflectiveQuestion,
@@ -249,6 +252,7 @@ export function formatGermanWalterBenjaminAuraNowTimePrompt(
     `- 보조 원전 출처: [${res.secondaryBenjaminAphorism.sourceContext}]`,
     `- 보조 실천 지침: ${res.secondaryBenjaminAphorism.actionGuidance}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
+    `- 벤야민 교차 축: ${res.benjaminCrossAxis}`,
     `- 실천 의례: ${res.ritualAction}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 종합 벤야민 권면: ${res.benjaminComprehensiveGuidance.philosophicalCounsel}`,

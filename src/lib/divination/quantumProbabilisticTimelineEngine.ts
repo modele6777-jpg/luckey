@@ -19,7 +19,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const QUANTUM_TIMELINE_VERSION = 'LUCKEY-TIMELINE-v2.3.0';
+export const QUANTUM_TIMELINE_VERSION = 'LUCKEY-TIMELINE-v2.4.0';
 
 function formatQuantumTimelineKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -63,6 +63,11 @@ export interface QuantumProbabilisticTimelineReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  timelineCrossAxis: {
+    trackDivergence: string;
+    bifurcationAnchor: string;
+    identityToAction: string;
   };
   interpretiveBoundary: string;
 }
@@ -159,6 +164,11 @@ export function runQuantumProbabilisticTimelineEngine(
     alignmentState: `분기점: ${criticalDateRange} · ${coreDecisionChoice}`,
     integratedAction: `${physicalAnchorAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const timelineCrossAxis = {
+    trackDivergence: `${baselineTimeline.decisionPerspective} → ${optimalQuantumTimeline.decisionPerspective}`,
+    bifurcationAnchor: `${criticalDateRange} · ${element} 오행 전환축`,
+    identityToAction: `${identityShift} ➔ ${physicalAnchorAction}`,
+  };
 
   const interpretiveBoundary = '본 양자 타임라인 분기 리포트는 선택의 기로를 비추는 정성적 시나리오 성찰 안내이며, 물리적 미래의 확정 예언이 아닙니다.';
   const ritualAction = `${criticalDateRange} 분기점의 핵심 행동인 '${physicalAnchorAction}'을 오늘 15분 단위의 첫 실행으로 옮기세요.`;
@@ -174,6 +184,7 @@ export function runQuantumProbabilisticTimelineEngine(
   * 물리적 1순위 행동: ${physicalAnchorAction}
   * 주의할 습관: ${limitingPattern}
 - 교차 매트릭스: [핵심 긴장: ${quantumTimelineSynthesisMatrix.dominantTension} | 조율 상태: ${quantumTimelineSynthesisMatrix.alignmentState}]
+  * 타임라인 교차 축: ${timelineCrossAxis.trackDivergence} | ${timelineCrossAxis.bifurcationAnchor}
   * 통합 실천: ${quantumTimelineSynthesisMatrix.integratedAction}
 - 실천 의례: ${ritualAction}
 - 성찰 초점: ${reflectionFocus}
@@ -201,6 +212,7 @@ export function runQuantumProbabilisticTimelineEngine(
     reflectionFocus,
     reflectiveQuestion,
     quantumTimelineSynthesisMatrix,
+    timelineCrossAxis,
     interpretiveBoundary,
   };
 }

@@ -6,13 +6,17 @@ export interface MuiscaGuatavitaInput {
   question?: string;
 }
 
+export type MuiscaQuestionCategory = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
+
 export interface MuiscaGuatavitaResult {
   engineVersion: string;
   calculatedAtKst: string;
   questionTopic: string;
+  questionCategory: MuiscaQuestionCategory;
   offeringPhase: string;
   companionPhase: string;
   goldRaftCycle: string;
+  topicBalanceHint: string;
   lakeReflection: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -56,6 +60,24 @@ const QUESTIONS = [
   '감사의 마음으로 먼저 건네고 싶은 말이나 행동이 있나요?',
 ] as const;
 
+const TOPIC_BALANCE_HINTS: Record<MuiscaQuestionCategory, string> = {
+  career: '일·커리어에서는 겉의 화려한 성과보다 지금 이 일에 담고 있는 정성과 본질적 의미를 먼저 점검하세요.',
+  relationship: '관계에서는 서운함을 움켜쥐기보다 감사와 화해의 작은 물결을 먼저 흘려보내는 편이 수면을 넓힙니다.',
+  wealth: '재정·계약에서는 과도한 소유욕으로 판단이 흐려지지 않게, 비울 것과 지킬 것의 경계를 명확히 세우세요.',
+  health: '건강·회복에서는 머릿속 번잡함을 종이에 비워 내고 고원 호수처럼 고요한 휴식 시간을 확보하세요.',
+  decision: '선택의 기로에서는 물안개가 걷힐 때까지 호숫가에서 한 호흡 고른 뒤 정성이 향하는 쪽을 택하세요.',
+  general: '오늘의 흐름에서는 주 국면과 동반 국면을 함께 살피며 비움과 정성의 균형을 맞추세요.',
+};
+
+function classifyMuiscaCategory(question: string): MuiscaQuestionCategory {
+  if (/일|직장|사업|커리어|프로젝트|성과|이직/.test(question)) return 'career';
+  if (/사랑|연애|관계|가족|친구|갈등|화해/.test(question)) return 'relationship';
+  if (/돈|재물|재정|투자|소비|계약/.test(question)) return 'wealth';
+  if (/건강|몸|피로|휴식|수면|회복/.test(question)) return 'health';
+  if (/선택|결정|방향|균형|비우|진로/.test(question)) return 'decision';
+  return 'general';
+}
+
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -88,14 +110,17 @@ export function calculateMuiscaGuatavitaLake(input: MuiscaGuatavitaInput): Muisc
   const questionTopic = trimmedQ
     ? trimmedQ.slice(0, 36)
     : '감사·화해와 비움으로 세우는 호수 균형';
+  const questionCategory = classifyMuiscaCategory(trimmedQ);
 
   return {
-    engineVersion: 'LUCKEY-MUISCA-GUATAVITA-v2.3.0',
+    engineVersion: 'LUCKEY-MUISCA-GUATAVITA-v2.4.0',
     calculatedAtKst: toKstIso(input.now),
     questionTopic,
+    questionCategory,
     offeringPhase,
     companionPhase,
     goldRaftCycle,
+    topicBalanceHint: TOPIC_BALANCE_HINTS[questionCategory],
     lakeReflection: REFLECTIONS[(seed >>> 3) % REFLECTIONS.length],
     reflectionFocus: `질문 맥락('${questionTopic}')에서 안데스 고원 무이스카 족이 과타비타 호수에 감사와 화해의 뜻으로 금을 바치던 의식처럼, 주 국면('${offeringPhase}')과 황금 뗏목 순환('${goldRaftCycle}')을 함께 비추어 소유보다 순환과 정성의 균형을 돌아보는 상징적 관점입니다.`,
     ritualAction: ACTIONS[phaseIdx],
@@ -113,6 +138,7 @@ export function formatMuiscaGuatavitaPrompt(res: MuiscaGuatavitaResult): string 
     `호수 국면: ${res.offeringPhase}`,
     `동반 국면: ${res.companionPhase}`,
     `황금 뗏목 순환: ${res.goldRaftCycle}`,
+    `주제별 균형 조언: ${res.topicBalanceHint}`,
     `비춤: ${res.lakeReflection}`,
     `성찰 초점: ${res.reflectionFocus}`,
     `권장 의식: ${res.ritualAction}`,

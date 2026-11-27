@@ -9,12 +9,12 @@
  * 4. '의미는 곧 사용' 삶의 현장 실천 지수 (Meaning as Use & Practical Action Score): 추상적 사변에 매몰되지 않고 삶의 구체적 현장에서 행동과 실천으로 가치를 드러내는 지혜.
  * 5. 헛된 관념 혼란 치료 및 해방 회복탄력성 (Therapeutic Dissolution & Mental Clarity Score): 딱정벌레 상자의 비유처럼 사적인 집착과 언어의 미망을 털어내고 평정을 되찾는 힘.
  *
- * @version LUCKEY-WITTGENSTEIN-LANGUAGE-GAME-SILENCE-v2.0.0
+ * @version LUCKEY-WITTGENSTEIN-LANGUAGE-GAME-SILENCE-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION = 'LUCKEY-WITTGENSTEIN-LANGUAGE-GAME-SILENCE-v2.3.0';
+export const AUSTRIAN_WITTGENSTEIN_LANGUAGE_GAME_SILENCE_VERSION = 'LUCKEY-WITTGENSTEIN-LANGUAGE-GAME-SILENCE-v2.4.0';
 
 export type WittgensteinQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -59,6 +59,8 @@ export interface AustrianWittgensteinLanguageGameSilenceResult {
   ritualAction: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
+  wittgensteinCrossAxis: string;
+  shadowWarning: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
   wittgensteinSynthesisMatrix: {
@@ -273,6 +275,8 @@ export function calculateAustrianWittgensteinLanguageGameSilence(
   const baseDate = now ?? new Date();
   const kst = new Date(baseDate.getTime() + 9 * 60 * 60 * 1000);
   const kstTimeLabel = `${temporalWittgensteinRhythm.kstDateLabel.replace(' KST', '')} ${String(kst.getUTCHours()).padStart(2, '0')}:${String(kst.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
+  const wittgensteinCrossAxis = `${questionTopic} · ${activeWittgensteinTheme.themeKey} × ${temporalWittgensteinRhythm.timeWindowKo}`;
+  const shadowWarning = `과잉·편향 경계: 말할 수 없는 것에 대한 침묵(Schweigen)을 필요한 설명이나 솔직한 소통까지 회피하는 방패로 쓰지 마십시오.`;
   const wittgensteinSynthesisMatrix = {
     coreInsight: activeWittgensteinTheme.themeTitleKo,
     recommendedAction: topicGuidance.practiceGuidance,
@@ -297,6 +301,8 @@ export function calculateAustrianWittgensteinLanguageGameSilence(
     reflectiveQuestion: query?.trim()
       ? `"${query.trim()}" 앞에서 내가 말할 수 있는 사실과 침묵 속에 비워둘 신비를 구분한다면 무엇이 남나요?`
       : topicGuidance.reflectionFocus,
+    wittgensteinCrossAxis,
+    shadowWarning,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
     wittgensteinSynthesisMatrix,
@@ -323,6 +329,8 @@ export function formatAustrianWittgensteinLanguageGameSilencePrompt(
     `- 핵심 성찰 질문: ${res.reflectionFocus}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 교차 매트릭스: 핵심(${res.wittgensteinSynthesisMatrix.coreInsight}) | 실행(${res.wittgensteinSynthesisMatrix.recommendedAction}) | 주의(${res.wittgensteinSynthesisMatrix.cautionNotice})`,
+    `- 언어게임 교차 축: ${res.wittgensteinCrossAxis}`,
+    `- ${res.shadowWarning}`,
     `- 비트겐슈타인 원전 명언: "${res.focalWittgensteinAphorism.aphorismKo}" (${res.focalWittgensteinAphorism.aphorismOriginal})`,
     `- 원전 출처: [${res.focalWittgensteinAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalWittgensteinAphorism.actionGuidance}`,

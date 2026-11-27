@@ -10,12 +10,12 @@
  * 4. 메피스토펠레스의 냉소와 회의 극복: 모든 것을 부정하고 갉아먹는 악마적 회의주의를 오히려 생명력을 북돋우는 반작용으로 삼아 더 높은 차원으로 도약.
  * 5. 영원한 여성성(Das Ewig-Weibliche)과 유기적 변형(Metamorphose): 시련과 상처를 유기적 성장의 거름으로 삼아 영혼을 끝없이 고양하는 초월적 지혜.
  *
- * @version LUCKEY-GOETHE-FAUST-STRIVING-v2.1.0
+ * @version LUCKEY-GOETHE-FAUST-STRIVING-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_GOETHE_FAUST_VERSION = 'LUCKEY-GOETHE-FAUST-STRIVING-v2.3.0';
+export const GERMAN_GOETHE_FAUST_VERSION = 'LUCKEY-GOETHE-FAUST-STRIVING-v2.4.0';
 
 export interface GoetheTheme {
   themeKey: string;
@@ -46,6 +46,7 @@ export interface JohannWolfgangGoetheFaustStrivingResult {
   activeGoetheTheme: GoetheTheme;
   focalGoetheAphorism: GoetheAphorism;
   secondaryGoetheAphorism: GoetheAphorism;
+  goetheCrossAxis: string;
   reflectiveQuestion: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -176,6 +177,7 @@ export function calculateGermanJohannWolfgangGoetheFaustStriving(
   const activeGoetheTheme = GOETHE_THEMES[themeIndex];
   const focalGoetheAphorism = GOETHE_APHORISMS[aphorismIndex];
   const secondaryGoetheAphorism = GOETHE_APHORISMS[secondaryAphorismIndex];
+  const goetheCrossAxis = `${activeGoetheTheme.themeTitleKo} × ${focalGoetheAphorism.sourceContext} ↔ ${secondaryGoetheAphorism.sourceContext}`;
   const reflectiveQuestion = buildGoetheReflectiveQuestion(activeGoetheTheme, query);
   const ritualAction = focalGoetheAphorism.actionGuidance;
   const reflectionFocus = reflectiveQuestion;
@@ -207,6 +209,7 @@ export function calculateGermanJohannWolfgangGoetheFaustStriving(
     activeGoetheTheme,
     focalGoetheAphorism,
     secondaryGoetheAphorism,
+    goetheCrossAxis,
     reflectiveQuestion,
     ritualAction,
     reflectionFocus,
@@ -229,6 +232,7 @@ export function formatJohannWolfgangGoetheFaustStrivingPrompt(res: JohannWolfgan
     `- 냉소·회의적 부정성 극복력(Mephisto Overcome): ${describeGoetheStage(res.mephistoNegationOvercomeScore)}`,
     `- 영원한 여성성 영혼 고양도(Das Ewig-Weibliche): ${describeGoetheStage(res.eternalFeminineUpliftScore)}`,
     `- 핵심 파우스트 테마: ${res.activeGoetheTheme.themeTitleKo} [${res.activeGoetheTheme.themeTitleEn}]`,
+    `- 파우스트 교차 축: ${res.goetheCrossAxis}`,
     `- 철학적 통찰: ${res.activeGoetheTheme.philosophicalInsight}`,
     `- 실천적 조언: ${res.activeGoetheTheme.practicalCounsel}`,
     `- 핵심 경구: "${res.focalGoetheAphorism.aphorismKo}"`,

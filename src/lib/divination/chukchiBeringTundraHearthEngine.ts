@@ -7,6 +7,7 @@ export interface ChukchiBeringResult {
   tundraSymbol: string;
   companionSymbol: string;
   tundraHearthAxis: string;
+  topicBalanceHint: string;
   chukchiInsight: string;
   beringTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const CHUKCHI_SHADOWS = [
   '서서히 밝아지는 조짐에만 기대어 오늘 처리해야 할 현실적인 정리를 미루지 않도록 주의하세요.',
 ];
 
+const TOPIC_BALANCE_HINTS: Record<ChukchiBeringResult['questionTopic'], string> = {
+  '안식·온기': '야랑가 천막의 등불처럼 내 안의 쉼터를 지키되, 필요한 온기와 연결의 문은 열어 두세요.',
+  '일·첫걸음': '끝없는 설원 앞에서도 오늘 내딛는 작은 한 걸음의 자국이 내일의 길을 열어 줍니다.',
+  '유연·집중': '파도를 정면으로 막기보다 우미악 가죽배처럼 충격을 흘려보내며 손끝의 집중을 지키세요.',
+  '생존 전반': '바깥의 바람이 거칠수록 내면의 따뜻한 화덕과 유연한 호흡의 균형을 먼저 돌보세요.',
+};
+
 function classifyChukchiTopic(q: string): ChukchiBeringResult['questionTopic'] {
   if (/온기|안식|휴식|마음|쉼터|사람/.test(q)) return '안식·온기';
   if (/일|직장|진로|걸음|길|시작/.test(q)) return '일·첫걸음';
@@ -102,15 +110,17 @@ export function calculateChukchiBeringTundraHearth(params: {
   const picked = SYMBOLS[idx];
   const companion = SYMBOLS[(idx + companionOffset) % SYMBOLS.length];
   const tundraHearthAxis = `${picked.symbol.split('(')[0].trim()} ↔ ${companion.symbol.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = CHUKCHI_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-CHUKCHI-BERING-v2.3.0',
+    engineVersion: 'LUCKEY-CHUKCHI-BERING-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     tundraSymbol: picked.symbol,
     companionSymbol: companion.symbol,
     tundraHearthAxis,
+    topicBalanceHint,
     chukchiInsight: `${picked.insight} (동반 상징: ${companion.symbol})`,
     beringTone: picked.tone,
     reflectionFocus: `축치·베링해 툰드라 지혜의 '${picked.symbol}'와 동반 상징 '${companion.symbol}'처럼, 바깥의 바람이 거칠 때는 내 안의 따뜻한 화덕과 유연한 틀을 먼저 돌보세요.`,
@@ -126,6 +136,7 @@ export function formatChukchiBeringPrompt(res: ChukchiBeringResult): string {
     `[축치 베링해·툰드라 화덕 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 극지 축: ${res.tundraHearthAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 극지 상징: ${res.tundraSymbol} (${res.beringTone})`,
     `- 동반 상징: ${res.companionSymbol}`,
     `- 중심 통찰: ${res.chukchiInsight}`,

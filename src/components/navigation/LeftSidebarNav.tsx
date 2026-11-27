@@ -7,10 +7,6 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'wouter';
 import {
   MessageCircle,
-  MessageCircleQuestion,
-  MessageCircleMore,
-  MessageCircleWarning,
-  MessageCirclePlus,
   Sparkles,
   KeyRound,
   User,
@@ -28,7 +24,6 @@ import {
   type BgmPublicState,
 } from '@/components/trinity/BgMusicPlayer';
 import { subscribeFoldState, useFoldState } from '@/lib/foldState';
-import { MessageCircleMinus } from '@/lib/channelMenuIcons';
 import { forceAppUpgradeAndReload } from '@/lib/prismSync';
 import { useApp } from '@/contexts/AppContext';
 import { resetAppScreen } from '@/lib/visualViewportBox';
@@ -36,12 +31,19 @@ import { markAppScreenReset } from '@/lib/appUpdateReload';
 import { showViewportDiagnostics } from '@/lib/viewportDiagnostics';
 import { startFoldRuntimeTrace } from '@/lib/foldRuntimeTrace';
 import { markPendingUpdateNotice } from '@/lib/updateNotice';
-import { isLucyMasterModeOn, setLucyMasterMode, deepenLucyMasterDepth, getLucyMasterDepth, LUCY_MASTER_MAX_DEPTH, LUCY_MASTER_MODE_EVENT, useLucyMasterDepth, getLucyBubbleMarker, setLucyBubbleMarker, isLucyMasterToolsRequested, setLucyMasterToolsRequested } from '@/lib/lucyMasterMode';
+import { isLucyMasterModeOn, setLucyMasterMode, LUCY_MASTER_MODE_EVENT, getLucyBubbleMarker, setLucyBubbleMarker, isLucyMasterToolsRequested, setLucyMasterToolsRequested } from '@/lib/lucyMasterMode';
 import { playLucyMasterSuction } from '@/components/omniwarp/BigBangMasterSuction';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm } from '@/lib/lucyMasterBgm';
 import { isDualPaneLayout, isDuoUnfoldedState } from '@/lib/perfMode';
 import { isLucyChatPath } from '@/lib/duoPaneFocus';
+import {
+  cloverOpenAfterClick,
+  cloverOpenAfterExit,
+  cloverOpenAfterFoldOrPathChange,
+  initialCloverOpen,
+} from '@/lib/cloverChannels';
 import { OrbShapeIcon } from '@/components/icons/OrbShapeIcon';
+import { LucyProBubbleDotIcon } from '@/components/icons/LucyProBubbleDotIcon';
 import { setOrbCounselOpen, useOrbCounselOpen } from '@/lib/orbCounselGate';
 
 export interface NavItemConfig {
@@ -196,21 +198,21 @@ export default function LeftSidebarNav() {
   const screenUnfolded = useFoldState().unfolded;
   const unfoldedRef = useRef(screenUnfolded);
   unfoldedRef.current = screenUnfolded;
-  // 🍀 펼친 화면은 목록을 닫지 않는다. 접힌 화면만 럭키에서 나갈 때 접힌다.
-  // 접힌 화면: Lucky 채널(Lucky·7대 앱)에 있으면 클로버 목록이 펼쳐지고, 그 밖(루시·키·오브 등)에서는 접혀 있다.
-  // 펼친 화면은 늘 펼쳐져 있다.
+  // 🍀 클로버 목록은 접힘·펼침 화면 모두 클로버 버튼으로 접고 펼 수 있다(기본값: 펼친 화면=펼침).
+  // 접힌 화면: Lucky 채널(Lucky·7대 앱)에 있으면 펼쳐지고, 그 밖(루시·키·오브 등)에서는 접혀 있다.
   const [isChannelsOpen, setIsChannelsOpen] = useState(() => {
     if (typeof window === 'undefined') return false;
-    return isDualPaneLayout() || isLuckyListPath(window.location.pathname || '/');
+    return initialCloverOpen(isDualPaneLayout(), isLuckyListPath(window.location.pathname || '/'));
   });
   useEffect(() => {
     const openForLucky = () => setIsChannelsOpen(true);
     const closeForExit = () => {
-      if (unfoldedRef.current || document.documentElement.classList.contains('duo-unfolded-mode')) {
-        setIsChannelsOpen(true);
-        return;
-      }
-      setIsChannelsOpen(false);
+      // 펼친 화면에서 강제로 다시 열지 않는다 — 사용자가 접어 둔 상태를 그대로 둔다.
+      const next = cloverOpenAfterExit(
+        unfoldedRef.current || document.documentElement.classList.contains('duo-unfolded-mode')
+      );
+      if (next === null) return;
+      setIsChannelsOpen(next);
     };
     window.addEventListener('prism:open-lucky-channels', openForLucky);
     window.addEventListener('prism:close-lucky-channels', closeForExit);
@@ -266,12 +268,17 @@ export default function LeftSidebarNav() {
     };
   }, []);
 
+  const layoutUnfoldedRef = useRef<boolean | null>(null);
   useEffect(() => {
     const handleLayoutChange = () => {
       if (typeof window === 'undefined') return;
       const unfolded = isDualPaneLayout();
       setIsUnfolded(unfolded);
-      if (unfolded) setIsChannelsOpen(true);
+      // 접힘→펼침 진입에서만 기본값(펼침)을 적용한다.
+      // 펼친 화면에서 클로버로 접어 둔 상태를 화면 크기 변화가 덮어쓰지 않게 한다.
+      const wasUnfolded = layoutUnfoldedRef.current;
+      layoutUnfoldedRef.current = unfolded;
+      if (unfolded && wasUnfolded !== true) setIsChannelsOpen(true);
     };
     handleLayoutChange();
     // Same fold snapshot as the App frame, including late WebKit size updates.
@@ -297,7 +304,8 @@ export default function LeftSidebarNav() {
   }, []);
   const luckyPathRef = useRef(cleanPath);
   const revealEpilogueRef = useRef<() => void>(() => {});
-  const channelsVisible = screenUnfolded || isChannelsOpen;
+  // 펼친 화면에서도 사용자가 접어 둘 수 있도록 강제 펼침을 두지 않는다.
+  const channelsVisible = isChannelsOpen;
   useEffect(() => {
     if (!channelsVisible) return;
     const list = document.querySelector<HTMLElement>('#main-sidebar-navigation .refined-menu-list');
@@ -326,17 +334,21 @@ export default function LeftSidebarNav() {
     };
   }, [channelsVisible, screenUnfolded]);
   useEffect(() => {
-    if (screenUnfolded) {
-      setIsChannelsOpen(true);
-      return;
-    }
     // 접힌 화면: 다른 화면으로 옮기거나 펼쳤다 접을 때, Lucky 채널이면 펼치고 아니면 접는다.
     // 같은 화면에서 클로버로 직접 열고 닫은 것은 그대로 둔다.
     const pathChanged = luckyPathRef.current !== cleanPath;
-    const justFolded = unfoldedBeforeRef.current;
+    const unfoldedBefore = unfoldedBeforeRef.current;
+    const justFolded = unfoldedBefore;
     luckyPathRef.current = cleanPath;
-    if (!pathChanged && !justFolded) return;
     const open = isLuckyListPath(cleanPath);
+    if (screenUnfolded) {
+      // 펼친 화면: 접힘→펼침 진입에만 기본값(펼침)을 적용하고,
+      // 사용자가 클로버로 접어 둔 상태는 경로가 바뀌어도 다시 열지 않는다.
+      const next = cloverOpenAfterFoldOrPathChange({ unfoldedBefore, unfolded: true, pathIsLucky: open });
+      if (next !== null) setIsChannelsOpen(next);
+      return;
+    }
+    if (!pathChanged && !justFolded) return;
     // 펼쳤다 접을 때는 화면 크기가 자리 잡은 뒤 접어서, 아이콘이 하나씩 들어가는 모습이 보이게 한다.
     if (justFolded && !open && !reduceMotionRef.current) {
       const timer = window.setTimeout(() => setIsChannelsOpen(false), 420);
@@ -472,8 +484,8 @@ export default function LeftSidebarNav() {
   }, []);
 
   /**
-   * 💬 Folded: Lucy → Lucy− → Master 1 → 2 → 3 → Lucy.
-   * Expanded: Lucy → Lucy+ → Master 1 → 2 → 3 → Lucy.
+   * 💬 루시 말풍선: 일반 루시 ↔ 루시프로(점술모드) 두 상태만 오간다.
+   * 켜면 사주 원국·타로·13대 도구·12대 양피지가 처음부터 모두 열린 통합 상담이 된다.
    */
   const cycleLucyMode = () => {
     triggerHaptic('whitehole');
@@ -481,16 +493,6 @@ export default function LeftSidebarNav() {
       document.getElementById('duo-lucy-viewport') && document.getElementById('duo-content-viewport')
     ) && isDuoUnfoldedState().unfolded;
     if (!isLucyMasterModeOn()) {
-      const marker = getLucyBubbleMarker();
-      const activeMarker = isLucyActive ? (isExpandedDuo ? 'plus' : 'minus') : marker;
-      if (isExpandedDuo && activeMarker !== 'plus') {
-        setLucyBubbleMarker('plus');
-        return;
-      }
-      if (!isExpandedDuo && activeMarker !== 'minus') {
-        setLucyBubbleMarker('minus');
-        return;
-      }
       setLucyBubbleMarker(null);
       setLucyMasterMode(true);
       setLucyMasterToolsRequested(isExpandedDuo);
@@ -498,13 +500,9 @@ export default function LeftSidebarNav() {
       if (isLucyMasterBgmPreferred()) void startLucyMasterBgm();
       return;
     }
+    // 펼친 화면: 첫 누름은 왼쪽 점술 테이블(도구)을 펼치고, 다음 누름은 일반 루시로 돌아간다.
     if (isExpandedDuo && !isLucyMasterToolsRequested()) {
       setLucyMasterToolsRequested(true);
-      return;
-    }
-    if (getLucyMasterDepth() < LUCY_MASTER_MAX_DEPTH) {
-      deepenLucyMasterDepth();
-      playLucyMasterSuction('deepen');
       return;
     }
     playLucyMasterSuction('out');
@@ -518,7 +516,7 @@ export default function LeftSidebarNav() {
   ) && isDuoUnfoldedState().unfolded;
 
   const handleNavigate = (path: string) => {
-    // Lucy already visible: the bubble switches Lucy / 점술모드 1·2·3 instead of navigating.
+    // Lucy already visible: the bubble switches Lucy / 루시프로(점술모드) instead of navigating.
     if (path === '/' && isLucyOnScreen()) {
       if (isExpandedLucyDuo() && !isLucyChatPath(location)) {
         // The Lucy bubble is also the shortcut back to its left-side tools after
@@ -603,13 +601,8 @@ export default function LeftSidebarNav() {
   }, [syncPrismDevices]);
 
   const [isLucyMaster, setIsLucyMaster] = useState<boolean>(() => isLucyMasterModeOn());
-  // 점술모드 상담 깊이마다 말풍선 기호가 바뀐다: 1단계 … / 2단계 ? / 3단계 !
-  const masterDepth = useLucyMasterDepth();
-  const MasterBubbleIcon = masterDepth >= 3 ? MessageCircleWarning : masterDepth === 2 ? MessageCircleQuestion : MessageCircleMore;
-  const displayBubbleMarker = !isLucyMaster
-    // 펼침 상태(isUnfolded)는 접기/펼치기 즉시 갱신된다. 화면 칸(DOM)이 생길 때까지 기다리지 않아 + 표시가 바로 바뀐다.
-    ? ((isUnfolded || isExpandedLucyDuo()) && isLucyActive ? 'plus' : 'minus')
-    : null;
+  // 일반 루시는 속이 빈 말풍선, 루시프로(점술모드)는 말풍선 안에 점 하나.
+  const LucyBubbleIcon = isLucyMaster ? LucyProBubbleDotIcon : MessageCircle;
   useEffect(() => {
     const sync = (e: Event) => {
       const on = (e as CustomEvent<{ on?: boolean }>).detail?.on;
@@ -619,24 +612,14 @@ export default function LeftSidebarNav() {
     return () => window.removeEventListener(LUCY_MASTER_MODE_EVENT, sync);
   }, []);
 
-  const lucyBubbleLabel = !isLucyMaster
-    ? displayBubbleMarker === 'plus'
-      ? 'Lucy Plus (+) (누르면 점술모드 1단계)'
-      : 'Lucy (−) (누르면 점술모드 1단계)'
-    : masterDepth >= LUCY_MASTER_MAX_DEPTH
-      ? '점술모드 3단계 (누르면 일반 루시로)'
-      : `점술모드 ${masterDepth}단계 (누르면 ${masterDepth + 1}단계)`;
+  // 장치 테스트와 화면 낭독이 같은 이름으로 루시 말풍선을 찾도록 'Lucy'로 시작한다.
+  const lucyBubbleLabel = isLucyMaster
+    ? 'Lucy 프로 · 루시프로(점술모드) (누르면 일반 루시로)'
+    : 'Lucy · 루시 (누르면 루시프로 점술모드)';
 
   const renderNavButton = ({ path, icon: NavIcon, label, isMainChat, isKey, isPrologue }: NavItemConfig) => {
-    // 점술모드(Lucy Master) 중에는 Lucy 말풍선 안 기호가 상담 깊이를 보여준다 (… / ? / !).
-    // 일반 모드에서는 말풍선 안에 Lucy(−) / Lucy Plus(+) 기호를 그린다.
-    const Icon = isMainChat
-      ? isLucyMaster
-        ? MasterBubbleIcon
-        : displayBubbleMarker === 'plus'
-          ? MessageCirclePlus
-          : MessageCircleMinus
-      : NavIcon;
+    // 일반 루시는 속이 빈 말풍선, 루시프로(점술모드)는 말풍선 안 점 하나.
+    const Icon = isMainChat ? LucyBubbleIcon : NavIcon;
     const isActive = isMainChat ? isLucyActive : isKey ? isKeyActive : isPrologue ? isPrologueActive
       : path === '/epilogue' ? isEpilogueActive : cleanPath === path || cleanPath.startsWith(path + '/');
     return (
@@ -646,9 +629,9 @@ export default function LeftSidebarNav() {
         <Icon
           size={22}
           aria-hidden="true"
-          data-lucy-mode-marker={isMainChat && !isLucyMaster && displayBubbleMarker ? displayBubbleMarker : undefined}
+          data-lucy-pro-bubble={isMainChat && isLucyMaster ? 'true' : undefined}
         />
-        {isMainChat && isLucyMaster && <span className="sr-only">점술모드 깊이 {masterDepth}단계</span>}
+        {isMainChat && isLucyMaster && <span className="sr-only">루시프로 점술모드 켜짐</span>}
       </button>
     );
   };
@@ -697,11 +680,10 @@ export default function LeftSidebarNav() {
                     title="Luckey"
                     onClick={() => {
                       triggerHaptic('whitehole');
-                      if (!screenUnfolded && channelsVisible) {
-                        setIsChannelsOpen(false);
-                        return;
-                      }
-                      setIsChannelsOpen(true);
+                      // 펼친 화면에서도 같은 토글: 펼쳐져 있으면 접고, 접혀 있으면 펼치며 럭키로 간다.
+                      const next = cloverOpenAfterClick(channelsVisible);
+                      setIsChannelsOpen(next.open);
+                      if (!next.navigate) return;
                       if (cleanPath !== '/lucky') handleNavigate('/lucky');
                     }}
                   >

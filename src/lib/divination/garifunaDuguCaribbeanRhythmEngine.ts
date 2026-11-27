@@ -1,12 +1,16 @@
 import type { UserProfile } from '../sharedState';
 
+export type GarifunaQuestionCategory = 'career' | 'relationship' | 'wealth' | 'health' | 'decision' | 'general';
+
 export interface GarifunaDuguResult {
   engineVersion: string;
   calculatedAtKst: string;
   questionTopic: string;
+  questionCategory: GarifunaQuestionCategory;
   caribbeanRhythm: string;
   companionRhythm: string;
   coastCadenceAxis: string;
+  topicBalanceHint: string;
   duguInsight: string;
   coastTone: string;
   reflectionFocus: string;
@@ -61,6 +65,24 @@ const RHYTHMS = [
   },
 ];
 
+const TOPIC_BALANCE_HINTS: Record<GarifunaQuestionCategory, string> = {
+  career: '일·커리어에서는 모든 것을 새로 발명하려 하기보다 이미 검증된 기본 루틴과 동료의 지혜를 빌려 오세요.',
+  relationship: '관계에서는 묵혀 둔 서운함을 덮어 두기보다 둥구 마당처럼 담백하고 솔직한 안부로 매듭을 풀어 보세요.',
+  wealth: '재정·계약에서는 무작정 힘을 쏟기보다 바다가 잔잔해지는 타이밍을 한 박자 기다린 뒤 움직이세요.',
+  health: '건강·회복에서는 머릿속 생각만 굴리지 말고 가벼운 걸음과 기지개로 어깨의 긴장부터 털어내세요.',
+  decision: '선택의 기로에서는 무거운 긴장을 한 박자 가볍게 바꾼 뒤 핵심 약속만 또렷이 남기세요.',
+  general: '오늘의 흐름에서는 해안 리듬과 동반 리듬을 함께 살피며 생동감과 핵심 정리의 균형을 맞추세요.',
+};
+
+function classifyGarifunaCategory(question: string): GarifunaQuestionCategory {
+  if (/일|직장|사업|커리어|프로젝트|성과|이직/.test(question)) return 'career';
+  if (/사랑|연애|관계|가족|친구|갈등|화해/.test(question)) return 'relationship';
+  if (/돈|재물|재정|투자|소비|계약/.test(question)) return 'wealth';
+  if (/건강|몸|피로|휴식|수면|회복/.test(question)) return 'health';
+  if (/선택|결정|방향|박자|풀어|진로/.test(question)) return 'decision';
+  return 'general';
+}
+
 function formatKstIso(date: Date): string {
   const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -96,14 +118,17 @@ export function calculateGarifunaDuguCaribbeanRhythm(params: {
   const questionTopic = trimmedQ
     ? trimmedQ.slice(0, 36)
     : '무거운 생각을 가벼운 박자로 풀어내는 하루';
+  const questionCategory = classifyGarifunaCategory(trimmedQ);
 
   return {
-    engineVersion: 'LUCKEY-GARIFUNA-DUGU-v2.3.0',
+    engineVersion: 'LUCKEY-GARIFUNA-DUGU-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
+    questionCategory,
     caribbeanRhythm: picked.rhythm,
     companionRhythm: companion.rhythm,
     coastCadenceAxis,
+    topicBalanceHint: TOPIC_BALANCE_HINTS[questionCategory],
     duguInsight: `${picked.insight} (동반 리듬: ${companion.rhythm})`,
     coastTone: picked.tone,
     reflectionFocus: `질문 맥락('${questionTopic}')에서 가리푸나 카리브 해안 지혜의 '${picked.rhythm}'와 해안 박자 축('${coastCadenceAxis}')을 함께 살피며, 머릿속에서만 맴도는 무거운 생각을 가벼운 움직임과 솔직한 박자로 풀어내 보세요.`,
@@ -122,6 +147,7 @@ export function formatGarifunaDuguPrompt(res: GarifunaDuguResult): string {
     `- 해안 리듬: ${res.caribbeanRhythm} (${res.coastTone})`,
     `- 동반 리듬: ${res.companionRhythm}`,
     `- 해안 박자 축: ${res.coastCadenceAxis}`,
+    `- 주제별 균형 조언: ${res.topicBalanceHint}`,
     `- 중심 통찰: ${res.duguInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,

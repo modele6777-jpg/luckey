@@ -21,7 +21,7 @@ import {
   type NatalChartResult
 } from '../astrologyAnalysis';
 
-export const KARMIC_NODES_ENGINE_VERSION = 'LUCKEY-NODE-v2.3.0';
+export const KARMIC_NODES_ENGINE_VERSION = 'LUCKEY-NODE-v2.4.0';
 
 export interface NodeAxisDetail {
   northSign: string;
@@ -69,6 +69,11 @@ export interface KarmicNodesResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  nodesCrossAxis: {
+    northSouthPair: string;
+    chironLilithBridge: string;
+    evolutionStage: string;
   };
   interpretiveBoundary: string;
   ritualAction: string;
@@ -239,6 +244,11 @@ export function calculateKarmicNodes(params?: {
     alignmentState: `${soulPhaseTitle} — 키론의 치유 역량과 릴리스의 주체성이 북쪽 노드로 수렴하는 국면`,
     integratedAction: `${nodeAxis.evolutionStrategy} | ${lilith.shadowToMaster}`,
   };
+  const nodesCrossAxis = {
+    northSouthPair: `${nodeAxis.northSign} ↔ ${nodeAxis.southSign}`,
+    chironLilithBridge: `${chiron.sign} × ${lilith.sign}`,
+    evolutionStage: soulPhaseTitle,
+  };
 
   const summary = `[카르믹 노드] 축: ${nodeAxis.axisName} (${nodeAxis.northSign} ➔ ${nodeAxis.southSign}). ` +
     `영혼의 과제: ${nodeAxis.soulQuest}. 컴포트 존 탈출: ${nodeAxis.comfortZoneTrap}. ` +
@@ -264,6 +274,7 @@ export function calculateKarmicNodes(params?: {
     summary,
     reflectiveQuestion,
     karmicNodesSynthesisMatrix,
+    nodesCrossAxis,
     interpretiveBoundary: '본 카르믹 노드·영혼 진화 궤적 리포트는 점성학 노드·키론·릴리스 상징에 기반한 정성적 자기 성찰 안내이며, 확정적 운명 예단이 아닙니다.',
     ritualAction,
     reflectionFocus,
@@ -292,6 +303,7 @@ export function formatKarmicNodesPrompt(res: KarmicNodesResult): string {
   if (res.karmicNodesSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스 [핵심 긴장: ${res.karmicNodesSynthesisMatrix.dominantTension} | 조율 상태: ${res.karmicNodesSynthesisMatrix.alignmentState}]`,
+      `- 노드 진화 교차 축: ${res.nodesCrossAxis.northSouthPair} | ${res.nodesCrossAxis.chironLilithBridge}`,
       `- 통합 실천: ${res.karmicNodesSynthesisMatrix.integratedAction}`,
     );
   }

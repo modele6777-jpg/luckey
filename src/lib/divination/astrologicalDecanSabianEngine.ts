@@ -16,7 +16,7 @@
 import type { UserProfile } from '../sharedState';
 import { calculateNatalChart, type NatalChartResult, type NatalPlacement, type ZodiacSignInfo } from '../astrologyAnalysis';
 
-export const ASTRO_DECAN_SABIAN_VERSION = 'LUCKEY-ASTRO-DS-v2.3.0';
+export const ASTRO_DECAN_SABIAN_VERSION = 'LUCKEY-ASTRO-DS-v2.4.0';
 
 export interface DecanInfo {
   signId: string;
@@ -83,6 +83,9 @@ export interface AstrologicalDecanSabianResult {
   reflectionFocus: string;
   boundaryNotice: string;
   interpretiveBoundary: string;
+  questionTopic: 'career' | 'relationship' | 'creative' | 'general';
+  decanSabianCrossAxis: string;
+  shadowWarning: string;
 }
 
 // 36 데칸 메타데이터 사전 (12사인 × 3데칸)
@@ -305,6 +308,17 @@ export function calculateAstrologicalDecanSabian(params?: {
 
   const summary = `[데칸 & 사비안] 태양은 ${sun.decan.title}(${sun.decan.subRuler} 관할), 사비안: ${sun.sabian.symbolTitle}. 달은 ${moon.decan.title}, 사비안: ${moon.sabian.symbolTitle}.`;
   const q = (params?.question || '').trim();
+  const questionTopic: AstrologicalDecanSabianResult['questionTopic'] = !q
+    ? 'general'
+    : /사랑|연애|관계|결혼|사람|갈등/.test(q)
+      ? 'relationship'
+      : /돈|재물|직장|사업|이직|계약|성공/.test(q)
+        ? 'career'
+        : /창의|비전|예술|영감|글|작품/.test(q)
+          ? 'creative'
+          : 'general';
+  const decanSabianCrossAxis = `${questionTopic} · 태양(${sun.decan.subRuler}) × 달(${moon.decan.subRuler})`;
+  const shadowWarning = `과잉·편향 경계: 데칸과 사비안 상징의 시적 이상에 취해 현실의 작은 실행과 약속을 놓치지 않도록 균형을 잡으세요.`;
   const reflectiveQuestion = q
     ? `"${q}" 앞에서 태양 데칸(${sun.decan.title})의 빛과 달 사비안(${moon.sabian.symbolTitle})의 내면 감각 중 어느 쪽을 먼저 신뢰해 보고 싶으신가요?`
     : `오늘 태양 [${sun.decan.title}]과 달 [${moon.decan.title}]의 상징이 만나는 지점에서 가장 먼저 깨우고 싶은 나만의 표현 방식은 무엇인가요?`;
@@ -331,6 +345,9 @@ export function calculateAstrologicalDecanSabian(params?: {
     reflectionFocus: reflectiveQuestion,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
+    questionTopic,
+    decanSabianCrossAxis,
+    shadowWarning,
   };
 }
 
@@ -352,6 +369,7 @@ export function formatAstrologicalDecanSabianPrompt(res: AstrologicalDecanSabian
   • 사비안 심볼: [${res.moon.sabian.symbolTitle}]
     - 내면의 풍경: "${res.moon.sabian.soulWisdom}"
 - 질문 맥락 감사 (${res.situationalSabianAudit.focusTheme}):
+  • 교차 축: ${res.questionTopic} · ${res.decanSabianCrossAxis}
   • 부지배성 조율: ${res.situationalSabianAudit.decanSubRulerGuidance}
   • 경계 함정: ${res.situationalSabianAudit.shadowCaution}
 - KST 시공간 점성 리듬: ${res.temporalSabianRhythm.planetaryHourTone} / ${res.temporalSabianRhythm.seasonalZodiacArc}
@@ -364,6 +382,7 @@ export function formatAstrologicalDecanSabianPrompt(res: AstrologicalDecanSabian
   • 핵심 본질: "${res.soulPoetics.coreIdentityMetaphor}"
   • 무의식 풍경: "${res.soulPoetics.innerEmotionalLandscape}"
   • 실천 지침: "${res.soulPoetics.actionableSoulAdvice}"
-${res.reflectiveQuestion ? `- 성찰 질문: ${res.reflectiveQuestion}\n` : ''}- 해석 경계: ${res.boundaryNotice}`;
+${res.reflectiveQuestion ? `- 성찰 질문: ${res.reflectiveQuestion}\n` : ''}- ${res.shadowWarning}
+- 해석 경계: ${res.boundaryNotice}`;
 }
 

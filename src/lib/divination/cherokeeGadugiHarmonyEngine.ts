@@ -11,6 +11,7 @@ export interface CherokeeGadugiResult {
   duyuktvInsight: string;
   smokyMountainsTone: string;
   duyuktvBalanceAxis: string;
+  topicBalanceHint: string;
   shadowWarning: string;
   reflectionFocus: string;
   ritualAction: string;
@@ -56,6 +57,15 @@ const PRINCIPLES = [
   },
 ];
 
+const TOPIC_BALANCE_HINTS: Record<CherokeeQuestionTopic, string> = {
+  career: '일과 협업에서는 경쟁의 승패보다 함께 일하는 동료와 오래 숨 쉴 수 있는 균형점(Duyuktv)을 세우는 편이 좋습니다.',
+  relationship: '관계에서는 상대를 이기려 들기보다 서로의 짐을 조금씩 나누는 가두기(Gadugi)의 손길이 매듭을 풉니다.',
+  wealth: '재정 판단은 당장의 눈앞 이익보다 일곱 세대 뒤까지 떳떳한 안정성을 먼저 확인하는 편이 유리합니다.',
+  health: '몸과 마음의 회복에는 억지로 둑을 세우기보다 토히(Tohi)처럼 감정의 물길을 부드럽게 흘려보내는 호흡이 필요합니다.',
+  decision: '선택의 순간에는 두려움의 늑대와 신뢰의 늑대 중 내가 어느 쪽에 마음을 보태고 있는지부터 살피세요.',
+  general: '내면의 균형과 공동체의 조화를 함께 바라보면 오늘 가야 할 바른 길이 한결 선명해집니다.',
+};
+
 function classifyCherokeeTopic(question?: string): CherokeeQuestionTopic {
   const q = (question ?? '').trim();
   if (/이직|직장|사업|승진|일|커리어|프로젝트|업무/.test(q)) return 'career';
@@ -97,11 +107,12 @@ export function calculateCherokeeGadugiHarmony(params: {
   const picked = PRINCIPLES[idx];
   const companion = PRINCIPLES[(idx + companionOffset) % PRINCIPLES.length];
   const questionTopic = classifyCherokeeTopic(params.question);
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const duyuktvBalanceAxis = `${picked.principle.split('(')[0].trim()} ↔ ${companion.principle.split('(')[0].trim()} 조화 축`;
   const shadowWarning = `[${picked.principle.split('(')[0].trim()} 과잉 경계] 배려나 조화를 앞세우다 정작 내 안의 솔직한 경계와 필요를 지워 버리지 않도록 살피십시오.`;
 
   return {
-    engineVersion: 'LUCKEY-CHEROKEE-GADUGI-v2.3.0',
+    engineVersion: 'LUCKEY-CHEROKEE-GADUGI-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     gadugiPrinciple: picked.principle,
@@ -109,6 +120,7 @@ export function calculateCherokeeGadugiHarmony(params: {
     duyuktvInsight: `${picked.insight} (동반 원리: ${companion.principle})`,
     smokyMountainsTone: picked.tone,
     duyuktvBalanceAxis,
+    topicBalanceHint,
     shadowWarning,
     reflectionFocus: `체로키 지혜의 '${picked.principle}'와 동반 원리 '${companion.principle}'처럼, 내 안의 두려움 대신 신뢰와 조화(Duyuktv)의 마음에 오늘의 힘을 보태 보세요.`,
     ritualAction: picked.ritual,
@@ -124,6 +136,7 @@ export function formatCherokeeGadugiPrompt(res: CherokeeGadugiResult): string {
     `- 조화 원칙: ${res.gadugiPrinciple} (${res.smokyMountainsTone})`,
     `- 동반 원리: ${res.companionPrinciple}`,
     `- 두육트브 조화 축: ${res.duyuktvBalanceAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 중심 통찰: ${res.duyuktvInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,

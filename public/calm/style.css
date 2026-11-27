@@ -8287,15 +8287,14 @@ html.key-search-open, html.key-search-open body { overflow: hidden; }
 .key-guide-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  height: 34px;
-  padding: 0 12px;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   border-radius: 999px;
   border: 1px solid var(--border-linen, rgba(0, 0, 0, 0.1));
   background: var(--bg-card, #fff);
   color: var(--text-body, #3b2f2a);
-  font-size: 12px;
-  font-weight: 700;
   cursor: pointer;
   box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.06));
   -webkit-tap-highlight-color: transparent;
@@ -8320,10 +8319,6 @@ html.key-search-open, html.key-search-open body { overflow: hidden; }
   gap: 6px;
 }
 .top-nav .key-guide-btn { height: 40px; }
-@media (max-width: 300px) {
-  .key-guide-btn span { display: none; }
-  .top-nav .key-guide-btn { width: 40px; padding: 0; justify-content: center; }
-}
 
 /* 앱 안에서 열릴 때는 앱이 검색·가이드 버튼을 우측 상단 끝에 직접 그린다 */
 html.luckey-parent-actions #key-search-btn,

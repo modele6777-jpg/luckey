@@ -554,12 +554,12 @@ export function LucyResponseRecommendation({
     ? 'Key 채널'
     : recommendationKind === 'luckey'
       ? 'Luckey 채널'
-      : '점술모드';
+      : '루시프로';
   const recommendationDetail = recommendationKind === 'key'
     ? `${recommendedFeature.shortName} · ${recommendedFeature.description}`
     : recommendationKind === 'luckey'
       ? `${recommendedChannel.shortName} · ${recommendedChannel.tagline}`
-      : '사주·타로로 방금 이야기를 더 깊게 이어가요.';
+      : '사주·타로·13대 도구로 방금 이야기를 더 깊게 이어가요.';
 
   return (
     <motion.div
@@ -639,7 +639,7 @@ export function LucyResponseRecommendation({
                 : 'bg-gradient-to-r from-amber-600 to-orange-600'
             }`}
           >
-            <span>{recommendationKind === 'key' ? 'Key 채널에서 이어서 보기' : recommendationKind === 'luckey' ? `${recommendedChannel.shortName} 채널로 이어서 보기` : '점술모드로 이어서 보기'}</span>
+            <span>{recommendationKind === 'key' ? 'Key 채널에서 이어서 보기' : recommendationKind === 'luckey' ? `${recommendedChannel.shortName} 채널로 이어서 보기` : '루시프로로 이어서 보기'}</span>
             <ArrowRight size={12} />
           </button>
           {recommendationKind === 'divination' && onDismissDivination && (

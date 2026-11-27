@@ -2,12 +2,12 @@
  * Vedic Upanishadic Four Mahavakyas Consciousness Awakening Engine
  * 고대 인도 베다 우파니샤드 4대 마하바키야(Mahāvākya) 대선언 의식 각성 & 참자아 성찰 엔진
  *
- * Version: LUCKEY-VEDIC-MAHAVAKYA-v2.3.0
+ * Version: LUCKEY-VEDIC-MAHAVAKYA-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const VEDIC_MAHAVAKYA_ENGINE_VERSION = 'LUCKEY-VEDIC-MAHAVAKYA-v2.3.0';
+export const VEDIC_MAHAVAKYA_ENGINE_VERSION = 'LUCKEY-VEDIC-MAHAVAKYA-v2.4.0';
 
 function formatMahavakyaKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -31,6 +31,7 @@ export interface VedicMahavakyaReport {
   engineVersion: string;
   calculatedAtKst: string;
   questionFocus: MahavakyaQuestionFocus;
+  mahavakyaCrossAxis: string;
   brahmanRealizationScore: number; // 내부 정렬용 (프롬프트 비노출)
   mayaIllusionDispellingIndex: number; // 내부 정렬용 (프롬프트 비노출)
   innerSohamResonance: number; // 내부 정렬용 (프롬프트 비노출)
@@ -310,6 +311,7 @@ export function calculateVedicMahavakya(params?: VedicMahavakyaParams): VedicMah
     alignmentState: `${awarenessPhase} · ${vivekaLens} · 보조 교차(${secondaryVakya.sanskritPhrase}) · ${questionFocus}`,
     integratedAction: `${guidance.ritualAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const mahavakyaCrossAxis = `${activeVakya.sanskritPhrase.split('(')[0].trim()} × ${awarenessPhase.split('—')[0].trim()} (${questionFocus})`;
   const interpretiveBoundary =
     '이는 베다 우파니샤드 4대 마하바키야 철학에 기반한 상징적 자기 성찰 참고일 뿐, 개인 점수·심리 진단·단정적 미래 예측이 아닙니다.';
   const reflectiveQuestion = q
@@ -320,6 +322,7 @@ export function calculateVedicMahavakya(params?: VedicMahavakyaParams): VedicMah
     engineVersion: VEDIC_MAHAVAKYA_ENGINE_VERSION,
     calculatedAtKst,
     questionFocus,
+    mahavakyaCrossAxis,
     brahmanRealizationScore: brahman,
     mayaIllusionDispellingIndex: maya,
     innerSohamResonance: soham,
@@ -356,7 +359,7 @@ export function formatVedicMahavakyaPrompt(report: VedicMahavakyaReport): string
     ? `\n- 마하바키야 교차 매트릭스: 핵심 긴장(${report.mahavakyaSynthesisMatrix.dominantTension}) · 조율 상태(${report.mahavakyaSynthesisMatrix.alignmentState}) · 통합 실천(${report.mahavakyaSynthesisMatrix.integratedAction})`
     : '';
   return `[고대 인도 베다 우파니샤드 4대 마하바키야(Mahāvākya) 대선언 실측 데이터]
-- 엔진 버전: ${report.engineVersion} | ${report.calculatedAtKst} | 질문 맥락: ${report.questionFocus}
+- 엔진 버전: ${report.engineVersion} | ${report.calculatedAtKst} | 질문 맥락: ${report.questionFocus} | 마하바키야 교차 축: ${report.mahavakyaCrossAxis}
 - 의식 각성 국면: ${report.awarenessPhase}
 - 마음 파동(Vritti): ${report.vrittiPattern}
 - 분별 렌즈(Viveka): ${report.vivekaLens}

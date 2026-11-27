@@ -12,34 +12,22 @@
   "theme_color": "#06070a",
   "icons": [
     {
-      "src": "/luckey-key-v4-192.png",
+      "src": "/lucky-key-192.png?v=4",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/luckey-key-v4-512.png",
+      "src": "/lucky-key-512.png?v=4",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/luckey-key-v4-512.png",
+      "src": "/lucky-key-512.png?v=4",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
-    },
-    {
-      "src": "/luckey-key-v4-180.png",
-      "sizes": "180x180",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/luckey-key-v4.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
     }
   ],
   "shortcuts": [

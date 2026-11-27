@@ -15,7 +15,25 @@
 import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju } from '../sajuAnalysis';
 
-export const TAROT_ELEMENTAL_COURT_VERSION = 'LUCKEY-TAROT-ELEMENTAL-COURT-v2.2.0';
+export const TAROT_ELEMENTAL_COURT_VERSION = 'LUCKEY-TAROT-ELEMENTAL-COURT-v2.3.0';
+
+export type TarotCourtQuestionTopic = 'relation' | 'career' | 'wealth' | 'mindset' | 'general';
+
+function classifyTarotCourtTopic(q: string): TarotCourtQuestionTopic {
+  if (/마음|감정|사랑|연애|관계|외로움|상처/.test(q)) return 'relation';
+  if (/이직|결단|퇴사|계약|선택|승부|커리어/.test(q)) return 'career';
+  if (/돈|재물|투자|사업|매출|집/.test(q)) return 'wealth';
+  if (/태도|마인드|집중|균형|습관/.test(q)) return 'mindset';
+  return 'general';
+}
+
+const TAROT_COURT_SHADOW_WARNINGS: Record<TarotCourtQuestionTopic, string> = {
+  relation: '공감이나 직관에 지나치게 기울어 경계가 흐려지지 않도록, 말하기 전에 사실과 감정을 구분해 두십시오.',
+  career: '결단력을 앞세워 주변의 반대 신호를 성급히 자르지 않도록 핵심 이해관계자의 의견을 한 번 더 확인하십시오.',
+  wealth: '현실적 실행력만 믿고 보수적 수치 검증이나 유동성 여유를 건너뛰면 변곡점에서 흔들릴 수 있습니다.',
+  mindset: '이상적인 페르소나를 연기하려다 내면의 피로를 외면하면 갑작스러운 번아웃으로 이어질 수 있습니다.',
+  general: '궁정 카드의 페르소나는 상황에 맞게 꺼내 쓰는 도구입니다. 한 가지 역할에 갇히지 말고 유연하게 조율하십시오.',
+};
 
 function formatCourtKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -55,6 +73,8 @@ export interface TarotElementalCourtReport {
   engineVersion: string;
   calculatedAt: string;
   calculatedAtKst: string;
+  questionTopic: TarotCourtQuestionTopic;
+  shadowWarning: string;
   activePersonaCourt: CourtCardProfile;
   subconsciousShadowCourt: CourtCardProfile;
   elementalBalance: TarotElementalBalance;
@@ -264,6 +284,8 @@ export function calculateTarotElementalCourt(
   const now = new Date();
   const calculatedAtKst = formatCourtKstTimestamp(now);
   const q = inputTopic.trim();
+  const questionTopic = classifyTarotCourtTopic(q);
+  const shadowWarning = TAROT_COURT_SHADOW_WARNINGS[questionTopic];
   const reflectiveQuestion = q
     ? `"${q}" 앞에서 [${activePersonaCourt.nameKo}]의 강점을 쓰면서도 [${subconsciousShadowCourt.nameKo}]의 맹점에 휩쓸리지 않으려면, 오늘 어떤 한 걸음을 의식적으로 늦추거나 분명히 하겠습니까?`
     : `[${activePersonaCourt.nameKo}]의 태도로 하루를 열 때, 지금 내 안에서 가장 먼저 다독여야 할 [${subconsciousShadowCourt.nameKo}]의 그림자는 무엇입니까?`;
@@ -279,7 +301,7 @@ export function calculateTarotElementalCourt(
   const reflectionFocus = `우세 원소 ${elementalBalance.dominantElement}의 강점을 살리되 [${subconsciousShadowCourt.nameKo}]의 그림자(${subconsciousShadowCourt.shadowBlindSpot})로 기울어지는 순간 알아차리기`;
 
   const synthesisPromptGuidance = `
-[타로 4대 원소 & 16대 궁정 카드(Court Cards) 마스터 지능 ${TAROT_ELEMENTAL_COURT_VERSION} | ${calculatedAtKst}]:
+[타로 4대 원소 & 16대 궁정 카드(Court Cards) 마스터 지능 ${TAROT_ELEMENTAL_COURT_VERSION} | ${calculatedAtKst} | 질문 맥락: ${questionTopic}]:
 - 주도 착용 페르소나: "${activePersonaCourt.nameKo}" (${activePersonaCourt.primaryArchetype})
 - 현실 슈퍼파워: "${activePersonaCourt.executiveSuperpower}"
 - 무의식 그림자 맹점 직면: "${activePersonaCourt.shadowBlindSpot}" (그림자 카드: ${subconsciousShadowCourt.nameKo})
@@ -289,6 +311,7 @@ export function calculateTarotElementalCourt(
 - 실천 의례: ${ritualAction}
 - 성찰 초점: ${reflectionFocus}
 - 성찰 질문: ${reflectiveQuestion}
+- 과잉 경계: ${shadowWarning}
 - 해석 경계: ${interpretiveBoundary}
 내담자에게 "카드를 뽑아보니~"라는 설명조 없이, 상대의 현재 페르소나 성향과 주의해야 할 그림자 맹점을 사람을 꿰뚫어 보듯 단호하고 따뜻하게 짚어줄 것.
 `.trim();
@@ -297,6 +320,8 @@ export function calculateTarotElementalCourt(
     engineVersion: TAROT_ELEMENTAL_COURT_VERSION,
     calculatedAt: now.toISOString(),
     calculatedAtKst,
+    questionTopic,
+    shadowWarning,
     activePersonaCourt,
     subconsciousShadowCourt,
     elementalBalance,

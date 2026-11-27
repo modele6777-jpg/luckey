@@ -8,12 +8,12 @@
  * 4. 남해 유배의 풍파 속 지극한 효심과 문학적 승화도 (Filial Devotion & Literary Sublimation Score): 귀양지의 처절한 고난 속에서도 홀어머니의 근심을 덜고자 명작을 써 내려간 지극한 효성과 승화력.
  * 5. 세속의 성패를 초월한 초연한 심신 회복탄력성 (Transcendent Equanimity & Serene Resilience Score): 득실과 영화, 궁달의 기복에 일희일비하지 않고 허공처럼 맑은 평정을 유지하는 회복탄력성.
  *
- * @version LUCKEY-SEOPO-KIM-MAN-JUNG-GUUNMONG-AWAKENING-v2.2.0
+ * @version LUCKEY-SEOPO-KIM-MAN-JUNG-GUUNMONG-AWAKENING-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_SEOPO_KIM_MAN_JUNG_GUUNMONG_AWAKENING_VERSION = 'LUCKEY-SEOPO-KIM-MAN-JUNG-GUUNMONG-AWAKENING-v2.3.0';
+export const KOREAN_SEOPO_KIM_MAN_JUNG_GUUNMONG_AWAKENING_VERSION = 'LUCKEY-SEOPO-KIM-MAN-JUNG-GUUNMONG-AWAKENING-v2.4.0';
 
 export interface GuunmongTheme {
   themeKey: string;
@@ -34,6 +34,7 @@ export interface GuunmongAphorism {
 export interface KoreanSeopoKimManJungGuunmongAwakeningResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '집착·각성' | '공관·평정' | '신의·정절' | '효심·승화' | '구운몽 전반';
   // 5대 서포 김만중 핵심 지표 (0~100)
   guunmongIllusoryFamePenetrationScore: number;          // 일장춘몽 세속 영화의 허상 직시도 (Illusory Fame Penetration)
   prajnaparamitaVoidTrueSelfIndex: number;               // 금강경 반야공관 및 본래면목 회복 지수 (Prajnaparamita Void & True Self)
@@ -47,6 +48,7 @@ export interface KoreanSeopoKimManJungGuunmongAwakeningResult {
   secondaryGuunmongAphorism: GuunmongAphorism;
   ritualAction: string;
   reflectionFocus: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
   guunmongComprehensiveGuidance: {
@@ -147,6 +149,21 @@ function hashString(str: string): number {
   return hash;
 }
 
+const GUUNMONG_SHADOWS: Record<string, string> = {
+  springDreamAwakening: '세속의 성패를 꿈처럼 바라보는 초연함이 오늘 당장 책임지고 가꾸어야 할 현실의 약속과 성실함마저 덧없다고 미루는 허무주의로 흐르지 않게 경계하세요.',
+  diamondSutraEmptiness: '불안과 욕망을 흘려보내는 반야공관의 태도가 실제로 해결하고 정리해야 할 감정의 원인이나 관계의 매듭까지 외면하는 회피가 되지 않게 살피세요.',
+  righteousSteadfastness: '모함과 오해 속에서도 묵묵히 정도를 지키는 의연함이 꼭 필요한 사실 확인과 최소한의 정당한 해명까지 포기하는 침묵으로 굳지 않게 균형을 잡으세요.',
+  filialSublimation: '고난을 사랑과 창작으로 승화시키는 정성이 지금 내 마음과 몸이 감당할 수 있는 한계치와 휴식의 필요마저 돌보지 않는 자기 희생으로 번지지 않게 주의하세요.',
+};
+
+function classifyGuunmongTopic(q: string): KoreanSeopoKimManJungGuunmongAwakeningResult['questionTopic'] {
+  if (/꿈|부귀|명예|집착|허상|본심/.test(q)) return '집착·각성';
+  if (/불안|마음|공|비우|평정/.test(q)) return '공관·평정';
+  if (/도리|모함|오해|신의|진실/.test(q)) return '신의·정절';
+  if (/효|어머니|고난|유배|승화/.test(q)) return '효심·승화';
+  return '구운몽 전반';
+}
+
 export function calculateKoreanSeopoKimManJungGuunmongAwakening(
   profile?: UserProfile,
   query?: string,
@@ -158,7 +175,9 @@ export function calculateKoreanSeopoKimManJungGuunmongAwakening(
   const birthTime = profile?.basic?.birthtime ?? p?.birthTime ?? p?.birthtime ?? '12:00';
   const gender = profile?.basic?.gender ?? p?.gender ?? 'neutral';
 
-  const seedString = `KIM-MAN-JUNG-GUUNMONG-AWAKENING:${name}:${birthDate}:${birthTime}:${gender}:${query ?? ''}`;
+  const trimmedQuery = (query ?? '').trim();
+  const questionTopic = classifyGuunmongTopic(trimmedQuery);
+  const seedString = `KIM-MAN-JUNG-GUUNMONG-AWAKENING:${name}:${birthDate}:${birthTime}:${gender}:${trimmedQuery}`;
   const baseHash = hashString(seedString);
   const absHash = Math.abs(baseHash);
 
@@ -178,8 +197,8 @@ export function calculateKoreanSeopoKimManJungGuunmongAwakening(
   const focalGuunmongAphorism = GUUNMONG_APHORISMS[aphorismIndex];
   const secondaryGuunmongAphorism = GUUNMONG_APHORISMS[secondaryAphorismIndex];
 
-  const trimmedQuery = query?.trim();
   const ritualAction = `[${activeGuunmongTheme.themeTitleKo.split(' — ')[0]}] ${focalGuunmongAphorism.actionGuidance}`;
+  const shadowWarning = GUUNMONG_SHADOWS[activeGuunmongTheme.themeKey] ?? GUUNMONG_SHADOWS.springDreamAwakening;
   const reflectiveQuestion = trimmedQuery
     ? `서포의 '${activeGuunmongTheme.themeTitleKo}'와 '${secondaryGuunmongTheme.themeTitleKo}'를 비추어 볼 때, "${trimmedQuery}"에서 꿈처럼 덧없는 집착과 끝까지 지켜야 할 참된 본심은 어떻게 갈리나요?`
     : `지금 마음이 흔들리는 문제 앞에서, '${activeGuunmongTheme.themeTitleKo}'의 각성과 '${secondaryGuunmongTheme.themeTitleKo}'의 평정을 함께 지키려면 어떤 헛된 근심을 먼저 내려놓아야 할까요?`;
@@ -213,6 +232,7 @@ export function calculateKoreanSeopoKimManJungGuunmongAwakening(
   return {
     engineVersion: KOREAN_SEOPO_KIM_MAN_JUNG_GUUNMONG_AWAKENING_VERSION,
     calculatedAtKst,
+    questionTopic,
     guunmongIllusoryFamePenetrationScore,
     prajnaparamitaVoidTrueSelfIndex,
     righteousIntegrityMoralFidelityIndex,
@@ -224,6 +244,7 @@ export function calculateKoreanSeopoKimManJungGuunmongAwakening(
     secondaryGuunmongAphorism,
     ritualAction,
     reflectionFocus,
+    shadowWarning,
     reflectiveQuestion,
     interpretiveBoundary,
     guunmongComprehensiveGuidance: {
@@ -248,7 +269,7 @@ export function formatKoreanSeopoKimManJungGuunmongAwakeningPrompt(
   const lines = [
     `【서포 김만중 《구운몽·사씨남정기》 일장춘몽 각성·반야공관 지표】`,
     `- 연산 시각: ${res.calculatedAtKst} | 엔진: ${res.engineVersion}`,
-    `- 구운몽 각성 국면: ${describeGuunmongStage(avgScore)}`,
+    `- 질문 맥락: ${res.questionTopic} | 구운몽 각성 국면: ${describeGuunmongStage(avgScore)}`,
     `- 핵심 구운몽 테마: ${res.activeGuunmongTheme.themeTitleKo} [${res.activeGuunmongTheme.themeTitleEn}]`,
     `- 보조 교차 테마: ${res.secondaryGuunmongTheme.themeTitleKo} [${res.secondaryGuunmongTheme.themeTitleEn}]`,
     `- 각성적 통찰: ${res.activeGuunmongTheme.awakeningInsight}`,
@@ -258,6 +279,7 @@ export function formatKoreanSeopoKimManJungGuunmongAwakeningPrompt(
     `- 원전 출처: [${res.focalGuunmongAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalGuunmongAphorism.actionGuidance}`,
     `- 실천 의례: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,

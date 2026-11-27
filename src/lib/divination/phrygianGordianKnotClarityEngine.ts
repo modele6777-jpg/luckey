@@ -3,12 +3,15 @@ import type { UserProfile } from '../sharedState';
 export interface PhrygianGordianResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: '결단·단순화' | '비움·물길' | '표현·갈대' | '중심·대지' | '실행·조약돌' | '고르디온 전반';
   anatolianSymbol: string;
   companionSymbol: string;
+  gordianCutAxis: string;
   phrygianInsight: string;
   gordianTone: string;
   reflectionFocus: string;
   ritualAction: string;
+  shadowWarning: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -65,27 +68,50 @@ function stableHash(input: string): number {
   return Math.abs(h);
 }
 
+const PHRYGIAN_SHADOWS = [
+  '고르디온 매듭을 단숨에 단순화하는 결단력이 꼭 챙겨야 할 세부 조건이나 타인의 이해관계까지 거칠게 잘라 내는 성급함이 되지 않게 하세요.',
+  '강물에 집착을 씻어 내려놓는 가벼움이 정작 개선하고 고쳐 써야 할 현실의 과제까지 포기하는 무책임함이 되어서는 안 됩니다.',
+  '갈대숲에 속마음을 털어놓는 솔직함이 때와 상대의 준비 상태를 살피지 않고 쏟아내는 충동적 토로가 되지 않게 주의하세요.',
+  '키벨레 돌기둥처럼 대지에 발을 딛고 버티는 중심이 새로운 환경 변화에 맞춰 움직여야 할 때조차 자리를 고집하는 완고함이 되지 않게 살피세요.',
+  '지금 가진 조약돌로 먼저 무늬를 놓는 실용성이 장기적인 구조와 품질을 다듬어야 할 단계까지 대충 때우는 임시방편이 되지 않게 하세요.',
+];
+
+function classifyPhrygianTopic(q: string): PhrygianGordianResult['questionTopic'] {
+  if (/매듭|단순|결단|풀/.test(q)) return '결단·단순화';
+  if (/강|비움|집착|미련/.test(q)) return '비움·물길';
+  if (/말|진심|털어|갈대/.test(q)) return '표현·갈대';
+  if (/중심|기둥|흔들|대지/.test(q)) return '중심·대지';
+  if (/조각|조약돌|완벽|시작/.test(q)) return '실행·조약돌';
+  return '고르디온 전반';
+}
+
 export function calculatePhrygianGordianKnotClarity(params: {
   profile: UserProfile;
   now?: Date;
   question?: string;
 }): PhrygianGordianResult {
   const now = params.now ?? new Date();
-  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${params.question ?? ''}|${now.toISOString().slice(0, 13)}`;
+  const q = (params.question ?? '').trim();
+  const questionTopic = classifyPhrygianTopic(q);
+  const seed = `${JSON.stringify(params.profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const idx = stableHash(seed) % SYMBOLS.length;
   const picked = SYMBOLS[idx];
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (SYMBOLS.length - 1));
   const companion = SYMBOLS[(idx + companionOffset) % SYMBOLS.length];
+  const gordianCutAxis = `${picked.symbol.split('(')[0].trim()} ↔ ${companion.symbol.split('(')[0].trim()} (${questionTopic})`;
 
   return {
-    engineVersion: 'LUCKEY-PHRYGIAN-GORDIAN-v2.2.0',
+    engineVersion: 'LUCKEY-PHRYGIAN-GORDIAN-v2.3.0',
     calculatedAtKst: formatKstIso(now),
+    questionTopic,
     anatolianSymbol: picked.symbol,
     companionSymbol: companion.symbol,
+    gordianCutAxis,
     phrygianInsight: picked.insight,
     gordianTone: picked.tone,
     reflectionFocus: `고대 프리지아·고르디온 지혜의 '${picked.symbol}'을 중심에 두고 '${companion.symbol}'의 결을 곁들여, 자꾸만 꼬이는 매듭을 억지로 당기지 말고 문제를 단순하게 만드는 한 번의 결단을 내려 보세요.`,
     ritualAction: picked.action,
+    shadowWarning: PHRYGIAN_SHADOWS[idx],
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '고대 아나톨리아 프리지아(Phrygia)의 고르디온 매듭·산가리우스 강 비움 지혜를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -95,11 +121,13 @@ export function formatPhrygianGordianPrompt(res: PhrygianGordianResult): string 
   return [
     `[프리지아 고르디온·명쾌한 결단 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
+    `- 질문 맥락: ${res.questionTopic} | 매듭 결단 축: ${res.gordianCutAxis}`,
     `- 아나톨리아 상징: ${res.anatolianSymbol} (${res.gordianTone})`,
     `- 동반 상징: ${res.companionSymbol}`,
     `- 중심 통찰: ${res.phrygianInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
+    `- 과잉 경계: ${res.shadowWarning}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

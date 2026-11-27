@@ -16,7 +16,25 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PYTHAGOREAN_LIFECYCLE_VERSION = 'LUCKEY-PYTH-v2.2.0';
+export const PYTHAGOREAN_LIFECYCLE_VERSION = 'LUCKEY-PYTH-v2.3.0';
+
+export type PythagoreanQuestionTopic = 'transition' | 'career' | 'wealth' | 'relation' | 'general';
+
+function classifyPythagoreanTopic(q: string): PythagoreanQuestionTopic {
+  if (/전환|피너클|챌린지|주기|나이/.test(q)) return 'transition';
+  if (/일|직장|사업|성취|커리어/.test(q)) return 'career';
+  if (/재물|돈|투자|자산|성공/.test(q)) return 'wealth';
+  if (/관계|사람|사랑|가족|협력/.test(q)) return 'relation';
+  return 'general';
+}
+
+const PYTHAGOREAN_SHADOW_WARNINGS: Record<PythagoreanQuestionTopic, string> = {
+  transition: '피너클 전환기에 과거의 방식과 새 주기의 요구를 동시에 붙잡으려 하면 에너지가 분산될 수 있습니다.',
+  career: '개인년도의 확장 에너지를 믿고 챌린지 과제(반복되는 함정)를 점검하지 않으면 같은 패턴이 반복됩니다.',
+  wealth: '수비학적 황금기라 해도 구체적인 현금 흐름과 리스크 한도 없이 과신하지 마십시오.',
+  relation: '숫자의 조화만 따지기보다 상대방의 현재 속도와 경계를 존중하는 대화를 우선하십시오.',
+  general: '피너클은 기회이고 챌린지는 훈련입니다. 숫자에 기대기보다 오늘의 선택으로 주기를 완성하십시오.',
+};
 
 function formatPythagoreanKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -61,6 +79,8 @@ export interface PythagoreanLifecycleResult {
   engineVersion: string;
   calculatedAtIso: string;
   calculatedAtKst: string;
+  questionTopic: PythagoreanQuestionTopic;
+  shadowWarning: string;
   birthdateStr: string;
   currentAge: number;
   lifePathNumber: number;
@@ -385,6 +405,8 @@ export function calculatePythagoreanLifecycle(params?: {
 
   const calculatedAtKst = formatPythagoreanKstTimestamp(now);
   const q = (params?.question || '').trim();
+  const questionTopic = classifyPythagoreanTopic(q);
+  const shadowWarning = PYTHAGOREAN_SHADOW_WARNINGS[questionTopic];
   const reflectiveQuestion = q
     ? `'${q}'의 국면에서 현재 [${currentPinnacle.name}]의 기회와 [${currentChallenge.name}]의 과제를 함께 비추어 볼 때, 지금 먼저 바로잡을 한 가지는 무엇입니까?`
     : `올해 개인년도 제${personalYearNum}년(${currentPersonalYear.cyclePhase})의 흐름 속에서 ${currentChallenge.sublimationKey}를 어떻게 실천하시겠습니까?`;
@@ -400,6 +422,8 @@ export function calculatePythagoreanLifecycle(params?: {
     engineVersion: PYTHAGOREAN_LIFECYCLE_VERSION,
     calculatedAtIso: now.toISOString(),
     calculatedAtKst,
+    questionTopic,
+    shadowWarning,
     birthdateStr,
     currentAge,
     lifePathNumber,
@@ -427,7 +451,7 @@ export function formatPythagoreanLifecyclePrompt(res: PythagoreanLifecycleResult
   const cList = res.challenges.map(c => `  • 제${c.index} 챌린지 [숫자 ${c.number}]: ${c.title} - ${c.coreLesson}`).join('\n');
 
   const lines = [
-    `[피타고라스 4대 피너클(Pinnacles) & 챌린지(Challenges) 생애 주기 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst})]`,
+    `[피타고라스 4대 피너클(Pinnacles) & 챌린지(Challenges) 생애 주기 리포트 (엔진: ${res.engineVersion} | ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic})]`,
     `- 프로필: 생년월일 ${res.birthdateStr} (현재 만 ${res.currentAge}세) | 라이프 패스: ${res.lifePathNumber}${res.masterNumber ? ` (마스터 넘버 ${res.masterNumber})` : ''}`,
     `- 4대 피너클(황금 도약기) 타임라인:\n${pList}`,
     `  ★ 현재 진행 중인 피너클: [${res.currentPinnacle.name}: ${res.currentPinnacle.stageName}] - 진행 ${res.currentPinnacle.progressYear}년차 (남은 기간: 약 ${res.currentPinnacle.yearsRemaining}년)`,
@@ -449,6 +473,7 @@ export function formatPythagoreanLifecyclePrompt(res: PythagoreanLifecycleResult
       `  • 통합 실천: ${res.pythagoreanSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 과잉 경계: ${res.shadowWarning}`);
   lines.push(`- 해석 경계: ${res.interpretiveBoundary}`);
   lines.push(`※ 루시 지침: 서양 수비학의 4대 피너클은 동양의 10년 대운과 정밀하게 공명하는 인생의 사계절입니다. 현재 나이대가 피너클의 어느 전환기에 있는지, 올해 개인년도 9년 사이클에서 어떤 단계인지와 챌린지 극복 방안을 명쾌하고 희망적으로 연결해 주세요.`);
   return lines.join('\n');

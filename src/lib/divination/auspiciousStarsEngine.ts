@@ -39,7 +39,7 @@ import type { UserProfile } from '../sharedState';
 import { calculateDetailedSaju, BRANCH_KOREAN, type SajuAnalysisResult } from '../sajuAnalysis';
 import { getAstronomicalSajuYear } from '../astronomicalSolarTerms';
 
-export const AUSPICIOUS_STARS_ENGINE_VERSION = 'LUCKEY-AS-v2.3.0';
+export const AUSPICIOUS_STARS_ENGINE_VERSION = 'LUCKEY-AS-v2.4.0';
 
 export const AUSPICIOUS_STARS_METHOD =
   '천을(갑무경축미·을기자신·병정해유·임계사묘·신인오, 일간+년간 4주 대조, 일지/년월시지 분해)·문창(전통 가요)·학당(장생지)·문곡(상관 록지)·천덕·월덕(월지 기준) 6대 길신 매트릭스, 일지 순 공망과 충형 간섭 길력 보정, 세운·대운 지지 귀인 도래 타임라인 및 상호 귀인 인연 매칭 결정론 산출';
@@ -176,6 +176,9 @@ export interface AuspiciousStarsResult {
   reflectiveQuestion?: string;
   ritualAction?: string;
   reflectionFocus?: string;
+  questionTopic?: 'career' | 'relationship' | 'study' | 'decision' | 'general';
+  auspiciousCrossAxis?: string;
+  shadowWarning?: string;
   interpretiveBoundary: string;
 }
 
@@ -734,6 +737,18 @@ export function calculateAuspiciousStars(params: {
 
     const situationalNobleAudit = buildAuspiciousSituationalAudit(params.question || '', hits);
     const temporalNobleRhythm = buildAuspiciousTemporalRhythm(now);
+    const aq = (params.question || '').trim();
+    const questionTopic: NonNullable<AuspiciousStarsResult['questionTopic']> = !aq
+      ? 'general'
+      : /사랑|연애|결혼|관계|인연|사람|가족/.test(aq)
+        ? 'relationship'
+        : /시험|공부|합격|학업|연구|자격/.test(aq)
+          ? 'study'
+          : /일|직장|사업|이직|계약|재물|돈/.test(aq)
+            ? 'career'
+            : 'decision';
+    const auspiciousCrossAxis = `${questionTopic} · 발현(${hits.length}종) × ${temporalNobleRhythm.activationTempo}`;
+    const shadowWarning = `과잉·편향 경계: 길신이 있다고 준비 없이 요행을 바라거나, 반대로 공망·충형 간섭이나 미발현을 이유로 스스로의 역량을 과소평가하지 마세요.`;
     const nobleSynthesisMatrix: AuspiciousSynthesisMatrix = {
       nobleStrengthSummary: hits.length > 0
         ? `${hits.map((h) => `${h.nameKr}(${h.foundCharKo})`).join('·')} 발현이 ${temporalNobleRhythm.seasonalQi} 흐름과 맞물려 있습니다.`
@@ -760,6 +775,9 @@ export function calculateAuspiciousStars(params: {
       nobleSynthesisMatrix,
       actionGuide,
       summary,
+      questionTopic,
+      auspiciousCrossAxis,
+      shadowWarning,
       reflectiveQuestion: params.question
         ? `‘${params.question}’ 앞에서 원국에 발현된 길신(${hits.length}종)의 강점을 어떤 사람·협업 기회와 연결하시겠습니까?`
         : `원국에 자리한 길신(${hits.length}종)의 길력을 일상의 신뢰와 준비된 실력으로 살리기 위해 오늘 가장 먼저 실천할 행동은 무엇입니까?`,
@@ -822,7 +840,7 @@ export function formatAuspiciousStarsPrompt(res: AuspiciousStarsResult): string 
     ? `\n6. [KST 시공간 리듬 (${res.temporalNobleRhythm.kstHour}시)]: ${res.temporalNobleRhythm.nobleWatchWindow} · ${res.temporalNobleRhythm.seasonalQi} (${res.temporalNobleRhythm.activationTempo})\n   - 지침: ${res.temporalNobleRhythm.timingDirective}`
     : '';
   const matrixSynthTxt = res.nobleSynthesisMatrix
-    ? `\n7. [귀인 교차 매트릭스]: ${res.nobleSynthesisMatrix.nobleStrengthSummary} · ${res.nobleSynthesisMatrix.timingResonanceLink}`
+    ? `\n7. [귀인 교차 매트릭스]: ${res.nobleSynthesisMatrix.nobleStrengthSummary} · ${res.nobleSynthesisMatrix.timingResonanceLink}${res.auspiciousCrossAxis ? ` · 교차 축(${res.auspiciousCrossAxis})` : ''}`
     : '';
 
   return `[🌟 천을귀인·문창 길신(吉神) 매트릭스 및 인연 매칭 참고 결과 (Auspicious Noble Stars & Resonance Core)]
@@ -844,7 +862,7 @@ ${resonanceTxt}
 ${res.actionGuide.map((a, i) => `   ${i + 1}. ${a}`).join('\n')}${auditTxt}${temporalTxt}${matrixSynthTxt}
 
 종합: ${res.summary}
-${res.reflectionFocus ? `성찰 초점: ${res.reflectionFocus}\n` : ''}${res.reflectiveQuestion ? `성찰 질문: ${res.reflectiveQuestion}\n` : ''}해석 경계: ${res.interpretiveBoundary}
+${res.shadowWarning ? `${res.shadowWarning}\n` : ''}${res.reflectionFocus ? `성찰 초점: ${res.reflectionFocus}\n` : ''}${res.reflectiveQuestion ? `성찰 질문: ${res.reflectiveQuestion}\n` : ''}해석 경계: ${res.interpretiveBoundary}
 ======================================================================
 [★ 루시 길신 상담 지침]:
 - 위 결과는 전통 명리 규칙을 적용한 결정론 계산 참고 자료이며, 현대 실측이나 검증된 예측 확률을 뜻하지 않습니다. 길신의 위치(일지 천을 = 내 몸과 배우자궁, 년/월/시지 천을 = 사회·직업·말년)는 제공된 계산 결과에 맞춰 설명하세요.

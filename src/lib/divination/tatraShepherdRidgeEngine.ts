@@ -1,8 +1,37 @@
 import type { UserProfile } from '../sharedState';
 
+export type TatraQuestionTopic = 'grounding' | 'clarity' | 'patience' | 'pace' | 'general';
+
+function classifyTatraTopic(q: string): TatraQuestionTopic {
+  if (/능선|발끝|기준|중심|현실/.test(q)) return 'grounding';
+  if (/사실|판단|거울|시선|혼란/.test(q)) return 'clarity';
+  if (/기다|메아리|조급|시간|인내/.test(q)) return 'patience';
+  if (/고도|속도|균형|쉬|호흡/.test(q)) return 'pace';
+  return 'general';
+}
+
+const TATRA_AXES = [
+  '능선 접지 축(먼 봉우리보다 발끝의 풀과 바람 방향을 읽는 현실 감각)',
+  '빙하 호수 관조 축(판단을 덧씌우지 않고 사실을 그대로 비추는 맑음)',
+  '콜리바 불씨 축(큰 불꽃 대신 오래 가는 붉은 숯불을 지키는 성실함)',
+  '푸야라 메아리 축(답을 재촉하지 않고 울림이 돌아올 여백을 두는 호흡)',
+  '목초지 고도 축(계절에 맞춰 머물 높이를 스스로 조율하는 유연함)',
+] as const;
+
+const TATRA_SHADOW_WARNINGS: Record<TatraQuestionTopic, string> = {
+  grounding: '발끝만 보느라 앞쪽의 큰 날씨 변화나 방향 전환 신호를 놓치지 않도록 가끔 고개를 들어 능선을 살피십시오.',
+  clarity: '있는 그대로 비추는 데만 머물러 필요한 결단까지 미루지 않도록, 확인한 사실 위에서 작은 행동 하나를 정하십시오.',
+  patience: '메아리를 기다리는 침묵이 회피가 되지 않도록, 상대에게 전할 핵심 말은 분명하게 건넨 뒤 기다리십시오.',
+  pace: '편안한 고도로 내려오는 선택을 포기나 후퇴로 자책하지 말고, 다음 오르막을 위한 정비로 삼으십시오.',
+  general: '안개 낀 산길에서는 빨리 걷는 것보다 방향을 잃지 않고 한 걸음씩 딛는 편이 결국 더 빠릅니다.',
+};
+
 export interface TatraRidgeResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: TatraQuestionTopic;
+  tatraRidgeAxis: string;
+  shadowWarning: string;
   reflectionFocus: string;
   symbolicMotif: string;
   companionMotif: string;
@@ -60,19 +89,26 @@ export function calculateTatraShepherdRidge(params: {
   question?: string;
 }): TatraRidgeResult {
   const { profile, now = new Date(), question = '' } = params;
-  const seed = `${JSON.stringify(profile.fate ?? {})}|${question.trim()}|${now.toISOString().slice(0, 13)}`;
+  const q = question.trim();
+  const questionTopic = classifyTatraTopic(q);
+  const seed = `${JSON.stringify(profile.fate ?? {})}|${q}|${now.toISOString().slice(0, 13)}`;
   const hash = stableHash(seed);
   const idx = hash % TATRA_MOTIFS.length;
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (TATRA_MOTIFS.length - 1));
 
   const motif = TATRA_MOTIFS[idx];
   const companionMotif = TATRA_MOTIFS[(idx + companionOffset) % TATRA_MOTIFS.length];
+  const tatraRidgeAxis = TATRA_AXES[idx];
+  const shadowWarning = TATRA_SHADOW_WARNINGS[questionTopic];
   const ritualAction = TATRA_ACTIONS[idx];
   const reflectiveQuestion = TATRA_QUESTIONS[idx];
 
   return {
-    engineVersion: 'LUCKEY-TATRA-RIDGE-v2.2.0',
+    engineVersion: 'LUCKEY-TATRA-RIDGE-v2.3.0',
     calculatedAtKst: getKstTimeString(now),
+    questionTopic,
+    tatraRidgeAxis,
+    shadowWarning,
     reflectionFocus: question.trim()
       ? `질문 "${question.trim()}" 속에서 먼 봉우리 대신 발끝의 능선을 짚는 타트라 목동 관점 (동반 결: ${companionMotif.slice(0, 24)}…)`
       : '높은 능선의 안개 속에서도 침착하게 호흡을 고르는 타트라 목동 산길 관점',
@@ -87,13 +123,15 @@ export function calculateTatraShepherdRidge(params: {
 
 export function formatTatraRidgePrompt(result: TatraRidgeResult): string {
   return [
-    `[타트라·목동 산길 관점 (${result.engineVersion})]`,
+    `[타트라·목동 산길 관점 (${result.engineVersion}) | 질문 맥락: ${result.questionTopic}]`,
     `- 기준 시각: ${result.calculatedAtKst}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
+    `- 능선 축: ${result.tatraRidgeAxis}`,
     `- 상징 모티프: ${result.symbolicMotif}`,
     `- 동반 모티프: ${result.companionMotif}`,
     `- 제안 의식: ${result.ritualAction}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
+    `- 과잉 경계: ${result.shadowWarning}`,
     `- 경계: ${result.interpretiveBoundary}`
   ].join('\n');
 }

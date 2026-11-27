@@ -10,12 +10,12 @@
  * 4. 다수의 횡포(Tyranny of the Majority) 경계: 법적 억압보다 더 위험한 사회적 관습과 여론의 독재에 맞서 자신의 고유한 가치관을 지키는 지적 용기.
  * 5. 질적 공리주의(Qualitative Utilitarianism): "만족한 돼지보다 불만족한 인간이 되는 것이 낫고, 만족한 바보보다 불만족한 소크라테스가 되는 것이 낫다" - 감각적 쾌락을 넘어선 정신적 고결함과 내적 성숙 추구.
  *
- * @version LUCKEY-JS-MILL-ON-LIBERTY-v2.3.0
+ * @version LUCKEY-JS-MILL-ON-LIBERTY-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const BRITISH_JS_MILL_VERSION = 'LUCKEY-JS-MILL-ON-LIBERTY-v2.3.0';
+export const BRITISH_JS_MILL_VERSION = 'LUCKEY-JS-MILL-ON-LIBERTY-v2.4.0';
 
 export type MillQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -54,6 +54,7 @@ export interface JohnStuartMillOnLibertyIndividualityResult {
   // 세부 분석
   questionTopic: MillQuestionTopic;
   libertyPhase: string;
+  millCrossAxis: string;
   shadowWarning: string;
   temporalMillRhythm: MillTemporalRhythm;
   activeMillTheme: MillLibertyTheme;
@@ -282,6 +283,9 @@ export function calculateJohnStuartMillOnLibertyIndividuality(
   const focalMillAphorism = MILL_LIBERTY_APHORISMS[aphorismIndex];
   const libertyPhase = MILL_LIBERTY_PHASES[(absHash >> 10) % MILL_LIBERTY_PHASES.length];
   const shadowWarning = MILL_SHADOW_WARNINGS[(absHash >> 13) % MILL_SHADOW_WARNINGS.length];
+  const shortPhase = libertyPhase.split('(')[0].trim();
+  const shortCompanion = companionMillTheme.themeTitleKo.split('-')[0].trim();
+  const millCrossAxis = `${shortPhase} × ${shortCompanion} (${questionTopic}) — ${topicGuidance.practiceGuidance}`;
 
   const guidanceTitle = `존 스튜어트 밀 자유론 개별성 지혜: ${activeMillTheme.themeTitleKo}`;
   const philosophicalCounsel = `존 스튜어트 밀의 자유론과 개별성 철학은 집단적 순응을 탈피하여 당신 고유의 자율성과 질적 성숙을 확립하도록 이끕니다. ` +
@@ -313,6 +317,7 @@ export function calculateJohnStuartMillOnLibertyIndividuality(
     qualitativeGrowthPursuitScore,
     questionTopic,
     libertyPhase,
+    millCrossAxis,
     shadowWarning,
     temporalMillRhythm,
     activeMillTheme,
@@ -338,6 +343,7 @@ export function formatJohnStuartMillOnLibertyIndividualityPrompt(res: JohnStuart
     `- 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 주제 맥락: ${res.questionTopic}`,
     `- 자유 국면: ${res.libertyPhase}`,
+    `- 질문 맥락(${res.questionTopic}) 교차 축: ${res.millCrossAxis}`,
     `- KST 시공간 리듬: ${res.temporalMillRhythm.kstDateLabel} · ${res.temporalMillRhythm.timeWindowKo} (${res.temporalMillRhythm.libertyTone}) — ${res.temporalMillRhythm.rhythmDirective}`,
     `- 핵심 자유 테마: ${res.activeMillTheme.themeTitleKo} [${res.activeMillTheme.themeTitleEn}]`,
     `- 동반 자유 테마: ${res.companionMillTheme.themeTitleKo}`,

@@ -7,6 +7,7 @@ export interface ElamiteSusaResult {
   susaMotif: string;
   companionMotif: string;
   chogaCanalAxis: string;
+  topicBalanceHint: string;
   elamiteInsight: string;
   chogaTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const ELAMITE_SHADOWS = [
   '나만의 샘물에서 기운을 채우는 시간이 현실의 바쁜 과제에서 물러나는 도피가 되지 않게 하세요.',
 ];
 
+const TOPIC_BALANCE_HINTS: Record<ElamiteSusaResult['questionTopic'], string> = {
+  '루틴·질서': '초가 잔빌의 구운 벽돌처럼 기본 루틴을 세우되, 예기치 못한 즐거운 변주도 드나들게 두세요.',
+  '분산·여유': '카룬 강 수로처럼 할 일을 나누어 흘리되, 급한 마감의 물길은 놓치지 않게 표시해 두세요.',
+  '꾸준·기록': '원통 인장처럼 매일 같은 결로 기록을 이어 가되, 낡은 습관은 주기적으로 새로 깎아 내세요.',
+  '기반 전반': '아치형 통로처럼 무게를 분산하고, 자그로스 샘에서 잠시 기운을 채운 뒤 다시 걸음을 잇세요.',
+};
+
 function classifyElamiteTopic(q: string): ElamiteSusaResult['questionTopic'] {
   if (/루틴|질서|벽돌|생활|규칙/.test(q)) return '루틴·질서';
   if (/분산|여유|휴식|무게|부담|샘/.test(q)) return '분산·여유';
@@ -102,15 +110,17 @@ export function calculateElamiteSusaWaterChoga(params: {
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const chogaCanalAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = ELAMITE_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-ELAMITE-SUSA-v2.3.0',
+    engineVersion: 'LUCKEY-ELAMITE-SUSA-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     susaMotif: picked.motif,
     companionMotif: companion.motif,
     chogaCanalAxis,
+    topicBalanceHint,
     elamiteInsight: picked.insight,
     chogaTone: picked.tone,
     reflectionFocus: `엘람 수사·초가 잔빌의 '${picked.motif}'과 동반 결 '${companion.motif}'을 함께 헤아리며, 부드러운 속마음을 지켜 주는 단단한 일상 루틴을 차분히 다져 보세요.`,
@@ -126,6 +136,7 @@ export function formatElamiteSusaPrompt(res: ElamiteSusaResult): string {
     `[엘람 수사·수로 정원 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 수로·벽돌 축: ${res.chogaCanalAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 수사 모티프: ${res.susaMotif} (${res.chogaTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
     `- 중심 통찰: ${res.elamiteInsight}`,

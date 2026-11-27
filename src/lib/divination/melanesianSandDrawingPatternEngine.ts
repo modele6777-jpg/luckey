@@ -9,12 +9,14 @@ export interface SandDrawingMotif {
 }
 
 export interface MelanesianSandResult {
-  engineVersion: 'LUCKEY-MELANESIAN-SAND-v2.3.0';
+  engineVersion: 'LUCKEY-MELANESIAN-SAND-v2.4.0';
   calculatedAtKst: string;
   questionFocus: string;
+  questionTopic: '연결·매듭' | '리듬·반복' | '균형·대칭' | '여백·대화';
   primaryMotif: SandDrawingMotif;
   bridgingMotif: SandDrawingMotif;
   sandGridAxis: string;
+  topicBalanceHint: string;
   continuousThread: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -29,6 +31,20 @@ const SAND_GRID_AXES = [
   '카노 중심 대칭 · 집중과 여백 나란히 세우기',
   '타부아 열린 통로 · 다음 대화의 여지 남기기',
 ] as const;
+
+const TOPIC_BALANCE_HINTS: Record<MelanesianSandResult['questionTopic'], string> = {
+  '연결·매듭': '산드로잉의 한 줄 궤적처럼 흩어진 고민을 하나의 우선순위 매듭으로 잇되, 당장 풀 한 지점만 고르세요.',
+  '리듬·반복': '나우이 파도의 왕복처럼 10분 시도와 점검을 오가며 무늬를 다지되, 완벽주의에 발이 묶이지 마세요.',
+  '균형·대칭': '카노 별빛 대칭처럼 집중할 과제 옆에 회복 시간과 보류 기준을 나란히 세워 균형을 지키세요.',
+  '여백·대화': '타부아의 열린 고리처럼 선 끝에 작은 여백을 남겨 다른 관점이나 대화가 들어올 틈을 열어 두세요.',
+};
+
+function classifyMelanesianTopic(q: string): MelanesianSandResult['questionTopic'] {
+  if (/대화|관계|사람|상대|여백|열린|질문/.test(q)) return '여백·대화';
+  if (/균형|대칭|휴식|중심|번아웃|지침/.test(q)) return '균형·대칭';
+  if (/반복|루틴|꾸준|연습|습관|리듬/.test(q)) return '리듬·반복';
+  return '연결·매듭';
+}
 
 const SAND_MOTIFS: SandDrawingMotif[] = [
   {
@@ -96,14 +112,18 @@ export function calculateMelanesianSandDrawingPattern(params: {
   const primaryMotif = SAND_MOTIFS[primaryIdx];
   const bridgingMotif = SAND_MOTIFS[bridgeIdx];
   const sandGridAxis = SAND_GRID_AXES[stableHash(`${seedInput}|axis`) % SAND_GRID_AXES.length];
+  const questionTopic = classifyMelanesianTopic(questionFocus);
+  const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
 
   return {
-    engineVersion: 'LUCKEY-MELANESIAN-SAND-v2.3.0',
+    engineVersion: 'LUCKEY-MELANESIAN-SAND-v2.4.0',
     calculatedAtKst: formatKstTimestamp(now),
     questionFocus,
+    questionTopic,
     primaryMotif,
     bridgingMotif,
     sandGridAxis,
+    topicBalanceHint,
     continuousThread: `${primaryMotif.koreanLabel}에서 출발해 ${bridgingMotif.koreanLabel}으로 자연스럽게 이어지는 연속 맥락`,
     ritualAction: primaryMotif.practicalStep,
     reflectionFocus: `${primaryMotif.name}의 원리(${primaryMotif.strokePrinciple})와 모래 격자 축('${sandGridAxis}')을 바탕으로 지금의 과제('${questionFocus}')를 한 맥락으로 엮습니다.`,
@@ -118,7 +138,8 @@ export function formatMelanesianSandPrompt(result: MelanesianSandResult): string
   return [
     `[바누아투·멜라네시아 모래 그림 연결·궤적 엔진 ${result.engineVersion}]`,
     `- 연산 시각: ${result.calculatedAtKst}`,
-    `- 질문 초점: ${result.questionFocus}`,
+    `- 질문 초점: ${result.questionFocus} (맥락: ${result.questionTopic})`,
+    `- 맥락 균형 조언: ${result.topicBalanceHint}`,
     `- 중심 문양: ${result.primaryMotif.name} (${result.primaryMotif.koreanLabel}) — ${result.primaryMotif.coreInsight}`,
     `- 연결 문양: ${result.bridgingMotif.name} (${result.bridgingMotif.koreanLabel})`,
     `- 모래 격자 축: ${result.sandGridAxis}`,

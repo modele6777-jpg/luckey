@@ -22,7 +22,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const ENNEAGRAM_INTEGRATION_VERSION = 'LUCKEY-ENNEAGRAM-v2.3.0';
+export const ENNEAGRAM_INTEGRATION_VERSION = 'LUCKEY-ENNEAGRAM-v2.4.0';
 
 export interface EnneagramTypeDetails {
   coreNumber: number; // 1 ~ 9
@@ -68,6 +68,8 @@ export interface EnneagramSoulIntegrationReport {
   };
   boundaryNotice: string;
   interpretiveBoundary: string;
+  enneagramCrossAxis: string;
+  enneagramShadowWarning: string;
   reflectiveQuestion?: string;
   ritualAction: string;
   reflectionFocus: string;
@@ -288,6 +290,9 @@ export function runEnneagramSoulIntegrationEngine(
     cautionNotice: '에니어그램 유형은 나를 가두는 꼬리표가 아니라 자동 반응에서 깨어나는 거울로만 활용하십시오.',
   };
 
+  const enneagramCrossAxis = `${coreNumber}번(${dominantWing.split(' ')[0]}) · ${triad.split(' ')[0]} × ${temporalEnneagramRhythm.centerWatchWindow.split(' ')[0]}`;
+  const enneagramShadowWarning = `에니어그램 교차 경계: '${egoFixation}'이 반복될수록 ${stressTarget}번 분열 신호가 강해지므로, 유형을 고정관념으로 삼지 말고 ${growthTarget}번 통합 미덕(${virtueAscension})으로 전환하십시오.`;
+
   const boundaryNotice = '본 결과는 사주 오행 상징과 에니어그램 성격 역동 모델을 결합한 정성적 자기 이해 안내이며, 임상 심리 진단이 아닙니다.';
   const qHint = (question || '').trim();
   const reflectiveQuestion = qHint
@@ -307,6 +312,8 @@ export function runEnneagramSoulIntegrationEngine(
 - KST 시공간 통합 리듬: ${temporalEnneagramRhythm.centerWatchWindow} / ${temporalEnneagramRhythm.seasonalIntegrationTone}
   * 시공간 지침: ${temporalEnneagramRhythm.temporalGuidance}
 - 에니어그램 교차 매트릭스: 핵심(${enneagramSynthesisMatrix.coreInsight}) | 실행(${enneagramSynthesisMatrix.recommendedAction}) | 주의(${enneagramSynthesisMatrix.cautionNotice})
+- 에니어그램 교차 축: ${enneagramCrossAxis}
+- ${enneagramShadowWarning}
 - 영혼 해방 실천 과제: ${soulLiberationTask}
 - 성찰 질문: ${reflectiveQuestion}
 - 해석 경계: ${boundaryNotice}`;
@@ -325,6 +332,8 @@ export function runEnneagramSoulIntegrationEngine(
     enneagramSynthesisMatrix,
     boundaryNotice,
     interpretiveBoundary: boundaryNotice,
+    enneagramCrossAxis,
+    enneagramShadowWarning,
     reflectiveQuestion,
     ritualAction: situationalEnneagramAudit.integrationStep,
     reflectionFocus: reflectiveQuestion,

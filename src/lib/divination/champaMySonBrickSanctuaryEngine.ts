@@ -6,6 +6,8 @@ export interface ChampaMySonResult {
   brickMotif: string;
   companionMotif: string;
   sanctuaryPhase: string;
+  questionTopic: 'foundation' | 'connection' | 'rest' | 'poise' | 'general';
+  mySonCrossAxis: string;
   mySonInsight: string;
   monsoonTone: string;
   shadowWarning: string;
@@ -97,13 +99,28 @@ export function calculateChampaMySonBrickSanctuary(params: {
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const sanctuaryPhase = SANCTUARY_PHASES[stableHash(`${seed}|phase`) % SANCTUARY_PHASES.length];
   const shadowWarning = SHADOW_WARNINGS[stableHash(`${seed}|shadow`) % SHADOW_WARNINGS.length];
+  const q = (params.question ?? '').trim();
+  const questionTopic: ChampaMySonResult['questionTopic'] = !q
+    ? 'general'
+    : /기본기|벽돌|반듯|버티|튼튼|기초/.test(q)
+      ? 'foundation'
+      : /연결|소통|외부|사람|바깥|열/.test(q)
+        ? 'connection'
+        : /쉼|휴식|고요|숨|문턱|마감/.test(q)
+          ? 'rest'
+          : /힘|리듬|균형|어깨|가볍/.test(q)
+            ? 'poise'
+            : 'general';
+  const mySonCrossAxis = `${questionTopic} · ${picked.motif.split('(')[0].trim()} × ${sanctuaryPhase.split('(')[0].trim()}`;
 
   return {
-    engineVersion: 'LUCKEY-CHAMPA-MYSON-v2.3.0',
+    engineVersion: 'LUCKEY-CHAMPA-MYSON-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     brickMotif: picked.motif,
     companionMotif: companion.motif,
     sanctuaryPhase,
+    questionTopic,
+    mySonCrossAxis,
     mySonInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     monsoonTone: picked.tone,
     shadowWarning,
@@ -121,6 +138,7 @@ export function formatChampaMySonPrompt(res: ChampaMySonResult): string {
     `- 성소 상징: ${res.brickMotif} (${res.monsoonTone})`,
     `- 동반 결: ${res.companionMotif}`,
     `- 성소 국면: ${res.sanctuaryPhase}`,
+    `- 질문 맥락(${res.questionTopic}) · 성소 교차 축: ${res.mySonCrossAxis}`,
     `- 중심 통찰: ${res.mySonInsight}`,
     `- 과잉·경계 점검: ${res.shadowWarning}`,
     `- 성찰 초점: ${res.reflectionFocus}`,

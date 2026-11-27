@@ -56,13 +56,14 @@ test('second-round cards cover every Ziwei main star, mutagen, Kyusei star, Liur
 test('a full Lucy Pro level-3 prompt carries the cards for its own chart', async () => {
   const { routeAndExecute } = await import('../src/lib/divination/smartAgentRouter.ts');
   const profile: any = { basic: { birthdate: '1990-05-15', birthtime: '14:30', birthTimeAccuracy: 'exact', gender: 'female', lunarSolar: 'solar', birthCity: '서울' } };
-  const prompt = routeAndExecute({ text: '이직 고민', profile, isMasterRequested: true, divinationMode: { base: 'tarot_saju', depth: 3 } }).promptInjection;
+  const prompt = routeAndExecute({ text: '이직 고민', profile, isMasterRequested: true, divinationMode: { base: 'tarot_saju' } }).promptInjection;
   // 庚년생 사화: 태양 화록·무곡 화권·태음 화과·천동 화기
   assert.match(prompt, /생년 化祿: [^—]*태양/);
   assert.match(prompt, /생년 化權: [^—]*무곡/);
   assert.match(prompt, /생년 化科: [^—]*태음/);
   assert.match(prompt, /생년 化忌: [^—]*천동/);
-  assert.match(prompt, /구성학 본명성 一白水星/);
   assert.match(prompt, /자미두수 명궁 주성 자미/);
+  // 이번 질문에 고르지 않은 도구(구성학)의 카드는 붙이지 않는다 — 도구는 필요한 만큼만.
+  assert.doesNotMatch(prompt, /구성학 본명성/);
   assert.ok(prompt.length < 60000);
 });

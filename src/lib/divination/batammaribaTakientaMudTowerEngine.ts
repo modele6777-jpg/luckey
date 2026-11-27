@@ -6,12 +6,16 @@ export interface BatammaribaTakientaInput {
   question?: string;
 }
 
+export type BatammaribaQuestionTopic = 'career' | 'relationship' | 'wealth' | 'health' | 'general';
+
 export interface BatammaribaTakientaResult {
   engineVersion: string;
   calculatedAtKst: string;
+  questionTopic: BatammaribaQuestionTopic;
   earthenTower: string;
   companionTower: string;
   towerPhase: string;
+  takientaCrossAxis: string;
   hearthThreshold: string;
   shadowWarning: string;
   reflectionFocus: string;
@@ -60,6 +64,22 @@ const QUESTIONS = [
   '오늘 하루를 마치고 올라가 숨을 고를 나만의 옥상 자리는 어디인가요?',
 ] as const;
 
+const TOPIC_AXES: Record<BatammaribaQuestionTopic, string> = {
+  career: '일·커리어에서는 당장 처리할 실무(1층)와 내일을 위한 여유·회복(2층)의 층위를 분리해 과부하를 막으세요.',
+  relationship: '관계에서는 혼자 높게 쌓기보다 두 흙탑이 서로 기대어 서듯 믿는 사람과 짐을 나누는 협업이 단단합니다.',
+  wealth: '재정·계약에서는 1층 곳간에 비축할 몫과 오늘 쓸 몫의 경계를 분명히 하여 소모를 줄이세요.',
+  health: '건강·회복에서는 하루 끝 5분 옥상 개방 시간처럼 머리를 식히고 바깥 공기로 호흡을 가다듬는 쉼을 확보하세요.',
+  general: '오늘의 흐름에서는 주 흙탑과 동반 자리를 함께 살피며 실무와 쉼의 층위를 조율하세요.',
+};
+
+function classifyBatammaribaTopic(question: string): BatammaribaQuestionTopic {
+  if (/일|직장|사업|커리어|프로젝트|성과|실무/.test(question)) return 'career';
+  if (/사랑|연애|관계|가족|친구|갈등|협업/.test(question)) return 'relationship';
+  if (/돈|재물|재정|투자|소비|계약/.test(question)) return 'wealth';
+  if (/건강|몸|피로|휴식|수면|쉼|회복/.test(question)) return 'health';
+  return 'general';
+}
+
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const y = kst.getUTCFullYear();
@@ -89,13 +109,18 @@ export function calculateBatammaribaTakienta(input: BatammaribaTakientaInput): B
   const companionTower = TOWERS[(towerIdx + companionOffset) % TOWERS.length];
   const towerPhase = TOWER_PHASES[hashSeed(`${seedText}|phase`) % TOWER_PHASES.length];
   const shadowWarning = SHADOW_WARNINGS[hashSeed(`${seedText}|shadow`) % SHADOW_WARNINGS.length];
+  const questionTopic = classifyBatammaribaTopic(input.question ?? '');
+  const shortPhase = towerPhase.split('(')[0].trim();
+  const takientaCrossAxis = `${shortPhase} × ${earthenTower.slice(0, 14)} — ${TOPIC_AXES[questionTopic]}`;
 
   return {
-    engineVersion: 'LUCKEY-BATAMMARIBA-v2.3.0',
+    engineVersion: 'LUCKEY-BATAMMARIBA-v2.4.0',
     calculatedAtKst: toKstIso(input.now),
+    questionTopic,
     earthenTower,
     companionTower,
     towerPhase,
+    takientaCrossAxis,
     hearthThreshold: THRESHOLDS[(seed >>> 3) % THRESHOLDS.length],
     shadowWarning,
     reflectionFocus: `토고·베냉 바타마리바 족이 손으로 빚어 올린 타키엔타 2층 흙탑 가옥처럼 '${towerPhase}' 흐름 위에서 주 자리('${earthenTower}')와 동반 자리('${companionTower}')를 겹쳐 실무와 쉼의 층위를 나누는 상징적 관점입니다.`,
@@ -112,6 +137,7 @@ export function formatBatammaribaTakientaPrompt(res: BatammaribaTakientaResult):
     `흙탑 자리: ${res.earthenTower}`,
     `동반 자리: ${res.companionTower}`,
     `흙탑 국면: ${res.towerPhase}`,
+    `질문 맥락(${res.questionTopic}) 교차 축: ${res.takientaCrossAxis}`,
     `층위 지혜: ${res.hearthThreshold}`,
     `과잉·경계 점검: ${res.shadowWarning}`,
     `성찰 초점: ${res.reflectionFocus}`,
