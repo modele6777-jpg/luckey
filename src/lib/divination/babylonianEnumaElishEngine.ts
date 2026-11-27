@@ -19,7 +19,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BABYLONIAN_ENUMA_ELISH_VERSION = 'LUCKEY-BABYLONIAN-ENUMA-ELISH-v2.4.0';
+export const BABYLONIAN_ENUMA_ELISH_VERSION = 'LUCKEY-BABYLONIAN-ENUMA-ELISH-v2.5.0';
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -64,6 +64,7 @@ export interface BabylonianSynthesisMatrix {
   edictAxis: string;
   temporalAxis: string;
   synthesizedVerdict: string;
+  babylonCrossAxis: string;
 }
 
 export interface BabylonianEnumaElishReport {
@@ -219,17 +220,20 @@ function buildSynthesisMatrix(
   edict: TabletsOfDestinyEdict,
   audit: BabylonianSituationalAudit,
   temporal: BabylonianTemporalRhythm,
+  questionTheme: BabylonianQuestionTheme,
 ): BabylonianSynthesisMatrix {
   const deityAxis = `수호 천체: ${deity.koreanName} (${audit.contextTheme})`;
   const edictAxis = `서판 칙령: ${edict.destinyEdictTitle}`;
   const temporalAxis = `지구라트 시의: ${temporal.zigguratWatchWindow} · ${temporal.mulApinSeasonalCycle}`;
   const synthesizedVerdict = `'${temporal.zigguratWatchWindow}'의 천체 흐름 아래 '${deity.koreanName}'의 질서로 '${edict.destinyEdictTitle}'을 실행할 때, 혼돈은 명료한 구조로 정돈됩니다.`;
+  const babylonCrossAxis = `[${deity.cuneiformName.split(' ')[0]}] × [${edict.cosmicOrderVirtue}] × [${questionTheme}] × [${temporal.zigguratWatchWindow.split(' ')[0]}]`;
 
   return {
     deityAxis,
     edictAxis,
     temporalAxis,
     synthesizedVerdict,
+    babylonCrossAxis,
   };
 }
 
@@ -284,7 +288,7 @@ export function calculateBabylonianEnumaElish(
 
   const situationalBabylonAudit = buildSituationalAudit(questionTheme, patronDeity, chosenEdict.title);
   const temporalBabylonRhythm = buildTemporalRhythm(now, seed);
-  const babylonSynthesisMatrix = buildSynthesisMatrix(patronDeity, destinyEdict, situationalBabylonAudit, temporalBabylonRhythm);
+  const babylonSynthesisMatrix = buildSynthesisMatrix(patronDeity, destinyEdict, situationalBabylonAudit, temporalBabylonRhythm, questionTheme);
 
   const themeGuidanceMap: Record<BabylonianQuestionTheme, { practice: string; ritual: string; reflection: string }> = {
     relationship: {
@@ -359,7 +363,7 @@ export function formatBabylonianEnumaElishPrompt(report: BabylonianEnumaElishRep
   - 주권 처방: ${report.situationalBabylonAudit.sovereignPrescription}
 - **바빌론 시공간 천체 리듬**: ${report.temporalBabylonRhythm.zigguratWatchWindow} · ${report.temporalBabylonRhythm.mulApinSeasonalCycle}
   - 시의 조언: ${report.temporalBabylonRhythm.timingAdvice}
-- **에누마 엘리쉬 교차 매트릭스**: ${report.babylonSynthesisMatrix.synthesizedVerdict}
+- **에누마 엘리쉬 교차 매트릭스**: ${report.babylonSynthesisMatrix.synthesizedVerdict} · 4중 교차 축(${report.babylonSynthesisMatrix.babylonCrossAxis})
 - **맥락별 실천 조언**: ${report.practiceGuidance}
 - **일상 의례**: ${report.ritualAction}
 - **성찰 초점**: ${report.reflectionFocus}

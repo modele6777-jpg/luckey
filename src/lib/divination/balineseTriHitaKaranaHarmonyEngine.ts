@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BALINESE_TRI_HITA_KARANA_ENGINE_VERSION = 'LUCKEY-BALINESE-TRI-HITA-v2.4.0';
+export const BALINESE_TRI_HITA_KARANA_ENGINE_VERSION = 'LUCKEY-BALINESE-TRI-HITA-v2.5.0';
 
 export interface BalineseSacredSanctuary {
   id: string;
@@ -40,6 +40,7 @@ export interface BalineseSynthesisMatrix {
   trinityBalanceGrade: '원만' | '조율' | '정화필요';
   karmaPurificationNote: string;
   dailyOfferingDirective: string;
+  triHitaCrossAxis: string;
 }
 
 export interface BalineseTriHitaKaranaReport {
@@ -274,10 +275,12 @@ export function calculateBalineseTriHitaKarana(
 
   const dailyOfferingDirective = `[${activeSanctuary.balineseName}]의 서기를 받아 ${temporalTriHitaRhythm.sandhyaPhase}에 맞춰 ${situationalTriHitaAudit.triKayaFocus}을 실천하십시오.`;
 
+  const triHitaCrossAxis = `[${activeSanctuary.balineseName}] × [${situationalTriHitaAudit.harmonyAxis.split('(')[0].trim()}] × [${situationalTriHitaAudit.triKayaFocus.split('(')[0].trim()}] × [${temporalTriHitaRhythm.equilibriumState}]`;
   const triHitaSynthesisMatrix: BalineseSynthesisMatrix = {
     trinityBalanceGrade,
     karmaPurificationNote,
     dailyOfferingDirective,
+    triHitaCrossAxis,
   };
 
   const balineseCosmicGuidance = `발리 힌두 《트리 히타 카라나》의 법도는 우주 신성(Parhyangan), 인간 이웃(Pawongan), 자연 대지(Palemahan)의 삼위일체가 균형을 이룰 때 진정한 행복(Sukham)이 꽃핀다고 가르칩니다. 현재 [${activeSanctuary.nameKo}]의 수호 서기와 공명하여 바른 생각(Manacika), 바른 말(Wacika), 바른 행동(Kayika)의 3업을 정화하십시오.`;
@@ -327,7 +330,7 @@ export function formatBalineseTriHitaKaranaPrompt(report: BalineseTriHitaKaranaR
   * 경계할 점: ${report.situationalTriHitaAudit.warningBoundary}
 - KST 시공간 리듬 (${report.temporalTriHitaRhythm.kstHour}시): ${report.temporalTriHitaRhythm.sandhyaPhase} · ${report.temporalTriHitaRhythm.subakSeasonFlow} (${report.temporalTriHitaRhythm.equilibriumState})
   * 리듬 처방: ${report.temporalTriHitaRhythm.rhythmGuidance}
-- 삼위일체 교차 매트릭스: 조화 등급(${report.triHitaSynthesisMatrix.trinityBalanceGrade}) · ${report.triHitaSynthesisMatrix.karmaPurificationNote}
+- 삼위일체 교차 매트릭스: 조화 등급(${report.triHitaSynthesisMatrix.trinityBalanceGrade}) · 4중 교차 축(${report.triHitaSynthesisMatrix.triHitaCrossAxis}) · ${report.triHitaSynthesisMatrix.karmaPurificationNote}
   * 오늘의 실천: ${report.triHitaSynthesisMatrix.dailyOfferingDirective}
 - 트리 히타 카라나 우주 지혜 지침: ${report.balineseCosmicGuidance}
 - 티르타(Tirta) 성수 정화 명상: ${report.tirtaHolyWaterBlessing}

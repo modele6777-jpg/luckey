@@ -4266,9 +4266,11 @@ test('Babylonian Enuma Elish & Tablets of Destiny Engine: calculates patron deit
   assert(rep.situationalBabylonAudit.enumaElishTablet.length > 0);
   assert(rep.temporalBabylonRhythm.zigguratWatchWindow.length > 0);
   assert(rep.babylonSynthesisMatrix.synthesizedVerdict.length > 0);
+  assert(Boolean(rep.babylonSynthesisMatrix.babylonCrossAxis.includes(rep.questionTheme)));
   const prompt = formatBabylonianEnumaElishPrompt(rep);
   assert(prompt.includes('고대 바빌로니아 에누마 엘리쉬 & 운명의 서판'));
   assert(prompt.includes(rep.patronDeity.koreanName));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('%'));
   assert(!prompt.includes('/100'));
@@ -5967,10 +5969,12 @@ test('Balinese Tri Hita Karana Engine: calculates cosmic trinity harmony, tri ka
   assert(rep.palemahanEcologyBalance >= 0 && rep.palemahanEcologyBalance <= 100);
   assert(rep.triKayaPurificationIndex >= 0 && rep.triKayaPurificationIndex <= 100);
   assert(rep.activeSanctuary.nameKo.length > 0);
+  assert(Boolean(rep.triHitaSynthesisMatrix.triHitaCrossAxis.includes(rep.activeSanctuary.balineseName)));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatBalineseTriHitaKaranaPrompt(rep);
   assert(prompt.includes('발리 힌두교 트리 히타 카라나 3대 우주 조화 & 3업 정화 실측 데이터'));
   assert(prompt.includes(rep.activeSanctuary.nameKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
 });
 
@@ -9153,11 +9157,13 @@ test('Franz Kafka Existential Truth Engine: calculates Existential Honesty, Inne
   assert(rep.frozenSeaPiercingInsightIndex >= 0 && rep.frozenSeaPiercingInsightIndex <= 100);
   assert(rep.transformativeSolitudeResilienceScore >= 0 && rep.transformativeSolitudeResilienceScore <= 100);
   assert(rep.activeKafkaTheme.themeTitleKo.length > 0);
+  assert(Boolean(rep.kafkaSynthesisMatrix.kafkaCrossAxis.includes(rep.questionTopic)));
   assert(rep.shadowWarning.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatAustrianFranzKafkaExistentialTruthPrompt(rep);
   assert(prompt.includes('프란츠 카프카 《변신·성》 부조리 직시와 실존적 정직성 및 내적 존엄성 지표'));
   assert(prompt.includes(rep.activeKafkaTheme.themeTitleKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('과잉 경계'));
 });
 

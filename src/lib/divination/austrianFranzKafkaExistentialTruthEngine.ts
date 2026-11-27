@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION = 'LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v2.4.0';
+export const AUSTRIAN_FRANZ_KAFKA_EXISTENTIAL_TRUTH_VERSION = 'LUCKEY-FRANZ-KAFKA-EXISTENTIAL-TRUTH-v2.5.0';
 
 export type KafkaQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -74,6 +74,7 @@ export interface AustrianFranzKafkaExistentialTruthResult {
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
+    kafkaCrossAxis: string;
   };
   kafkaComprehensiveGuidance: {
     guidanceTitle: string;
@@ -306,10 +307,12 @@ export function calculateAustrianFranzKafkaExistentialTruth(
 
   const kstDateObj = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const kstLabel = `${kstDateObj.toISOString().slice(0, 10)} ${String(kstDateObj.getUTCHours()).padStart(2, '0')}:${String(kstDateObj.getUTCMinutes()).padStart(2, '0')} +09:00 (KST)`;
+  const kafkaCrossAxis = `[${activeKafkaTheme.themeTitleKo.split('—')[0].trim()}] × [${questionTopic}] × [${temporalKafkaRhythm.timeWindowKo.split('·')[1].trim()}] × [${focalKafkaAphorism.aphorismKey}]`;
   const kafkaSynthesisMatrix = {
     coreInsight: activeKafkaTheme.themeTitleKo,
     recommendedAction: situationalKafkaAudit.practiceGuidance,
     cautionNotice: '외부의 모호함과 타인의 시선에 맞춰 내면의 진실한 중심을 꺾지 마십시오.',
+    kafkaCrossAxis,
   };
   const trimmedQ = (query ?? '').trim();
   const reflectiveQuestion = trimmedQ
@@ -356,7 +359,7 @@ export function formatAustrianFranzKafkaExistentialTruthPrompt(
     `- 일상 의례 제안: ${res.situationalKafkaAudit.ritualAction}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 조언 요약: ${res.situationalKafkaAudit.counselNote}`,
-    `- 교차 매트릭스: 핵심(${res.kafkaSynthesisMatrix.coreInsight}) | 실행(${res.kafkaSynthesisMatrix.recommendedAction}) | 주의(${res.kafkaSynthesisMatrix.cautionNotice})`,
+    `- 교차 매트릭스: 핵심(${res.kafkaSynthesisMatrix.coreInsight}) | 실행(${res.kafkaSynthesisMatrix.recommendedAction}) | 4중 교차 축(${res.kafkaSynthesisMatrix.kafkaCrossAxis}) | 주의(${res.kafkaSynthesisMatrix.cautionNotice})`,
     `- 카프카 원전 명언: "${res.focalKafkaAphorism.aphorismKo}" (${res.focalKafkaAphorism.aphorismGerman})`,
     `- 원전 출처: [${res.focalKafkaAphorism.sourceContext}]`,
     `- 시간대 권고: ${res.temporalKafkaRhythm.dailyWatchword}`,
