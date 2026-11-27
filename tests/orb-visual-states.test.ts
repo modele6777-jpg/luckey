@@ -49,7 +49,7 @@ test('reconnecting passes the recent conversation as reference and keeps cards a
   assert.doesNotMatch(recap, /말 1\n/);
   assert.match(recap, /손님: 말 8\n마스터: 말 9$/);
   assert.match(component, /const executor = resume && executorRef\.current \? executorRef\.current : createOrbToolExecutor/);
-  assert.match(component, /if \(!resume\) \{\n    \/\/ 🔮 마스터 한 명이/);
+  assert.match(component, /if \(!resume\) \{\n    \/\/ 🔮 마스터 루시 한 명이/);
   assert.match(component, /error\.code === 'live-closed' && navigator\.onLine !== false && reconnectTries\.current < 2/);
   assert.match(component, /window\.addEventListener\('online', onOnline\)/);
 });
