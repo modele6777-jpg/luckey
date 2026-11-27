@@ -16,7 +16,7 @@ test('Orb keeps the permission-granted microphone stream muted and reuses it for
   assert.match(source, /stream\.getAudioTracks\(\)\.forEach\(track => \{ track\.enabled = false; \}\)/);
   assert.match(source, /micPrime\.current = Promise\.resolve\(stream\)/);
   assert.match(source, /if \(!micPrime\.current\) micPrime\.current = requestMic\(\)/);
-  assert.match(source, /disabled=\{micPermissionBusy \|\| rolling\} onClick=\{\(\) => begin\(item\)\}/);
+  assert.match(source, /disabled=\{micPermissionBusy \|\| rolling\} onClick=\{\(\) => begin\(ORB_MASTERS\[0\]\)\}/);
   const permissionHandler = source.slice(source.indexOf('const requestMicPermission'), source.indexOf('const begin'));
   assert.doesNotMatch(permissionHandler, /track\.stop\(\)/);
   assert.match(source, /pending\?\.then\(stream => stream\.getTracks\(\)\.forEach\(track => track\.stop\(\)\)/);

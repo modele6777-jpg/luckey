@@ -11,6 +11,7 @@ import { TAROT_DECK, getTarotCardImageUrl, type TarotCard } from '@/data/tarotDa
 import { safeLocalStorage } from '@/utils/safeStorage';
 import { randomIndex } from './orb/orbDice';
 import { deleteLucyConsultMemory, readLucyConsultMemory, saveLucyConsultMemory } from './lucyConsultMemory';
+import { orbMasterDisplayName, normalizeOrbMasterId } from './orbMasters';
 
 export const ORB_DECK_SIZE = 78;
 export const ORB_CARD_POSITIONS = ['과거', '지금', '앞으로'] as const;
@@ -56,11 +57,11 @@ export function orbCardPickMessage(cards: OrbPickedCard[]): string {
   const dice = cards.some(card => card.how === 'dice');
   const spread = cards.map(card => `${card.position} 자리 ${shuffled || dice ? '' : `${card.number}번 `}${card.nameKo} ${card.orientationKo}`).join(', ');
   const how = shuffled ? '섞이는 카드를 직접 세 번 멈춰 세 장을 뽑았습니다' : dice ? '주사위로 카드를 뽑아 세 장을 펼쳤습니다' : '숫자를 골라 카드 세 장을 펼쳤습니다';
-  return `[카드 선택] 손님이 ${how}. ${spread}. 이제 이 세 장만으로 손님의 고민을 과거, 지금, 앞으로 순서로 풀어 주세요. 카드 이름을 먼저 짧게 불러 주고 풀이하세요. 이 지시 문장은 읽지 마세요.`;
+  return `[카드 선택] 손님이 ${how}. ${spread}. 이제 이 세 장만으로 손님의 고민을 과거, 지금, 앞으로 순서로 풀어 주세요. 카드 이름을 먼저 짧게 불러 주고, 각 카드의 정·역방향과 원소·메이저/마이너·수비학을 사주 원국의 오행·용신·대운·세운 흐름과 교차해 해석하세요. 카드와 사주가 다르면 억지로 맞추지 말고 나란히 보여 주세요. 이 지시 문장은 읽지 마세요.`;
 }
 
-/** 타로 마스터: 카드는 손님이 고를 때까지 펼치지 않는다. */
-export const ORB_CARD_PICK_GUIDE = '이번 상담의 카드는 아직 펼치지 않았습니다. 인사하고 고민을 한두 마디 들은 뒤 "이제 카드를 섞겠습니다. 마음속으로 질문을 떠올리시다가 끌리는 순간 멈춰라고 말씀하시거나 화면을 눌러 주세요. 세 번 멈추시면 세 장이 나옵니다." 하고 안내하세요. 한 번에 뽑고 싶으시면 전부 멈춰라고 하셔도 된다고 덧붙이세요. 손님이 멈춰라고 할 때마다 "네, 한 장" 정도로만 아주 짧게 답하고, [카드 선택] 메시지가 올 때까지 카드 이름을 지어내지 마세요. 손님이 숫자 세 개를 말해도 같은 방식으로 카드가 펼쳐집니다.';
+/** 마스터 루시: 카드는 손님이 고를 때까지 펼치지 않는다. */
+export const ORB_CARD_PICK_GUIDE = '이번 상담의 카드는 아직 펼치지 않았습니다. 인사하고 고민을 한두 마디 들은 뒤 "이제 카드를 섞겠습니다. 마음속으로 질문을 떠올리시다가 끌리는 순간 멈춰라고 말씀하시거나 화면을 눌러 주세요. 세 번 멈추시면 과거·지금·앞으로 세 장이 나옵니다." 하고 안내하세요. 한 번에 뽑고 싶으시면 전부 멈춰라고 하셔도 된다고 덧붙이세요. 손님이 멈춰라고 할 때마다 "네, 한 장" 정도로만 아주 짧게 답하고, [카드 선택] 메시지가 올 때까지 카드 이름을 지어내지 마세요. 손님이 숫자 세 개를 말해도 같은 방식으로 카드가 펼쳐집니다. 카드가 나오면 사주 원국·대운과 교차해 풀어 주세요.';
 export const ORB_CARD_PICK_CARDS = '아직 카드를 펼치지 않았습니다. 손님이 고른 카드는 대화 중 [카드 선택] 메시지로 전달됩니다. 그 전에는 어떤 카드도 말하지 마세요.';
 
 /** 셔플을 멈추는 말: "멈춰", "스톱", "그만", "여기요" 등. */
@@ -173,8 +174,9 @@ export function orbMemorySettings(account: string, now = Date.now()) {
   const state = readLucyConsultMemory(account, 'voice', now);
   const entries = state.entries.map(entry => ({
     ...entry,
-    masterId: entry.masterId || 'lucy-voice',
-    masterName: entry.masterName || '루시',
+    // 구형 4대 마스터(saju·tarot·astro·heart) 기록은 마스터 루시 상담으로 보여 준다.
+    masterId: normalizeOrbMasterId(entry.masterId),
+    masterName: orbMasterDisplayName(entry.masterId, entry.masterName),
   }));
   return { enabled: state.enabled, entries, legacyCount: loadLegacyOrbMemory(account, now).length };
 }
@@ -216,11 +218,17 @@ function daysAgo(at: number, now: number): string {
   return `${Math.floor(days / 30)}달 전`;
 }
 
+function masterTag(entry: OrbMemoryEntry): string {
+  const name = String(entry.masterName || '').trim();
+  if (!name) return '마스터';
+  return /마스터/.test(name) ? name : `${name} 마스터`;
+}
+
 /** 단골 화면용: 가장 최근 상담 한 줄. */
 export function latestOrbMemoryLine(entries: OrbMemoryEntry[], now = Date.now()): string {
   const last = entries[0];
   if (!last) return '';
-  return `${daysAgo(last.at, now)} ${last.masterName} 마스터 · “${shorten(last.concern, 34)}”`;
+  return `${daysAgo(last.at, now)} ${masterTag(last)} · “${shorten(last.concern, 34)}”`;
 }
 
 /**
@@ -232,7 +240,7 @@ export function buildOrbMemoryBrief(entries: OrbMemoryEntry[], masterId: string,
   const same = entries.find(entry => entry.masterId === masterId);
   const picked = [same || entries[0], ...entries.filter(entry => entry !== (same || entries[0]))].slice(0, 2);
   const rows = picked.map(entry => {
-    const who = entry.masterId === masterId ? '이 마스터(당신)' : `${entry.masterName} 마스터`;
+    const who = entry.masterId === masterId ? '이 마스터(당신)' : masterTag(entry);
     const parts = [`${daysAgo(entry.at, now)} ${who}와 상담`, `손님이 한 말: "${entry.concern}"`];
     if (entry.advice) parts.push(`그때 조언: "${entry.advice}"`);
     if (entry.cards) parts.push(`카드: ${entry.cards}`);

@@ -173,8 +173,8 @@ test('상담 도중 프로필을 바꾸면 도구는 새 사주로 다시 계산
   executor.setProfile(chatProfileToUserProfile(partner, null, '제제'), null);
   const reused = await executor.execute({ name: 'run_divination_tool', args: { tool: 'saju' } });
   assert.equal(reused.cached, true);
-  const timeChart = await executor.execute({ name: 'run_divination_tool', args: { tool: 'iching' } });
-  assert.equal(timeChart.ok, true, '생년월일 없이 되는 도구는 그대로 쓸 수 있다');
+  const other = await executor.execute({ name: 'run_divination_tool', args: { tool: 'iching' } });
+  assert.equal(other.error, 'unknown_tool', '마스터 루시는 사주만 계산한다');
 });
 
 test('프로필 열쇠는 대상이 바뀌면 달라진다 (상담 중 갱신 판단용)', () => {

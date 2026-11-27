@@ -41,6 +41,9 @@ test('a shuffled deck holds all 78 cards and the same number gives the same card
   const message = orbCardPickMessage(a);
   assert.match(message, /^\[카드 선택\]/);
   for (const card of a) assert.ok(message.includes(card.nameKo));
+  // 카드 세 장은 사주 원국·대운과 교차해 풀게 한다.
+  assert.match(message, /사주 원국의 오행·용신·대운·세운/);
+  for (const card of a) assert.match(message, new RegExp(card.orientationKo));
 });
 
 test('a finished session is remembered per account and briefed back to the master', () => {
@@ -60,13 +63,16 @@ test('a finished session is remembered per account and briefed back to the maste
   assert.equal(loadOrbMemory('user-b', now).length, 0);
   const entries = loadOrbMemory('user-a', now);
   assert.equal(entries.length, 1);
-  const brief = buildOrbMemoryBrief(entries, 'tarot', now);
+  // 구형 4대 마스터 id(tarot)로 남은 기록도 마스터 루시 상담으로 보인다.
+  assert.equal(entries[0].masterId, 'lucy');
+  assert.equal(entries[0].masterName, '마스터 루시');
+  const brief = buildOrbMemoryBrief(entries, 'lucy', now);
   assert.match(brief, /지난 상담 기록/);
   assert.match(brief, /3일 전 이 마스터/);
   assert.match(brief, /이직을 할지 말지/);
   assert.match(brief, /참고 자료일 뿐/);
-  assert.match(latestOrbMemoryLine(entries, now), /3일 전 타로 마스터/);
-  assert.equal(buildOrbMemoryBrief([], 'tarot', now), '');
+  assert.match(latestOrbMemoryLine(entries, now), /3일 전 마스터 루시 ·/);
+  assert.equal(buildOrbMemoryBrief([], 'lucy', now), '');
 });
 
 test('a session with nothing said by the guest is not remembered', () => {

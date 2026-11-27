@@ -13,7 +13,7 @@ import { getPageGuide } from '@/lib/pageGuides';
 import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
 import { createOrbCounselBed, type OrbCounselBed } from '@/lib/orbCounselBed';
 import { isLucyMasterBgmPlaying, stopLucyMasterBgm } from '@/lib/lucyMasterBgm';
-import { ORB_MASTERS, orbVoice, type OrbMaster } from '@/lib/orbMasters';
+import { ORB_MASTERS, orbVoice, resolveOrbMaster, type OrbMaster } from '@/lib/orbMasters';
 import { generateHeavenlyAdvice } from '@/lib/orbHeavenlyAdvice';
 import { playTTSInChunks, stopTTS, useTTSActive, useTTSState } from '@/utils/tts';
 import { CHANNEL_MENU_ICONS, MessageCircleMinus } from '@/lib/channelMenuIcons';
@@ -139,6 +139,12 @@ type Phase = 'pick' | 'live' | 'report';
 type OrbVoiceMode = 'realtime' | 'hold';
 /** 메인화면에서 바로 상담을 시작할 때 함께 건네는 것 (적은 말 · 붙인 사진/파일). */
 type OrbCompose = { text?: string; attachment?: OrbAttachment };
+
+/** '마스터 루시'처럼 이미 마스터가 붙은 이름에 '마스터'를 또 붙이지 않는다. */
+function masterTitle(master: OrbMaster | null): string {
+  const name = master?.name || ORB_MASTERS[0].name;
+  return /마스터/.test(name) ? name : `${name} 마스터`;
+}
 
 function mergeTranscript(previous: string, next: string): string {
   const line = next.replace(/\s+/g, ' ').trim();
@@ -669,7 +675,7 @@ export function LucyOrbCounsel({
     }
     const recap = resume ? buildResumeRecap(linesRef.current) : '';
     if (!resume) {
-    // 🔮 마스터 한 명이 15가지 도구를 함께 쓴다. 카드는 미리 뽑지 않고 더미만 섞어 둔다 (타로를 부르면 손님이 고른다).
+    // 🔮 마스터 루시 한 명이 사주만 계산하고, 카드는 미리 뽑지 않고 더미만 섞어 둔다 (타로를 부르면 손님이 고른다).
     deckRef.current = shuffleOrbDeck();
     tarotArmedRef.current = false;
     setToolBusy('');
@@ -857,10 +863,19 @@ export function LucyOrbCounsel({
     }
   };
 
-  // 메인화면에서 마스터를 고르지 않고 보냈을 때: 최근 상담 마스터, 없으면 첫 마스터로 시작한다.
-  const pickStartMaster = (): OrbMaster => {
-    const recentId = memory[0]?.masterId;
-    return ORB_MASTERS.find(item => item.id === recentId) || ORB_MASTERS[0];
+  // 메인화면에서 마스터를 고르지 않고 보냈을 때: 마스터 루시로 바로 시작한다 (구형 마스터 id는 매핑).
+  const pickStartMaster = (): OrbMaster => resolveOrbMaster(memory[0]?.masterId);
+
+  // 🃏 카드부터: 인사 없이 상담을 열고 바로 섞기 화면으로 들어간다.
+  const startWithCards = () => {
+    if (micPermissionBusy || rolling) return;
+    begin(ORB_MASTERS[0], undefined, false);
+    tarotArmedRef.current = true;
+    autoOpenedRef.current = true;
+    stopSeenRef.current = 0;
+    stopBufRef.current = '';
+    setPickMode('shuffle');
+    setPickOpen(true);
   };
 
   const retryLiveMic = async () => {
@@ -1291,7 +1306,7 @@ export function LucyOrbCounsel({
   const rollMaster = () => {
     if (rolling || leaving || micPermissionBusy) return;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    // 두 주사위의 눈을 먼저 정하고, 3D 주사위가 그 눈이 위로 오도록 굴러가 멈춘다. 합으로 마스터를 고른다.
+    // 두 주사위의 눈을 먼저 정하고, 3D 주사위가 그 눈이 위로 오도록 굴러가 멈춘다. 이제 마스터는 한 명이라 합은 의식일 뿐이다.
     if (!micPrime.current) micPrime.current = requestMic();
     const next = rollOrbDice();
     setDice(next);
@@ -1302,7 +1317,7 @@ export function LucyOrbCounsel({
       dieTimer.current = null;
       setRolling(false);
       setThrown(0);
-      begin(ORB_MASTERS[(next[0] + next[1]) % ORB_MASTERS.length]);
+      begin(ORB_MASTERS[0]);
     }, reduced ? 700 : 2300);
   };
 
@@ -1339,7 +1354,7 @@ export function LucyOrbCounsel({
     if (!text && !note) return;
     const session = sessionRef.current;
     if (!session) {
-      // 메인화면: 마스터를 고르지 않았으므로 최근·기본 마스터로 바로 상담을 시작한다.
+      // 메인화면: 고르는 단계가 없으므로 마스터 루시로 바로 상담을 시작한다.
       if (micPermissionBusy || rolling) return;
       begin(pickStartMaster(), undefined, true, false, { text, attachment: note ?? undefined });
       return;
@@ -1425,7 +1440,7 @@ export function LucyOrbCounsel({
   const orbStateLabel = orbState === 'connecting' ? '연결하고 있어요…'
     : orbState === 'error' ? (reconnectTimer.current ? '연결이 끊겨 다시 잇고 있어요…' : '음성 연결이 끊겼어요')
       : orbState === 'tool' ? `🔮 ${toolBusy} 살펴보는 중…`
-        : orbState === 'speaking' ? `${master?.name} 마스터가 말하고 있어요`
+        : orbState === 'speaking' ? `${masterTitle(master)}가 말하고 있어요`
           : orbState === 'listening' ? '듣고 있어요'
             : orbState === 'thinking' ? '생각하고 있어요…'
               : '';
@@ -1742,7 +1757,7 @@ export function LucyOrbCounsel({
           </div>
           {/* 주사위는 탁자 앞쪽에 놓여 있다 (아래쪽 빅뱅 버튼에 가리지 않게). 누르면 탁자 위로 던져진다. */}
           {phase === 'pick' && (
-            <button type="button" className={`lucy-die ${rolling ? 'is-thrown' : ''}`} onClick={rollMaster} aria-label="주사위 두 개로 마스터 고르기">
+            <button type="button" className={`lucy-die ${rolling ? 'is-thrown' : ''}`} onClick={rollMaster} aria-label="주사위를 굴려 마스터 루시와 상담 시작">
               {dice.map((face, index) => <span key={index} className="lucy-die-mini"><Pips value={face} /></span>)}
             </button>
           )}
@@ -1767,16 +1782,8 @@ export function LucyOrbCounsel({
           )}
         </div>
         <div className="lucy-orb-copy">
-          {phase === 'pick' && <p>탁자 위 주사위를 누르거나 마스터를 고르시면 상담이 시작됩니다</p>}
-          {phase === 'live' && <p>{speaking ? `${master?.name} 마스터가 말하고 있습니다` : `${master?.name} · ${master?.tone}. 말씀하셔도 되고, 적으셔도 됩니다`}</p>}
+          {phase === 'live' && <p>{speaking ? `${masterTitle(master)}가 말하고 있습니다` : `${masterTitle(master)} · ${master?.tone}. 말씀하셔도 되고, 적으셔도 됩니다`}</p>}
           {notice && <p role="status">{notice}</p>}
-          {phase === 'pick' && !micGranted && (
-            <div className="lucy-orb-permission-actions">
-              <button type="button" className="lucy-orb-permission" disabled={micPermissionBusy || rolling} onClick={() => void requestMicPermission()}>
-                {micPermissionBusy ? '권한 확인 중…' : '마이크 권한 요청'}
-              </button>
-            </div>
-          )}
           {phase === 'live' && micUnavailable && (
             <div className="lucy-orb-permission-actions">
               <button type="button" className="lucy-orb-permission" disabled={micPermissionBusy} onClick={() => void retryLiveMic()}>
@@ -1784,22 +1791,29 @@ export function LucyOrbCounsel({
               </button>
             </div>
           )}
-          {phase === 'pick' && memory[0] && (
-            <p className="lucy-orb-regular">📒 다시 오셨네요 · {latestOrbMemoryLine(memory)}</p>
-          )}
           {phase === 'pick' && (
-            <div className="lucy-orb-masters">
-              {ORB_MASTERS.map(item => (
-                <button key={item.id} type="button" disabled={micPermissionBusy || rolling} onClick={() => begin(item)}>
-                  <span className="lucy-orb-master-head">
-                    <strong>{item.name} 마스터</strong>
-                    {memory[0]?.masterId === item.id && <em>최근 상담</em>}
-                  </span>
-                  <span className="lucy-orb-master-tags">{item.specialty.map(tag => <i key={tag}>{tag}</i>)}</span>
-                  <span className="lucy-orb-master-intro">{item.intro}</span>
-                  <span className="lucy-orb-master-style">🎙 {item.style} · 이럴 때: {item.bestFor}</span>
+            <div className="lucy-orb-master-hero">
+              <span className="lucy-orb-master-eyebrow">사주 · 타로 통합 마스터</span>
+              <h2 className="lucy-orb-master-name">{ORB_MASTERS[0].name}</h2>
+              <p className="lucy-orb-master-intro">{ORB_MASTERS[0].intro}</p>
+              <span className="lucy-orb-master-tags">{ORB_MASTERS[0].specialty.map(tag => <i key={tag}>{tag}</i>)}</span>
+              <div className="lucy-orb-master-actions">
+                <button type="button" className="is-primary" disabled={micPermissionBusy || rolling} onClick={() => begin(ORB_MASTERS[0])}>
+                  바로 상담 시작
                 </button>
-              ))}
+                <button type="button" disabled={micPermissionBusy || rolling} onClick={startWithCards}>
+                  🃏 카드부터 뽑기
+                </button>
+              </div>
+              <small className="lucy-orb-master-best">🎙 {ORB_MASTERS[0].tone} · 이럴 때: {ORB_MASTERS[0].bestFor}</small>
+              {memory[0] && <small className="lucy-orb-master-memory">📒 지난번 상담 · {latestOrbMemoryLine(memory)}</small>}
+            </div>
+          )}
+          {phase === 'pick' && !micGranted && (
+            <div className="lucy-orb-permission-actions">
+              <button type="button" className="lucy-orb-permission" disabled={micPermissionBusy || rolling} onClick={() => void requestMicPermission()}>
+                {micPermissionBusy ? '권한 확인 중…' : '마이크 권한 요청'}
+              </button>
             </div>
           )}
           {phase === 'live' && master && (
@@ -1813,7 +1827,7 @@ export function LucyOrbCounsel({
             </div>
           )}
         </div>
-        {/* 입력창: 메인화면(마스터를 고르기 전)에도 바로 보이고, 적어 보내면 그 말로 상담이 시작된다. */}
+        {/* 입력창: 메인화면(상담을 열기 전)에도 바로 보이고, 적어 보내면 그 말로 상담이 시작된다. */}
         {(phase === 'pick' || phase === 'live') && (
           <div className="lucy-orb-dock lucy-orb-composer">
             {!talkPressed && profiles.length > 1 && (

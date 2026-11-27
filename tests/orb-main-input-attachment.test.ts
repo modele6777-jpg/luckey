@@ -104,8 +104,8 @@ test('a photo alone enables sending, and the main screen starts a master and del
   assert.match(component, /disabled=\{rolling \|\| micPermissionBusy \|\| talkPressed \|\| \(!draft\.trim\(\) && !attachment\)\}/);
   // 메인화면(phase === 'pick')에서도 입력창이 보인다.
   assert.match(component, /\{\(phase === 'pick' \|\| phase === 'live'\) && \(\s*<div className="lucy-orb-dock lucy-orb-composer">/);
-  // 마스터를 고르지 않았으면 최근 상담 마스터, 없으면 첫 마스터로 시작한다.
-  assert.match(component, /const pickStartMaster = \(\): OrbMaster => \{[\s\S]*?ORB_MASTERS\.find\(item => item\.id === recentId\) \|\| ORB_MASTERS\[0\]/);
+  // 고르는 단계가 없으므로 마스터 루시로 바로 시작한다 (구형 마스터 id는 resolveOrbMaster가 매핑).
+  assert.match(component, /const pickStartMaster = \(\): OrbMaster => resolveOrbMaster\(memory\[0\]\?\.masterId\);/);
   assert.match(component, /const session = sessionRef\.current;\s*if \(!session\) \{[\s\S]*?begin\(pickStartMaster\(\), undefined, true, false, \{ text, attachment: note \?\? undefined \}\);/);
   // 시작하면서 적은 말·첨부를 한 차례에 건넨다.
   assert.match(component, /const payload = orbAttachmentPayload\(note, typed\);[\s\S]*?session\.sendAttachment\(payload\.kind === 'image'/);
