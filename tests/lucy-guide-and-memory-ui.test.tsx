@@ -8,6 +8,7 @@ import { getPageGuide } from '../src/lib/pageGuides.ts';
 
 const pageSource = readFileSync(new URL('../src/pages/LucyStandalonePage.tsx', import.meta.url), 'utf8');
 const orbSource = readFileSync(new URL('../src/components/lucy/LucyOrbCounsel.tsx', import.meta.url), 'utf8');
+const orbCssSource = readFileSync(new URL('../src/components/lucy/lucy-orb-counsel.css', import.meta.url), 'utf8');
 const calmSource = readFileSync(new URL('../src/pages/CalmApp.tsx', import.meta.url), 'utf8');
 const keySearchSource = readFileSync(new URL('../public/calm/key-search.js', import.meta.url), 'utf8');
 const keyStyleSource = readFileSync(new URL('../public/calm/style.css', import.meta.url), 'utf8');
@@ -34,6 +35,44 @@ test('the orb header no longer carries a 상담 기억 button while memory savin
   // 저장·공유 로직은 버튼과 무관하게 계속 돈다.
   assert.match(orbSource, /saveOrbMemory\(account,/, '상담이 끝나면 오브 기억을 계속 저장한다');
   assert.match(orbSource, /buildLucyConsultMemoryBrief\(account, 'voice'/, '음성모드 상담 기억을 계속 참고한다');
+});
+
+test('the orb header puts the guide first and renders the bed toggle as a speaker icon button', () => {
+  const headerStart = orbSource.indexOf('lucy-orb-header-actions');
+  const headerBlock = orbSource.slice(headerStart, orbSource.indexOf('</header>', headerStart));
+
+  // 가이드 버튼이 먼저(왼쪽) 오고 배경음 토글이 그 오른쪽에 온다.
+  const guideAt = headerBlock.indexOf('<PageGuideButton');
+  const bedAt = headerBlock.indexOf('lucy-orb-bed');
+  assert.ok(guideAt > 0, '오브 헤더에 가이드 버튼이 있다');
+  assert.ok(bedAt > guideAt, '가이드 버튼이 배경음 버튼보다 앞에 온다');
+
+  const button = headerBlock.slice(headerBlock.lastIndexOf('<button', bedAt), headerBlock.indexOf('</button>', bedAt));
+  assert.doesNotMatch(button, /배경음\s*(켜짐|꺼짐)/, '배경음 토글에 상태 글자가 남지 않는다');
+  assert.doesNotMatch(button, />\s*[가-힣]/, '버튼 안에는 글자 대신 아이콘만 그린다');
+  assert.ok(button.includes('<Volume2 size={15}'), '켜짐 상태는 Volume2 스피커 아이콘이다');
+  assert.ok(button.includes('<VolumeX size={15}'), '꺼짐 상태는 VolumeX 스피커 아이콘이다');
+  assert.match(button, /bedOn \? <Volume2[^>]*\/> : <VolumeX[^>]*\/>/, 'bedOn에 따라 두 아이콘을 바꿔 그린다');
+  assert.ok(button.includes('aria-pressed={bedOn}'), '켜짐/꺼짐 상태는 aria-pressed로도 남는다');
+  assert.ok(button.includes("aria-label={bedOn ? '배경음 끄기' : '배경음 켜기'}"), '접근성 이름은 동작을 말한다');
+  assert.ok(button.includes("title={bedOn ? '배경음 끄기' : '배경음 켜기'}"), '툴팁도 같은 안내를 준다');
+  assert.ok(button.includes('data-orb-bed-button'), '테스트·확인용 표식이 남는다');
+  assert.ok(button.includes("sessionStorage.setItem('lucy_orb_bed'"), '토글 상태 저장 동작은 그대로다');
+  assert.match(
+    orbSource,
+    /import \{[^}]*Volume2[^}]*VolumeX[^}]*\} from 'lucide-react'/,
+    '스피커 아이콘은 lucide-react에서 가져온다',
+  );
+
+  // 옆의 가이드 버튼(32px 원형)과 같은 크기·모양으로 그린다.
+  const ruleStart = orbCssSource.indexOf('.lucy-orb-header .lucy-orb-bed {');
+  assert.ok(ruleStart > 0, '오브 헤더 배경음 버튼 규칙이 있다');
+  const rule = orbCssSource.slice(ruleStart, orbCssSource.indexOf('}', ruleStart));
+  assert.match(rule, /display: inline-flex;/, '아이콘을 가운데 두는 버튼이다');
+  assert.match(rule, /width: 32px;/, '가이드 버튼과 같은 32px 폭이다');
+  assert.match(rule, /height: 32px;/, '가이드 버튼과 같은 32px 높이다');
+  assert.match(rule, /padding: 0;/, '글자용 여백은 두지 않는다');
+  assert.match(rule, /border-radius: 999px;/, '원형 버튼이다');
 });
 
 test('the key channel guide button is icon-only and pairs with the search button', () => {

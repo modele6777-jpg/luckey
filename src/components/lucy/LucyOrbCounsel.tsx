@@ -20,7 +20,7 @@ import {
   orbCardPickMessage, parseCardNumbers, pickOrbCards, saveOrbMemory, shuffleOrbDeck, summarizeOrbSession,
   type OrbDeckCard, type OrbMemoryEntry, type OrbPickedCard,
 } from '@/lib/orbConsult';
-import { Clover, KeyRound, MessageCirclePlus, Camera, Paperclip, Send, X, type LucideIcon } from 'lucide-react';
+import { Clover, KeyRound, MessageCirclePlus, Camera, Paperclip, Send, Volume2, VolumeX, X, type LucideIcon } from 'lucide-react';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
 import { setMicCaptureActive } from '@/lib/audioMixingPolicy';
@@ -1510,10 +1510,14 @@ export function LucyOrbCounsel({
         <header className="lucy-orb-header" data-top-bar="true">
           <h1>Orb</h1>
           <div className="lucy-orb-header-actions">
+            <PageGuideButton guide={getPageGuide('orb')} />
             <button
               type="button"
               className="lucy-orb-bed"
+              data-orb-bed-button="true"
               aria-pressed={bedOn}
+              aria-label={bedOn ? '배경음 끄기' : '배경음 켜기'}
+              title={bedOn ? '배경음 끄기' : '배경음 켜기'}
               onClick={() => {
                 const next = !bedOn;
                 setBedOn(next);
@@ -1521,9 +1525,8 @@ export function LucyOrbCounsel({
                 if (next) void bedRef.current?.resume();
               }}
             >
-              {bedOn ? '배경음 켜짐' : '배경음 꺼짐'}
+              {bedOn ? <Volume2 size={15} aria-hidden="true" /> : <VolumeX size={15} aria-hidden="true" />}
             </button>
-            <PageGuideButton guide={getPageGuide('orb')} />
           </div>
         </header>
         {phase === 'live' && <button type="button" className="lucy-orb-end" onClick={openReport}>상담 끝내기</button>}

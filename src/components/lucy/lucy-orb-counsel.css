@@ -1300,18 +1300,34 @@ html.duo-unfolded-mode .lucy-orb-copy { width: min(720px, 92%); }
   gap: 8px;
   min-width: 0;
 }
+/* 배경음 토글은 옆의 가이드 버튼과 같은 32px 원형 아이콘 버튼이다. */
 .lucy-orb-header .lucy-orb-bed {
   position: static;
   top: auto;
   left: auto;
-  border: 1px solid rgba(255,255,255,.28);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,.2);
   border-radius: 999px;
-  background: rgba(255,255,255,.12);
-  color: #f7f4ee;
+  background: rgba(255,255,255,.1);
+  color: rgba(255,255,255,.9);
   font-size: 12px;
   font-weight: 700;
-  padding: 8px 12px;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background .2s ease, transform .15s ease;
 }
+.lucy-orb-header .lucy-orb-bed:hover { background: rgba(255,255,255,.18); }
+.lucy-orb-header .lucy-orb-bed:active { transform: scale(.95); }
+.lucy-orb-header .lucy-orb-bed[aria-pressed="false"] { color: rgba(255,255,255,.72); }
+.lucy-orb-header .lucy-orb-bed svg { flex: 0 0 auto; }
 .lucy-orb-masters { margin-top: 16px; display: grid; gap: 8px; width: min(420px, 100%); }
 html.duo-unfolded-mode .lucy-orb-masters { grid-template-columns: 1fr 1fr; }
 .lucy-orb-masters button:not(.lucy-die) {
