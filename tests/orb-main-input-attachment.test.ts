@@ -69,6 +69,28 @@ test('the orb composer carries a camera button beside the input with a hidden fi
   assert.match(css, /\.lucy-orb-dock \.lucy-orb-camera \{[\s\S]*?flex: 0 0 44px;[\s\S]*?border-radius: 999px;/);
 });
 
+test('the camera button sits left of the input, and the file picker never shows up as a box', () => {
+  const rowStart = component.indexOf('<div className="lucy-orb-composer-row">');
+  const rowEnd = component.indexOf('<button type="button" className="lucy-orb-send"', rowStart);
+  assert.ok(rowStart > -1 && rowEnd > rowStart, 'composer row and its send button must exist');
+  const row = component.slice(rowStart, rowEnd);
+  const cameraAt = row.indexOf('className="lucy-orb-camera"');
+  const inputWrapAt = row.indexOf('className="lucy-orb-input-wrap"');
+  assert.ok(cameraAt > -1, 'the camera button must live inside the composer row');
+  assert.ok(inputWrapAt > -1, 'the text input must live inside the composer row');
+  // 왼쪽부터 📷 카메라 → 텍스트 입력창 → 전송.
+  assert.ok(cameraAt < inputWrapAt, 'the camera button must come before the text input');
+  assert.equal(row.match(/lucy-orb-camera/g)?.length, 1, 'only one camera button in the row');
+
+  // 파일 선택 인풋은 hidden 속성과 display: none 규칙 두 겹으로 숨긴다.
+  assert.match(component, /ref=\{attachInputRef\}[\s\S]{0,300}?\n\s*hidden\n/);
+  assert.match(css, /\.lucy-orb-dock input\.lucy-orb-attach-input,\s*\ninput\[type="file"\]\.lucy-orb-attach-input \{ display: none; \}/);
+  // 입력창 스타일은 파일 인풋에 닿지 않는다(예전 .lucy-orb-dock input 규칙이 display: block을 덮어써 '파일 선택' 박스가 보였음).
+  assert.match(css, /\.lucy-orb-dock input:not\(\[type="file"\]\) \{/);
+  assert.doesNotMatch(css, /\.lucy-orb-dock input \{/, 'no bare dock input rule may style the file input');
+  assert.doesNotMatch(css, /\.lucy-orb-dock input\[type="file"\]/);
+});
+
 test('a picked photo or file shows a preview above the input and can be removed', () => {
   assert.match(component, /<div className="lucy-orb-attach" role="status">/);
   assert.match(component, /attachment\.kind === 'image' && attachment\.dataUrl[\s\S]{0,120}<img src=\{attachment\.dataUrl\}/);
