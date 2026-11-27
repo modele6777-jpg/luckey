@@ -55,6 +55,7 @@ import { detectMasterConcernTopic, getMasterDepthPrompts, type MasterConcernTopi
 import { hasMeaningfulMasterSession, type MasterSessionCardSource } from '@/lib/lucyMasterSessionCard';
 import { LucyMasterSessionCard } from '@/components/chat/LucyMasterSessionCard';
 import { PageGuideButton } from '@/components/guide/PageGuide';
+import { SmartGuideSettingsButton } from '@/components/guide/SmartGuideSettings';
 import { getPageGuide } from '@/lib/pageGuides';
 import { archiveMasterSession, buildDepthContinuityContext, buildPastMasterSessionsContext } from '@/lib/lucyMasterContinuity';
 import { isLucyMasterBgmPreferred, startLucyMasterBgm, stopLucyMasterBgm, setLucyMasterBgmDepth } from '@/lib/lucyMasterBgm';
@@ -4434,6 +4435,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             {isMasterMode && <MasterEngineCatalogButton tone={isLight ? 'light' : 'dark'} />}
             {/* 📘 가이드 */}
             <PageGuideButton guide={getPageGuide(isMasterMode ? 'master' : 'lucy')} tone={isLight ? 'light' : 'dark'} />
+            {/* 🧭 스마트 가이드 설정 (물음표) — 일반 루시·점술모드 공통 헤더 */}
+            <SmartGuideSettingsButton tone={isLight ? 'light' : 'dark'} />
             {/* 1. 검색 (Search Toggle) */}
             <button
               type="button"

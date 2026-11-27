@@ -8,6 +8,7 @@ import { createOrbSessionMetrics, type OrbSessionMetrics } from '@/lib/orb/orbSe
 import { buildLucyConsultMemoryBrief } from '@/lib/lucyConsultMemory';
 import { resolveOrbCopyBottom, resolveOrbLiveRoom } from '@/lib/orb/orbCopyBounds';
 import { PageGuideButton } from '@/components/guide/PageGuide';
+import { SmartGuideSettingsButton } from '@/components/guide/SmartGuideSettings';
 import { getPageGuide } from '@/lib/pageGuides';
 import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
 import { createOrbCounselBed, type OrbCounselBed } from '@/lib/orbCounselBed';
@@ -1580,6 +1581,8 @@ export function LucyOrbCounsel({
           <h1>Orb</h1>
           <div className="lucy-orb-header-actions">
             <PageGuideButton guide={getPageGuide('orb')} />
+            {/* 🧭 스마트 가이드 설정 (물음표) — 오브 헤더 */}
+            <SmartGuideSettingsButton tone="dark" />
             <button
               type="button"
               className="lucy-orb-bed"
