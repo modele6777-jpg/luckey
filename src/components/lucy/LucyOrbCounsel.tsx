@@ -6,6 +6,7 @@ import { requestLucyMicrophone, lucyMicrophonePermissionMessage } from '@/lib/lu
 import { OrbSessionMetricsView } from './OrbSessionMetricsView';
 import { createOrbSessionMetrics, type OrbSessionMetrics } from '@/lib/orb/orbSessionMetrics';
 import { buildLucyConsultMemoryBrief } from '@/lib/lucyConsultMemory';
+import { resolveOrbCopyBottom, resolveOrbLiveRoom } from '@/lib/orb/orbCopyBounds';
 import { PageGuideButton } from '@/components/guide/PageGuide';
 import { getPageGuide } from '@/lib/pageGuides';
 import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
@@ -1294,10 +1295,11 @@ export function LucyOrbCounsel({
         if (!r.width || !r.height || r.right < box.left || r.left > box.right || r.bottom < box.top || r.top > box.bottom) return;
         clear = Math.max(clear, box.bottom - r.top + 6);
       });
+      const dockClear = dock ? Math.max(0, Math.round(box.bottom - dock.top + 6)) : 0;
       stage.style.setProperty('--orb-bok-bottom', `${Math.round(clear)}px`);
       // 자막 칸 너비: 작아진 탁자가 아니라 화면 폭 기준 (두 줄 안에 들어가게).
       stage.style.setProperty('--orb-stage-w', `${Math.round(box.width)}px`);
-      stage.style.setProperty('--orb-dock-clear', dock ? `${Math.max(0, Math.round(box.bottom - dock.top + 6))}px` : '0px');
+      stage.style.setProperty('--orb-dock-clear', `${dockClear}px`);
       const panel = stage.querySelector<HTMLElement>('.lucy-bok');
       const ritual = stage.querySelector<HTMLElement>('.lucy-orb-ritual');
       if (panel && ritual) {
@@ -1305,12 +1307,12 @@ export function LucyOrbCounsel({
         const room = box.height - clear - panel.offsetHeight - top - 12;
         stage.style.setProperty('--orb-report-room', `${Math.max(120, Math.round(room))}px`);
       }
-      // 상담 중: 글·버튼 영역이 빅뱅 버튼 위에서 끝나게 하고, 수정구슬은 남은 공간에 맞춘다.
+      // 상담 중: 글·버튼 영역은 빅뱅 버튼과 겹쳐도 잘리지 않고(입력창 위에서 끝난다), 수정구슬은 남은 공간에 맞춘다.
       const copy = stage.querySelector<HTMLElement>('.lucy-orb-copy');
       if (copy && phase === 'live') {
         const top = parseFloat(getComputedStyle(stage).paddingTop) || 0;
-        const room = box.height - clear - top - copy.scrollHeight - 16;
-        stage.style.setProperty('--orb-live-room', `${Math.max(110, Math.round(room))}px`);
+        stage.style.setProperty('--orb-copy-bottom', `${resolveOrbCopyBottom({ clear, dockClear })}px`);
+        stage.style.setProperty('--orb-live-room', `${resolveOrbLiveRoom({ stageHeight: box.height, clear, paddingTop: top, copyHeight: copy.scrollHeight })}px`);
       }
       // 부적 창: 그림 + 이름 + 버튼(약 130px)이 빅뱅 버튼 위 공간에 들어가게 그림 높이를 정한다.
       const header = 56 + 14;

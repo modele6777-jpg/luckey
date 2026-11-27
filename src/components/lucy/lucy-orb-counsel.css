@@ -1699,11 +1699,11 @@ html.duo-unfolded-mode .lucy-orb-stage.is-report .lucy-orb-ritual { width: min(6
   .lucy-cardpick-flip img.is-reversed { transform: rotate(180deg); }
 }
 
-/* 상담 중: 추천 질문·카드 고르기 버튼이 빅뱅 버튼에 가리지 않게 글 영역은 버튼 위에서 끝나고, 수정구슬은 남은 공간에 맞춰 줄어든다. */
+/* 상담 중: 추천 질문·카드 고르기 버튼이 잘리지 않게, 빅뱅 버튼 위로는 조금 겹쳐 내려가고 입력창 위에서 끝난다. 수정구슬은 남은 공간에 맞춰 줄어든다. */
 .lucy-orb-stage.is-live { justify-content: flex-start; }
 .lucy-orb-stage.is-live .lucy-orb-ritual { width: min(86%, 430px, calc(var(--orb-live-room, 9999px) / .92)); }
 html.duo-unfolded-mode .lucy-orb-stage.is-live .lucy-orb-ritual { width: min(62%, 680px, calc(var(--orb-live-room, 9999px) / .92)); }
-.lucy-orb-stage.is-live .lucy-orb-copy { margin-bottom: var(--orb-bok-bottom, 0px); padding-bottom: 8px; min-height: 0; }
+.lucy-orb-stage.is-live .lucy-orb-copy { margin-bottom: var(--orb-copy-bottom, var(--orb-bok-bottom, 0px)); padding-bottom: 8px; min-height: 0; }
 /* The picker scrolls above its input dock while the table keeps its full size. */
 .lucy-orb-stage:not(.is-live):not(.is-report) .lucy-orb-copy {
   margin-bottom: var(--orb-dock-clear, 0px);
