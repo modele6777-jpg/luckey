@@ -19,7 +19,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const SHAMANIC_ANIMAL_TOTEM_VERSION = 'LUCKEY-TOTEM-v2.3.0';
+export const SHAMANIC_ANIMAL_TOTEM_VERSION = 'LUCKEY-TOTEM-v2.4.0';
 
 function formatShamanicTotemKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -56,6 +56,12 @@ export interface ShamanicAnimalTotemReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  totemCrossAxis: {
+    primaryAnchor: string;
+    shadowPolar: string;
+    messengerGuide: string;
+    elementAnchor: string;
   };
   reflectiveQuestion: string;
   interpretiveBoundary: string;
@@ -136,6 +142,12 @@ export function runShamanicAnimalTotemEngine(
     alignmentState: `메신저: ${messengerGuide.animalName} · 원소: ${element}`,
     integratedAction: `${callOfTheWildRitual}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const totemCrossAxis = {
+    primaryAnchor: primaryTotem.animalName,
+    shadowPolar: shadowAnimal.animalName,
+    messengerGuide: messengerGuide.animalName,
+    elementAnchor: `${element} (${dayBranch})`,
+  };
 
   const ritualAction = `[${primaryTotem.animalName}] ${callOfTheWildRitual}`;
   const reflectionFocus = `샤머니즘 파워 애니멀(${primaryTotem.animalName}) — ${shadowAnimal.animalName}`;
@@ -153,6 +165,7 @@ export function runShamanicAnimalTotemEngine(
 - 야생의 부름 소환법: ${callOfTheWildRitual}
 - 절대적 금기: ${tabooWarning}
 - 교차 매트릭스: [핵심 긴장: ${totemSynthesisMatrix.dominantTension} | 조율 상태: ${totemSynthesisMatrix.alignmentState}]
+- 토템 교차 축: ${totemCrossAxis.primaryAnchor} ↔ ${totemCrossAxis.shadowPolar} · ${totemCrossAxis.elementAnchor}
   * 통합 실천: ${totemSynthesisMatrix.integratedAction}
 - 실천 의례: ${ritualAction}
 - 성찰 초점: ${reflectionFocus}
@@ -173,6 +186,7 @@ export function runShamanicAnimalTotemEngine(
     ritualAction,
     reflectionFocus,
     totemSynthesisMatrix,
+    totemCrossAxis,
     reflectiveQuestion,
     interpretiveBoundary,
   };

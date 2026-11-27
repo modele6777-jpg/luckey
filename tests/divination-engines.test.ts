@@ -2891,6 +2891,7 @@ test('Rune Matrix Engine: 고대 노르딕 룬 동시성 3대 스프레드 검�
   assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.runeSynthesisMatrix?.integratedAction));
+  assert(Boolean(res.runeCrossAxis?.originAett && res.runeCrossAxis?.challengeAett && res.runeCrossAxis?.horizonAett && res.runeCrossAxis?.oraclePhase));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.runePowerScore >= 0 && res.runePowerScore <= 100);
   assert(res.spread.originRune.name.length > 0);
@@ -2899,7 +2900,7 @@ test('Rune Matrix Engine: 고대 노르딕 룬 동시성 3대 스프레드 검�
   const prompt = formatRuneMatrixPrompt(res);
   assert(prompt.includes(RUNE_MATRIX_VERSION));
   assert(prompt.includes('고대 노르딕 룬 동시성 매트릭스'));
-  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('룬 아에트 교차 축') && prompt.includes('해석 경계'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
 });
@@ -3226,6 +3227,7 @@ test('Shamanic Animal Totem Engine: 샤머니즘 파워 애니멀 & 12지지 스
   assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.totemSynthesisMatrix?.integratedAction));
+  assert(Boolean(res.totemCrossAxis?.primaryAnchor && res.totemCrossAxis?.shadowPolar && res.totemCrossAxis?.messengerGuide && res.totemCrossAxis?.elementAnchor));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.primaryTotem.animalName.length > 0);
   assert(res.totemicResonanceScore >= 0 && res.totemicResonanceScore <= 100);
@@ -3234,7 +3236,7 @@ test('Shamanic Animal Totem Engine: 샤머니즘 파워 애니멀 & 12지지 스
   const prompt = formatShamanicAnimalTotemPrompt(res);
   assert(prompt.includes('LUCKEY 샤머니즘 파워 애니멀 & 12지지 스피릿 토템'));
   assert(prompt.includes(res.primaryTotem.animalName));
-  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('토템 교차 축') && prompt.includes('해석 경계'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
 });
@@ -13920,16 +13922,16 @@ test('Toraja Aluk Todolo Tongkonan engine: pillars, +09:00 KST, and interpretive
 
 test('Sinhala Bali Kohomba Harmony engine: layers, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateSinhalaBaliKohombaHarmony({ profile, now: new Date('2026-11-20T06:10:00Z'), question: '묵은 피로를 털어내고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-SINHALA-BALI-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-SINHALA-BALI-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionLayer.name !== rep.activeLayer.name);
-  assert.ok(rep.kohombaHarmonyAxis.length > 0 && rep.shadowWarning.length > 0 && rep.questionTopic.length > 0);
+  assert.ok(rep.kohombaHarmonyAxis.length > 0 && rep.shadowWarning.length > 0 && rep.questionTopic.length > 0 && rep.topicBalanceHint.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatSinhalaBaliPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('싱할라') && prompt.includes('동반 층위') && prompt.includes('+09:00 (KST)'));
-  assert.ok(prompt.includes('과잉 경계') && prompt.includes('질문 맥락'));
+  assert.ok(prompt.includes('과잉 경계') && prompt.includes('질문 맥락') && prompt.includes('맥락 균형 조언'));
 });
 
 test('Nubian Meroe Apedemak Balance engine: principles, +09:00 KST, and interpretive boundary', () => {
