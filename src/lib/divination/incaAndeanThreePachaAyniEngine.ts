@@ -25,7 +25,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const INCA_ANDEAN_PACHA_VERSION = '2.3.0';
+export const INCA_ANDEAN_PACHA_VERSION = '2.4.0';
 
 export interface IncaAndeanPachaReport {
   engineVersion: string;
@@ -66,6 +66,7 @@ export interface IncaAndeanPachaReport {
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
+    pachaCrossAxis: string;
   };
   ayniSpiritualPrescription: string;
   boundaryNotice: string;
@@ -225,10 +226,12 @@ export function calculateIncaAndeanThreePachaAyni(
     ayniSpiritualPrescription = '뱀의 심원한 허물벗기가 일어나는 정화기입니다. 불필요한 집착과 후차(무거운 기운)를 내려놓으면 놀라운 재생력이 솟아납니다.';
   }
 
+  const pachaCrossAxis = `[${sacredAnimalTotem.quechuaName}] × [${dominantPillar.split(' (')[0]}] × [${situationalPachaAudit.focusTheme}] × [${temporalPachaRhythm.intiSolarWindow.split(' — ')[0]}]`;
   const pachaSynthesisMatrix = {
     coreInsight: `[${sacredAnimalTotem.animalKo}(${sacredAnimalTotem.quechuaName})]의 수호 아래 [${dominantPillar}] 기둥이 중심을 잡고 있으며, ${situationalPachaAudit.focusTheme} 국면이 펼쳐져 있습니다.`,
     recommendedAction: `${ayniSpiritualPrescription} (${situationalPachaAudit.huchaReleasePractice})`,
     cautionNotice: '주고받음의 균형(아이니)이 무너지면 사미가 흐려집니다. 무리한 희생이나 일방적 기대를 경계하십시오.',
+    pachaCrossAxis,
   };
 
   const ritualAction = `[${sacredAnimalTotem.animalKo} · ${situationalPachaAudit.focusTheme}] ${pachaSynthesisMatrix.recommendedAction}`;
@@ -287,6 +290,7 @@ export function formatIncaAndeanThreePachaAyniPrompt(report: IncaAndeanPachaRepo
     `  * 시공간 지침: ${report.temporalPachaRhythm.temporalGuidance}`,
     `- 파차 교차 매트릭스:`,
     `  * 핵심 통찰: ${report.pachaSynthesisMatrix.coreInsight}`,
+    `  * 4중 교차 축: ${report.pachaSynthesisMatrix.pachaCrossAxis}`,
     `  * 권고 실행: ${report.pachaSynthesisMatrix.recommendedAction}`,
     `  * 주의 경계: ${report.pachaSynthesisMatrix.cautionNotice}`,
     `- 파차마마 아이니 처방: ${report.ayniSpiritualPrescription}`,

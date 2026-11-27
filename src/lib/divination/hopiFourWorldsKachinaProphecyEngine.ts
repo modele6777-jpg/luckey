@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const HOPI_FOUR_WORLDS_ENGINE_VERSION = '2.3.0';
+export const HOPI_FOUR_WORLDS_ENGINE_VERSION = '2.4.0';
 
 export interface HopiKachinaSpirit {
   id: string;
@@ -52,6 +52,7 @@ export interface HopiFourWorldsReport {
     kachinaWorldNexus: string;
     groundingPosture: string;
     peaceDirective: string;
+    hopiCrossAxis: string;
   };
   hopiProphecyGuidance: string; // 호피 평화 예언 처방
   pikiBreadSacredOffering: string; // 대지와 연결되는 소박한 평화 리추얼
@@ -210,12 +211,14 @@ export function calculateHopiFourWorldsKachina(
     rhythmGuidance: `${kivaSolarWindow}과 ${ceremonialCycle}이 맞물려 있습니다. 거창한 계획보다 오늘 발딛고 선 자리의 평화부터 돌보세요.`,
   };
 
+  const hopiCrossAxis = `[${dominantKachina.hopiName}] × [${activeWorldStage.split(' — ')[0]}] × [${questionTheme}] × [${kivaSolarWindow.split(' (')[0]}]`;
   const hopiSynthesisMatrix = {
     kachinaWorldNexus: `${dominantKachina.nameKo} × ${activeWorldStage.split(' — ')[0]}`,
     groundingPosture: koyaanisqatsiHealingPower >= 78
       ? '일상의 흔들림을 스스로 다잡고 대지의 중심에 단단히 뿌리내리는 국면'
       : '복잡한 소음을 잠시 끄고 키바의 고요함 속으로 돌아가 숨을 고르는 회복 국면',
     peaceDirective: dominantKachina.kachinaBlessingAffirmation,
+    hopiCrossAxis,
   };
 
   const hopiProphecyGuidance = `호피족의 평화 예언은 세상이 균형을 잃고 요동치는 '코양니스카시(Koyaanisqatsi)'의 시기일수록, 대지와 겸허히 소통하는 소박한 영혼만이 제4세계(Tuwaqachi)의 안식을 누린다고 전합니다. 현재 [${dominantKachina.nameKo}]의 성스러운 가호를 받아 내면의 중심을 바로잡으십시오.`;
@@ -262,6 +265,7 @@ export function formatHopiFourWorldsPrompt(report: HopiFourWorldsReport): string
   * 치유의 약성: ${k.healingMedicine}
   * 축복 확언: ${k.kachinaBlessingAffirmation}
 - 카치나 교차 매트릭스: ${report.hopiSynthesisMatrix.kachinaWorldNexus} — ${report.hopiSynthesisMatrix.groundingPosture}
+  * 4중 교차 축: ${report.hopiSynthesisMatrix.hopiCrossAxis}
 - 호피 평화 예언 지혜 지침: ${report.hopiProphecyGuidance}
 - 대지모신 연결 평화 리추얼: ${report.pikiBreadSacredOffering}
 - 실천 의례(Ritual Action): ${report.ritualAction}
