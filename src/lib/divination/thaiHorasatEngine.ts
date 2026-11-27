@@ -43,7 +43,7 @@ import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 
-export const THAI_HORASAT_ENGINE_VERSION = 'LUCKEY-TH-v2.3.0';
+export const THAI_HORASAT_ENGINE_VERSION = 'LUCKEY-TH-v2.4.0';
 
 function formatThaiHorasatKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -371,6 +371,7 @@ export interface ThaiHorasatResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    horasatCrossAxis: string;
   };
   reflectiveQuestion?: string;
   interpretiveBoundary?: string;
@@ -659,10 +660,12 @@ export function calculateThaiHorasat(params: {
 
     const calculatedAtKst = formatThaiHorasatKstTimestamp(targetDate);
     const q = (params.question || '').trim();
+    const horasatCrossAxis = `[${birthPlanet.thaiName}] × [대운 ${currentSegment.planet.thaiName}] × [${attribute.korean}] × [원소 ${birthThaat.korean}]`;
     const horasatSynthesisMatrix = {
       dominantTension: `${birthPlanet.thaiName}(${birthPlanet.planet}) ↔ ${currentSegment.planet.thaiName}(${currentSegment.planet.planet})`,
       alignmentState: `${attribute.korean}(${attribute.verdictClass}) · 본명 원소(${birthThaat.korean}) · ${planetaryFriendEnemyDynamic.relationshipType}`,
       integratedAction: `${mahaThaksaAntardasha.actionAdvice}${q ? ` [질문 맥락: ${q}]` : ''}`,
+      horasatCrossAxis,
     };
     const reflectiveQuestion = q
       ? `지금 "${q}" 앞에서 ${birthPlanet.thaiName}(${birthPlanet.planet})과 현재 대운 ${currentSegment.planet.thaiName}(${attribute.korean})의 결을 살려 내가 조절할 원소(${birthThaat.korean})의 리듬은 무엇인가요?`
@@ -767,7 +770,7 @@ export function formatThaiHorasatPrompt(result: ThaiHorasatResult): string {
     `- 개운 처방: 행운색 ${rem.luckyColors.join('·')} · 길방위 ${rem.luckyDirection}`,
     `  * 실천법: ${rem.practice}`,
     result.horasatSynthesisMatrix
-      ? `- 호라삿 교차 매트릭스: 핵심 긴장(${result.horasatSynthesisMatrix.dominantTension}) · 조율 상태(${result.horasatSynthesisMatrix.alignmentState}) · 통합 실천(${result.horasatSynthesisMatrix.integratedAction})`
+      ? `- 호라삿 교차 매트릭스: 핵심 긴장(${result.horasatSynthesisMatrix.dominantTension}) · 조율 상태(${result.horasatSynthesisMatrix.alignmentState}) · 통합 실천(${result.horasatSynthesisMatrix.integratedAction})\n- 4중 교차 축: ${result.horasatSynthesisMatrix.horasatCrossAxis}`
       : '',
     result.reflectiveQuestion ? `- 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}` : '',
     result.ritualAction ? `- 실천 의례: ${result.ritualAction}` : '',

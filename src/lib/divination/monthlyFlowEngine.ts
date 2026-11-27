@@ -29,7 +29,7 @@ import {
   type FiveElement,
 } from '../sajuAnalysis';
 
-export const MONTHLY_FLOW_ENGINE_VERSION = 'LUCKEY-MFE-v2.3.0';
+export const MONTHLY_FLOW_ENGINE_VERSION = 'LUCKEY-MFE-v2.4.0';
 
 export type MonthlyFlowQuestionTopic = 'career' | 'wealth' | 'rest' | 'relation' | 'general';
 
@@ -127,6 +127,7 @@ export interface MonthlyFlowResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    monthlyFlowCrossAxis: string;
   };
   ritualAction: string;
   reflectionFocus: string;
@@ -402,10 +403,12 @@ export function calculateMonthlyFlow(options?: {
   const q = (options?.question || '').trim();
   const questionTopic = classifyMonthlyFlowTopic(q);
   const shadowWarning = MONTHLY_FLOW_SHADOW_WARNINGS[questionTopic];
+  const monthlyFlowCrossAxis = `[${yearGanZhiKr}] × [${topMonth.monthOrder}월 ${topMonth.ganZhi}] × [${topQuarter.quarterName}] × [${questionTopic}]`;
   const monthlyFlowSynthesisMatrix = {
     dominantTension: `${topMonth.monthOrder}월(${topMonth.ganZhi}) ↔ ${cautionMonths[0] || '안정 분기'}`,
     alignmentState: `${yearGanZhiKr} · ${topQuarter.quarterName}`,
     integratedAction: `${topMonth.monthlyActionTip}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    monthlyFlowCrossAxis,
   };
 
   return {
@@ -471,7 +474,7 @@ ${qLines}
 
 3. [12개월 절기월별 정밀 운세 도감]:
 ${monthLines}
-${res.monthlyFlowSynthesisMatrix ? `\n4. [교차 매트릭스]:\n   - 핵심 긴장: ${res.monthlyFlowSynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.monthlyFlowSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.monthlyFlowSynthesisMatrix.integratedAction}` : ''}
+${res.monthlyFlowSynthesisMatrix ? `\n4. [교차 매트릭스]:\n   - 핵심 긴장: ${res.monthlyFlowSynthesisMatrix.dominantTension}\n   - 4중 교차 축: ${res.monthlyFlowSynthesisMatrix.monthlyFlowCrossAxis}\n   - 조율 상태: ${res.monthlyFlowSynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.monthlyFlowSynthesisMatrix.integratedAction}` : ''}
 ${res.reflectiveQuestion ? `   - 성찰 질문: ${res.reflectiveQuestion}\n` : ''}   - 실천 의례: ${res.ritualAction}
    - 성찰 초점: ${res.reflectionFocus}
    - 과잉 경계: ${res.shadowWarning}

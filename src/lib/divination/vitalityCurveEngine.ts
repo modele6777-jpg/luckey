@@ -25,7 +25,7 @@ import {
   type SajuAnalysisResult,
 } from '../sajuAnalysis';
 
-export const VITALITY_CURVE_ENGINE_VERSION = 'LUCKEY-VCE-v2.3.0';
+export const VITALITY_CURVE_ENGINE_VERSION = 'LUCKEY-VCE-v2.4.0';
 
 function formatVitalityKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -96,6 +96,7 @@ export interface VitalityCurveResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    vitalityCrossAxis: string;
   };
   reflectiveQuestion?: string;
   interpretiveBoundary: string;
@@ -237,10 +238,12 @@ export function calculateVitalityCurve(options?: {
   const rechargeSlots = [...hourlyTideCurve].filter(s => s.energyScore <= 55).map(s => s.timeSlotName.split('(')[0].trim()).slice(0, 2).join(' · ');
 
   const q = (options?.question || '').trim();
+  const vitalityCrossAxis = `[신체 ${pStage}] × [정신 ${mStage}] × [시진 ${iStage}] × [${vitalityStateName}]`;
   const vitalitySynthesisMatrix = {
     dominantTension: `일지(${pStage}) ↔ 월지(${mStage}) · 현재 시진(${iStage})`,
     alignmentState: `${vitalityStateName} · 딥워크(${deepWorkSlots || '09:30~13:30'})`,
     integratedAction: `${actionTip}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    vitalityCrossAxis,
   };
   const reflectiveQuestion = q
     ? `"${q}"의 흐름을 오늘 가장 에너지가 높은 시진(${deepWorkSlots || '오전 09:30~13:30'})과 휴식 구간(${rechargeSlots || '밤 21:30~01:30'}) 중 어디에 배치할 때 몸과 마음이 가장 덜 지칠까요?`
@@ -306,7 +309,7 @@ export function formatVitalityCurvePrompt(res: VitalityCurveResult): string {
     `   • ${h.timeSlotName}: 12운성 [${h.twelveStage}] · [${h.phaseCategory}] -> ${h.recommendedAction}`
   ).join('\n');
   const matrixLine = res.vitalitySynthesisMatrix
-    ? `\n4. [바이오리듬 교차 매트릭스]:\n   - 핵심 긴장: ${res.vitalitySynthesisMatrix.dominantTension}\n   - 조율 상태: ${res.vitalitySynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.vitalitySynthesisMatrix.integratedAction}`
+    ? `\n4. [바이오리듬 교차 매트릭스]:\n   - 핵심 긴장: ${res.vitalitySynthesisMatrix.dominantTension}\n   - 4중 교차 축: ${res.vitalitySynthesisMatrix.vitalityCrossAxis}\n   - 조율 상태: ${res.vitalitySynthesisMatrix.alignmentState}\n   - 통합 실천: ${res.vitalitySynthesisMatrix.integratedAction}`
     : '';
 
   return `[🧬 12운성 바이오리듬 에너지 곡선 실측 데이터 (Vitality Curve Matrix Core)]
