@@ -28,7 +28,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MAYI_MIANXIANG_VERSION = '2.4.0';
+export const MAYI_MIANXIANG_VERSION = '2.5.0';
 
 export interface MayiMianxiangReport {
   engineVersion: string;
@@ -68,6 +68,7 @@ export interface MayiMianxiangReport {
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
+    mayiCrossAxis: string;
   };
   mayiDaoistMorphologicalAdvice: string;
   boundaryNotice: string;
@@ -269,10 +270,12 @@ export function calculateMayiMianxiang(
           expressionPractice: '하루 한 번 거울 앞에서 편안히 웃으며 스스로에게 따뜻한 격려를 건네십시오.',
         };
 
+  const mayiCrossAxis = `[${primaryPalace.hanja}] × [${secondaryPalace.hanja}] × [${situationalMayiAudit.focusTheme.split('(')[0].trim()}] × [${temporalMayiRhythm.yintangWatchWindow.split(' ')[0]}]`;
   const mayiSynthesisMatrix = {
     coreInsight: `주재 [${primaryPalace.nameKo}]와 보조 [${secondaryPalace.nameKo}]가 ${situationalMayiAudit.focusTheme}을 비춥니다.`,
     recommendedAction: `${mayiDaoistMorphologicalAdvice} (${situationalMayiAudit.expressionPractice})`,
     cautionNotice: '외적 조건이나 타인의 시선에 과도하게 긴장해 본래의 편안한 기색을 잃지 않도록 경계하십시오.',
+    mayiCrossAxis,
   };
 
   const reflectiveQuestion = question
@@ -312,7 +315,7 @@ export function formatMayiMianxiangPrompt(report: MayiMianxiangReport): string {
 - **질문 맥락 감사 (${report.situationalMayiAudit.focusTheme})**: ${report.situationalMayiAudit.heartMindNote} / 실천: ${report.situationalMayiAudit.expressionPractice}
 - **KST 시공간 기색 리듬**: ${report.temporalMayiRhythm.yintangWatchWindow} / ${report.temporalMayiRhythm.seasonalQiColorTone}
   - *시공간 지침*: ${report.temporalMayiRhythm.temporalGuidance}
-- **마의상법 교차 매트릭스**: 핵심(${report.mayiSynthesisMatrix.coreInsight}) | 실행(${report.mayiSynthesisMatrix.recommendedAction}) | 주의(${report.mayiSynthesisMatrix.cautionNotice})
+- **마의상법 교차 매트릭스**: 핵심(${report.mayiSynthesisMatrix.coreInsight}) | 4중 교차 축(${report.mayiSynthesisMatrix.mayiCrossAxis}) | 실행(${report.mayiSynthesisMatrix.recommendedAction}) | 주의(${report.mayiSynthesisMatrix.cautionNotice})
 - **마의도사 심상 처방**:
   - "${report.mayiDaoistMorphologicalAdvice}"
 - **성찰 초점**: ${report.reflectionFocus}

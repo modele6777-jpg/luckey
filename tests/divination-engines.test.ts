@@ -5175,10 +5175,12 @@ test('Celtic Tuatha Four Treasures Engine: calculates heroic destiny and dominan
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.tuathaHeroResonance >= 0 && rep.tuathaHeroResonance <= 100);
   assert(rep.treasures.dominantTreasure.nameKo.length > 0);
+  assert(Boolean(rep.tuathaSynthesisMatrix.tuathaCrossAxis.includes(rep.treasures.dominantTreasure.irishName)));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatCelticTuathaFourTreasuresPrompt(rep);
   assert(prompt.includes('고대 아일랜드 켈트 투아하 데 다난(Tuatha Dé Danann) 4대 보물 영웅 운명 실측 데이터'));
   assert(prompt.includes(rep.treasures.dominantTreasure.nameKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
 });
 
@@ -6276,11 +6278,13 @@ test('Chinese Mayi Mianxiang Twelve Palaces Engine: calculates 12 palaces, Qi au
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.temporalMayiRhythm.yintangWatchWindow.length > 0);
   assert(rep.mayiSynthesisMatrix.coreInsight.length > 0);
+  assert(Boolean(rep.mayiSynthesisMatrix.mayiCrossAxis.includes(rep.primaryPalace.hanja)));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatMayiMianxiangPrompt(rep);
   assert(prompt.includes('동양 비전 마의도사 《마의상법》 12궁 관상 & 심상합일 기색'));
   assert(prompt.includes(rep.primaryPalace.nameKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('KST'));
   assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
@@ -6777,12 +6781,14 @@ test('Chinese Laozi Daodejing Water Way Engine: calculates water yielding adapta
   assert.equal(rep.chapterResonance.chapterNumber, 8);
   assert(rep.seasonalWaterFlow.waterPacingScore >= 0 && rep.seasonalWaterFlow.waterPacingScore <= 100);
   assert(rep.softStrengthMatrix.nonContentionHarmonyScore >= 0 && rep.softStrengthMatrix.nonContentionHarmonyScore <= 100);
+  assert(Boolean(rep.laoziSynthesisMatrix?.laoziCrossAxis.includes(rep.chapterResonance.chapterTitle)));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatLaoziDaodejingPrompt(rep);
   assert(prompt.includes('고대 중국 노자(老子) 《도덕경(道德經)》'));
   assert(prompt.includes(rep.activeDaodejingStage.stageNameKo));
   assert(prompt.includes(rep.chapterResonance.chapterTitle));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
 });
 

@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION = 'LUCKEY-CELTIC-TUATHA-v2.4.0';
+export const CELTIC_TUATHA_FOUR_TREASURES_ENGINE_VERSION = 'LUCKEY-CELTIC-TUATHA-v2.5.0';
 
 export interface TuathaTreasure {
   id: 'lia_fail' | 'spear_of_lugh' | 'sword_of_nuada' | 'cauldron_of_dagda';
@@ -40,6 +40,7 @@ export interface CelticTuathaSynthesisMatrix {
   sovereigntyAlignment: '왕권확립' | '전선균형' | '자양충전';
   elementBalanceNote: string;
   nextHeroicStep: string;
+  tuathaCrossAxis: string;
 }
 
 export interface CelticTuathaFourTreasuresReport {
@@ -238,10 +239,12 @@ export function calculateCelticTuathaFourTreasures(options?: {
   const elementBalanceNote = `주재 보물 [${dominantTreasure.nameKo}(${dominantTreasure.element})]가 전면에 서고, ${all[1].nameKo}(${all[1].element})가 보조 축으로 받쳐주는 구도입니다.`;
   const nextHeroicStep = `${temporalTuathaRhythm.celticDayWindow} 리듬(${temporalTuathaRhythm.heroicTempo})에 맞춰 ${situationalTuathaAudit.battlefieldTheme}의 핵심 과제를 실행하십시오.`;
 
+  const tuathaCrossAxis = `[${dominantTreasure.irishName}] × [${dominantTreasure.direction.split('(')[0]}] × [${temporalTuathaRhythm.heroicTempo}] × [${sovereigntyAlignment}]`;
   const tuathaSynthesisMatrix: CelticTuathaSynthesisMatrix = {
     sovereigntyAlignment,
     elementBalanceNote,
     nextHeroicStep,
+    tuathaCrossAxis,
   };
 
   let danaGoddessBlessing = '';
@@ -306,7 +309,7 @@ export function formatCelticTuathaFourTreasuresPrompt(rep: CelticTuathaFourTreas
   - 경계할 그림자: ${rep.situationalTuathaAudit.shadowWarning}
 · KST 시공간 리듬 (${rep.temporalTuathaRhythm.kstHour}시): ${rep.temporalTuathaRhythm.celticDayWindow} · ${rep.temporalTuathaRhythm.wheelOfTheYearSeason} (${rep.temporalTuathaRhythm.heroicTempo})
   - 시간대 지침: ${rep.temporalTuathaRhythm.rhythmDirective}
-· 사대 보물 교차 매트릭스: ${rep.tuathaSynthesisMatrix.sovereigntyAlignment} — ${rep.tuathaSynthesisMatrix.elementBalanceNote}
+· 사대 보물 교차 매트릭스: ${rep.tuathaSynthesisMatrix.sovereigntyAlignment} — ${rep.tuathaSynthesisMatrix.elementBalanceNote} · 4중 교차 축(${rep.tuathaSynthesisMatrix.tuathaCrossAxis})
   - 다음 영웅적 발걸음: ${rep.tuathaSynthesisMatrix.nextHeroicStep}
 · 모신 다누의 신성 축복: ${rep.danaGoddessBlessing}
 · 현실 돌파 영웅 행동 처방: ${rep.heroicActionPrescription}
