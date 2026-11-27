@@ -1,7 +1,7 @@
-import type { ChatTargetProfile } from '@/types/chatProfile';
-import type { UserProfile } from '@/lib/sharedState';
-import { calculateDetailedSaju } from '@/lib/sajuAnalysis';
-import { buildUserNatalSummary } from '@/lib/astrologyAnalysis';
+import type { ChatTargetProfile } from '../types/chatProfile';
+import type { UserProfile } from './sharedState';
+import { calculateDetailedSaju } from './sajuAnalysis';
+import { buildUserNatalSummary } from './astrologyAnalysis';
 
 /**
  * 개별 프로필의 사주팔자 및 서양 점성술 천문 데이터를 분석하여 텍스트로 요약합니다.

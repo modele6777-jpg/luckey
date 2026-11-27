@@ -52,8 +52,8 @@ type LiveVoiceHandlers = {
   releaseMicWhileMuted?: boolean;
   /** When set, a missing microphone is not fatal: the session continues with typed input and spoken answers. */
   onNotice?: (message: string) => void;
-  /** 🔮 오브 통합 마스터: 마스터가 도구를 함수로 부른다. persona = 말투, rules = 도구 사용 규칙. */
-  orb?: { persona: string; rules: string };
+  /** 🔮 오브 통합 마스터: 마스터가 도구를 함수로 부른다. persona = 말투, rules = 도구 사용 규칙, profile = 이번 상담 대상의 사주 데이터. */
+  orb?: { persona: string; rules: string; profile?: string };
   /** 마스터가 부른 함수를 실행하고 결과(JSON)를 돌려준다. */
   onToolCall?: (call: { id?: string; name: string; args?: Record<string, unknown> }) => Promise<Record<string, unknown>>;
   /** 실시간 자막: 마스터 말 조각을 그 목소리가 실제로 들리는 순간에 준다 (글자는 목소리보다 훨씬 먼저 도착한다). */
@@ -521,7 +521,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
           outputAudioTranscription: {},
           systemInstruction: {
             parts: [{ text: handlers.orb
-              ? buildOrbLiveInstruction(handlers.nickname || '', handlers.orb.persona, handlers.greet || '', handlers.notes || '', handlers.orb.rules)
+              ? buildOrbLiveInstruction(handlers.nickname || '', handlers.orb.persona, handlers.greet || '', handlers.notes || '', handlers.orb.rules, handlers.orb.profile || '')
               : buildLucyLiveInstruction(handlers.nickname || '', handlers.chart || '', handlers.cards || '', handlers.focus || '', handlers.greet || '', handlers.notes || '') }],
           },
           // 🔮 오브 마스터는 15가지 도구를 함수로 부른다.
