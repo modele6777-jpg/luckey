@@ -4541,6 +4541,7 @@ test('Taoist Gong Guo Ge Karma Engine: calculates merit domain and qualitative g
   assert.equal(rep.engineVersion, TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION);
   assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.gongGuoGeSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.gongGuoGeSynthesisMatrix?.gongGuoGeCrossAxis.includes(rep.questionTheme)));
   assert.equal(rep.questionTheme, 'decision');
   assert(rep.meritDomain.length > 0);
   assert(rep.practiceGuidance.length > 0);
@@ -4551,7 +4552,7 @@ test('Taoist Gong Guo Ge Karma Engine: calculates merit domain and qualitative g
   const prompt = formatTaoistGongGuoGeKarmaPrompt(rep);
   assert(prompt.includes('도교 태상감응편(太上感應篇) & 공과격(功過格) 적선개운 성찰 리포트'));
   assert(prompt.includes(rep.meritDomain));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('점**'));
 });
@@ -4819,6 +4820,7 @@ test('Slavic Mokosh Fate Weaving Engine: calculates Dolya/Nedolya fate threads a
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.mokoshSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.mokoshSynthesisMatrix?.mokoshCrossAxis.includes('지금 얽힌 매듭')));
   assert(rep.earthFertilityIndex >= 0 && rep.earthFertilityIndex <= 100);
   assert(rep.fateTensionScore >= 0 && rep.fateTensionScore <= 100);
   assert(rep.threads.dolya.strength > 0);
@@ -4832,7 +4834,7 @@ test('Slavic Mokosh Fate Weaving Engine: calculates Dolya/Nedolya fate threads a
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
 
@@ -5674,6 +5676,7 @@ test('Taoist Liezi Wind Riding Engine: calculates wind riding unity, Muhayu rest
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.lieziSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.lieziSynthesisMatrix?.lieziCrossAxis.includes(rep.dominantStage.nameKo)));
   assert(rep.windRidingUnityScore >= 0 && rep.windRidingUnityScore <= 100);
   assert(rep.muhayuRestIndex >= 0 && rep.muhayuRestIndex <= 100);
   assert(rep.tranquilEmptinessScore >= 0 && rep.tranquilEmptinessScore <= 100);
@@ -5689,7 +5692,7 @@ test('Taoist Liezi Wind Riding Engine: calculates wind riding unity, Muhayu rest
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

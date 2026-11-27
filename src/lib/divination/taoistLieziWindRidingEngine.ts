@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAOIST_LIEZI_ENGINE_VERSION = '2.2.0';
+export const TAOIST_LIEZI_ENGINE_VERSION = '2.4.0';
 
 function formatLieziKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -57,6 +57,7 @@ export interface TaoistLieziWindRidingReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    lieziCrossAxis: string;
   };
 }
 
@@ -164,10 +165,12 @@ export function calculateTaoistLieziWindRiding(
     : `${dominantStage.nameKo}의 흐름 속에서 힘을 빼고 순풍에 몸을 맡길 때, 지금 가장 먼저 멈출 수 있는 쓸데없는 애씀은 무엇입니까?`;
   const interpretiveBoundary =
     '도가 열자 어풍동행·무하유지향 상징은 마음의 집착을 덜고 순리에 맞추는 태도를 돌아보기 위한 은유적 관점이며, 단정적 미래 예측이나 의학·법률·재무 판단을 대체하지 않습니다.';
+  const lieziCrossAxis = `[${dominantStage.nameKo}] × [${secondaryStage.nameKo}] × [${windRidingUnityScore >= 75 ? '순풍 비상' : '조율 유영'}] × [${q || '무하유지향'}]`;
   const lieziSynthesisMatrix = {
     dominantTension: `${dominantStage.nameHanja} ↔ ${secondaryStage.nameHanja}`,
     alignmentState: `심신 영역: ${dominantStage.mindCultivationDomain}`,
     integratedAction: `${dominantStage.transcendenceGuidance}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    lieziCrossAxis,
   };
 
   return {
@@ -192,7 +195,7 @@ export function calculateTaoistLieziWindRiding(
 
 export function formatTaoistLieziWindRidingPrompt(rep: TaoistLieziWindRidingReport): string {
   const matrixLine = rep.lieziSynthesisMatrix
-    ? `\n· 열자 교차 매트릭스: 핵심 긴장(${rep.lieziSynthesisMatrix.dominantTension}) · 조율 상태(${rep.lieziSynthesisMatrix.alignmentState}) · 통합 실천(${rep.lieziSynthesisMatrix.integratedAction})`
+    ? `\n· 열자 교차 매트릭스: 핵심 긴장(${rep.lieziSynthesisMatrix.dominantTension}) · 조율 상태(${rep.lieziSynthesisMatrix.alignmentState}) · 4중 교차 축(${rep.lieziSynthesisMatrix.lieziCrossAxis}) · 통합 실천(${rep.lieziSynthesisMatrix.integratedAction})`
     : '';
   return `[도가 열자 어풍동행 & 무하유지향 진인 유유자적 실측 데이터]
 · 엔진 버전: v${rep.engineVersion} | 기준 시각: ${rep.calculatedAtKst}

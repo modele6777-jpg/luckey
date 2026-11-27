@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SLAVIC_MOKOSH_FATE_WEAVING_ENGINE_VERSION = '2.2.0';
+export const SLAVIC_MOKOSH_FATE_WEAVING_ENGINE_VERSION = '2.4.0';
 
 export interface ThreadOfFate {
   id: 'dolya' | 'nedolya' | 'spindle';
@@ -47,6 +47,7 @@ export interface SlavicMokoshFateWeavingReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    mokoshCrossAxis: string;
   };
 }
 
@@ -136,10 +137,12 @@ export function calculateSlavicMokoshFateWeaving(options?: {
     : `오늘 모코시의 물레를 돌릴 때, ${seasonalPhase}의 흐름 속에서 ${secondaryPhase}로 건너가기 위해 먼저 정리할 일 한 가지는 무엇입니까?`;
   const interpretiveBoundary =
     '슬라브 모코시(Mokosh) 운명의 실타래 상징은 삶의 흐름과 마음의 매듭을 성찰하기 위한 은유적 관점이며, 미래 사건의 단정적 예언이나 의학·법률·재무 판단을 대체하지 않습니다.';
+  const mokoshCrossAxis = `[${seasonalPhase.split(' (')[0]}] × [${secondaryPhase.split(' (')[0]}] × [${dolyaStrength >= nedolyaStrength ? 'Dolya 우세' : 'Nedolya 경계'}] × [${question || '운명 직조'}]`;
   const mokoshSynthesisMatrix = {
     dominantTension: `${dolya.nameKo} ↔ ${nedolya.nameKo}`,
     alignmentState: `${seasonalPhase} · 보조 국면: ${secondaryPhase}`,
     integratedAction: `${reweavingPrescription}${question ? ` [질문 맥락: ${question}]` : ''}`,
+    mokoshCrossAxis,
   };
 
   return {
@@ -183,6 +186,7 @@ export function formatSlavicMokoshFateWeavingPrompt(rep: SlavicMokoshFateWeaving
   if (rep.mokoshSynthesisMatrix) {
     lines.push(
       `· 교차 매트릭스 [핵심 긴장: ${rep.mokoshSynthesisMatrix.dominantTension} | 조율 상태: ${rep.mokoshSynthesisMatrix.alignmentState}]`,
+      `· 4중 교차 축: ${rep.mokoshSynthesisMatrix.mokoshCrossAxis}`,
       `· 통합 실천: ${rep.mokoshSynthesisMatrix.integratedAction}`,
     );
   }

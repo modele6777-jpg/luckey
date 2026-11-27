@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION = '2.2.0';
+export const TAOIST_GONG_GUO_GE_KARMA_ENGINE_VERSION = '2.4.0';
 
 function formatGongGuoGeKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -41,6 +41,7 @@ export interface TaoistGongGuoGeKarmaReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    gongGuoGeCrossAxis: string;
   };
   reflectiveQuestion: string;
   interpretiveBoundary: string;
@@ -182,10 +183,12 @@ export function calculateTaoistGongGuoGeKarma(
   const karmicShieldingIndex = 75 + ((seed * 13 + kst.getUTCDate() * 5) % 24);
   const qualitative = buildGongGuoGeQualitativeFields(merit, questionTheme);
   const calculatedAtKst = formatGongGuoGeKstTimestamp(targetDate);
+  const gongGuoGeCrossAxis = `[${questionTheme}] × [${merit.mode}] × [${merit.domain.split(' (')[0]}] × [${merit.constellation.split(' · ')[0]}]`;
   const gongGuoGeSynthesisMatrix = {
     dominantTension: `${questionTheme} ↔ ${merit.mode}`,
     alignmentState: `${merit.domain} · ${merit.constellation}`,
     integratedAction: `${qualitative.ritual}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+    gongGuoGeCrossAxis,
   };
 
   const reflectiveQuestion = trimmedQ
@@ -203,7 +206,7 @@ export function calculateTaoistGongGuoGeKarma(
 - **성찰 질문**: ${qualitative.reflection}
 - **질문 맞춤 성찰 질문**: ${reflectiveQuestion}
 - **조언 요약**: ${qualitative.counsel}
-- **공과격 교차 매트릭스**: 핵심 긴장(${gongGuoGeSynthesisMatrix.dominantTension}) · 조율 상태(${gongGuoGeSynthesisMatrix.alignmentState}) · 통합 실천(${gongGuoGeSynthesisMatrix.integratedAction})
+- **공과격 교차 매트릭스**: 핵심 긴장(${gongGuoGeSynthesisMatrix.dominantTension}) · 조율 상태(${gongGuoGeSynthesisMatrix.alignmentState}) · 4중 교차 축(${gongGuoGeSynthesisMatrix.gongGuoGeCrossAxis}) · 통합 실천(${gongGuoGeSynthesisMatrix.integratedAction})
 - **해석 경계**: ${'태상감응편과 공과격 상징은 점수나 인과 심판이 아니라 오늘의 마음씀과 일상 행동을 성찰하기 위한 정성적 안내입니다.'}
 `.trim();
 
