@@ -61,7 +61,9 @@ test('Orb defaults to hold-to-talk on the input itself; a short Orb tap still sw
   assert.match(liveSession, /onAudioLevel\?: \(level: number\) => void/);
   assert.match(liveSession, /handlers\.onAudioLevel\?\.\(Math\.max\(0, Math\.min\(1,/);
   assert.match(component, /if \(voiceMode === 'hold'\) chooseVoiceMode\('realtime'\)/);
-  assert.match(component, /aria-pressed=\{voiceMode === 'realtime'\}[\s\S]*?aria-pressed=\{voiceMode === 'hold'\}/);
+  // 음성 방식 설정 버튼(실시간 대화 / 누르고 말하기)은 화면에서 빠졌다. 방식 상태와 오브 탭 전환만 남는다.
+  assert.doesNotMatch(component, /lucy-orb-voice-controls/);
+  assert.doesNotMatch(component, /음성 대화 방식/);
   assert.match(liveSession, /if \(!ready \|\| muted \|\| socket\?\.readyState !== WebSocket\.OPEN\) \{/);
 });
 
