@@ -2981,6 +2981,7 @@ test('Spatial Fengshui Engine: 동양 풍수·점성술 공간 길방위 v2.1.0 
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.reflectiveQuestion?.includes('작업실 방향'));
   assert(Boolean(res.spatialSynthesisMatrix?.integratedAction));
+  assert(Boolean(res.spatialCrossAxis?.goldenDirection && res.spatialCrossAxis?.qimenGate && res.spatialCrossAxis?.planetLine && res.spatialCrossAxis?.lackingElement));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.allDirections.length === 8);
   const prompt = formatSpatialFengshuiPrompt(res);
@@ -2988,7 +2989,7 @@ test('Spatial Fengshui Engine: 동양 풍수·점성술 공간 길방위 v2.1.0 
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('과잉 경계'));
-  assert(prompt.includes('공간 교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('공간 교차 매트릭스') && prompt.includes('공간 교차 축') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -3322,6 +3323,7 @@ test('Supreme Wisdom Trinity Engine: 기적수업 × 초기불교 × 영지주�
   assertKstTimestamp(res.calculatedAtKst);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.trinitySynthesisMatrix?.integratedAction));
+  assert(Boolean(res.trinityCrossAxis?.acimSource && res.trinityCrossAxis?.nikayaSource && res.trinityCrossAxis?.gnosticSource && res.trinityCrossAxis?.elementAnchor));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.trinitySynthesisCore.length > 0);
   assert(res.acim.workbookLessonQuote.length > 0);
@@ -3334,7 +3336,7 @@ test('Supreme Wisdom Trinity Engine: 기적수업 × 초기불교 × 영지주�
   assert(prompt.includes('LUCKEY 궁극의 영적 3위1체 마스터 지혜'));
   assert(prompt.includes(res.trinitySynthesisCore));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
-  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('3위1체 교차 축') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -15676,15 +15678,15 @@ test('Sepik River Carving engine: motif, +09:00 KST, and interpretive boundary',
 
 test('Moldovan Orhei Limestone engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateMoldovanOrheiLimestone({ profile, now: new Date('2026-11-20T21:36:00Z'), question: '조용히 곡선을 따라가고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-MOLDOVAN-ORHEI-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-MOLDOVAN-ORHEI-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.symbolicMotif);
-  assert.ok(rep.limestoneCanyonAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.limestoneCanyonAxis.length > 0 && rep.shadowWarning.length > 0 && rep.topicBalanceHint.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatMoldovanOrheiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('몰도바') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('몰도바') && prompt.includes('동반 모티프') && prompt.includes('+09:00 (KST)') && prompt.includes('과잉 경계') && prompt.includes('맥락 균형 조언'));
 });
 
 test('Minangkabau Rumah Gadang engine: motif, +09:00 KST, and interpretive boundary', () => {

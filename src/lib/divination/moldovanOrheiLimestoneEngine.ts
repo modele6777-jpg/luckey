@@ -10,6 +10,7 @@ export interface MoldovanOrheiResult {
   limestoneCanyonAxis: string;
   ritualAction: string;
   shadowWarning: string;
+  topicBalanceHint: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -66,6 +67,14 @@ function classifyMoldovanTopic(q: string): MoldovanOrheiResult['questionTopic'] 
   return '오르헤이 전반';
 }
 
+const MOLDOVAN_TOPIC_HINTS: Record<MoldovanOrheiResult['questionTopic'], string> = {
+  '관조·여유': '바위 창 너머로 물러서서 보되 지금 손대야 할 현실 매듭 하나는 남겨 두지 마세요.',
+  '우회·호흡': '강물처럼 돌아가는 여유와 함께 꼭 건너야 할 다리의 시점은 놓치지 마세요.',
+  '감정·완충': '감정을 고르게 가라앉히되 필요한 진심과 경계는 분명히 말하세요.',
+  '축적·내공': '차곡차곡 쌓인 경험이 충분히 익었다면 이제 작은 실천 하나로 꺼내 써 보세요.',
+  '오르헤이 전반': '석회암의 고요한 중심과 라우트 강의 유연한 굽이를 오늘의 호흡에 담아 보세요.',
+};
+
 export function calculateMoldovanOrheiLimestone(params: {
   profile: UserProfile;
   now?: Date;
@@ -84,9 +93,10 @@ export function calculateMoldovanOrheiLimestone(params: {
   const limestoneCanyonAxis = `${motif.slice(0, 14)}… ↔ ${companionMotif.slice(0, 14)}… (${questionTopic})`;
   const ritualAction = MOLDOVAN_ACTIONS[stableHash(`${seed}|action`) % MOLDOVAN_ACTIONS.length];
   const reflectiveQuestion = MOLDOVAN_QUESTIONS[idx];
+  const topicBalanceHint = MOLDOVAN_TOPIC_HINTS[questionTopic];
 
   return {
-    engineVersion: 'LUCKEY-MOLDOVAN-ORHEI-v2.3.0',
+    engineVersion: 'LUCKEY-MOLDOVAN-ORHEI-v2.4.0',
     calculatedAtKst: getKstTimeString(now),
     questionTopic,
     reflectionFocus: q
@@ -97,6 +107,7 @@ export function calculateMoldovanOrheiLimestone(params: {
     limestoneCanyonAxis,
     ritualAction,
     shadowWarning: MOLDOVAN_SHADOWS[idx],
+    topicBalanceHint,
     reflectiveQuestion,
     interpretiveBoundary:
       '몰도바 오르헤이 베키 석회암 수도원 문화의 상징적 비유로, 개인 점수·성격 진단·미래 예측이 아닙니다.'
@@ -113,6 +124,7 @@ export function formatMoldovanOrheiPrompt(result: MoldovanOrheiResult): string {
     `- 동반 모티프: ${result.companionMotif}`,
     `- 제안 의식: ${result.ritualAction}`,
     `- 과잉 경계: ${result.shadowWarning}`,
+    `- 맥락 균형 조언: ${result.topicBalanceHint}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 경계: ${result.interpretiveBoundary}`
   ].join('\n');
