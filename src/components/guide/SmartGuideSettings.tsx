@@ -33,13 +33,6 @@ const TONE_BUTTON: Record<SmartGuideSettingsTone, string> = {
   key: 'border-[#e9dccd] bg-[#fffdf9] text-[#c9805c]',
 };
 
-const TONE_ACTIVE: Record<SmartGuideSettingsTone, string> = {
-  // 켜져 있으면 한눈에 보이게 청록(가이드) 빛을 준다.
-  dark: 'border-cyan-300/70 bg-cyan-400/15 text-cyan-100 shadow-[0_0_10px_rgba(34,211,238,0.35)]',
-  light: 'border-cyan-400/70 bg-cyan-50 text-cyan-700 shadow-[0_0_8px_rgba(34,211,238,0.28)]',
-  key: 'border-[#c9805c] bg-[#fdeedd] text-[#9a5b3b] shadow-[0_0_8px_rgba(201,128,92,0.28)]',
-};
-
 const SAMPLE_GUIDE: SmartGuideResult = {
   path: '/',
   action: 'lucy',
@@ -155,7 +148,7 @@ export function SmartGuideSettingsSheet({ onClose }: { onClose: () => void }) {
   );
 }
 
-/** 헤더 물음표 아이콘 — 켜져 있으면 청록으로 빛나고, 누르면 설정 시트를 연다. */
+/** 헤더 물음표 아이콘 — 설정 상태와 관계없이 중립 톤으로 표시하고 설정 시트를 연다. */
 export function SmartGuideSettingsButton({ tone = 'dark', className = '' }: { tone?: SmartGuideSettingsTone; className?: string }) {
   const [open, setOpen] = useState(false);
   const settings = useSmartGuideSettings();
@@ -172,14 +165,9 @@ export function SmartGuideSettingsButton({ tone = 'dark', className = '' }: { to
         aria-pressed={active}
         title="스마트 가이드 설정"
         onClick={() => { triggerHaptic('whitehole'); setOpen(value => !value); }}
-        className={`relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border backdrop-blur-md transition-colors active:scale-95 ${
-          active ? TONE_ACTIVE[tone] : TONE_BUTTON[tone]
-        } ${className}`}
+        className={`relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border backdrop-blur-md transition-colors active:scale-95 ${TONE_BUTTON[tone]} ${className}`}
       >
         <HelpCircle size={15} aria-hidden="true" />
-        {active && (
-          <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.9)]" aria-hidden="true" />
-        )}
       </button>
       {open && <SmartGuideSettingsSheet onClose={() => setOpen(false)} />}
     </>

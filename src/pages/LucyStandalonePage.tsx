@@ -29,6 +29,7 @@ import { useSyncedChatDraft } from '@/hooks/useSyncedChatDraft';
 import { LUCY_PRO_PATH, resolveLucyPageChannels } from '@/lib/lucyChatPageMode';
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createPortal } from 'react-dom';
 import {
   Send, Search, X, Check, Volume2, VolumeX, Square, Play,
   Download, User, Plus, Sparkles, Sun, TreeDeciduous, Activity, Bird, Music, Zap, Flame, Compass,
@@ -4475,12 +4476,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               type="button"
               data-auto-tts-toggle="true"
               onClick={toggleAutoTts}
-              className={`px-2.5 py-1.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer shrink-0 flex items-center gap-1 text-[11px] font-bold ${
-                isAutoTts
-                  ? 'bg-gradient-to-r from-emerald-50 to-teal-100/80 dark:from-emerald-950/80 dark:to-teal-900/70 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-500/40 shadow-2xs'
-                  : isLight
-                  ? 'bg-amber-50/80 text-slate-500 hover:text-slate-700 border border-amber-900/10'
-                  : 'bg-white/10 text-white/85 hover:text-white border border-white/15'
+              className={`px-2.5 py-1.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer shrink-0 flex items-center gap-1 text-[11px] font-bold ${isLight
+                ? 'bg-amber-50/80 text-slate-500 hover:text-slate-700 border border-amber-900/10'
+                : 'bg-white/10 text-white/85 hover:text-white border border-white/15'
               }`}
               title={isAutoTts ? '자동읽기 ON - 한 번 더 누르면 즉시 꺼집니다' : '자동읽기 OFF - 누르면 켜집니다'}
               aria-pressed={isAutoTts}
@@ -4488,7 +4486,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             >
               {isAutoTts ? (
                 <>
-                  <Volume2 size={15} className="text-emerald-600 dark:text-emerald-400 animate-pulse shrink-0" />
+                  <Volume2 size={15} className={isLight ? 'text-slate-500 shrink-0' : 'text-white/85 shrink-0'} />
                   <span className="hidden xs:inline">자동읽기 ON</span>
                 </>
               ) : (
@@ -5605,20 +5603,27 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         )}
       </AnimatePresence>
 
-      {/* 🔊 Auto-TTS Feedback Toast */}
-      <AnimatePresence>
-        {autoTtsToast && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-2xl bg-emerald-950/95 text-emerald-100 text-xs font-semibold shadow-2xl backdrop-blur-md flex items-center gap-2 border border-emerald-500/30"
-          >
-            <Volume2 size={15} className="text-emerald-400 animate-pulse shrink-0" />
-            <span>{autoTtsToast}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Pane-local fixed toasts can be clipped by expanded Duo; keep this body viewport layer above both panes and below dialogs. */}
+      {typeof document !== 'undefined' && createPortal(
+        <div data-auto-tts-toast-layer="true" style={{ position: 'fixed', inset: 0, zIndex: 9999, pointerEvents: 'none' }}>
+          <AnimatePresence>
+            {autoTtsToast && (
+              <motion.div
+                role="status"
+                data-auto-tts-toast="true"
+                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                className="absolute bottom-24 left-1/2 -translate-x-1/2 pointer-events-none px-4 py-2.5 rounded-2xl bg-emerald-950/95 text-emerald-100 text-xs font-semibold shadow-2xl backdrop-blur-md flex items-center gap-2 border border-emerald-500/30"
+              >
+                <Volume2 size={15} className="text-emerald-400 animate-pulse shrink-0" />
+                <span>{autoTtsToast}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>,
+        document.body,
+      )}
 
       {/* 📖 13페이지 추천 질문 라이브러리 모달 */}
       {/* 엔진함·추천질문 라이브러리는 점술모드에서만 연다 */}

@@ -29,6 +29,7 @@ const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.ur
 const BIGBANG = read('src/components/omniwarp/BigBangButton.tsx');
 const BANNER = read('src/components/guide/SmartGuideBanner.tsx');
 const SETTINGS_UI = read('src/components/guide/SmartGuideSettings.tsx');
+const LUCY_PAGE = read('src/pages/LucyStandalonePage.tsx');
 const SETTINGS_LIB = read('src/lib/omniWarp/smartGuideSettings.ts');
 const DOUSER = read('src/lib/omniWarp/guideDouser.ts');
 
@@ -160,9 +161,16 @@ test('the question-mark icon opens a sheet with the two switches', () => {
   assert.match(SETTINGS_UI, /data-smart-guide-settings-button="true"/);
   assert.match(SETTINGS_UI, /data-smart-guide-enabled=\{active \? 'true' : 'false'\}/);
   assert.match(SETTINGS_UI, /aria-pressed=\{active\}/);
-  // 켜짐/꺼짐이 한눈에 보인다 (강조색 + 점)
-  assert.match(SETTINGS_UI, /active \? TONE_ACTIVE\[tone\] : TONE_BUTTON\[tone\]/);
-  assert.match(SETTINGS_UI, /bg-cyan-400 shadow-\[0_0_6px_rgba\(34,211,238,0\.9\)\]/);
+  // 켜짐 상태는 접근성 속성에 남기되, 물음표 버튼은 중립 톤이고 점/발광 표시를 두지 않는다.
+  const buttonMarker = 'data-smart-guide-settings-button="true"';
+  const buttonIndex = SETTINGS_UI.indexOf(buttonMarker);
+  const buttonStart = SETTINGS_UI.lastIndexOf('<button', buttonIndex);
+  const buttonEnd = SETTINGS_UI.indexOf('</button>', buttonIndex) + '</button>'.length;
+  const button = SETTINGS_UI.slice(buttonStart, buttonEnd);
+  assert.match(button, /TONE_BUTTON\[tone\]/);
+  assert.doesNotMatch(SETTINGS_UI, /TONE_ACTIVE/);
+  assert.doesNotMatch(button, /bg-cyan-|text-cyan-|shadow-\[/);
+  assert.doesNotMatch(button, /<span[^>]*absolute/);
   // 설정 시트: 스마트 가이드 · 가이드 도슨트 스위치
   assert.match(SETTINGS_UI, /role="switch"/);
   assert.match(SETTINGS_UI, /aria-checked=\{on\}/);
@@ -176,6 +184,39 @@ test('the question-mark icon opens a sheet with the two switches', () => {
   assert.match(SETTINGS_LIB, /localStorage|safeLocalStorage/);
   assert.match(SETTINGS_LIB, /SMART_GUIDE_SETTINGS_EVENT/);
   assert.match(SETTINGS_LIB, /addEventListener\('storage'/);
+});
+
+test('the auto-read header toggle retains accessible state without a green highlight', () => {
+  const marker = 'data-auto-tts-toggle="true"';
+  const buttonIndex = LUCY_PAGE.indexOf(marker);
+  assert.notEqual(buttonIndex, -1, 'auto-read toggle marker exists');
+  const buttonStart = LUCY_PAGE.lastIndexOf('<button', buttonIndex);
+  const buttonEnd = LUCY_PAGE.indexOf('</button>', buttonIndex) + '</button>'.length;
+  const button = LUCY_PAGE.slice(buttonStart, buttonEnd);
+
+  assert.match(button, /aria-pressed=\{isAutoTts\}/);
+  assert.match(button, /aria-label=\{isAutoTts \? '자동읽기 켜짐/);
+  assert.match(button, /Volume2 size=\{15\}/);
+  assert.match(button, /VolumeX size=\{15\}/);
+  assert.match(button, /자동읽기 ON/);
+  assert.match(button, /자동읽기 OFF/);
+  assert.doesNotMatch(button, /emerald|teal|animate-pulse/);
+});
+
+test('the auto-read feedback toast is portaled above Duo panes without intercepting touches', () => {
+  const marker = 'data-auto-tts-toast-layer="true"';
+  const markerIndex = LUCY_PAGE.indexOf(marker);
+  assert.notEqual(markerIndex, -1, 'viewport toast layer exists');
+  const portalStart = LUCY_PAGE.lastIndexOf('createPortal(', markerIndex);
+  const portalEnd = LUCY_PAGE.indexOf('document.body', markerIndex);
+  assert.ok(portalStart >= 0 && portalEnd > portalStart, 'toast portal targets document.body');
+  const portalSource = LUCY_PAGE.slice(portalStart, portalEnd + 'document.body'.length);
+
+  assert.match(portalSource, /position: 'fixed', inset: 0, zIndex: 9999, pointerEvents: 'none'/);
+  assert.match(portalSource, /data-auto-tts-toast="true"/);
+  assert.match(portalSource, /role="status"/);
+  assert.match(portalSource, /absolute bottom-24 left-1\/2/);
+  assert.doesNotMatch(portalSource, /z-50/);
 });
 
 test('every page header carries the same question-mark button', () => {

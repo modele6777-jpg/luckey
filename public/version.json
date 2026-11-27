@@ -1,10 +1,10 @@
 {
-  "version": "1.8.597",
-  "builtAt": "2026-11-27T13:14:00.000Z",
-  "summary": "Duo 세로화면 헤더 터치 hit-testing 복구 (v1.8.597)",
+  "version": "1.8.598",
+  "builtAt": "2026-11-27T13:53:14.000Z",
+  "summary": "스마트 가이드·자동읽기 버튼 강조 제거와 Duo 알림 레이어 개선 (v1.8.598)",
   "items": [
-    "확장 세로 Duo에서 투명한 48px 경계 스왑 버튼(z-index 80)이 하단 pane 헤더 버튼의 실제 터치 좌표를 가로채는 것을 elementFromPoint와 WebKit hit-test로 확인",
-    "물리적으로 아래쪽 pane만 z-index 81로 올려 헤더 컨트롤을 터치 가능하게 복구; 패널을 뒤집으면 아래쪽 Cosmic pane에 적용",
-    "iPhone WebKit 회귀 테스트에서 두 pane 배치의 모든 보이는 헤더 버튼 hit-test와 가이드 열기를 검증; 경계 스왑과 40px 헤더 높이는 유지"
+    "모든 헤더의 스마트 가이드 물음표 버튼에서 켜짐 상태의 청록 발광과 점 표시를 제거; aria-pressed와 상태 이름은 유지",
+    "Lucy 자동읽기 버튼의 초록색 강조와 펄스를 제거하고 ON/OFF 텍스트·아이콘·접근성 상태는 유지",
+    "확장 Duo의 자동읽기 알림 토스트를 body viewport 레이어에 표시해 pane에 가려지거나 잘리지 않게 개선; WebKit 회귀 테스트 추가"
   ]
 }
