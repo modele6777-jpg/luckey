@@ -5,6 +5,7 @@ import { Window } from 'happy-dom';
 import { ALL_DCE_ENGINES } from '../src/lib/divination/deterministicEngine.ts';
 import {
   resolveMessagePerspectives,
+  shouldRestoreCatalogScroll,
   shouldShowAnswerEngines,
 } from '../src/lib/lucyAnswerPerspectives.ts';
 import {
@@ -84,6 +85,12 @@ test('the buttons stay hidden for user messages, greetings, streaming and empty 
   assert.equal(shouldShowAnswerEngines({ role: 'model', isGreeting: true, engines }), false);
   assert.equal(shouldShowAnswerEngines({ role: 'model', isGenerating: true, engines }), false);
   assert.equal(shouldShowAnswerEngines({ role: 'model', engines: resolveMessagePerspectives({}) }), false);
+});
+
+test('an engine box opened from an answer does not restore an old scroll position over the perspective', () => {
+  assert.equal(shouldRestoreCatalogScroll(true, ''), true, 'a plain open restores the last position');
+  assert.equal(shouldRestoreCatalogScroll(true, DEEP_KEY), false, 'the perspective jump must not be reset to the stored position');
+  assert.equal(shouldRestoreCatalogScroll(false, ''), false);
 });
 
 test('the perspective button asks for the engine box and remembers the perspective to focus', () => {

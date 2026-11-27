@@ -113,6 +113,14 @@ export function resolveMessagePerspectives(
   };
 }
 
+/**
+ * 엔진함이 이전 스크롤 위치를 복원할지.
+ * 답변 끝 관점 버튼으로 열린 창은 그 관점 카드로 가야 하므로 복원(0 포함)으로 덮어쓰지 않는다.
+ */
+export function shouldRestoreCatalogScroll(isOpen: boolean, focusEngineKey: string): boolean {
+  return isOpen && !focusEngineKey;
+}
+
 /** 메시지 끝 버튼을 그릴지: 사용자 메시지·인사말·생성 중에는 그리지 않는다. */
 export function shouldShowAnswerEngines(params: {
   role?: string | null;

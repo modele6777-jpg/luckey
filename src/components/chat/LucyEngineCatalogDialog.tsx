@@ -6,6 +6,7 @@ import { DialogBackdrop } from '@/components/layout/DialogBackdrop';
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Search, Sparkles, X } from 'lucide-react';
 import { useLucyEngineFocusRequest } from '@/hooks/useLucyEngineFocus';
+import { shouldRestoreCatalogScroll } from '@/lib/lucyAnswerPerspectives';
 import type { LucyEngineFocusRequest } from '@/lib/lucyTableBus';
 import { WorkspacePortal } from '@/components/layout/DuoWorkspace';
 import {
@@ -88,7 +89,7 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey, deepOnly = false, 
       return { ...group, engines, total: group.engines.length };
     }).filter(group => group.engines.length);
   }, [groupedEngines, renderedCount]);
-  const scroll = useLibrarySessionScroll(`${sessionKey}:scroll`, isOpen, renderedCount >= filteredEngines.length);
+  const scroll = useLibrarySessionScroll(`${sessionKey}:scroll`, shouldRestoreCatalogScroll(isOpen, focusKey), renderedCount >= filteredEngines.length);
   const listRef = useRef<HTMLDivElement | null>(null);
   const attachListRef = useCallback((node: HTMLDivElement | null) => {
     listRef.current = node;
@@ -126,7 +127,9 @@ function LucyEngineCatalogBody({ isOpen, isLight, sessionKey, deepOnly = false, 
     };
     const frame = requestAnimationFrame(center);
     const timer = setTimeout(center, 220);
-    return () => { cancelAnimationFrame(frame); clearTimeout(timer); };
+    // 점진 렌더가 끝난 뒤 목록 높이가 확정되면 한 번 더 가운데로 맞춘다.
+    const settle = setTimeout(center, 700);
+    return () => { cancelAnimationFrame(frame); clearTimeout(timer); clearTimeout(settle); };
   }, [isOpen, focusKey, focus?.requestId, focusIndex, renderedCount]);
 
   const muted = isLight ? 'text-slate-600' : 'text-slate-300';
