@@ -1,13 +1,23 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useReducer, useState } from 'react';
 import { X, Pencil } from 'lucide-react';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
-import { getLucyTableState, LUCY_TABLE_EVENT, type LucyTableState } from '@/lib/lucyTableBus';
+import {
+  clearDivinationToolRequest,
+  clearEngineFocus,
+  getLastDivinationToolRequest,
+  getLucyTableState,
+  LUCY_DIVINATION_TOOL_EVENT,
+  LUCY_ENGINE_BOX_OPEN_EVENT,
+  LUCY_TABLE_EVENT,
+  type LucyTableState,
+} from '@/lib/lucyTableBus';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { MasterSajuBoard } from './MasterSajuBoard';
 import { MasterToolTabPanel } from './MasterToolTabPanel';
 import { DivinationToolTabBar, resolveToolTabViews } from './MasterToolTabs';
 import { LucyDeepPerspectivePanel } from '@/components/chat/LucyEngineCatalogDialog';
 import type { DivinationToolId } from '@/lib/fifteenDivinationTools';
+import { CLOSED_LUCY_SHEET, pickActiveDivinationTab, reduceLucySheet } from '@/lib/lucyToolSheetRouting';
 
 /**
  * 📱 도구함(연필 버튼) 창.
@@ -45,14 +55,25 @@ export function DivinationTableBody({ table, onClose, compact = false }: {
   /** 접힌 화면 창(좁은 폭)에서는 탭을 더 작게 */
   compact?: boolean;
 }) {
-  const [tab, setTab] = useState<DivinationToolId>('saju');
+  const [tab, setTab] = useState<DivinationToolId>(() => getLastDivinationToolRequest()?.toolId ?? 'saju');
+  // 답변 끝 도구 버튼으로 연 경우: 그 도구 탭을 그대로 보여준다 (탭을 직접 고르면 해제).
+  const [requestedTab, setRequestedTab] = useState<DivinationToolId | null>(() => getLastDivinationToolRequest()?.toolId ?? null);
+  useEffect(() => {
+    const onRequest = (event: Event) => {
+      const toolId = (event as CustomEvent<{ toolId?: DivinationToolId }>).detail?.toolId;
+      if (!toolId) return;
+      setRequestedTab(toolId);
+      setTab(toolId);
+    };
+    window.addEventListener(LUCY_DIVINATION_TOOL_EVENT, onRequest);
+    return () => window.removeEventListener(LUCY_DIVINATION_TOOL_EVENT, onRequest);
+  }, []);
   const views = useMemo(() => resolveToolTabViews(table), [table]);
   // 루시가 이번 질문에 쓰지 않은 도구는 잠겨 있으므로, 잠긴 탭이 골라져 있으면 첫 열린 탭으로 돌린다.
-  const activeTab = useMemo<DivinationToolId>(() => {
-    const current = views.find(view => view.id === tab);
-    if (current && !current.locked) return current.id;
-    return (views.find(view => !view.locked)?.id ?? 'saju') as DivinationToolId;
-  }, [tab, views]);
+  const activeTab = useMemo<DivinationToolId>(
+    () => pickActiveDivinationTab(views, tab, requestedTab),
+    [requestedTab, tab, views],
+  );
 
   return (
     <div className="flex h-full min-h-0 flex-col" data-tool-sheet-variant="divination">
@@ -62,7 +83,7 @@ export function DivinationTableBody({ table, onClose, compact = false }: {
           <button type="button" onClick={onClose} aria-label="도구 창 닫기" className="flex h-8 w-8 items-center justify-center rounded-full text-slate-300 hover:bg-white/10"><X size={18} /></button>
         )}
       </div>
-      <DivinationToolTabBar table={table} activeTab={activeTab} onSelect={setTab} compact={compact} />
+      <DivinationToolTabBar table={table} activeTab={activeTab} onSelect={(id) => { setRequestedTab(null); setTab(id); }} compact={compact} />
       <div className="flex min-h-0 flex-1 flex-col">
         {activeTab === 'saju' ? (
           <MasterSajuBoard saju={table.saju} lastAnswer={table.lastAnswer} />
@@ -150,7 +171,32 @@ function DrawnCards({ cards }: { cards: LucyTableState['cards'] }) {
 
 /** 헤더의 연필 모양 도구함 버튼. 점술모드와 일반 채팅 모두 같은 버튼을 쓴다. */
 export function MasterTableSheetButton({ tone = 'dark', isMasterMode = false }: { tone?: 'dark' | 'light'; isMasterMode?: boolean }) {
-  const [open, setOpen] = useState(false);
+  const [sheet, dispatchSheet] = useReducer(reduceLucySheet, CLOSED_LUCY_SHEET);
+
+  // 답변 끝 버튼(관점·도구)에서 함을 열 때도 같은 창을 쓴다.
+  useEffect(() => {
+    const onEngineBox = () => dispatchSheet({ type: 'engine-box' });
+    const onTool = () => dispatchSheet({ type: 'divination-tool' });
+    window.addEventListener(LUCY_ENGINE_BOX_OPEN_EVENT, onEngineBox);
+    window.addEventListener(LUCY_DIVINATION_TOOL_EVENT, onTool);
+    return () => {
+      window.removeEventListener(LUCY_ENGINE_BOX_OPEN_EVENT, onEngineBox);
+      window.removeEventListener(LUCY_DIVINATION_TOOL_EVENT, onTool);
+    };
+  }, []);
+
+  // 버튼을 직접 눌러 열 때는 지난 답변의 이동 요청을 따라가지 않는다.
+  const openFromButton = () => {
+    clearEngineFocus();
+    clearDivinationToolRequest();
+    dispatchSheet({ type: 'button', isMasterMode });
+  };
+  const closeSheet = () => {
+    dispatchSheet({ type: 'close' });
+    clearEngineFocus();
+    clearDivinationToolRequest();
+  };
+
   return (
     <>
       <button
@@ -159,14 +205,14 @@ export function MasterTableSheetButton({ tone = 'dark', isMasterMode = false }: 
         data-tool-sheet-variant={isMasterMode ? 'divination' : 'chat'}
         aria-label={isMasterMode ? '점술 도구 보기' : '엔진함 보기'}
         title={isMasterMode ? '점술 도구' : '엔진함'}
-        onClick={() => { triggerHaptic('whitehole'); setOpen(true); }}
+        onClick={() => { triggerHaptic('whitehole'); openFromButton(); }}
         className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border backdrop-blur-md active:scale-95 ${tone === 'light'
           ? 'border-slate-300/80 bg-white/80 text-slate-700'
           : 'border-amber-200/30 bg-amber-400/10 text-amber-100'}`}
       >
         <Pencil size={15} aria-hidden="true" />
       </button>
-      {open && <MasterTableSheet onClose={() => setOpen(false)} variant={isMasterMode ? 'divination' : 'chat'} />}
+      {sheet.open && <MasterTableSheet onClose={closeSheet} variant={sheet.variant} />}
     </>
   );
 }
