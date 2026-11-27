@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CELTIC_AWEN_TALIESIN_ENGINE_VERSION = '2.3.0';
+export const CELTIC_AWEN_TALIESIN_ENGINE_VERSION = '2.4.0';
 
 export interface AwenSituationalAudit {
   cauldronFocus: string;
@@ -44,6 +44,7 @@ export interface AwenSynthesisMatrix {
   inspirationState: '아웬만개' | '내면숙성' | '변용도약';
   rayTotemLink: string;
   nextCauldronStep: string;
+  awenCrossAxis: string;
 }
 
 export interface AwenRaysBalance {
@@ -259,10 +260,12 @@ export function calculateCelticAwenTaliesin(options?: {
   const temporalAwenRhythm = buildAwenTemporalRhythm(now);
   const inspirationState: AwenSynthesisMatrix['inspirationState'] =
     awenFlowIndex >= 85 ? '아웬만개' : awenFlowIndex >= 72 ? '변용도약' : '내면숙성';
+  const awenCrossAxis = `[${dominantRay.name}] × [${activeMetamorphosis.animalTotem}] × [${temporalAwenRhythm.awenTempo}] × [${inspirationState}] — ${activeMetamorphosis.phaseTitle}의 흐름이 ${temporalAwenRhythm.celticQuarterPhase}와 맞물려 ${situationalAwenAudit.cauldronFocus}을 이끕니다.`;
   const awenSynthesisMatrix: AwenSynthesisMatrix = {
     inspirationState,
     rayTotemLink: `[${dominantRay.name}]의 빛과 [${activeMetamorphosis.animalTotem}]의 변용이 ${temporalAwenRhythm.awenBardicWindow}에서 만납니다.`,
     nextCauldronStep: situationalAwenAudit.bardicAction,
+    awenCrossAxis,
   };
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -322,6 +325,7 @@ export function formatCelticAwenTaliesinPrompt(report: CelticAwenTaliesinReport)
 
 4. [케리드웬 가마솥 처방 & 탈리에신 신탁]:
    - 교차 매트릭스: ${report.awenSynthesisMatrix.rayTotemLink}
+   - 4중 교차 축: ${report.awenSynthesisMatrix.awenCrossAxis}
    - 가마솥 연단 실천: ${report.cauldronPractice}
    - 질문 맞춤 성찰 질문: ${report.reflectiveQuestion}
    - 종합 영감 예언: ${report.taliesinProphecy}

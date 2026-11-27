@@ -10,7 +10,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ALEXANDRIAN_DECAN_ENGINE_VERSION = '2.3.0';
+export const ALEXANDRIAN_DECAN_ENGINE_VERSION = '2.4.0';
 
 export type DecanQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -47,6 +47,7 @@ export interface AlexandrianDecanThirtySixGodsReport {
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
+    decanCrossAxis: string;
   };
   practiceGuidance: string;
   ritualAction: string;
@@ -255,10 +256,12 @@ export function calculateAlexandrianDecanThirtySixGods(
   const counselNote = topicGuide.counsel;
   const boundaryNotice = '알렉산드리아 36대 데칸 관점은 천상 시간의 상징을 빌려 삶의 리듬과 태도를 성찰하는 참고 도구이며, 미래 사건이나 길흉을 단정하지 않습니다.';
 
+  const decanCrossAxis = `[${dominantDecan.nameGreek}] × [${secondaryDecan.nameGreek}] × [${questionTopic}] × [${temporalDecanRhythm.tenDaySolarCycle.split('—')[0].trim()}] — ${dominantDecan.decanDegreeDomain}의 카이로스가 ${secondaryDecan.nameKo}의 보조 결을 만나 오늘의 리듬을 정렬합니다.`;
   const decanSynthesisMatrix = {
     coreInsight: `[${dominantDecan.nameGreek} (${dominantDecan.nameKo})]와 보조 성령 [${secondaryDecan.nameGreek}]이 ${questionTopic} 맥락에서 카이로스의 문을 비춥니다.`,
     recommendedAction: `${practiceGuidance} (${ritualAction})`,
     cautionNotice: '기계적 조급함(크로노스)에 쫓겨 리듬을 놓치면 작은 마찰이 커집니다. 한 호흡 고르고 본질을 확인하십시오.',
+    decanCrossAxis,
   };
 
   const alexandrianHermeticDecree = `헤르메스주의 알렉산드리아 상징 체계에서 지금의 흐름을 비추는 주 수호 성령은 [${dominantDecan.nameGreek} - ${dominantDecan.nameKo}]이며, 보조로 [${secondaryDecan.nameGreek}]의 기운이 함께 작용합니다. ${dominantDecan.soulVirtue}`;
@@ -304,6 +307,7 @@ export function formatAlexandrianDecanThirtySixGodsPrompt(rep: AlexandrianDecanT
   - 시공간 지침: ${rep.temporalDecanRhythm.temporalGuidance}
 · 데칸 교차 매트릭스:
   - 핵심 통찰: ${rep.decanSynthesisMatrix.coreInsight}
+  - 4중 교차 축: ${rep.decanSynthesisMatrix.decanCrossAxis}
   - 권고 실행: ${rep.decanSynthesisMatrix.recommendedAction}
   - 주의 경계: ${rep.decanSynthesisMatrix.cautionNotice}
 · 실천 조언: ${rep.practiceGuidance}

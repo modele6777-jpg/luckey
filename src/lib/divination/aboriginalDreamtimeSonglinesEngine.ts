@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION = '2.3.0';
+export const ABORIGINAL_DREAMTIME_SONGLINES_ENGINE_VERSION = '2.4.0';
 
 export type DreamtimeQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -60,6 +60,7 @@ export interface DreamtimeSynthesisMatrix {
   kurunpaState: '충만' | '균형' | '회복필요';
   totemSonglineLink: string;
   nextWalkaboutStep: string;
+  dreamtimeCrossAxis: string;
 }
 
 export interface DreamtimeSonglineReport {
@@ -338,10 +339,12 @@ export function calculateAboriginalDreamtimeSonglines(options?: {
   const temporalDreamtimeRhythm = buildDreamtimeTemporalRhythm(now);
   const kurunpaState: DreamtimeSynthesisMatrix['kurunpaState'] =
     kurunpaLifeForceIndex >= 85 ? '충만' : kurunpaLifeForceIndex >= 70 ? '균형' : '회복필요';
+  const dreamtimeCrossAxis = `[${activeTotem.name}] × [${songline.direction}] × [${questionTheme}] × [${temporalDreamtimeRhythm.dreamingTempo}] — ${activeTotem.element}의 결이 대지의 노래(${songline.theme})와 맞물려 ${situationalDreamtimeAudit.songlineFocus}으로 이어집니다.`;
   const dreamtimeSynthesisMatrix: DreamtimeSynthesisMatrix = {
     kurunpaState,
     totemSonglineLink: `${activeTotem.name}의 파동이 ${temporalDreamtimeRhythm.countryWatchWindow} (${temporalDreamtimeRhythm.dreamingTempo} · ${temporalDreamtimeRhythm.seasonalCountryPhase}) 리듬과 공명합니다.`,
     nextWalkaboutStep: `${situationalDreamtimeAudit.songlineFocus} — ${situationalDreamtimeAudit.walkaboutPrescription}`,
+    dreamtimeCrossAxis,
   };
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -408,6 +411,7 @@ export function formatAboriginalDreamtimeSonglinesPrompt(report: DreamtimeSongli
    - 시공간 리듬: ${report.temporalDreamtimeRhythm.countryWatchWindow} · ${report.temporalDreamtimeRhythm.seasonalCountryPhase} (${report.temporalDreamtimeRhythm.dreamingTempo})
    - 시간대 지침: ${report.temporalDreamtimeRhythm.timingDirective}
    - 교차 매트릭스(${report.dreamtimeSynthesisMatrix.kurunpaState}): ${report.dreamtimeSynthesisMatrix.totemSonglineLink}
+   - 4중 교차 축: ${report.dreamtimeSynthesisMatrix.dreamtimeCrossAxis}
    - 해석 경계: ${report.boundaryNotice}
 ======================================================================`;
 }
