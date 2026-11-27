@@ -5428,11 +5428,13 @@ test('Kabbalistic Zohar Five Soul Levels Engine: calculates five soul levels and
   assert(rep.shekhinahDivinePresenceIndex >= 0 && rep.shekhinahDivinePresenceIndex <= 100);
   assert(rep.qlippothShellPurificationRate >= 0 && rep.qlippothShellPurificationRate <= 100);
   assert(rep.dominantSoulLevel.nameKo.length > 0);
+  assert(rep.zoharSynthesisMatrix.zoharCrossAxis.includes(rep.dominantSoulLevel.nameKo));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKabbalisticZoharSoulPrompt(rep);
   assert(prompt.includes('카발라 조하르(Zohar) 5대 영혼 층위 & 에인 소프 신성 상승 실측 데이터'));
   assert(prompt.includes(rep.dominantSoulLevel.nameKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes(rep.ritualAction));
 });
 
@@ -5494,11 +5496,13 @@ test('Korean Pungryudo Hwarang Five Precepts Engine: calculates xuanmiao harmony
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalPungryuRhythm.hwarangWatchWindow.length > 0);
   assert(rep.pungryuSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.pungryuSynthesisMatrix.pungryuCrossAxis.includes(rep.dominantPrecept.nameKo));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanPungryudoHwarangPrompt(rep);
   assert(prompt.includes('풍류도'));
   assert(prompt.includes(rep.dominantPrecept.nameKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('KST'));
   assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
@@ -5575,6 +5579,7 @@ test('Sumerian Enuma Elish Fifty Names Engine: calculates Tiamat subjugation, fo
   assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.enumaElishSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.enumaElishSynthesisMatrix?.enumaCrossAxis?.includes(rep.dominantSacredName.nameAkkadian)));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.tiamatSubjugationOrderScore >= 0 && rep.tiamatSubjugationOrderScore <= 100);
   assert(rep.fiftySacredNamesResonanceIndex >= 0 && rep.fiftySacredNamesResonanceIndex <= 100);
@@ -5587,6 +5592,7 @@ test('Sumerian Enuma Elish Fifty Names Engine: calculates Tiamat subjugation, fo
   assert(prompt.includes(rep.dominantSacredName.nameKo));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100'));
 });
 

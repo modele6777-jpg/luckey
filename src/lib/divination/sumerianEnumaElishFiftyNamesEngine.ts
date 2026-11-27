@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ENUMA_ELISH_ENGINE_VERSION = '2.3.0';
+export const ENUMA_ELISH_ENGINE_VERSION = '2.4.0';
 
 export interface MardukSacredName {
   id: string;
@@ -55,6 +55,7 @@ export interface SumerianEnumaElishFiftyNamesReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    enumaCrossAxis: string;
   };
   ritualAction: string;
   reflectionFocus: string;
@@ -195,10 +196,18 @@ export function calculateSumerianEnumaElishFiftyNames(
   const tabletOfDestinyGuidance = `운명의 서판(Tablet of Destinies)을 가슴에 품으십시오: 당신의 선택이 곧 세상의 질서가 됩니다. ${dominantSacredName.tiamatSubjugationPower}의 권능으로 내외의 소란을 잠재우고 당당히 주권을 확립하십시오.`;
 
   const calculatedAtKst = formatEnumaElishKstTimestamp(now);
+  const winds = [
+    { label: '북풍(절제)', score: northWindDiscipline },
+    { label: '남풍(열정)', score: southWindPassion },
+    { label: '동풍(창의)', score: eastWindDawnInspiration },
+    { label: '서풍(정화)', score: westWindTwilightPurification },
+  ].sort((a, b) => b.score - a.score);
+  const enumaCrossAxis = `[${dominantSacredName.nameAkkadian}] × [${secondarySacredName.nameAkkadian}] × [${winds[0].label}] × [${question.trim() || '전반적 주권 조율'}]`;
   const enumaElishSynthesisMatrix = {
     dominantTension: `${dominantSacredName.nameAkkadian} ↔ ${secondarySacredName.nameAkkadian}`,
     alignmentState: `${dominantSacredName.nameKo} · 4대 바람(북·남·동·서풍) 조율`,
     integratedAction: `${dominantSacredName.actionVirtue}${question ? ` [질문 맥락: ${question}]` : ''}`,
+    enumaCrossAxis,
   };
 
   const interpretiveBoundary = '본 에누마 엘리시 마르두크 50대 이름 리포트는 고대 메소포타미아 서사시 원전과 수리 시드에 기반한 상징적 결단 안내이며, 절대적 예언이 아닙니다.';
@@ -244,6 +253,7 @@ export function formatSumerianEnumaElishFiftyNamesPrompt(rep: SumerianEnumaElish
   if (rep.enumaElishSynthesisMatrix) {
     lines.push(
       `· 교차 매트릭스: [핵심 긴장: ${rep.enumaElishSynthesisMatrix.dominantTension} | 조율 상태: ${rep.enumaElishSynthesisMatrix.alignmentState}]`,
+      `  - 4중 교차 축: ${rep.enumaElishSynthesisMatrix.enumaCrossAxis}`,
       `  - 통합 실천: ${rep.enumaElishSynthesisMatrix.integratedAction}`,
     );
   }

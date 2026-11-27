@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_PUNGRYUDO_HWARANG_ENGINE_VERSION = '2.3.0';
+export const KOREAN_PUNGRYUDO_HWARANG_ENGINE_VERSION = '2.4.0';
 
 export interface HwarangPrecept {
   id: string;
@@ -56,6 +56,7 @@ export interface KoreanPungryudoHwarangReport {
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
+    pungryuCrossAxis: string;
   };
   pungryudoLifeCultivation: string; // 풍류도 도의상마 심신수련 처방
   hwarangCourageGuidance: string; // 화랑도 기개 및 결단 지침
@@ -232,10 +233,12 @@ export function calculateKoreanPungryudoHwarang(
           cultivationTone: pungryudoLifeCultivation,
         };
 
+  const pungryuCrossAxis = `[${dominantPrecept.nameKo}] × [${secondaryPrecept.nameKo}] × [${situationalPungryuAudit.focusTheme}] × [${temporalPungryuRhythm.hwarangWatchWindow.split('—')[0].trim()}]`;
   const pungryuSynthesisMatrix = {
     coreInsight: `주재 오계 [${dominantPrecept.nameKo}]와 보조 [${secondaryPrecept.nameKo}]가 ${situationalPungryuAudit.focusTheme}을 비춥니다.`,
     recommendedAction: `${hwarangCourageGuidance} (${dominantPrecept.guidanceAction})`,
     cautionNotice: '기개만 앞서 살생유택의 절제를 잃거나, 풍류에 치우쳐 임전무퇴의 결단을 미루지 않도록 경계하십시오.',
+    pungryuCrossAxis,
   };
 
   const ritualAction = `[${dominantPrecept.nameKo.split(' ')[0]}] ${dominantPrecept.guidanceAction}`;
@@ -281,6 +284,7 @@ export function formatKoreanPungryudoHwarangPrompt(
     `- KST 시공간 풍류 리듬: ${report.temporalPungryuRhythm.hwarangWatchWindow} / ${report.temporalPungryuRhythm.seasonalMountainTone}`,
     `  • 시공간 지침: ${report.temporalPungryuRhythm.temporalGuidance}`,
     `- 풍류 교차 매트릭스: 핵심(${report.pungryuSynthesisMatrix.coreInsight}) | 실행(${report.pungryuSynthesisMatrix.recommendedAction}) | 주의(${report.pungryuSynthesisMatrix.cautionNotice})`,
+    `- 4중 교차 축: ${report.pungryuSynthesisMatrix.pungryuCrossAxis}`,
     `- 풍류도 심신수련 처방: ${report.pungryudoLifeCultivation}`,
     `- 화랑도 기개·결단 지침: ${report.hwarangCourageGuidance}`,
     `- 실천 의례(Ritual Action): ${report.ritualAction}`,
