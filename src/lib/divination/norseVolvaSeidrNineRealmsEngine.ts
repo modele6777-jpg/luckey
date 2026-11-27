@@ -21,7 +21,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NORSE_VOLVA_SEIDR_NINE_REALMS_ENGINE_VERSION = '2.3.0';
+export const NORSE_VOLVA_SEIDR_NINE_REALMS_ENGINE_VERSION = '2.4.0';
 
 export interface YggdrasilRealm {
   id: string;
@@ -52,6 +52,7 @@ export interface NorseVolvaSeidrNineRealmsReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    volvaCrossAxis: string;
   };
   interpretiveBoundary: string;
 }
@@ -195,16 +196,19 @@ export function calculateNorseVolvaSeidrNineRealms(
   const composite = Math.round(
     (seidrIntuitionClarity + huginnThoughtScore + muninMemoryScore + yggdrasilSapShieldPower + wyrdFateWeavingResonance) / 5
   );
+  const alignmentState = describeVolvaStage(composite);
+  const trimmedQ = question.trim();
+  const volvaCrossAxis = `[${dominantRealm.nameKo}] × [${secondaryRealm.nameKo}] × [${alignmentState.split(' — ')[0]}] × [${trimmedQ || '위르드 직조'}]`;
   const volvaSynthesisMatrix = {
     dominantTension: `${dominantRealm.nameKo} (${dominantRealm.domain}) ↔ ${secondaryRealm.nameKo}`,
-    alignmentState: describeVolvaStage(composite),
-    integratedAction: `${dominantRealm.propheticGift}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+    alignmentState,
+    integratedAction: `${dominantRealm.propheticGift}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+    volvaCrossAxis,
   };
 
   const ritualAction = `${seidrSpindleGroundingRitual} 이어 '${dominantRealm.nameKo}(${dominantRealm.norseName})'의 은사(${dominantRealm.propheticGift})를 오늘 한 가지 구체적인 선택에 적용하세요.`;
   const reflectionFocus = `볼바 세이드(${dominantRealm.nameKo} ↔ ${secondaryRealm.nameKo}) — ${dominantRealm.domain}과 위르드 직조`;
 
-  const trimmedQ = question.trim();
   const reflectiveQuestion = trimmedQ
     ? `지금 "${trimmedQ}" 앞에서 위그드라실 ${dominantRealm.nameKo}(${dominantRealm.norseName})의 ${dominantRealm.propheticGift}을 살려 내가 먼저 엮어 갈 한 수는 무엇인가요?`
     : `오늘 ${dominantRealm.nameKo}과 ${secondaryRealm.nameKo}의 기운 속에서 내 운명실(Wyrd)을 가장 맑게 펴기 위해 정리할 생각은 무엇인가요?`;
@@ -251,6 +255,7 @@ export function formatNorseVolvaSeidrNineRealmsPrompt(rep: NorseVolvaSeidrNineRe
   if (rep.volvaSynthesisMatrix) {
     lines.push(
       `· 교차 매트릭스: [핵심 긴장: ${rep.volvaSynthesisMatrix.dominantTension} | 조율 상태: ${rep.volvaSynthesisMatrix.alignmentState}]`,
+      `· 4중 교차 축: ${rep.volvaSynthesisMatrix.volvaCrossAxis}`,
       `· 통합 실천: ${rep.volvaSynthesisMatrix.integratedAction}`,
     );
   }
