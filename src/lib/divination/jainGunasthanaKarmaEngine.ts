@@ -25,7 +25,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const JAIN_GUNASTHANA_KARMA_ENGINE_VERSION = '2.3.0';
+export const JAIN_GUNASTHANA_KARMA_ENGINE_VERSION = '2.4.0';
 
 export interface RatnatrayaBalance {
   darshanaScore: number; // 정견 (올바른 믿음/직관) 0~100
@@ -67,6 +67,7 @@ export interface JainGunasthanaReport {
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
+    jainCrossAxis: string;
   };
   interpretiveBoundary: string;
   jainWisdom: string;
@@ -271,10 +272,12 @@ export function calculateJainGunasthanaKarma(options?: {
 
   const jainWisdom = `삼보 중 [${dominant.name}]의 빛이 강하게 발현되고 있으며, 군아스타나 제${activeStage.stageNumber}단계 [${activeStage.stageNameKo}]에 머물고 있습니다. ${activeStage.spiritualGuidance}`;
 
+  const jainCrossAxis = `[${activeStage.stageNameSanskrit}] × [${dominant.name}] × [${situationalJainAudit.focusTheme}] × [${temporalJainRhythm.samayikaWindow.split(' — ')[0]}]`;
   const jainSynthesisMatrix = {
     coreInsight: `군아스타나 제${activeStage.stageNumber}단계 [${activeStage.stageNameKo}]에서 삼보 중 [${dominant.name}]이 빛을 발하고 있습니다.`,
     recommendedAction: `${nirjaraPurification} (${situationalJainAudit.aparigrahaPrinciple})`,
     cautionNotice: `일방적 단정(에칸타)과 과도한 집착을 피하고, ${situationalJainAudit.anekantaPerspective}`,
+    jainCrossAxis,
   };
 
   const ritualAction = `[제${activeStage.stageNumber}단계 ${activeStage.stageNameKo}] ${nirjaraPurification}`;
@@ -339,6 +342,7 @@ export function formatJainGunasthanaKarmaPrompt(report: JainGunasthanaReport): s
    - 성찰 초점(Reflection Focus): ${report.reflectionFocus}
    - 질문 맞춤 성찰 질문: ${report.reflectiveQuestion}
    - 핵심 통찰: ${report.jainSynthesisMatrix.coreInsight}
+   - 4중 교차 축: ${report.jainSynthesisMatrix.jainCrossAxis}
    - 권고 실행: ${report.jainSynthesisMatrix.recommendedAction}
    - 주의 경계: ${report.jainSynthesisMatrix.cautionNotice}
    - 종합 해탈 조언: ${report.jainWisdom}
