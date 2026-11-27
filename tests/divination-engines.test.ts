@@ -1700,7 +1700,8 @@ test('Thai Horasat engine: determinism, safe fallback, Wednesday-night note and 
   const prompt = formatThaiHorasatPrompt(r1);
   assert(prompt.includes(THAI_HORASAT_ENGINE_VERSION));
   assert(prompt.includes('KST'));
-  assert(prompt.includes('호라삿 교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('호라삿 교차 매트릭스') && prompt.includes('4중 교차 축') && prompt.includes('해석 경계'));
+  assert(Boolean(r1.horasatSynthesisMatrix?.horasatCrossAxis.includes(r1.birthDayPlanet!.thaiName)));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert((r1.ritualAction ?? '').length > 0 && (r1.reflectionFocus ?? '').length > 0);
   assert((r1.interpretiveBoundary ?? '').length > 0);
@@ -2643,6 +2644,7 @@ test('Monthly Flow Engine: 12개월 월운 및 분기 타이밍 검증', () => {
   assert(res.reflectiveQuestion?.includes('이직 적기'));
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.monthlyFlowSynthesisMatrix?.integratedAction));
+  assert(Boolean(res.monthlyFlowSynthesisMatrix?.monthlyFlowCrossAxis.includes('career')));
   assert(res.interpretiveBoundary.length > 0);
   assert.equal(res.monthlyTimeline.length, 12);
   const prompt = formatMonthlyFlowPrompt(res);
@@ -2651,7 +2653,7 @@ test('Monthly Flow Engine: 12개월 월운 및 분기 타이밍 검증', () => {
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('과잉 경계'));
-  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 });
 
@@ -4493,12 +4495,13 @@ test('Vitality Curve Engine: calculates 12-stage biorhythm curve and synthesis m
   assert.equal(rep.engineVersion, VITALITY_CURVE_ENGINE_VERSION);
   assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.vitalitySynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.vitalitySynthesisMatrix?.vitalityCrossAxis.includes(rep.dimensions.physicalVitality.stage)));
   assert(Boolean(rep.ritualAction) && Boolean(rep.reflectionFocus));
   assert(rep.interpretiveBoundary.length > 0);
   assert.equal(rep.hourlyTideCurve.length, 12);
   const prompt = formatVitalityCurvePrompt(rep);
   assert(prompt.includes('12운성 바이오리듬 에너지 곡선'));
-  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축') && prompt.includes('해석 경계'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
