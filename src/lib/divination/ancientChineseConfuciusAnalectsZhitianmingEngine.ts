@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CONFUCIUS_ZHITIANMING_VERSION = 'LUCKEY-CONFUCIUS-ZHITIANMING-v2.5.0';
+export const CONFUCIUS_ZHITIANMING_VERSION = 'LUCKEY-CONFUCIUS-ZHITIANMING-v2.6.0';
 
 function formatConfuciusKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -94,6 +94,7 @@ export interface ConfuciusAnalectsZhitianmingResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    confuciusCrossAxis: string;
   };
 }
 
@@ -343,10 +344,12 @@ export function calculateConfuciusAnalectsZhitianming(
     '이 관점은 점수가 아니라 공자 《논어》의 인·의·예·지·신과 군자도(君子道) 수양 틀로 현재 질문의 도리와 태도를 비추는 상징적 성찰입니다.';
 
   const trimmedQ = (question ?? '').trim();
+  const confuciusCrossAxis = `[${activeLifeStage.stageKey}] × [${focalVirtue.virtueHanja.split(' ')[0]}] × [${situationalAnalects.themeKo.split('(')[0].trim()}] × [${temporalJunziRhythm.kstPhaseLabel.split('(')[0].trim()}]`;
   const confuciusSynthesisMatrix = {
     dominantTension: `${situationalAnalects.themeKo} ↔ ${priorityVirtueFocus}`,
     alignmentState: `${activeLifeStage.stageNameHanja} · ${focalVirtue.virtueHanja}`,
     integratedAction: `${dailyPracticeRitual}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+    confuciusCrossAxis,
   };
 
   return {
@@ -384,7 +387,7 @@ function describeConfuciusStage(score: number): string {
 
 export function formatConfuciusAnalectsZhitianmingPrompt(res: ConfuciusAnalectsZhitianmingResult): string {
   const matrixLine = res.confuciusSynthesisMatrix
-    ? `- 논어 교차 매트릭스: 핵심 긴장(${res.confuciusSynthesisMatrix.dominantTension}) · 조율 상태(${res.confuciusSynthesisMatrix.alignmentState}) · 통합 실천(${res.confuciusSynthesisMatrix.integratedAction})`
+    ? `- 논어 교차 매트릭스: 핵심 긴장(${res.confuciusSynthesisMatrix.dominantTension}) · 조율 상태(${res.confuciusSynthesisMatrix.alignmentState}) · 4중 교차 축(${res.confuciusSynthesisMatrix.confuciusCrossAxis}) · 통합 실천(${res.confuciusSynthesisMatrix.integratedAction})`
     : '';
   return [
     `【공자 논어 지천명 & 극기복례 군자도 성찰 (${res.engineVersion} | ${res.calculatedAtKst})】`,

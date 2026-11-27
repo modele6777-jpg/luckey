@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const PTAH_MEMPHITE_VERSION = 'LUCKEY-PTAH-MEMPHITE-v2.5.0';
+export const PTAH_MEMPHITE_VERSION = 'LUCKEY-PTAH-MEMPHITE-v2.6.0';
 
 export interface PtahCreationStage {
   stageLevel: number;
@@ -45,6 +45,7 @@ export interface PtahSynthesisMatrix {
   huTongueAxis: string;
   maatCraftAxis: string;
   synthesizedVerdict: string;
+  ptahCrossAxis: string;
 }
 
 export interface PtahMemphiteResult {
@@ -181,6 +182,7 @@ function buildSynthesisMatrix(
   const ibHeartAxis = `심장 구상(Ib): ${stage.stageNameKo} (${audit.contextTheme})`;
   const huTongueAxis = `말씀 구현(Hu): ${virtue.virtueNameKo}`;
   const maatCraftAxis = `시의 장인정신: ${temporal.workshopWindow} · ${temporal.nileSeasonalCycle}`;
+  const ptahCrossAxis = `[${stage.stageNameAncient.split('(')[0].trim()}] × [${virtue.hieroglyphicTitle.split('(')[0].trim()}] × [${audit.contextTheme}] × [${temporal.workshopWindow.split(' ')[0]}]`;
   const synthesizedVerdict = `'${temporal.workshopWindow}'에 '${stage.stageNameKo}'의 자리에서 '${virtue.virtueNameKo}'을 실천할 때, 생각과 말이 어긋나지 않는 온전한 결실이 빚어집니다.`;
 
   return {
@@ -188,6 +190,7 @@ function buildSynthesisMatrix(
     huTongueAxis,
     maatCraftAxis,
     synthesizedVerdict,
+    ptahCrossAxis,
   };
 }
 
@@ -279,7 +282,7 @@ export function formatPtahMemphitePrompt(result: PtahMemphiteResult): string {
   → 장인 처방: ${result.situationalPtahAudit.craftsmanPrescription}
 - 시공간 나일 리듬: ${result.temporalPtahRhythm.workshopWindow} · ${result.temporalPtahRhythm.nileSeasonalCycle}
   → 시의 조언: ${result.temporalPtahRhythm.timingAdvice}
-- 프타 교차 매트릭스: ${result.ptahSynthesisMatrix.synthesizedVerdict}
+- 프타 교차 매트릭스: ${result.ptahSynthesisMatrix.synthesizedVerdict} · 4중 교차 축(${result.ptahSynthesisMatrix.ptahCrossAxis})
 - 샤바카 석비의 불멸의 비전: 《${result.memphiteEpiphany.stoneSceneTitle}》
   → 영원한 지혜: "${result.memphiteEpiphany.eternalWisdom}"
 - 오늘의 작은 의례: ${result.ritualAction}

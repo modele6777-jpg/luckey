@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MOZI_GYEOM_AE_VERSION = 'LUCKEY-MOZI-GYEOM-AE-v2.5.0';
+export const MOZI_GYEOM_AE_VERSION = 'LUCKEY-MOZI-GYEOM-AE-v2.6.0';
 
 export type MoziQuestionTopic = 'relationship' | 'decision' | 'simplicity' | 'reflection';
 
@@ -44,6 +44,7 @@ export interface MoziSynthesisMatrix {
   gyoRiReciprocity: string;
   biGongJeolYongDiscipline: string;
   integrativeSummary: string;
+  moziCrossAxis: string;
 }
 
 export interface MoziGyeomAeResult {
@@ -208,7 +209,8 @@ function buildMoziTemporalRhythm(now: Date): MoziTemporalRhythm {
 function buildMoziSynthesisMatrix(
   stage: MohistStage,
   topic: MoziQuestionTopic,
-  temporal: MoziTemporalRhythm
+  temporal: MoziTemporalRhythm,
+  precept: typeof MOHIST_PRECEPTS[number]
 ): MoziSynthesisMatrix {
   const gyeomAeOpenness = topic === 'relationship'
     ? '확장 필요 — 내 편과 남의 편을 나누는 경계를 허물고 상대의 처지를 먼저 살필 때 막힘이 풀립니다.'
@@ -220,11 +222,14 @@ function buildMoziSynthesisMatrix(
     ? '최우선 — 불필요한 소모전과 체면 낭비를 멈추고 본질 방어에 자원을 모아야 합니다.'
     : '균형 — 겉치레를 줄이고 핵심 과업에 집중할수록 일의 단단함이 살아납니다.';
 
+  const moziCrossAxis = `[${stage.stageNameHanja.split(' ')[0]}] × [${topic}] × [${temporal.kstWindowLabel.split(' ')[0]}] × [${precept.hanjaMotto.split(' ')[0]}]`;
+
   return {
     gyeomAeOpenness,
     gyoRiReciprocity,
     biGongJeolYongDiscipline,
     integrativeSummary: `${temporal.kstWindowLabel}에서는 허례를 줄이는 절용과 서로를 살리는 교상리가 맞물릴 때 가장 든든한 해법이 열립니다.`,
+    moziCrossAxis,
   };
 }
 
@@ -257,7 +262,7 @@ export function calculateMoziGyeomAe(
   const questionTopic = classifyMoziTopic(question);
   const situationalMohistAudit = buildMoziSituationalAudit(questionTopic);
   const temporalMohistRhythm = buildMoziTemporalRhythm(now);
-  const mohistSynthesisMatrix = buildMoziSynthesisMatrix(activeMohistStage, questionTopic, temporalMohistRhythm);
+  const mohistSynthesisMatrix = buildMoziSynthesisMatrix(activeMohistStage, questionTopic, temporalMohistRhythm, primaryMohistPrecept);
   const boundaryNotice = '이 풀이는 묵자 겸애·비공·절용 사상을 오늘의 선택과 관계에 비추어 보는 정성적 실천 지침이며, 수치 우열이나 확정적 예언이 아닙니다.';
   const shadowWarning = `[묵가 실천 과잉 경계] 절용(${activeMohistStage.stageNameHanja})과 공익을 앞세우다 정작 자신의 돌봄과 작은 여유의 숨통까지 지나치게 조이지 않도록 살피십시오.`;
   const ritualAction = situationalMohistAudit.practicalDirective;
@@ -300,7 +305,7 @@ export function formatMoziGyeomAePrompt(result: MoziGyeomAeResult): string {
   → 실천의 축복: ${result.activeMohistStage.mohistVirtueBlessing}
 - 질문 맥락 감사(${result.situationalMohistAudit.moziTextRef}): 함정(${result.situationalMohistAudit.exclusionTrap}) → 전환(${result.situationalMohistAudit.reciprocalShift}) / 실천(${result.situationalMohistAudit.practicalDirective})
 - KST 시공간 리듬(${result.temporalMohistRhythm.kstWindowLabel} · ${result.temporalMohistRhythm.seasonTone}): ${result.temporalMohistRhythm.gyeomAePracticeFocus} (${result.temporalMohistRhythm.dailyCue})
-- 묵가 교차 매트릭스: 겸애(${result.mohistSynthesisMatrix.gyeomAeOpenness}) | 교리(${result.mohistSynthesisMatrix.gyoRiReciprocity}) | 비공·절용(${result.mohistSynthesisMatrix.biGongJeolYongDiscipline})
+- 묵가 교차 매트릭스: 겸애(${result.mohistSynthesisMatrix.gyeomAeOpenness}) | 교리(${result.mohistSynthesisMatrix.gyoRiReciprocity}) | 비공·절용(${result.mohistSynthesisMatrix.biGongJeolYongDiscipline}) | 4중 교차 축(${result.mohistSynthesisMatrix.moziCrossAxis})
 - 최우선 묵가 실천 계율: **[${result.primaryMohistPrecept.preceptTitleKo} (${result.primaryMohistPrecept.hanjaMotto})]**
   → 핵심 본질: ${result.primaryMohistPrecept.coreEssence}
   → 실천 지침: ${result.primaryMohistPrecept.actionableDirective}
