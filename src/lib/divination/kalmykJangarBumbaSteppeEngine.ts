@@ -12,6 +12,7 @@ export interface KalmykJangarResult {
   reflectionFocus: string;
   ritualAction: string;
   shadowWarning: string;
+  topicBalanceHint: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -88,6 +89,13 @@ function classifyKalmykTopic(q: string): KalmykJangarResult['questionTopic'] {
   return '붐바 전반';
 }
 
+const KALMYK_TOPIC_HINTS: Record<KalmykJangarResult['questionTopic'], string> = {
+  '공존·여백': '공존과 여백을 지킬수록 내 책임의 경계도 함께 분명히 세우세요.',
+  '신의·서사': '지킨 약속과 지나온 서사를 소중히 여기되 오늘의 현실 점검도 놓치지 마세요.',
+  '기백·등불': '바람을 가르는 기백과 어둠 속 등불의 온기를 체력 안배와 함께 이어 가세요.',
+  '붐바 전반': '초원의 넉넉한 시야와 흔들리지 않는 신의를 오늘 한 걸음에 담아 보세요.',
+};
+
 export function calculateKalmykJangarBumbaSteppe(params: {
   profile: UserProfile;
   now?: Date;
@@ -103,9 +111,10 @@ export function calculateKalmykJangarBumbaSteppe(params: {
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const steppeEpicAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
   const shadowWarning = KALMYK_SHADOWS[idx];
+  const topicBalanceHint = KALMYK_TOPIC_HINTS[questionTopic];
 
   return {
-    engineVersion: 'LUCKEY-KALMYK-JANGAR-v2.3.0',
+    engineVersion: 'LUCKEY-KALMYK-JANGAR-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     bumbaMotif: picked.motif,
@@ -116,6 +125,7 @@ export function calculateKalmykJangarBumbaSteppe(params: {
     reflectionFocus: `칼미크 《쟌가르》 서사시의 '${picked.motif}'처럼, 조급한 경쟁심을 내려놓고 넓은 초원의 넉넉한 시야와 신의를 지켜 보세요. (동반 결: ${companion.motif.split('(')[0].trim()})`,
     ritualAction: picked.action,
     shadowWarning,
+    topicBalanceHint,
     reflectiveQuestion: picked.question,
     interpretiveBoundary: '칼미크(Kalmyk) 민족 서사시 《쟌가르》의 붐바 이상향과 초원 신의 문화를 바탕으로 한 상징적 성찰 프레임입니다. 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -132,6 +142,7 @@ export function formatKalmykJangarPrompt(res: KalmykJangarResult): string {
     `- 성찰 초점: ${res.reflectionFocus}`,
     `- 오늘의 작은 실천: ${res.ritualAction}`,
     `- 과잉 경계: ${res.shadowWarning}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 스스로에게 묻기: ${res.reflectiveQuestion}`,
     `- 해석 경계: ${res.interpretiveBoundary}`,
   ].join('\n');

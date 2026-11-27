@@ -18,7 +18,7 @@ import {
   BRANCH_ELEMENT,
 } from '../sajuAnalysis';
 
-export const KARMIC_SYNASTRY_VERSION = 'LUCKEY-SYNASTRY-RESONANCE-v2.3.0';
+export const KARMIC_SYNASTRY_VERSION = 'LUCKEY-SYNASTRY-RESONANCE-v2.4.0';
 
 export interface SajuInterpersonalHarmony {
   hasHeavenlyStemCombination: boolean;
@@ -52,6 +52,11 @@ export interface KarmicSynastryReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  synastryCrossAxis: {
+    stemBranchPair: string;
+    astrologyPhase: string;
+    archetypeAnchor: string;
   };
   interpretiveBoundary: string;
   ritualAction: string;
@@ -208,6 +213,11 @@ export function calculateKarmicSynastry(
     alignmentState: `${relationshipArchetype} (${describeSynastryStage(soulContractScore)})`,
     integratedAction: `${communicationGoldenRule} [${contextNote}]`,
   };
+  const synastryCrossAxis = {
+    stemBranchPair: `${dayGanA}${dayZhiA} ↔ ${dayGanB}${dayZhiB}`,
+    astrologyPhase: astrologicalAspect.aspectType,
+    archetypeAnchor: relationshipArchetype,
+  };
 
   const interpretiveBoundary = '본 카르믹 시나스트리 리포트는 사주 합충과 점성학 어스펙트 상징에 기반한 정성적 관계 성찰 안내이며, 인연의 성패를 단정하는 예언이 아닙니다.';
   const ritualAction = `[${relationshipArchetype}] ${communicationGoldenRule}`;
@@ -226,6 +236,7 @@ export function calculateKarmicSynastry(
 - 영혼의 현생 과제: "${karmicSoulMission}"
 - 관계 번영의 골든 룰: "${communicationGoldenRule}"
 - 교차 매트릭스 [핵심 긴장: ${synastrySynthesisMatrix.dominantTension} | 조율 상태: ${synastrySynthesisMatrix.alignmentState}]
+- 시나스트리 교차 축: ${synastryCrossAxis.stemBranchPair} | ${synastryCrossAxis.astrologyPhase}
 - 통합 실천: ${synastrySynthesisMatrix.integratedAction}
 - 실천 의례(Ritual Action): ${ritualAction}
 - 성찰 초점(Reflection Focus): ${reflectionFocus}
@@ -246,6 +257,7 @@ export function calculateKarmicSynastry(
     communicationGoldenRule,
     synthesisPromptGuidance,
     synastrySynthesisMatrix,
+    synastryCrossAxis,
     interpretiveBoundary,
     ritualAction,
     reflectionFocus,

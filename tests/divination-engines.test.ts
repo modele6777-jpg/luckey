@@ -2571,12 +2571,13 @@ test('Karmic Synastry Resonance Engine: 카르믹 시나스트리 및 인연 공
   assert.equal(res.engineVersion, KARMIC_SYNASTRY_VERSION);
   assertKstTimestamp(res.calculatedAtKst);
   assert(Boolean(res.synastrySynthesisMatrix?.integratedAction));
+  assert(Boolean(res.synastryCrossAxis?.stemBranchPair && res.synastryCrossAxis?.astrologyPhase && res.synastryCrossAxis?.archetypeAnchor));
   assert(res.interpretiveBoundary.length > 0);
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatKarmicSynastryPrompt(res);
   assert(prompt.includes('카르믹 시나스트리'));
   assert(prompt.includes(res.ritualAction));
-  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('시나스트리 교차 축') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -14467,15 +14468,15 @@ test('Chuvash Tura World Tree Balance engine: sign, +09:00 KST, and interpretive
 
 test('Kalmyk Jangar Bumba Steppe engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKalmykJangarBumbaSteppe({ profile, now: new Date('2026-11-20T07:56:00Z'), question: '넓은 초원의 넉넉한 시야를 갖고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KALMYK-JANGAR-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-KALMYK-JANGAR-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.bumbaMotif);
-  assert.ok(rep.steppeEpicAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.steppeEpicAxis.length > 0 && rep.shadowWarning.length > 0 && rep.topicBalanceHint.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKalmykJangarPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('칼미크') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('칼미크') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes('과잉 경계') && prompt.includes('맥락 균형 조언'));
 });
 
 test('Bugis Lontara Pasik Wisdom engine: principle, +09:00 KST, and interpretive boundary', () => {
@@ -15882,15 +15883,15 @@ test('Hmong Story Cloth engine: pattern, +09:00 KST, and interpretive boundary',
 
 test('Karen Bamboo Clock engine: cadence, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKarenBambooClock({ profile, now: new Date('2026-11-20T22:25:00Z'), question: '조급함을 내려놓고 페이스를 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KAREN-BAMBOO-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-KAREN-BAMBOO-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionCadence !== rep.bambooCadence);
-  assert.ok(rep.waterClockAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.waterClockAxis.length > 0 && rep.shadowWarning.length > 0 && rep.topicBalanceHint.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKarenBambooPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('카렌') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionCadence) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('카렌') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionCadence) && prompt.includes('과잉 경계') && prompt.includes('맥락 균형 조언'));
 });
 
 test('Shan Inle Rowing engine: posture, +09:00 KST, and interpretive boundary', () => {
