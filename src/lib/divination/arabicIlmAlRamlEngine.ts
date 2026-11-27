@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const ARABIC_ILM_AL_RAML_ENGINE_VERSION = '2.4.0';
+export const ARABIC_ILM_AL_RAML_ENGINE_VERSION = '2.5.0';
 
 export interface ArabicIlmAlRamlReport {
   engineVersion: string;
@@ -30,6 +30,7 @@ export interface ArabicIlmAlRamlReport {
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
+    ramlCrossAxis: string;
   };
   boundaryNotice: string;
   ritualAction: string;
@@ -302,10 +303,12 @@ export function calculateArabicIlmAlRaml(options?: {
         courtNote: fig.nature,
         tacticalStep: fig.guidance,
       };
+  const ramlCrossAxis = `[${fig.latin}] × [${fig.planet}] × [${fig.house}] × [${situationalRamlAudit.focusTheme}]`;
   const ramlSynthesisMatrix = {
     coreInsight: `[${fig.latin}] ${fig.planet}의 기운이 ${fig.house}에서 작동합니다.`,
     recommendedAction: fig.guidance,
     cautionNotice: `4원소 점(${fig.dots})의 균형을 잃지 않도록 성급한 단정을 피하십시오.`,
+    ramlCrossAxis,
   };
   const boundaryNotice = '본 결과는 아라비아 일무 알-람말 16 형상 지오맨시 상징에 기반한 정성적 성찰 가이드이며, 확정적 예언이 아닙니다.';
   const trimmedQ = (options?.question || '').trim();
@@ -331,7 +334,7 @@ export function calculateArabicIlmAlRaml(options?: {
    - 대지 원소 공명 기조: **${resonanceTone}**
    - 질문 맥락 감사 (${situationalRamlAudit.focusTheme}): ${situationalRamlAudit.tacticalStep}
    - KST 시공간 리듬: ${temporalRamlRhythm.geomanticWatchWindow} / ${temporalRamlRhythm.seasonalEarthTone}
-   - 교차 매트릭스: 핵심(${ramlSynthesisMatrix.coreInsight}) | 실행(${ramlSynthesisMatrix.recommendedAction}) | 주의(${ramlSynthesisMatrix.cautionNotice})
+   - 교차 매트릭스: 핵심(${ramlSynthesisMatrix.coreInsight}) | 실행(${ramlSynthesisMatrix.recommendedAction}) | 4중 교차 축(${ramlSynthesisMatrix.ramlCrossAxis}) | 주의(${ramlSynthesisMatrix.cautionNotice})
    - 성찰 질문: ${reflectiveQuestion}
    - 해석 경계: ${boundaryNotice}
 ======================================================================

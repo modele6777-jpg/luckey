@@ -4589,11 +4589,13 @@ test('Arabic Ilm al-Raml Engine: calculates 16 geomantic figures and Qadi verdic
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalRamlRhythm.geomanticWatchWindow.length > 0);
   assert(rep.ramlSynthesisMatrix.coreInsight.length > 0);
+  assert(Boolean(rep.ramlSynthesisMatrix.ramlCrossAxis.includes(rep.figureNameLatin)));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatArabicIlmAlRamlPrompt(rep);
   assert(prompt.includes('고대 아랍 일무 알-람말(‘Ilm al-Raml) 16 형상 & 지오맨시(Geomancy) 상징 성찰 참고'));
   assert(prompt.includes(rep.figureNameLatin));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('KST'));
   assert(prompt.includes('실제 점술 의례나 검증된 확률·예측 결과가 아닙니다'));
   assert(!prompt.includes('100% 결정론적 산출물'));
@@ -5290,10 +5292,12 @@ test('Chaldean Mul Apin Astrology Engine: calculates celestial paths, ruling pla
   assert(rep.rulingPlanet.resonanceScore >= 0 && rep.rulingPlanet.resonanceScore <= 100);
   assert(rep.celestialPath.length > 0);
   assert(rep.mulApinConstellation.length > 0);
+  assert(Boolean(rep.mulApinSynthesisMatrix.mulApinCrossAxis.includes(rep.rulingPlanet.nameKo)));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatChaldeanMulApinAstrologyPrompt(rep);
   assert(prompt.includes('고대 메소포타미아 칼데아 12조디악 원형 & 바빌로니아 물핀(MUL.APIN)'));
   assert(prompt.includes(rep.rulingPlanet.nameKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
 });
 
@@ -5818,10 +5822,12 @@ test('Aztec Tonalamatl Sacred Calendar Engine: calculates twenty day signs, tona
   assert(rep.ihiyotlBreathPowerScore >= 0 && rep.ihiyotlBreathPowerScore <= 100);
   assert(rep.ollinCosmicMovementHarmony >= 0 && rep.ollinCosmicMovementHarmony <= 100);
   assert(rep.dominantDaySign.nameKo.length > 0);
+  assert(Boolean(rep.tonalamatlSynthesisMatrix.tonalamatlCrossAxis.includes(rep.dominantDaySign.nameKo)));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatAztecTonalamatlPrompt(rep);
   assert(prompt.includes('고대 아즈텍 토날포왈리 20대 일진 & 토날라마틀 성력 실측 데이터'));
   assert(prompt.includes(rep.dominantDaySign.nameKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
 });
 
