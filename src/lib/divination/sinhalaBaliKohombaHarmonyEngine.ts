@@ -22,6 +22,7 @@ export interface SinhalaBaliKohombaResult {
   ritualAction: string;
   reflectionFocus: string;
   shadowWarning: string;
+  topicBalanceHint: string;
   reflectiveQuestion: string;
   interpretiveBoundary: string;
 }
@@ -73,6 +74,14 @@ function classifySinhalaTopic(q: string): SinhalaBaliKohombaResult['questionTopi
   return '싱할라 전반';
 }
 
+const SINHALA_TOPIC_HINTS: Record<SinhalaBaliKohombaResult['questionTopic'], string> = {
+  '정화·환기': '묵은 공기를 비워 낸 자리에 오늘 지킬 작은 루틴 하나를 바로 채워 넣으세요.',
+  '불안·리듬': '리듬으로 마음을 가라앉힌 뒤 손댈 수 있는 가장 작은 원인 하나를 짚어 보세요.',
+  '감정·분류': '감정을 색깔로 나누어 보았다면 지금 가장 돌봄이 필요한 하나에만 손길을 건네세요.',
+  '축복·회복': '타인을 향한 다정함만큼 내 자신의 피로와 한계도 똑같이 아껴 주세요.',
+  '싱할라 전반': '맑은 환기와 따뜻한 축복의 숨결을 오늘 하루의 균형으로 이어 가세요.',
+};
+
 const PROTECTIVE_BLESSINGS = [
   '아유보완(Ayubowan) — 오늘 하루 내 숨과 걸음이 길고 편안하게 이어지기를 바라는 평안의 인사',
   '마음의 등불을 켜고 불필요한 걱정의 그림자를 걷어 내는 고요한 시선',
@@ -110,9 +119,10 @@ export function calculateSinhalaBaliKohombaHarmony(params: {
   const companionOffset = 1 + (stableHash(`${seed}|companion`) % (SINHALA_HARMONY_LAYERS.length - 1));
   const companionLayer = SINHALA_HARMONY_LAYERS[(idx + companionOffset) % SINHALA_HARMONY_LAYERS.length];
   const protectiveBlessing = PROTECTIVE_BLESSINGS[stableHash(`${seed}|blessing`) % PROTECTIVE_BLESSINGS.length];
+  const topicBalanceHint = SINHALA_TOPIC_HINTS[questionTopic];
 
   return {
-    engineVersion: 'LUCKEY-SINHALA-BALI-v2.3.0',
+    engineVersion: 'LUCKEY-SINHALA-BALI-v2.4.0',
     calculatedAtKst: formatKstTimestamp(now),
     questionTopic,
     activeLayer,
@@ -123,6 +133,7 @@ export function calculateSinhalaBaliKohombaHarmony(params: {
     ritualAction: activeLayer.action,
     reflectionFocus: `'${protectiveBlessing}'을(를) 떠올리며 '${companionLayer.motif}'의 숨결로 지금 내 마음을 무겁게 누르던 생각을 가볍게 내려놓아 보세요.`,
     shadowWarning: activeLayer.shadow,
+    topicBalanceHint,
     reflectiveQuestion: activeLayer.question,
     interpretiveBoundary: '본 풀이는 스리랑카 싱할라 발리·코훔바 전통 의례의 상징을 바탕으로 한 성찰적 비유이며, 개인 점수·심리 진단·미래 예측이 아닙니다.',
   };
@@ -140,6 +151,7 @@ export function formatSinhalaBaliPrompt(result: SinhalaBaliKohombaResult): strin
     `- 실천 의례: ${result.ritualAction}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 과잉 경계: ${result.shadowWarning}`,
+    `- 맥락 균형 조언: ${result.topicBalanceHint}`,
     `- 성찰 질문: ${result.reflectiveQuestion}`,
     `- 해석 경계: ${result.interpretiveBoundary}`,
   ].join('\n');
