@@ -5854,11 +5854,13 @@ test('Ibn Arabi Wahdat al-Wujud Heart Wisdom Engine: calculates prophetic heart 
   assert(rep.perfectHumanMirrorIndex >= 0 && rep.perfectHumanMirrorIndex <= 100);
   assert(rep.heartPurityBarakah >= 0 && rep.heartPurityBarakah <= 100);
   assert(rep.dominantWisdom.prophetName.length > 0);
+  assert(rep.wahdatSynthesisMatrix.wahdatCrossAxis.includes(rep.dominantWisdom.prophetName));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatIbnArabiWahdatAlWujudPrompt(rep);
   assert(prompt.includes('이븐 아라비 존재의 단일성(Wahdat al-Wujud) 심장 영지 실측 데이터'));
   assert(prompt.includes(rep.dominantWisdom.prophetName));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes(rep.ritualAction));
 });
 
@@ -5911,11 +5913,13 @@ test('Hopi Four Worlds Kachina Prophecy Engine: calculates four worlds evolution
   assert(rep.kivaSacredCenterAlignment >= 0 && rep.kivaSacredCenterAlignment <= 100);
   assert(rep.spiderGrandmotherWisdom >= 0 && rep.spiderGrandmotherWisdom <= 100);
   assert(rep.dominantKachina.nameKo.length > 0);
+  assert(rep.hopiSynthesisMatrix.hopiCrossAxis.includes(rep.dominantKachina.hopiName));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHopiFourWorldsPrompt(rep);
   assert(prompt.includes('아메리카 호피족 4대 우주 시대 & 카치나 정령 지혜 실측 데이터'));
   assert(prompt.includes(rep.dominantKachina.nameKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes(rep.ritualAction));
 });
 
@@ -5955,11 +5959,13 @@ test('Inca Andean Three Pacha Ayni Engine: calculates three pachas, sacred recip
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalPachaRhythm.intiSolarWindow.length > 0);
   assert(rep.pachaSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.pachaSynthesisMatrix.pachaCrossAxis.includes(rep.sacredAnimalTotem.quechuaName));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatIncaAndeanThreePachaAyniPrompt(rep);
   assert(prompt.includes('고대 잉카 안데스 코스몰로지 3대 파차 & 파차마마 아이니(Ayni) 호혜 조화'));
   assert(prompt.includes(rep.sacredAnimalTotem.animalKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('KST'));
   assert(prompt.includes(rep.ritualAction));
   assert(!prompt.includes('/100') && !prompt.includes('%'));

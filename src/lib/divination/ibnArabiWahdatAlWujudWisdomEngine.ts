@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const IBN_ARABI_WAHDAT_ENGINE_VERSION = '2.3.0';
+export const IBN_ARABI_WAHDAT_ENGINE_VERSION = '2.4.0';
 
 export interface PropheticHeartWisdom {
   prophetName: string;
@@ -49,6 +49,7 @@ export interface IbnArabiWahdatAlWujudReport {
     prophetVirtueNexus: string;
     mirrorPosture: string;
     contemplativeDirective: string;
+    wahdatCrossAxis: string;
   };
   ibnArabiMysticGuidance: string; // 이븐 아라비 영적 잠언
   heartMirrorContemplation: string; // 심장 거울 관조 리추얼
@@ -182,10 +183,12 @@ export function calculateIbnArabiWahdatAlWujud(
     rhythmGuidance: `${tajalliHourWindow}과 ${seasonalBreath}이 맞닿아 있습니다. 고정된 판단 하나를 내려놓을 때 새로운 의미가 거울에 비칩니다.`,
   };
 
+  const wahdatCrossAxis = `[${dominantWisdom.prophetName}] × [${dominantWisdom.spiritualVirtue}] × [${questionTheme}] × [${tajalliHourWindow.split(' (')[0]}]`;
   const wahdatSynthesisMatrix = {
     prophetVirtueNexus: `${dominantWisdom.prophetName} × ${dominantWisdom.spiritualVirtue}`,
     mirrorPosture: situationalWahdatAudit.heartMirrorClarity,
     contemplativeDirective: dominantWisdom.contemplativePrescription,
+    wahdatCrossAxis,
   };
 
   const ibnArabiMysticGuidance = `이븐 아라비의 지혜: "신은 그대의 심장 외에는 다른 처소를 원치 않으신다." 지금 당신의 심장 거울에는 [${dominantWisdom.prophetName}]의 [${dominantWisdom.wisdomTitleKo}]가 가장 맑게 비추어지고 있습니다.`;
@@ -227,6 +230,7 @@ export function formatIbnArabiWahdatAlWujudPrompt(report: IbnArabiWahdatAlWujudR
 - **시공간 타잘리 리듬 (${report.temporalWahdatRhythm.calculatedAtKst})**: ${report.temporalWahdatRhythm.tajalliHourWindow} / ${report.temporalWahdatRhythm.seasonalBreath}
   - 리듬 지침: ${report.temporalWahdatRhythm.rhythmGuidance}
 - **심장 교차 매트릭스**: ${report.wahdatSynthesisMatrix.prophetVirtueNexus} — ${report.wahdatSynthesisMatrix.contemplativeDirective}
+  - 4중 교차 축: ${report.wahdatSynthesisMatrix.wahdatCrossAxis}
 - **이븐 아라비 영적 잠언**: ${report.ibnArabiMysticGuidance}
 - **심장 거울 관조 리추얼**: ${report.heartMirrorContemplation}
 - **실천 의례(Ritual Action)**: ${report.ritualAction}
