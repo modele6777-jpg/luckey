@@ -4685,6 +4685,7 @@ test('Shanhaijing Sacred Beasts Engine: calculates directional beast and shieldi
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.shanhaijingSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.shanhaijingSynthesisMatrix?.shanhaijingCrossAxis.includes(rep.activeBeast.name)));
   assert(rep.spiritualShieldingIndex >= 0 && rep.spiritualShieldingIndex <= 100);
   assert(rep.activeBeast.name.length > 0);
   assert(rep.secondaryBeast.name.length > 0);
@@ -4694,7 +4695,7 @@ test('Shanhaijing Sacred Beasts Engine: calculates directional beast and shieldi
   assert(prompt.includes('고대 동양 산해경(山海經) 8방위 신성 영수(神獸) & 오행 방호 실측 데이터'));
   assert(prompt.includes(rep.activeBeast.name));
   assert(prompt.includes('보조 교차 영수'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
@@ -5319,6 +5320,7 @@ test('Shugendo Yamabushi Ten Realms Engine: calculates ten realms purification a
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.shugendoSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.shugendoSynthesisMatrix?.shugendoCrossAxis.includes(rep.currentInitiationRealm.nameKo)));
   assert(rep.symbolicRebirthScore >= 0 && rep.symbolicRebirthScore <= 100);
   assert(rep.sixRootsPurificationScore >= 0 && rep.sixRootsPurificationScore <= 100);
   assert(rep.kujiKiriWardDefenseScore >= 0 && rep.kujiKiriWardDefenseScore <= 100);
@@ -5334,7 +5336,7 @@ test('Shugendo Yamabushi Ten Realms Engine: calculates ten realms purification a
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
   assert.doesNotMatch(prompt, /\bHz\b|Solfeggio|솔페지오|주파수/i);
 });
@@ -5489,12 +5491,13 @@ test('Roman Stoic Prohairesis Dichotomy Engine: calculates internal control focu
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.stoicSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.stoicSynthesisMatrix?.stoicCrossAxis.includes(rep.dominantVirtue.greek)));
   assert(rep.reflectiveQuestion.includes('통제할 수 있는 것'));
   assert(rep.interpretiveBoundary.includes('성찰 비유'));
   const prompt = formatRomanStoicProhairesisPrompt(rep);
   assert(prompt.includes('스토아학파'));
   assert(prompt.includes(rep.dominantVirtue.nameKo));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));

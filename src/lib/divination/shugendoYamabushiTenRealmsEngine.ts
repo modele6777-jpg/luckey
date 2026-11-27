@@ -21,7 +21,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SHUGENDO_YAMABUSHI_TEN_REALMS_ENGINE_VERSION = '2.2.0';
+export const SHUGENDO_YAMABUSHI_TEN_REALMS_ENGINE_VERSION = '2.4.0';
 
 export interface TenRealmStage {
   id: string;
@@ -52,6 +52,7 @@ export interface ShugendoYamabushiTenRealmsReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    shugendoCrossAxis: string;
   };
 }
 
@@ -201,10 +202,12 @@ export function calculateShugendoYamabushiTenRealms(
     : `${currentInitiationRealm.nameKo}(${currentInitiationRealm.kanji})의 전환 과제("${currentInitiationRealm.transmutationTask}")를 일상에서 가장 먼저 적용할 순간은 언제입니까?`;
   const interpretiveBoundary =
     '슈겐도(修驗道) 야마부시 10계수행과 6근청정 상징은 심신의 번뇌를 씻고 수행 태도를 가다듬기 위한 은유적 관점이며, 단정적 미래 예언이나 의학·법률·재무 판단을 대체하지 않습니다.';
+  const shugendoCrossAxis = `[${currentInitiationRealm.nameKo}] × [${secondaryRealm.nameKo}] × [${highestAwakenedRealm.nameKo}] × [${question || '산악 수행'}]`;
   const shugendoSynthesisMatrix = {
     dominantTension: `${currentInitiationRealm.nameKo}(${currentInitiationRealm.kanji}) ↔ ${highestAwakenedRealm.nameKo}(${highestAwakenedRealm.kanji})`,
     alignmentState: `${currentInitiationRealm.spiritualDomain} · 보조 계위: ${secondaryRealm.nameKo}(${secondaryRealm.kanji})`,
     integratedAction: `${currentInitiationRealm.transmutationTask} · ${waterfallTakiGyoRitual}${question ? ` [질문 맥락: ${question}]` : ''}`,
+    shugendoCrossAxis,
   };
 
   return {
@@ -246,6 +249,7 @@ export function formatShugendoYamabushiTenRealmsPrompt(rep: ShugendoYamabushiTen
   if (rep.shugendoSynthesisMatrix) {
     lines.push(
       `· 교차 매트릭스 [핵심 긴장: ${rep.shugendoSynthesisMatrix.dominantTension} | 조율 상태: ${rep.shugendoSynthesisMatrix.alignmentState}]`,
+      `· 4중 교차 축: ${rep.shugendoSynthesisMatrix.shugendoCrossAxis}`,
       `· 통합 실천: ${rep.shugendoSynthesisMatrix.integratedAction}`,
     );
   }
