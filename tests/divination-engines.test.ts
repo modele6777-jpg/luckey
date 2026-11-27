@@ -3827,6 +3827,7 @@ test('Taoist Sanbao Inner Alchemy Engine: calculates Jing-Qi-Shen and alchemy ph
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.sanbaoSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.sanbaoCrossAxis?.treasureBalancePair && rep.sanbaoCrossAxis?.alchemyStage && rep.sanbaoCrossAxis?.dantianFocus));
   assert(rep.energyLevels.jing >= 0 && rep.energyLevels.jing <= 100);
   assert(rep.energyLevels.qi >= 0 && rep.energyLevels.qi <= 100);
   assert(rep.energyLevels.shen >= 0 && rep.energyLevels.shen <= 100);
@@ -3840,7 +3841,7 @@ test('Taoist Sanbao Inner Alchemy Engine: calculates Jing-Qi-Shen and alchemy ph
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('삼보 교차 축'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -4209,6 +4210,7 @@ test('Pythagorean Tetraktys & Gematria Harmonics Engine: calculates root, 4 tier
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.tetraktysSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.tetraktysCrossAxis?.tierPair && rep.tetraktysCrossAxis?.harmonicRoot && rep.tetraktysCrossAxis?.phaseAnchor));
   assert(rep.reflectiveQuestion.includes('아이디어'));
   assert(rep.interpretiveBoundary.includes('상징 비유'));
   const prompt = formatPythagoreanTetraktysPrompt(rep);
@@ -4217,7 +4219,7 @@ test('Pythagorean Tetraktys & Gematria Harmonics Engine: calculates root, 4 tier
   assert(prompt.includes('보조 교차 층위'));
   assert(prompt.includes('과잉·경계 점검'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('테트락티스 교차 축'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
@@ -13701,15 +13703,15 @@ test('Armenian Narekatsi Lamentation Healing engine: contemplations, +09:00 KST,
 
 test('Javanese Kejawen Rasa Harmony engine: principles, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateJavaneseKejawenRasaHarmony({ profile, now: new Date('2026-11-20T05:05:00Z'), question: '흔들리지 않는 평정이 필요해요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-JAVANESE-KEJAWEN-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-JAVANESE-KEJAWEN-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.supportingPrinciple.id !== rep.activePrinciple.id);
-  assert.ok(rep.rasaBalanceAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.rasaBalanceAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('수치적 운세 점수가 아닙니다'));
   const prompt = formatJavaneseKejawenPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('케자웬') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.supportingPrinciple.koreanTitle) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('케자웬') && prompt.includes('맥락 균형 조언') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.supportingPrinciple.koreanTitle) && prompt.includes('과잉 경계'));
 });
 
 test('Phoenician Navigator Star Compass engine: beacons, +09:00 KST, and interpretive boundary', () => {

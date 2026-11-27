@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TAOIST_SANBAO_VERSION = 'LUCKEY-TAOIST-SANBAO-v2.3.0';
+export const TAOIST_SANBAO_VERSION = 'LUCKEY-TAOIST-SANBAO-v2.4.0';
 
 export type SanbaoQuestionTopic = 'career' | 'relationship' | 'decision' | 'inner' | 'general';
 
@@ -64,6 +64,11 @@ export interface TaoistSanbaoReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  sanbaoCrossAxis: {
+    treasureBalancePair: string;
+    alchemyStage: string;
+    dantianFocus: string;
   };
 }
 
@@ -195,6 +200,11 @@ export function calculateTaoistSanbaoInnerAlchemy(
     alignmentState: `${sanbaoPhase} | 맥락(${questionTopic})`,
     integratedAction: `${alchemyPhase.transformationTask}${q ? ` [질문 맥락: ${q}]` : ''}`,
   };
+  const sanbaoCrossAxis = {
+    treasureBalancePair: `${dominantTreasure.split('(')[0].trim()} ↔ ${depletedTreasure.split('(')[0].trim()}`,
+    alchemyStage: alchemyPhase.phaseName,
+    dantianFocus: dantianPrescription.split(':')[0].trim(),
+  };
 
   return {
     engineVersion: TAOIST_SANBAO_VERSION,
@@ -215,12 +225,13 @@ export function calculateTaoistSanbaoInnerAlchemy(
     reflectiveQuestion,
     interpretiveBoundary,
     sanbaoSynthesisMatrix,
+    sanbaoCrossAxis,
   };
 }
 
 export function formatTaoistSanbaoInnerAlchemyPrompt(report: TaoistSanbaoReport): string {
   const matrixLine = report.sanbaoSynthesisMatrix
-    ? `\n- **삼보 교차 매트릭스**: 핵심 긴장(${report.sanbaoSynthesisMatrix.dominantTension}) · 조율 상태(${report.sanbaoSynthesisMatrix.alignmentState}) · 통합 실천(${report.sanbaoSynthesisMatrix.integratedAction})`
+    ? `\n- **삼보 교차 매트릭스**: 핵심 긴장(${report.sanbaoSynthesisMatrix.dominantTension}) · 조율 상태(${report.sanbaoSynthesisMatrix.alignmentState}) · 통합 실천(${report.sanbaoSynthesisMatrix.integratedAction})\n- **삼보 교차 축**: ${report.sanbaoCrossAxis.treasureBalancePair} | ${report.sanbaoCrossAxis.alchemyStage} (${report.sanbaoCrossAxis.dantianFocus})`
     : '';
   return `### ☯️ 도교 내단학(內丹學) 삼보(三寶: 정·기·신) 생체 에너지 순환 & 연정화기 엔진 (${TAOIST_SANBAO_VERSION} | ${report.calculatedAtKst})
 - **질문 맥락**: ${report.questionTopic} | **내단 국면**: ${report.sanbaoPhase}
