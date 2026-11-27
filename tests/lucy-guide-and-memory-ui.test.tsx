@@ -115,19 +115,43 @@ test('the guide header button is an icon-only round button that still opens its 
     win.document.body.appendChild(host);
     const { createRoot } = await import('react-dom/client');
     const root = createRoot(host as any);
-    await act(async () => root.render(<PageGuideButton guide={getPageGuide('lucy')} tone="light" />));
+    await act(async () => root.render(
+      <>
+        <PageGuideButton guide={getPageGuide('lucy')} tone="light" />
+        <PageGuideButton guide={getPageGuide('lucy')} tone="light" unboxed />
+      </>
+    ));
 
-    const button = host.querySelector('[data-page-guide-button]')!;
+    const buttons = Array.from(host.querySelectorAll('[data-page-guide-button]')) as any[];
+    assert.equal(buttons.length, 2, '기본형과 무박스형 가이드 버튼이 모두 렌더링된다');
+    const button = buttons[0]!;
+    const unboxedButton = buttons[1]!;
     assert.ok(button, 'the header guide button renders');
     assert.equal(button.textContent?.trim(), '', 'no Korean label is rendered inside the button');
     assert.equal(button.querySelectorAll('svg').length, 1, 'the book icon is the only content');
-    assert.match(button.getAttribute('class') || '', /h-8 w-8 shrink-0 items-center justify-center rounded-full/);
+    const defaultClass = button.getAttribute('class') || '';
+    const unboxedClass = unboxedButton.getAttribute('class') || '';
+    assert.match(defaultClass, /h-8 w-8 shrink-0 items-center justify-center rounded-full/);
+    assert.match(defaultClass, /border backdrop-blur-md/);
+    assert.match(defaultClass, /border-slate-300\/80 bg-white\/80 text-slate-700/);
+    assert.match(unboxedClass, /h-8 w-8 shrink-0 items-center justify-center rounded-full/);
+    assert.match(unboxedClass, /border-0 bg-transparent/);
+    assert.match(unboxedClass, /text-slate-700/);
+    assert.doesNotMatch(unboxedClass, /border-slate-300\/80|bg-white\/80|backdrop-blur-md/);
     assert.ok(button.getAttribute('aria-label')?.includes('가이드'), 'the accessible name keeps 가이드');
     assert.equal(button.getAttribute('title'), '가이드');
 
     await act(async () => { button.dispatchEvent(new win.MouseEvent('click', { bubbles: true })); });
     const dialog = win.document.querySelector('[data-page-guide]');
     assert.ok(dialog, 'pressing the icon still opens the guide dialog');
+
+    const closeButton = win.document.querySelector('[data-page-guide] [aria-label="가이드 닫기"]');
+    assert.ok(closeButton, 'the guide dialog can still be closed accessibly');
+    await act(async () => { closeButton.dispatchEvent(new win.MouseEvent('click', { bubbles: true })); });
+    assert.equal(win.document.querySelector('[data-page-guide]'), null, 'closing the default guide removes its dialog');
+
+    await act(async () => { unboxedButton.dispatchEvent(new win.MouseEvent('click', { bubbles: true })); });
+    assert.ok(win.document.querySelector('[data-page-guide]'), 'the unboxed guide button still opens its guide');
 
     await act(async () => root.unmount());
   } finally {
@@ -136,4 +160,32 @@ test('the guide header button is an icon-only round button that still opens its 
       else delete (globalThis as any)[key];
     }
   }
+});
+
+test('Lucy chat and divination headers unbox only the Guide and auto-read speaker controls', () => {
+  const headerStart = pageSource.indexOf('lucy-header-actions');
+  const headerEnd = pageSource.indexOf('{/*  Export Chat */', headerStart);
+  const header = pageSource.slice(headerStart, headerEnd);
+  assert.ok(headerStart >= 0 && headerEnd > headerStart, 'Lucy chat and divination share the expected header actions block');
+
+  const guideStart = header.indexOf('<PageGuideButton');
+  const guideEnd = header.indexOf('/>', guideStart) + 2;
+  const guideCall = header.slice(guideStart, guideEnd);
+  assert.match(guideCall, /unboxed/, 'only the shared Lucy header opts its book Guide button into unboxed styling');
+  assert.match(guideCall, /isMasterMode \? 'master' : 'lucy'/, 'the same Guide button serves Lucy chat and divination mode');
+
+  const speakerStart = header.indexOf('data-auto-tts-toggle="true"');
+  const speakerEnd = header.indexOf('</button>', speakerStart) + '</button>'.length;
+  const speaker = header.slice(speakerStart, speakerEnd);
+  const speakerClass = speaker.match(/className=\{`([\s\S]*?)`\}/)?.[1] || '';
+  assert.ok(speakerStart >= 0 && speakerEnd > speakerStart, 'the Lucy header auto-read speaker toggle is present');
+  assert.match(speakerClass, /rounded-xl/, 'the speaker keeps its touch target shape');
+  assert.doesNotMatch(speakerClass, /\bbg-|\bborder(?:-|\s)|\bshadow-/, 'the speaker has no boxed fill, border, or shadow');
+  assert.match(speaker, /aria-pressed=\{isAutoTts\}/, 'speaker state remains accessible');
+  assert.match(speaker, /aria-label=\{isAutoTts \?/, 'speaker action remains accessible');
+  assert.match(speaker, /<Volume2/);
+  assert.match(speaker, /<VolumeX/);
+
+  assert.match(header, /SmartGuideSettingsButton/, 'the separate question-mark smart-guide control stays in the header');
+  assert.match(header, /bg-white\/10/, 'the separate search control retains its existing boxed background styling');
 });

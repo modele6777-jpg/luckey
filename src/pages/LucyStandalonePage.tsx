@@ -4450,7 +4450,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             {/* ✏️ 점술모드 전용 엔진함: 일반 채팅과 같은 엔진함(심층 관점 설명)을 연다 (사용자: "루시점술모드에도 상단에 연필버튼 만들어서 엔진함을 만들어줘", 2026-11-27) */}
             {isMasterMode && <MasterEngineCatalogButton tone={isLight ? 'light' : 'dark'} />}
             {/* 📘 가이드 */}
-            <PageGuideButton guide={getPageGuide(isMasterMode ? 'master' : 'lucy')} tone={isLight ? 'light' : 'dark'} />
+            <PageGuideButton guide={getPageGuide(isMasterMode ? 'master' : 'lucy')} tone={isLight ? 'light' : 'dark'} unboxed />
             {/* 🧭 스마트 가이드 설정 (물음표) — 일반 루시·점술모드 공통 헤더 */}
             <SmartGuideSettingsButton tone={isLight ? 'light' : 'dark'} />
             {/* 1. 검색 (Search Toggle) */}
@@ -4476,9 +4476,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               type="button"
               data-auto-tts-toggle="true"
               onClick={toggleAutoTts}
-              className={`px-2.5 py-1.5 rounded-xl transition-all shadow-xs active:scale-95 cursor-pointer shrink-0 flex items-center gap-1 text-[11px] font-bold ${isLight
-                ? 'bg-amber-50/80 text-slate-500 hover:text-slate-700 border border-amber-900/10'
-                : 'bg-white/10 text-white/85 hover:text-white border border-white/15'
+              className={`px-2.5 py-1.5 rounded-xl transition-all active:scale-95 cursor-pointer shrink-0 flex items-center gap-1 text-[11px] font-bold ${isLight
+                ? 'text-slate-500 hover:text-slate-700'
+                : 'text-white/85 hover:text-white'
               }`}
               title={isAutoTts ? '자동읽기 ON - 한 번 더 누르면 즉시 꺼집니다' : '자동읽기 OFF - 누르면 켜집니다'}
               aria-pressed={isAutoTts}
