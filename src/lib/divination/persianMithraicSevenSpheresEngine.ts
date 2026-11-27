@@ -6,7 +6,7 @@
  * 현대인의 역경 돌파, 결단력, 영혼의 성숙도에 연동합니다.
  */
 
-export const PERSIAN_MITHRAIC_SPHERES_ENGINE_VERSION = 'LUCKEY-MITHRAIC-SPHERES-v2.3.0';
+export const PERSIAN_MITHRAIC_SPHERES_ENGINE_VERSION = 'LUCKEY-MITHRAIC-SPHERES-v2.4.0';
 
 export type MithraicQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -42,6 +42,7 @@ export interface MithraicSpheresReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    mithraicCrossAxis: string;
   };
 }
 
@@ -202,10 +203,12 @@ export function calculatePersianMithraicSpheres(params: {
         : questionTopic === 'healing'
           ? `자기 규율의 잣대로 지친 자신까지 다그치지 말고 성소 잠행의 휴식을 허락하세요.`
           : `계단을 오르는 성취에만 시선을 고정해 지금 계단에서 배워야 할 겸손을 놓치지 않도록 경계하세요.`;
+  const mithraicCrossAxis = `[제${activeGrade.gradeLevel}계단 ${activeGrade.gradeTitleKo}] × [제${secondaryGrade.gradeLevel}계단 ${secondaryGrade.gradeTitleKo}] × [${activeGrade.planetaryRuler}] × [${questionTopic}]`;
   const mithraicSynthesisMatrix = {
     dominantTension: `제${activeGrade.gradeLevel}계단 ${activeGrade.gradeTitleKo} ↔ 제${secondaryGrade.gradeLevel}계단 ${secondaryGrade.gradeTitleKo}`,
     alignmentState: `${mithraicPhase} · ${questionTopic}`,
     integratedAction: `${activeGrade.gradeActionRule}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+    mithraicCrossAxis,
   };
 
   return {
@@ -247,6 +250,7 @@ export function formatPersianMithraicSpheresPrompt(report: MithraicSpheresReport
   if (report.mithraicSynthesisMatrix) {
     lines.push(
       `- **교차 매트릭스**: [핵심 긴장: ${report.mithraicSynthesisMatrix.dominantTension} | 조율 상태: ${report.mithraicSynthesisMatrix.alignmentState}]`,
+      `- **4중 교차 축**: ${report.mithraicSynthesisMatrix.mithraicCrossAxis}`,
       `- **통합 실천**: ${report.mithraicSynthesisMatrix.integratedAction}`,
     );
   }
