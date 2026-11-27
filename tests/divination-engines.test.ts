@@ -870,7 +870,8 @@ test('Taiyi Shenshu: 16-palace calculation, 72 Ju, Jusan/Gaeksan and prompt form
   assert(prompt.includes('주산'));
   assert(prompt.includes('객산'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
-  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(Boolean(r1.taiyiSynthesisMatrix?.taiyiCrossAxis.includes('태을')));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
 
   // Skipped without birthdate
@@ -1222,6 +1223,7 @@ test('28 Mansions six-domain scoring: bounds, consistency, 28-day date selection
   assert(Boolean(r.reflectiveQuestion));
   assert(r.interpretiveBoundary?.includes('해석 경계'));
   assert(Boolean(r.mansionsSynthesisMatrix?.integratedAction));
+  assert(Boolean(r.mansionsSynthesisMatrix?.mansionsCrossAxis.includes(r.mansion.fullName)));
   assert(Boolean(r.ritualAction) && Boolean(r.reflectionFocus));
   assert(prompt.includes('천상열차분야지도') && prompt.includes('28수 직성'));
   assert(prompt.includes('필월오(畢月烏)') && prompt.includes('계약·협상') && prompt.includes('휴식·치유·내실'));
@@ -1229,7 +1231,7 @@ test('28 Mansions six-domain scoring: bounds, consistency, 28-day date selection
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
   assert(prompt.includes('결정론 계산 참고 자료'));
@@ -2314,6 +2316,7 @@ test('Ziwei Flying Stars Engine: 유년 사화 동적 비성 및 삼방사정 �
   assert(res.interpretiveBoundary.includes('해석 경계'));
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(Boolean(res.ziweiFlyingSynthesisMatrix?.integratedAction));
+  assert(Boolean(res.ziweiFlyingSynthesisMatrix?.ziweiFlyingCrossAxis.includes(res.mutagens.lu.targetPalaceName)));
   assert.equal(res.targetYear, 2026);
   assert(res.mutagens.lu.starName.length > 0);
   assert(res.mutagens.quan.starName.length > 0);
@@ -2332,7 +2335,7 @@ test('Ziwei Flying Stars Engine: 유년 사화 동적 비성 및 삼방사정 �
   assert(prompt.includes('삼방사정(三方四正) 사화 집결도'));
   assert(prompt.includes('록기교충(祿忌交衝) 리스크 방어선'));
   assert(prompt.includes('유년 4분기 완급 조절 타임라인'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(prompt.includes('보조 권과 축'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
