@@ -1746,6 +1746,19 @@ export function LucyOrbCounsel({
               </div>
             )}
             <div className="lucy-orb-composer-row">
+              <button type="button" className="lucy-orb-camera" onClick={chooseAttachment} aria-label="사진·파일 첨부" title="사진·파일 첨부">
+                <Camera size={18} aria-hidden="true" />
+              </button>
+              <input
+                ref={attachInputRef}
+                type="file"
+                accept={ORB_ATTACHMENT_ACCEPT}
+                className="lucy-orb-attach-input"
+                onChange={(event) => void onAttachmentPicked(event)}
+                hidden
+                aria-hidden="true"
+                tabIndex={-1}
+              />
             <div className="lucy-orb-input-wrap">
               <input
                 ref={orbInputRef}
@@ -1777,18 +1790,6 @@ export function LucyOrbCounsel({
               )}
               {talkPressed && <span className="lucy-orb-hold-hint" role="status">듣고 있어요 · 손을 떼면 전송</span>}
             </div>
-              <input
-                ref={attachInputRef}
-                type="file"
-                accept={ORB_ATTACHMENT_ACCEPT}
-                className="lucy-orb-attach-input"
-                onChange={(event) => void onAttachmentPicked(event)}
-                aria-hidden="true"
-                tabIndex={-1}
-              />
-              <button type="button" className="lucy-orb-camera" onClick={chooseAttachment} aria-label="사진·파일 첨부" title="사진·파일 첨부">
-                <Camera size={18} aria-hidden="true" />
-              </button>
               <button type="button" className="lucy-orb-send" onClick={sendDraft} disabled={rolling || micPermissionBusy || talkPressed || (!draft.trim() && !attachment)} aria-label="상담 메시지 보내기">
                 <Send size={18} aria-hidden="true" />
               </button>
