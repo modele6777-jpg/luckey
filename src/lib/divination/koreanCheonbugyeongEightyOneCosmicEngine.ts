@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const CHEONBUGYEONG_ENGINE_VERSION = '2.3.0';
+export const CHEONBUGYEONG_ENGINE_VERSION = '2.4.0';
 
 export interface CheonbugyeongEightyOneReport {
   engineVersion: string;
@@ -62,6 +62,7 @@ export interface CheonbugyeongEightyOneReport {
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
+    cheonbuCrossAxis: string;
   };
   spiritualCultivationGuidance: string;
   boundaryNotice: string;
@@ -207,10 +208,12 @@ export function calculateKoreanCheonbugyeongEightyOne(
           practiceFocus: '하루 3분 조용히 호흡을 고르며 오늘의 중심 구절을 되새기십시오.',
         };
 
+  const cheonbuCrossAxis = `[${primaryHexagramGua.verseKo}] × [${situationalCheonbuAudit.focusTheme}] × [${temporalCheonbuRhythm.samgeukWatchWindow.split('—')[0].trim()}] × [${temporalCheonbuRhythm.seasonalSolarTone.split('(')[0].trim()}]`;
   const cheonbuSynthesisMatrix = {
     coreInsight: `[${primaryHexagramGua.verseKo}(${primaryHexagramGua.verseHanja})]가 ${situationalCheonbuAudit.focusTheme}의 방향을 비춥니다.`,
     recommendedAction: `${primaryHexagramGua.modernApplication} (${situationalCheonbuAudit.practiceFocus})`,
     cautionNotice: '삼망(심·기·신)의 조급함에 휩쓸려 근본을 놓치지 않도록 한 걸음 물러나 호흡을 점검하십시오.',
+    cheonbuCrossAxis,
   };
 
   const ritualAction = `[${primaryHexagramGua.verseHanja}] ${cheonbuSynthesisMatrix.recommendedAction}`;
@@ -254,6 +257,7 @@ export function formatKoreanCheonbugyeongEightyOnePrompt(report: CheonbugyeongEi
     `- KST 시공간 삼극 리듬: ${report.temporalCheonbuRhythm.samgeukWatchWindow} / ${report.temporalCheonbuRhythm.seasonalSolarTone}`,
     `  • 시공간 지침: ${report.temporalCheonbuRhythm.temporalGuidance}`,
     `- 천부 교차 매트릭스: 핵심(${report.cheonbuSynthesisMatrix.coreInsight}) | 실행(${report.cheonbuSynthesisMatrix.recommendedAction}) | 주의(${report.cheonbuSynthesisMatrix.cautionNotice})`,
+    `- 4중 교차 축: ${report.cheonbuSynthesisMatrix.cheonbuCrossAxis}`,
     `- 심신 수련 처방: ${report.spiritualCultivationGuidance}`,
     `- 실천 의례(Ritual Action): ${report.ritualAction}`,
     `- 성찰 초점(Reflection Focus): ${report.reflectionFocus}`,
