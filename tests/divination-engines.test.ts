@@ -4368,6 +4368,7 @@ test('Tieban Shenshu & Tai Xuan Numerology Engine: calculates inherent clause, a
   assert.equal(rep.engineVersion, TIEBAN_SHENSHU_VERSION);
   assertKstTimestamp(rep.calculatedAtKst);
   assert(Boolean(rep.tiebanSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.tiebanCrossAxis?.kuaClausePair && rep.tiebanCrossAxis?.cycleToneAlignment && rep.tiebanCrossAxis?.primeAnchor));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.inherentPrimeNumber > 0);
@@ -4388,7 +4389,7 @@ test('Tieban Shenshu & Tai Xuan Numerology Engine: calculates inherent clause, a
   assert(prompt.includes('원회운세'));
   assert(prompt.includes('12율려'));
   assert(prompt.includes('결단 윈도우'));
-  assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('철판 교차 축') && prompt.includes('해석 경계'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -8179,11 +8180,12 @@ test('Hyecho Wang Ocheonchukgukjeon Engine: calculates Pilgrimage Pioneer Spirit
   assert(rep.activeHyechoTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.hyechoSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.hyechoCrossAxis?.themeAphorismPair && rep.hyechoCrossAxis?.pilgrimageStage && rep.hyechoCrossAxis?.sourceAnchor));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatHyechoWangOcheonchukgukjeonPrompt(rep);
   assert(prompt.includes('혜초 《왕오천축국전》 구도 순례 & 역경 극복 지표'));
   assert(prompt.includes(rep.activeHyechoTheme.themeTitleKo));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('혜초 순례 교차 축'));
   assert(prompt.includes(rep.ritualAction));
   assert(prompt.includes(rep.reflectionFocus));
   assert(!prompt.includes('/100'));
@@ -13975,15 +13977,15 @@ test('Swahili Utu Dhow Monsoon engine: wind, +09:00 KST, and interpretive bounda
 
 test('Khmer Angkor Baray Water Balance engine: state, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateKhmerAngkorBarayWaterBalance({ profile, now: new Date('2026-11-20T06:30:00Z'), question: '마음의 에너지를 흘려보내고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-KHMER-ANGKOR-BARAY-v2.3.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-KHMER-ANGKOR-BARAY-v2.4.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionState !== rep.barayState);
-  assert.ok(rep.barayWaterAxis.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.barayWaterAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatKhmerAngkorBarayPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('크메르') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionState) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('크메르') && prompt.includes('맥락 균형 조언') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionState) && prompt.includes('과잉 경계'));
 });
 
 test('Malagasy Fihavanana Kinship engine: principle, +09:00 KST, and interpretive boundary', () => {

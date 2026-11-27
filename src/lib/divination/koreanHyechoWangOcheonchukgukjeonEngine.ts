@@ -8,12 +8,12 @@
  * 4. 이민족·이문화 편견 없는 수용 및 문명 포용력(Cultural Openness & Compassion): 피부색, 언어, 풍습이 전혀 다른 이국 만방의 사람들을 차별 없이 마주하고 관찰하는 대자대비의 너른 도량.
  * 5. 두 발로 현장을 걸으며 체득한 구도적 실천 지혜도(Bodhisattva Practical Field Wisdom): 책상 위의 탁상공론이 아니라, 직접 걷고 땀 흘리며 보고 들은 사실만을 기록하는 정직하고 실사구시적인 통찰.
  *
- * @version LUCKEY-HYECHO-WANGOCHEON-v2.0.0
+ * @version LUCKEY-HYECHO-WANGOCHEON-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const KOREAN_HYECHO_VERSION = 'LUCKEY-HYECHO-WANGOCHEON-v2.3.0';
+export const KOREAN_HYECHO_VERSION = 'LUCKEY-HYECHO-WANGOCHEON-v2.4.0';
 
 export interface HyechoTheme {
   themeKey: string;
@@ -54,6 +54,11 @@ export interface HyechoWangOcheonchukgukjeonResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  hyechoCrossAxis: {
+    themeAphorismPair: string;
+    pilgrimageStage: string;
+    sourceAnchor: string;
   };
   ritualAction: string;
   reflectionFocus: string;
@@ -203,6 +208,11 @@ export function calculateHyechoWangOcheonchukgukjeon(
     alignmentState: describeHyechoStage(avgScore),
     integratedAction: `${focalHyechoAphorism.actionGuidance}${query?.trim() ? ` [질문 맥락: ${query.trim()}]` : ''}`,
   };
+  const hyechoCrossAxis = {
+    themeAphorismPair: `${activeHyechoTheme.themeKey} ↔ ${focalHyechoAphorism.aphorismKey}`,
+    pilgrimageStage: describeHyechoStage(avgScore).split('—')[0].trim(),
+    sourceAnchor: focalHyechoAphorism.sourceContext,
+  };
 
   const ritualAction = `[${activeHyechoTheme.themeTitleKo}] ${focalHyechoAphorism.actionGuidance}`;
   const reflectionFocus = reflectiveQuestion;
@@ -225,6 +235,7 @@ export function calculateHyechoWangOcheonchukgukjeon(
       philosophicalCounsel,
     },
     hyechoSynthesisMatrix,
+    hyechoCrossAxis,
     ritualAction,
     reflectionFocus,
   };
@@ -257,6 +268,7 @@ export function formatHyechoWangOcheonchukgukjeonPrompt(res: HyechoWangOcheonchu
   if (res.hyechoSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스 [핵심 긴장: ${res.hyechoSynthesisMatrix.dominantTension} | 조율 상태: ${res.hyechoSynthesisMatrix.alignmentState}]`,
+      `- 혜초 순례 교차 축: ${res.hyechoCrossAxis.pilgrimageStage} | ${res.hyechoCrossAxis.sourceAnchor}`,
       `- 통합 실천: ${res.hyechoSynthesisMatrix.integratedAction}`,
     );
   }

@@ -7,6 +7,7 @@ export interface KhmerAngkorBarayResult {
   barayState: string;
   companionState: string;
   barayWaterAxis: string;
+  topicBalanceHint: string;
   waterCycleInsight: string;
   templeTone: string;
   reflectionFocus: string;
@@ -81,6 +82,13 @@ const KHMER_SHADOWS = [
   '바깥의 소음을 다리 밖에 두고 쉬는 시간 뒤에는 다시 현실의 다리를 건너와 응답해야 할 약속들을 챙기세요.',
 ];
 
+const KHMER_TOPIC_HINTS: Record<KhmerAngkorBarayResult['questionTopic'], string> = {
+  '저수·비축': '저수와 비축의 질문에서는 성급히 쏟아내기보다 오늘 하루 고요한 그릇에 담아 두고 숨 고르기를 먼저 하세요.',
+  '순환·정화': '순환과 정화의 질문에서는 고여 있는 걱정 하나에만 작은 물꼬를 터 주어 맑은 흐름이 돌게 하세요.',
+  '시선·경계': '시선과 경계의 질문에서는 바깥 소음을 다리 밖에 잠시 두고 내 중심에서 네 방향을 차분히 살피세요.',
+  '바라이 전반': '전반적 순환의 질문에서는 모으는 시간과 흘려보내는 시간 사이의 균형 리듬을 오늘 한 번 점검해 보세요.',
+};
+
 function classifyKhmerTopic(q: string): KhmerAngkorBarayResult['questionTopic'] {
   if (/저수|비축|모아|여유/.test(q)) return '저수·비축';
   if (/순환|흘려|정화|초심|물길/.test(q)) return '순환·정화';
@@ -102,15 +110,17 @@ export function calculateKhmerAngkorBarayWaterBalance(params: {
   const picked = STATES[idx];
   const companion = STATES[(idx + companionOffset) % STATES.length];
   const barayWaterAxis = `${picked.state.split('(')[0].trim()} ↔ ${companion.state.split('(')[0].trim()} (${questionTopic})`;
+  const topicBalanceHint = KHMER_TOPIC_HINTS[questionTopic];
   const shadowWarning = KHMER_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-KHMER-ANGKOR-BARAY-v2.3.0',
+    engineVersion: 'LUCKEY-KHMER-ANGKOR-BARAY-v2.4.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     barayState: picked.state,
     companionState: companion.state,
     barayWaterAxis,
+    topicBalanceHint,
     waterCycleInsight: picked.insight,
     templeTone: picked.tone,
     reflectionFocus: `거대한 저수지 바라이처럼 '${picked.state}'의 리듬으로 에너지를 모으고 흘려보내 보세요. (동반 결: ${companion.state.split('(')[0].trim()})`,
@@ -126,6 +136,7 @@ export function formatKhmerAngkorBarayPrompt(res: KhmerAngkorBarayResult): strin
     `[크메르 앙코르 바라이 물 순환 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 바라이 순환 축: ${res.barayWaterAxis}`,
+    `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 순환 국면: ${res.barayState} (${res.templeTone})`,
     `- 동반 국면: ${res.companionState}`,
     `- 중심 통찰: ${res.waterCycleInsight}`,
