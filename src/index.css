@@ -3604,6 +3604,12 @@ html.duo-unfolded-portrait #duo-lucy-viewport {
   opacity: 1 !important;
 }
 
+/* The transparent divider hit target spans 24px into each pane. Let only the physically lower pane win that overlap so its header controls remain tappable. */
+html.duo-unfolded-portrait:not(.duo-panels-swapped) #duo-lucy-viewport,
+html.duo-unfolded-portrait.duo-panels-swapped #duo-content-viewport {
+  z-index: 81 !important;
+}
+
 /* 좌측 콘텐츠 뷰포트 내부의 직계 콘텐츠 래퍼는 뷰포트 너비 100% 채움 */
 #duo-content-viewport > div {
   width: 100% !important;

@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.597",
+    "builtAt": "2026-11-27T13:14:00.000Z",
+    "summary": "Duo 세로화면 헤더 터치 hit-testing 복구 (v1.8.597)",
+    "items": [
+      "확장 세로 Duo에서 투명한 48px 경계 스왑 버튼(z-index 80)이 하단 pane 헤더 버튼의 실제 터치 좌표를 가로채는 것을 elementFromPoint와 WebKit hit-test로 확인",
+      "물리적으로 아래쪽 pane만 z-index 81로 올려 헤더 컨트롤을 터치 가능하게 복구; 패널을 뒤집으면 아래쪽 Cosmic pane에 적용",
+      "iPhone WebKit 회귀 테스트에서 두 pane 배치의 모든 보이는 헤더 버튼 hit-test와 가이드 열기를 검증; 경계 스왑과 40px 헤더 높이는 유지"
+    ]
+  },
+  {
     "version": "1.8.596",
     "builtAt": "2026-11-27T12:47:24.000Z",
     "summary": "Duo 펼친 세로화면 헤더 축소와 CSS 우선순위 수정 (v1.8.596)",
