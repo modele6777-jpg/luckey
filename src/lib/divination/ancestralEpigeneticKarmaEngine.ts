@@ -18,7 +18,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const ANCESTRAL_KARMA_VERSION = 'LUCKEY-ANCESTRAL-v2.4.0';
+export const ANCESTRAL_KARMA_VERSION = 'LUCKEY-ANCESTRAL-v2.5.0';
 
 export interface AncestralLineageImprint {
   generationTheme: string;        // 혈통을 관통하는 핵심 테마
@@ -54,6 +54,7 @@ export interface AncestralEpigeneticKarmaReport {
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
+    ancestralCrossAxis: string;
   };
   boundaryNotice: string;
   ritualAction: string;
@@ -197,10 +198,12 @@ export function runAncestralEpigeneticKarmaEngine(
           liberationStep: actionGuide,
         };
 
+  const ancestralCrossAxis = `[${lineageArchetype}] × [${element}행] × [${generationalChainToBreak}] × [${situationalAncestralAudit.focusTheme}]`;
   const ancestralSynthesisMatrix = {
     coreInsight: `[${lineageArchetype}]의 강점(${inheritedSuperGift})과 해방 과제(${generationalChainToBreak})가 함께 비칩니다.`,
     recommendedAction: `[${ritualName}] ${actionGuide}`,
     cautionNotice: '가족력이나 과거의 그림자를 숙명으로 단정하지 말고, 지금 내 대에서 새로운 선택을 여는 자각의 재료로 삼으십시오.',
+    ancestralCrossAxis,
   };
 
   const boundaryNotice = '본 결과는 사주 년주·일주 상징과 세대 심리 은유를 결합한 정성적 성찰 안내이며, 의학적·유전학적 진단이 아닙니다.';
@@ -220,7 +223,7 @@ export function runAncestralEpigeneticKarmaEngine(
 - 질문 맥락 감사 (${situationalAncestralAudit.focusTheme}): ${situationalAncestralAudit.lineageNote}
 - KST 시공간 혈통 리듬: ${temporalAncestralRhythm.lineageWatchWindow} / ${temporalAncestralRhythm.seasonalRootsTone}
   * 시공간 지침: ${temporalAncestralRhythm.temporalGuidance}
-- 혈통 교차 매트릭스: 핵심(${ancestralSynthesisMatrix.coreInsight}) | 실행(${ancestralSynthesisMatrix.recommendedAction}) | 주의(${ancestralSynthesisMatrix.cautionNotice})
+- 혈통 교차 매트릭스: 핵심(${ancestralSynthesisMatrix.coreInsight}) | 실행(${ancestralSynthesisMatrix.recommendedAction}) | 4중 교차 축(${ancestralSynthesisMatrix.ancestralCrossAxis}) | 주의(${ancestralSynthesisMatrix.cautionNotice})
 - 가문 해원 의식: [${ritualName}] ${actionGuide}
 - 혈통 해방 확언: "${liberationAffirmation}"
 - 성찰 질문: ${reflectiveQuestion}

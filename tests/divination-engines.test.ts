@@ -3224,11 +3224,13 @@ test('Ancestral Epigenetic Karma Engine: 조상 혈통 업력 & 후성유전학�
   assert(res.calculatedAtKst.includes('KST'));
   assert(res.temporalAncestralRhythm.lineageWatchWindow.length > 0);
   assert(res.ancestralSynthesisMatrix.coreInsight.length > 0);
+  assert(Boolean(res.ancestralSynthesisMatrix.ancestralCrossAxis.includes(res.lineageArchetype)));
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   assert(res.interpretiveBoundary.length > 0);
   const prompt = formatAncestralEpigeneticKarmaPrompt(res);
   assert(prompt.includes('LUCKEY 조상 혈통 업력 & 후성유전학적 카르마 정화'));
   assert(prompt.includes(res.lineageArchetype));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
@@ -5104,11 +5106,13 @@ test('Baopuzi Ge Hong Nine Turn Elixir Engine: calculates alchemy rank and vital
   assert(rep.situationalBaopuziAudit.baopuziVerse.length > 0);
   assert(rep.temporalElixirRhythm.shichenWindow.length > 0);
   assert(rep.baopuziSynthesisMatrix.synthesizedGuidance.length > 0);
+  assert(Boolean(rep.baopuziSynthesisMatrix.baopuziCrossAxis.includes(rep.activeElixirPhase.elixirNameKo)));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatBaopuziElixirsPrompt(rep);
   assert(prompt.includes('고대 도교 포박자(抱朴子) 갈홍 구전환단(九轉還丹) 무병장수 정성 리포트'));
   assert(prompt.includes(rep.activeElixirPhase.elixirNameKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
 });
@@ -8632,11 +8636,13 @@ test('William James Pragmatism Will to Believe Engine: calculates Cash-Value, Wi
   assert(rep.pluralisticOpennessScore >= 0 && rep.pluralisticOpennessScore <= 100);
   assert(rep.healthyMindedResilienceIndex >= 0 && rep.healthyMindedResilienceIndex <= 100);
   assert(rep.activeJamesTheme.themeTitleKo.length > 0);
+  assert(Boolean(rep.jamesSynthesisMatrix.jamesCrossAxis.includes(rep.questionTopic)));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.shadowWarning.length > 0);
   const prompt = formatAmericanWilliamJamesPragmatismPrompt(rep);
   assert(prompt.includes('윌리엄 제임스 《실용주의》 & 《신념의 의지》 실천적 현금가치 지표'));
   assert(prompt.includes(rep.activeJamesTheme.themeTitleKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('과잉 경계'));
 });
 

@@ -10,7 +10,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const AMERICAN_WILLIAM_JAMES_VERSION = 'LUCKEY-WILLIAM-JAMES-PRAGMATISM-v2.4.0';
+export const AMERICAN_WILLIAM_JAMES_VERSION = 'LUCKEY-WILLIAM-JAMES-PRAGMATISM-v2.5.0';
 
 export type JamesQuestionTopic = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -52,6 +52,7 @@ export interface JamesSynthesisMatrix {
   willToBelieveCourage: number;
   streamAdaptability: number;
   overallSynthesis: number;
+  jamesCrossAxis: string;
 }
 
 export interface AmericanWilliamJamesPragmatismResult {
@@ -333,11 +334,13 @@ export function calculateAmericanWilliamJamesPragmatism(
   const streamAdaptability = Math.min(99, Math.round((streamOfConsciousnessVitalityIndex + pluralisticOpennessScore) / 2));
   const overallSynthesis = Math.round((cashValueClarity + willToBelieveCourage + streamAdaptability) / 3);
 
+  const jamesCrossAxis = `[${activeJamesTheme.themeTitleKo.split('—')[0].trim()}] × [${questionTopic}] × [${temporalPragmatismRhythm.pragmaticFocus}] × [${focalJamesAphorism.aphorismKey}]`;
   const jamesSynthesisMatrix: JamesSynthesisMatrix = {
     cashValueClarity,
     willToBelieveCourage,
     streamAdaptability,
     overallSynthesis,
+    jamesCrossAxis,
   };
 
   const guidanceTitle = `윌리엄 제임스 실용주의 지혜: ${activeJamesTheme.themeTitleKo}`;
@@ -394,7 +397,7 @@ export function formatAmericanWilliamJamesPragmatismPrompt(
     `- 현금가치 검증: ${res.situationalPragmatismAudit.cashValueTest}`,
     `- 신체·행동 첫걸음: ${res.situationalPragmatismAudit.somaticFirstStep}`,
     `- KST 실용주의 리듬: ${res.temporalPragmatismRhythm.kstWindow} (${res.temporalPragmatismRhythm.pragmaticFocus}, 흐름 ${describeJamesStage(res.temporalPragmatismRhythm.pragmatismClarityIndex)}) — ${res.temporalPragmatismRhythm.rhythmDirective}`,
-    `- 제임스 매트릭스: 현금가치(${describeJamesStage(res.jamesSynthesisMatrix.cashValueClarity)}) · 신념 결단(${describeJamesStage(res.jamesSynthesisMatrix.willToBelieveCourage)}) · 의식 유연성(${describeJamesStage(res.jamesSynthesisMatrix.streamAdaptability)}) — 종합 결(${describeJamesStage(res.jamesSynthesisMatrix.overallSynthesis)})`,
+    `- 제임스 매트릭스: 현금가치(${describeJamesStage(res.jamesSynthesisMatrix.cashValueClarity)}) · 신념 결단(${describeJamesStage(res.jamesSynthesisMatrix.willToBelieveCourage)}) · 의식 유연성(${describeJamesStage(res.jamesSynthesisMatrix.streamAdaptability)}) · 4중 교차 축(${res.jamesSynthesisMatrix.jamesCrossAxis}) — 종합 결(${describeJamesStage(res.jamesSynthesisMatrix.overallSynthesis)})`,
     `- 오늘의 실천 의례: ${res.dailyPracticeRitual}`,
     `- 성찰 질문: ${res.reflectiveQuestion}`,
     `- 과잉 경계: ${res.shadowWarning}`,
