@@ -1,6 +1,6 @@
 import { UserProfile } from '../sharedState';
 
-export const VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION = '2.2.0';
+export const VEDIC_NAKSHATRA_108_PADA_ENGINE_VERSION = '2.4.0';
 
 function formatNakshatra108KstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -46,6 +46,7 @@ export interface VedicNakshatra108PadaReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    nakshatra108CrossAxis: string;
   };
 }
 
@@ -174,10 +175,12 @@ export function calculateVedicNakshatra108Pada(
     '해석 경계: 본 리포트는 베다 27나크샤트라와 108파다 상징 체계를 통해 내면의 소명과 행동 방향을 비추는 철학적·상징적 참고이며, 실제 천문 관측이나 운명의 단정을 대신하지 않습니다.';
   const ritualAction = `${sanskritMantra}를 세 번 고요히 읊은 뒤, ${nakshatra.mission}에 닿는 오늘의 작은 실천 한 가지를 적어 바로 실행하십시오.`;
   const reflectionFocus = `${nakshatra.nameKo} 제${pada}파다(${nakshatra.deity})의 소명과 대칭 성좌 ${secondaryNakshatra.nameKo}의 조화`;
+  const nakshatra108CrossAxis = `[${nakshatra.nameKo} 제${pada}파다] × [${navamsha.name}] × [${secondaryNakshatra.nameKo}] × [${nakshatra.gana}/${nakshatra.tattva}]`;
   const nakshatra108SynthesisMatrix = {
     dominantTension: `${nakshatra.nameKo} 제${pada}파다 ↔ ${navamsha.name} · 보조 성좌 ${secondaryNakshatra.nameKo}`,
     alignmentState: `${nakshatra.gana} · ${nakshatra.tattva} · ${nakshatra.deity}`,
     integratedAction: `${sanskritMantra} · ${nakshatra.mission}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    nakshatra108CrossAxis,
   };
 
   const synthesisPrompt = `
@@ -200,6 +203,7 @@ export function calculateVedicNakshatra108Pada(
 4. 🧭 [108파다 교차 매트릭스]:
    - 핵심 긴장: ${nakshatra108SynthesisMatrix.dominantTension}
    - 조율 상태: ${nakshatra108SynthesisMatrix.alignmentState}
+   - 4중 교차 축: ${nakshatra108SynthesisMatrix.nakshatra108CrossAxis}
    - 통합 실천: ${nakshatra108SynthesisMatrix.integratedAction}
 5. 🪞 [성찰 질문 & 해석 경계]:
    - 성찰 질문: ${reflectiveQuestion}

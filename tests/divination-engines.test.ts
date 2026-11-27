@@ -4469,6 +4469,7 @@ test('Vedic Nakshatra 108 Pada Engine: calculates nakshatra, pada and dharma pat
   assert(rep.reflectiveQuestion.includes('카르마 소명'));
   assert(rep.interpretiveBoundary.includes('해석 경계'));
   assert(Boolean(rep.nakshatra108SynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.nakshatra108SynthesisMatrix?.nakshatra108CrossAxis.includes(rep.nakshatraNameKo)));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.nakshatraIndex >= 1 && rep.nakshatraIndex <= 27);
   assert(rep.pada >= 1 && rep.pada <= 4);
@@ -4482,6 +4483,7 @@ test('Vedic Nakshatra 108 Pada Engine: calculates nakshatra, pada and dharma pat
   assert(!prompt.includes('출생 나크샤트라 & 108 파다 위치'));
   assert(prompt.includes('+09:00 (KST)'));
   assert(prompt.includes('대칭 보조 나크샤트라(상징)'));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('해석 경계'));
@@ -4626,6 +4628,7 @@ test('Shinto Kotodama Four Souls Engine: calculates Ichirei Shikon balance and K
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.shintoSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.shintoSynthesisMatrix?.shintoCrossAxis.includes(rep.fourSouls.dominantSoul)));
   assert(rep.naohiPurityIndex >= 0 && rep.naohiPurityIndex <= 100);
   assert(rep.fourSouls.dominantSoul.length > 0);
   assert(rep.fourSouls.secondarySoul.length > 0);
@@ -4635,7 +4638,7 @@ test('Shinto Kotodama Four Souls Engine: calculates Ichirei Shikon balance and K
   assert(prompt.includes('고대 일본 신도 고토다마(言霊) 50음령 & 4혼1생(四魂一志) 영혼 조화 실측 데이터'));
   assert(prompt.includes(rep.fourSouls.dominantSoul));
   assert(prompt.includes('보조 교차 혼'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
@@ -5130,6 +5133,7 @@ test('Sumerian Apkallu Wisdom Engine: calculates 7 sages resonance and Apsu clar
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(Boolean(rep.apkalluSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.apkalluSynthesisMatrix?.apkalluCrossAxis.includes(rep.activeSage.nameKo)));
   assert(rep.apkalluResonanceScore >= 0 && rep.apkalluResonanceScore <= 100);
   assert(rep.apsuClarityIndex >= 0 && rep.apsuClarityIndex <= 100);
   assert(rep.activeSage.nameKo.length > 0);
@@ -5142,7 +5146,7 @@ test('Sumerian Apkallu Wisdom Engine: calculates 7 sages resonance and Apsu clar
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100'));
 });
 

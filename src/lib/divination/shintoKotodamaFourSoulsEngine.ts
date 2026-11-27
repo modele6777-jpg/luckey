@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SHINTO_KOTODAMA_FOUR_SOULS_ENGINE_VERSION = '2.2.0';
+export const SHINTO_KOTODAMA_FOUR_SOULS_ENGINE_VERSION = '2.4.0';
 
 export interface FourSoulsBalance {
   aramitamaScore: number; // 荒魂 (용기, 돌파) 0~100
@@ -60,6 +60,7 @@ export interface ShintoKotodamaReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    shintoCrossAxis: string;
   };
 }
 
@@ -208,10 +209,12 @@ export function calculateShintoKotodama(options?: {
   }
 
   const calculatedAtKst = formatShintoKstTimestamp(now);
+  const shintoCrossAxis = `[${dominant.name}] × [${secondary.name}] × [${kotodama.coreSound}] × [${blessingKami}]`;
   const shintoSynthesisMatrix = {
     dominantTension: `${dominant.name} ↔ ${secondary.name} · ${kotodama.coreSound}`,
     alignmentState: `${blessingKami}`,
     integratedAction: `${misogiAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    shintoCrossAxis,
   };
   const ritualAction = `[${kotodama.coreSound}] ${misogiAction}`;
   const reflectionFocus = `신도 고토다마 일영사혼(${dominant.name}) — ${kotodama.coreSound}`;
@@ -262,7 +265,7 @@ export function formatShintoKotodamaPrompt(report: ShintoKotodamaReport): string
 
 3. [미소기(禊) 정화 처방 & 교차 매트릭스]:
    - 추천 정화 실천: ${report.misogiAction}
-   - 종합 카르마 조언: ${report.spiritualAdvice}${report.shintoSynthesisMatrix ? `\n   - 교차 매트릭스 [핵심 긴장: ${report.shintoSynthesisMatrix.dominantTension} | 조율 상태: ${report.shintoSynthesisMatrix.alignmentState}]\n   - 통합 실천: ${report.shintoSynthesisMatrix.integratedAction}` : ''}
+   - 종합 카르마 조언: ${report.spiritualAdvice}${report.shintoSynthesisMatrix ? `\n   - 교차 매트릭스 [핵심 긴장: ${report.shintoSynthesisMatrix.dominantTension} | 조율 상태: ${report.shintoSynthesisMatrix.alignmentState}]\n   - 4중 교차 축: ${report.shintoSynthesisMatrix.shintoCrossAxis}\n   - 통합 실천: ${report.shintoSynthesisMatrix.integratedAction}` : ''}
    - 실천 의례: ${report.ritualAction}
    - 성찰 초점: ${report.reflectionFocus}
    - 성찰 질문: ${report.reflectiveQuestion}
