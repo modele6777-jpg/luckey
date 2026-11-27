@@ -16,7 +16,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION = '2.3.0';
+export const VEDIC_MANDUKYA_TURIYA_ENGINE_VERSION = '2.4.0';
 
 export interface MandukyaConsciousnessState {
   id: string;
@@ -51,6 +51,7 @@ export interface VedicMandukyaTuriyaReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    mandukyaCrossAxis: string;
   };
 }
 
@@ -198,10 +199,12 @@ export function calculateVedicMandukyaTuriya(
   const omPranavaMeditationRitual = `숨을 들이마시고 내쉬며 마음속으로 길게 'A-U-M...'을 울린 뒤, 음률이 멎은 고요한 침묵에 머무르십시오: "사르밤 칼비담 브라만(Sarvam Khalvidam Brahman) — 모든 것은 신성한 의식이며, 나는 영원한 순수 지각자이다."`;
 
   const trimmedQ = question.trim();
+  const mandukyaCrossAxis = `[${dominantState.nameKo}] × [${secondaryState.nameKo}] × [${dominantState.aumLetter}] × [${trimmedQ || '순수 관조자(Sakshi) 중심'}]`;
   const mandukyaSynthesisMatrix = {
     dominantTension: `${dominantState.nameKo} ↔ ${secondaryState.nameKo}`,
     alignmentState: `${describeMandukyaStage(turiyaPureConsciousnessScore)} · ${dominantState.aumLetter}`,
     integratedAction: `${dailyPracticeRitual}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+    mandukyaCrossAxis,
   };
 
   return {
@@ -228,7 +231,7 @@ export function calculateVedicMandukyaTuriya(
 
 export function formatVedicMandukyaTuriyaPrompt(rep: VedicMandukyaTuriyaReport): string {
   const matrixLine = rep.mandukyaSynthesisMatrix
-    ? `· 만두키야 교차 매트릭스: 핵심 긴장(${rep.mandukyaSynthesisMatrix.dominantTension}) · 조율 상태(${rep.mandukyaSynthesisMatrix.alignmentState}) · 통합 실천(${rep.mandukyaSynthesisMatrix.integratedAction})`
+    ? `· 만두키야 교차 매트릭스: 핵심 긴장(${rep.mandukyaSynthesisMatrix.dominantTension}) · 조율 상태(${rep.mandukyaSynthesisMatrix.alignmentState}) · 통합 실천(${rep.mandukyaSynthesisMatrix.integratedAction})\n· 4중 교차 축: ${rep.mandukyaSynthesisMatrix.mandukyaCrossAxis}`
     : '';
   return `[고대 인도 만두키야 우파니샤드 4대 의식 & 투리야(Turiya) 순수의식 정성 관조]
 · 엔진 버전: v${rep.engineVersion} | 기준 시각(KST): ${rep.calculatedAtKst}

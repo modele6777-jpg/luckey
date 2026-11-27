@@ -21,7 +21,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MONGOLIAN_TENGRI_HIIMORI_ENGINE_VERSION = '2.3.0';
+export const MONGOLIAN_TENGRI_HIIMORI_ENGINE_VERSION = '2.4.0';
 
 export interface TengriSpiritualAspect {
   id: string;
@@ -54,6 +54,7 @@ export interface MongolianTengriHiimoriReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    tengriCrossAxis: string;
   };
 }
 
@@ -183,10 +184,13 @@ export function calculateMongolianTengriHiimori(
   const composite = Math.round(
     (hiimoriWindHorseVitalityScore + tengriBlueSkyResonanceIndex + suldImmortalSpiritPower + etugenMotherEarthRooting) / 4
   );
+  const alignmentState = describeTengriStage(composite);
+  const tengriCrossAxis = `[${dominantAspect.nameKo}] × [${secondaryAspect.nameKo}] × [${guardianTngriDomain.split('(')[0].trim()}] × [${alignmentState.split('—')[0].trim()}]`;
   const tengriSynthesisMatrix = {
     dominantTension: `${dominantAspect.nameKo} ↔ ${guardianTngriDomain}`,
-    alignmentState: describeTengriStage(composite),
+    alignmentState,
     integratedAction: `${dominantAspect.spiritualBlessing}${question ? ` [질문 맥락: ${question}]` : ''}`,
+    tengriCrossAxis,
   };
 
   return {
@@ -233,6 +237,7 @@ export function formatMongolianTengriHiimoriPrompt(report: MongolianTengriHiimor
   if (report.tengriSynthesisMatrix) {
     lines.push(
       `- **교차 매트릭스**: [핵심 긴장: ${report.tengriSynthesisMatrix.dominantTension} | 조율 상태: ${report.tengriSynthesisMatrix.alignmentState}]`,
+      `- **4중 교차 축**: ${report.tengriSynthesisMatrix.tengriCrossAxis}`,
       `- **통합 실천**: ${report.tengriSynthesisMatrix.integratedAction}`,
     );
   }

@@ -5410,12 +5410,14 @@ test('Vedic Mandukya Turiya Engine: calculates four consciousness states, AUM re
   assert(rep.sakshiWitnessPresenceScore >= 0 && rep.sakshiWitnessPresenceScore <= 100);
   assert(rep.mayaIllusionDissolutionRate >= 0 && rep.mayaIllusionDissolutionRate <= 100);
   assert(rep.dominantState.nameKo.length > 0);
+  assert(Boolean(rep.mandukyaSynthesisMatrix?.mandukyaCrossAxis?.includes(rep.dominantState.nameKo)));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   const prompt = formatVedicMandukyaTuriyaPrompt(rep);
   assert(prompt.includes('고대 인도 만두키야 우파니샤드 4대 의식 & 투리야(Turiya) 순수의식 정성 관조'));
   assert(!prompt.includes('실측 데이터'));
   assert(prompt.includes(rep.dominantState.nameKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(prompt.includes(rep.reflectionFocus));
 });
@@ -5775,6 +5777,7 @@ test('Mongolian Tengrism Hiimori Soul Engine: calculates wind horse vitality, bl
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.tengriSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.tengriSynthesisMatrix?.tengriCrossAxis?.includes(rep.dominantAspect.nameKo)));
   const repQ = calculateMongolianTengriHiimori({ profile, question: '히모리를 다시 일으키기' });
   assert(repQ.reflectiveQuestion.includes('다시 일으키기'));
   const prompt = formatMongolianTengriHiimoriPrompt(repQ);
@@ -5786,6 +5789,7 @@ test('Mongolian Tengrism Hiimori Soul Engine: calculates wind horse vitality, bl
   assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -5997,12 +6001,14 @@ test('Korean Cheonbugyeong Eighty One Cosmic Engine: calculates heaven earth hum
   assert(rep.calculatedAtKst.includes('KST'));
   assert(rep.temporalCheonbuRhythm.samgeukWatchWindow.length > 0);
   assert(rep.cheonbuSynthesisMatrix.coreInsight.length > 0);
+  assert(rep.cheonbuSynthesisMatrix.cheonbuCrossAxis.includes(rep.primaryHexagramGua.verseKo));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKoreanCheonbugyeongEightyOnePrompt(rep);
   assert(prompt.includes('단군 단학 천부경(天符經) 81자 우주 매트릭스 & 삼일신고 3진3망 성통광명'));
   assert(prompt.includes(rep.primaryHexagramGua.verseHanja));
   assert(prompt.includes(rep.ritualAction));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('KST'));
   assert(!prompt.includes('/100') && !prompt.includes('%') && !prompt.includes('점수'));
 });
