@@ -16,7 +16,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SUMERIAN_APKALLU_WISDOM_ENGINE_VERSION = '2.2.0';
+export const SUMERIAN_APKALLU_WISDOM_ENGINE_VERSION = '2.4.0';
 
 export interface ApkalluSage {
   id: string;
@@ -47,6 +47,7 @@ export interface SumerianApkalluWisdomReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    apkalluCrossAxis: string;
   };
 }
 
@@ -167,10 +168,12 @@ export function calculateSumerianApkalluWisdom(options?: {
     '고대 수메르 압갈루(Apkallu) 7현자 상징은 내면의 판단 기준과 행동 태도를 성찰하기 위한 은유적 관점이며, 미래 사건의 단정적 예언이나 의학·법률·재무 판단을 대체하지 않습니다.';
   const ritualAction = `[${activeSage.nameKo} · ${activeSage.element}] ${activeSage.divineWisdom}`;
   const reflectionFocus = `수메르 7대 압갈루(${activeSage.nameKo}) — ${activeSage.title}`;
+  const apkalluCrossAxis = `[${activeSage.nameKo}] × [${secondarySage.nameKo}] × [${activeSage.element}] × [${activeSage.title}]`;
   const apkalluSynthesisMatrix = {
     dominantTension: `${activeSage.nameKo}(${activeSage.element}) ↔ ${secondarySage.nameKo}(${secondarySage.element})`,
     alignmentState: `${activeSage.title} · ${secondarySage.title}`,
     integratedAction: `${activeSage.divineWisdom}${question ? ` [질문 맥락: ${question}]` : ''}`,
+    apkalluCrossAxis,
   };
 
   return {
@@ -210,6 +213,7 @@ export function formatSumerianApkalluWisdomPrompt(rep: SumerianApkalluWisdomRepo
   if (rep.apkalluSynthesisMatrix) {
     lines.push(
       `· 교차 매트릭스: [핵심 긴장: ${rep.apkalluSynthesisMatrix.dominantTension} | 조율 상태: ${rep.apkalluSynthesisMatrix.alignmentState}]`,
+      `  - 4중 교차 축: ${rep.apkalluSynthesisMatrix.apkalluCrossAxis}`,
       `  - 통합 실천: ${rep.apkalluSynthesisMatrix.integratedAction}`,
     );
   }
