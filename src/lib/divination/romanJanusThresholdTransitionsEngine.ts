@@ -7,7 +7,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ROMAN_JANUS_ENGINE_VERSION = 'LUCKEY-ROMAN-JANUS-v2.1.0';
+export const ROMAN_JANUS_ENGINE_VERSION = 'LUCKEY-ROMAN-JANUS-v2.4.0';
 
 export type JanusQuestionFocus = 'relationship' | 'decision' | 'healing' | 'reflection';
 export type JanusLiminalPhase = 'THRESHOLD_CLOSURE' | 'PASSAGE_OPENING' | 'BOUNDARY_GUARD' | 'COVENANT_BRIDGE';
@@ -55,6 +55,7 @@ export interface RomanJanusReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    janusCrossAxis: string;
   };
 }
 
@@ -309,10 +310,12 @@ export function calculateRomanJanus(params?: RomanJanusParams): RomanJanusReport
   const calculatedAtKst = formatJanusKstTimestamp(now);
   const reflectiveQuestion = buildJanusReflectiveQuestion(activeGateway.gatewayNameKo, guidance.reflectionFocus, question);
   const boundaryNotice = '이는 로마 야누스 문턱 상징에 기반한 전환기 성찰 참고일 뿐, 개인 점수·심리 진단·미래 예측이 아닙니다.';
+  const janusCrossAxis = `[${activeGateway.gatewayNameKo}] × [${secondaryGateway.gatewayNameKo}] × [${doorStatus}] × [${liminalPhase}]`;
   const janusSynthesisMatrix = {
     dominantTension: `${activeGateway.gatewayNameKo} ↔ ${secondaryGateway.gatewayNameKo} (${doorStatus})`,
     alignmentState: describeJanusStage(thresholdBalance, doorStatus),
     integratedAction: `${guidance.practiceGuidance}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+    janusCrossAxis,
   };
 
   return {
@@ -372,6 +375,7 @@ export function formatRomanJanusPrompt(report: RomanJanusReport): string {
   if (report.janusSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스 [핵심 긴장: ${report.janusSynthesisMatrix.dominantTension} | 조율 상태: ${report.janusSynthesisMatrix.alignmentState}]`,
+      `- 4중 교차 축: ${report.janusSynthesisMatrix.janusCrossAxis}`,
       `- 통합 실천: ${report.janusSynthesisMatrix.integratedAction}`,
     );
   }
