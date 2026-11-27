@@ -19,7 +19,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ATTAR_SEVEN_VALLEYS_ENGINE_VERSION = '2.2.0';
+export const ATTAR_SEVEN_VALLEYS_ENGINE_VERSION = '2.4.0';
 
 export interface AttarValley {
   id: string;
@@ -51,6 +51,7 @@ export interface PersianAttarSevenValleysReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    attarCrossAxis: string;
   };
 }
 
@@ -197,10 +198,12 @@ export function calculatePersianAttarSevenValleys(
   const composite = Math.round(
     (simurghMirrorResonanceScore + sevenValleysPassageProgress + fanaEgoDissolutionRate + baqaDivinePermanenceIndex) / 4
   );
+  const attarCrossAxis = `[${dominantValley.nameKo}] × [${secondaryValley.nameKo}] × [${describeAttarStage(composite).split(' — ')[0]}] × [${question.trim() || '보편 성찰'}]`;
   const attarSynthesisMatrix = {
     dominantTension: `${dominantValley.nameKo} ↔ ${secondaryValley.nameKo}`,
     alignmentState: describeAttarStage(composite),
     integratedAction: `${dominantValley.transcendenceGuidance}${question.trim() ? ` [질문 맥락: ${question.trim()}]` : ''}`,
+    attarCrossAxis,
   };
 
   return {
@@ -242,6 +245,7 @@ export function formatPersianAttarSevenValleysPrompt(rep: PersianAttarSevenValle
   if (rep.attarSynthesisMatrix) {
     lines.push(
       `· 교차 매트릭스: [핵심 긴장: ${rep.attarSynthesisMatrix.dominantTension} | 조율 상태: ${rep.attarSynthesisMatrix.alignmentState}]`,
+      `· 4중 교차 축: ${rep.attarSynthesisMatrix.attarCrossAxis}`,
       `· 통합 실천: ${rep.attarSynthesisMatrix.integratedAction}`,
     );
   }

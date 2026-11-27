@@ -9,7 +9,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const NORSE_HAVAMAL_GALDR_ENGINE_VERSION = '2.2.0';
+export const NORSE_HAVAMAL_GALDR_ENGINE_VERSION = '2.4.0';
 
 export interface HavamalGaldrCharm {
   orderNumber: number;
@@ -43,6 +43,7 @@ export interface NorseHavamalEighteenGaldrReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    havamalCrossAxis: string;
   };
 }
 
@@ -173,10 +174,12 @@ export function calculateNorseHavamalEighteenGaldr(
   const interpretiveBoundary =
     '이 리포트는 아이슬란드 《고에다》 〈하바말〉의 18대 게알드르 룬 비전 상징을 바탕으로 내면의 회복력과 의지를 비추는 성찰용 비유이며, 확정된 미래 예언이나 의학·법률·재무적 판단을 대신하지 않습니다.';
 
+  const havamalCrossAxis = `[${dominantGaldrCharm.norseTitle}] × [${secondaryGaldrCharm.norseTitle}] × [${dominantGaldrCharm.primaryRune}] × [${dominantGaldrCharm.magicalDomain}]`;
   const havamalSynthesisMatrix = {
     dominantTension: `${dominantGaldrCharm.norseTitle} (${dominantGaldrCharm.magicalDomain}) ↔ ${secondaryGaldrCharm.norseTitle} (${secondaryGaldrCharm.runeName})`,
     alignmentState: describeHavamalStage(composite),
     integratedAction: `${dominantGaldrCharm.spiritualMastery}${trimmedQ ? ` [질문 맥락: ${trimmedQ}]` : ''}`,
+    havamalCrossAxis,
   };
 
   return {
@@ -217,6 +220,7 @@ export function formatNorseHavamalEighteenGaldrPrompt(report: NorseHavamalEighte
   if (report.havamalSynthesisMatrix) {
     lines.push(
       `- **교차 매트릭스**: [핵심 긴장: ${report.havamalSynthesisMatrix.dominantTension} | 조율 상태: ${report.havamalSynthesisMatrix.alignmentState}]`,
+      `- **4중 교차 축**: ${report.havamalSynthesisMatrix.havamalCrossAxis}`,
       `- **통합 실천**: ${report.havamalSynthesisMatrix.integratedAction}`,
     );
   }
