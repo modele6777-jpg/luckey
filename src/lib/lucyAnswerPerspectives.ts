@@ -4,7 +4,7 @@ import { DIVINATION_TOOL_TAB_ORDER } from '@/lib/divination/trayTabs';
 import type { DivinationToolId } from '@/lib/lucyToolRegistry';
 
 /**
- * 💬 메시지 끝 "이 답변 관점/도구" 버튼이 읽는, 답변마다 저장된 메타데이터.
+ * 💬 답변 맨 처음 "이 답변 관점/도구" 배지가 읽는, 답변마다 저장된 메타데이터.
  * 새 답변은 deepPerspectiveKeys·calculationAudit을 메시지에 남기고, 예전 답변도 있다면 그대로 읽는다.
  */
 export interface MessageEngineSource {
@@ -29,7 +29,7 @@ export interface LucyAnswerEngineRef {
 }
 
 export interface LucyAnswerEngines {
-  /** 이 답변에 쓰인 기초 도구 (사주·타로·13대 도구). 점술모드 메시지 끝에서 '도구' 버튼이 된다. */
+  /** 이 답변에 쓰인 기초 도구 (사주·타로·13대 도구). 점술모드 답변 맨 처음에서 '도구' 버튼이 된다. */
   tools: LucyAnswerEngineRef[];
   /** 이 답변의 심층 관점. 일반 채팅·점술모드 모두 '관점' 버튼이 된다. */
   perspectives: LucyAnswerEngineRef[];
@@ -121,7 +121,11 @@ export function shouldRestoreCatalogScroll(isOpen: boolean, focusEngineKey: stri
   return isOpen && !focusEngineKey;
 }
 
-/** 메시지 끝 버튼을 그릴지: 사용자 메시지·인사말·생성 중에는 그리지 않는다. */
+/**
+ * 답변 맨 처음 배지를 그릴지: 사용자 메시지·인사말·도구/관점 없는 답변에는 그리지 않는다.
+ * 답변 메시지는 생성 시작 시점에 이미 계산 기록·관점 키를 들고 시작하므로(플레이스홀더),
+ * 생성 중에도 말풍선과 함께 맨 처음에 배지가 먼저 뜬다.
+ */
 export function shouldShowAnswerEngines(params: {
   role?: string | null;
   isGreeting?: boolean;
@@ -129,7 +133,7 @@ export function shouldShowAnswerEngines(params: {
   engines: LucyAnswerEngines;
 }): boolean {
   if (params.role === 'user' || params.role === 'system') return false;
-  if (params.isGreeting || params.isGenerating) return false;
+  if (params.isGreeting) return false;
   return params.engines.all.length > 0;
 }
 

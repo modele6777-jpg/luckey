@@ -75,7 +75,7 @@ export interface UnifiedMessage {
   keyExerciseIndex?: number;
   usedTools?: string[];
   calculationAudit?: CalculationAuditItem[];
-  /** 이 답변에서 루시가 골라 쓴 심층 관점 키 (메시지 끝 '이 답변 관점' 버튼용). */
+  /** 이 답변에서 루시가 골라 쓴 심층 관점 키 (답변 맨 처음 '이 답변 관점' 배지용). */
   deepPerspectiveKeys?: string[];
   divinationContext?: string;
 }
@@ -96,7 +96,7 @@ export interface SendUnifiedMessageOptions {
   customUserProfile?: UserProfile;
   usedTools?: string[];
   calculationAudit?: CalculationAuditItem[];
-  /** 이 답변에 쓴 심층 관점 키. assistant 메시지에 저장되어 답변 끝 버튼이 읽는다. */
+  /** 이 답변에 쓴 심층 관점 키. assistant 메시지에 저장되어 답변 맨 처음 배지가 읽는다. */
   deepPerspectiveKeys?: string[];
   isLucyPlus?: boolean;
   isLucyPro?: boolean;
@@ -1996,7 +1996,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         channel: options?.channel,
         channels: options?.channels,
         mode: options?.mode,
-        usedTools: []
+        usedTools: options?.usedTools || [],
+        // 💬 답변 맨 처음 관점·도구 배지가 답변 시작과 함께 뜨도록, 계산 기록·관점 키를 미리 들려 보낸다
+        calculationAudit: options?.calculationAudit || [],
+        deepPerspectiveKeys: options?.deepPerspectiveKeys || []
       }
     ]);
 
