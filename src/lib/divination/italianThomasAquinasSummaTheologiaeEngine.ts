@@ -10,12 +10,12 @@
  * 4. 자연법(Lex Naturalis)과 실천적 지혜(Prudentia): 인간 본성에 새겨진 선을 행하고 악을 피하라는 근본 도덕 원칙을 일상에서 실천하는 현실 분별력.
  * 5. 지복직관(Visio Beatifica)과 최고선(Summum Bonum): 세상의 덧없는 물질적 성공이나 쾌락을 넘어 존재의 궁극적 행복과 목적을 향해 나아가는 삶의 명료함.
  *
- * @version LUCKEY-THOMAS-AQUINAS-SUMMA-THEOLOGIAE-v2.0.0
+ * @version LUCKEY-THOMAS-AQUINAS-SUMMA-THEOLOGIAE-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ITALIAN_THOMAS_AQUINAS_VERSION = 'LUCKEY-THOMAS-AQUINAS-SUMMA-THEOLOGIAE-v2.3.0';
+export const ITALIAN_THOMAS_AQUINAS_VERSION = 'LUCKEY-THOMAS-AQUINAS-SUMMA-THEOLOGIAE-v2.4.0';
 
 export interface AquinasTheme {
   themeKey: string;
@@ -58,6 +58,11 @@ export interface ThomasAquinasSummaTheologiaeResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  aquinasCrossAxis: {
+    themeAphorismPair: string;
+    scholasticStage: string;
+    sourceAnchor: string;
   };
 }
 
@@ -206,6 +211,11 @@ export function calculateThomasAquinasSummaTheologiae(
         : '자연법적 분별력(Prudentia)으로 7대 덕목의 균형을 잡는 국면',
     integratedAction: `${activeAquinasTheme.practicalCounsel} (${focalAquinasAphorism.actionGuidance})`,
   };
+  const aquinasCrossAxis = {
+    themeAphorismPair: `${activeAquinasTheme.themeKey} ↔ ${focalAquinasAphorism.aphorismKey}`,
+    scholasticStage: describeAquinasStage(Math.round((reasonFaithHarmonyScore + cardinalTheologicalVirtuesBalanceScore + beatificVisionSupremeGoodScore) / 3)).split('(')[0].trim(),
+    sourceAnchor: focalAquinasAphorism.summaReference,
+  };
 
   const ritualAction = `[${activeAquinasTheme.themeTitleKo}] ${focalAquinasAphorism.actionGuidance}`;
   const reflectionFocus = reflectiveQuestion;
@@ -230,6 +240,7 @@ export function calculateThomasAquinasSummaTheologiae(
       philosophicalCounsel,
     },
     aquinasSynthesisMatrix,
+    aquinasCrossAxis,
   };
 }
 
@@ -258,6 +269,7 @@ export function formatThomasAquinasSummaTheologiaePrompt(res: ThomasAquinasSumma
   if (res.aquinasSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스 [핵심 긴장: ${res.aquinasSynthesisMatrix.dominantTension} | 조율 상태: ${res.aquinasSynthesisMatrix.alignmentState}]`,
+      `- 스콜라 덕론 교차 축: ${res.aquinasCrossAxis.scholasticStage} | ${res.aquinasCrossAxis.sourceAnchor}`,
       `- 통합 실천: ${res.aquinasSynthesisMatrix.integratedAction}`,
     );
   }

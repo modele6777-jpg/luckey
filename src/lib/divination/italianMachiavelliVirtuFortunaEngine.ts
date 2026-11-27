@@ -10,12 +10,12 @@
  * 4. 여우의 지혜와 사자의 용맹(Volpe e Leone): 간교한 덫을 알아채는 여우의 기민한 직관과 사나운 늑대를 내쫓는 사자의 결단력을 상황에 따라 겸비.
  * 5. 실효적 진리(Verità effettuale della cosa): 공허한 환상이나 탁상공론의 당위론을 버리고, 현실의 실질적인 인과와 역학 관계를 꿰뚫어 보는 냉철한 분별력.
  *
- * @version LUCKEY-MACHIAVELLI-VIRTU-FORTUNA-v2.0.0
+ * @version LUCKEY-MACHIAVELLI-VIRTU-FORTUNA-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ITALIAN_MACHIAVELLI_VERSION = 'LUCKEY-MACHIAVELLI-VIRTU-FORTUNA-v2.3.0';
+export const ITALIAN_MACHIAVELLI_VERSION = 'LUCKEY-MACHIAVELLI-VIRTU-FORTUNA-v2.4.0';
 
 export interface MachiavelliTheme {
   themeKey: string;
@@ -58,6 +58,11 @@ export interface MachiavelliVirtuFortunaResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  machiavelliCrossAxis: {
+    themeAphorismPair: string;
+    virtuStage: string;
+    sourceAnchor: string;
   };
 }
 
@@ -213,6 +218,11 @@ export function calculateMachiavelliVirtuFortuna(
         : '제방을 쌓으며 시대 변화(Riscontro)에 기민하게 대응하는 국면',
     integratedAction: `${activeMachiavelliTheme.strategicCounsel} (${focalMachiavelliAphorism.practicalAction})`,
   };
+  const machiavelliCrossAxis = {
+    themeAphorismPair: `${activeMachiavelliTheme.themeKey} ↔ ${focalMachiavelliAphorism.aphorismKey}`,
+    virtuStage: describeMachiavelliStage(Math.round((virtuDecisiveCompetenceScore + riscontroTemporalAdaptabilityScore + effectualTruthRealismScore) / 3)).split('(')[0].trim(),
+    sourceAnchor: focalMachiavelliAphorism.textualContext,
+  };
 
   const ritualAction = `[${activeMachiavelliTheme.themeTitleKo}] ${focalMachiavelliAphorism.practicalAction}`;
   const reflectionFocus = reflectiveQuestion;
@@ -237,6 +247,7 @@ export function calculateMachiavelliVirtuFortuna(
       philosophicalGuidance,
     },
     machiavelliSynthesisMatrix,
+    machiavelliCrossAxis,
   };
 }
 
@@ -265,6 +276,7 @@ export function formatMachiavelliVirtuFortunaPrompt(res: MachiavelliVirtuFortuna
   if (res.machiavelliSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스 [핵심 긴장: ${res.machiavelliSynthesisMatrix.dominantTension} | 조율 상태: ${res.machiavelliSynthesisMatrix.alignmentState}]`,
+      `- 비르투 전략 교차 축: ${res.machiavelliCrossAxis.virtuStage} | ${res.machiavelliCrossAxis.sourceAnchor}`,
       `- 통합 실천: ${res.machiavelliSynthesisMatrix.integratedAction}`,
     );
   }

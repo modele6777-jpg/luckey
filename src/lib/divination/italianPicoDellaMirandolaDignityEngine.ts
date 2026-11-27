@@ -8,12 +8,12 @@
  * 4. 내면 정화 및 관조적 평정 지표 (Inner Purification & Contemplative Peace Index): 도덕적 정화와 변증법적 사유를 통해 도달하는 영혼의 고요한 관조와 평화.
  * 5. 주체적 존엄성과 창조적 회복탄력성 (Sovereign Dignity & Creative Resilience Score): 외부 운명에 비굴하게 굴복하지 않고 내면의 거룩한 존엄으로 길을 개척하는 회복탄력성.
  *
- * @version LUCKEY-PICO-DELLA-MIRANDOLA-DIGNITY-v2.0.0
+ * @version LUCKEY-PICO-DELLA-MIRANDOLA-DIGNITY-v2.4.0
  */
 
 import type { UserProfile } from '../sharedState';
 
-export const ITALIAN_PICO_DELLA_MIRANDOLA_DIGNITY_VERSION = 'LUCKEY-PICO-DELLA-MIRANDOLA-DIGNITY-v2.3.0';
+export const ITALIAN_PICO_DELLA_MIRANDOLA_DIGNITY_VERSION = 'LUCKEY-PICO-DELLA-MIRANDOLA-DIGNITY-v2.4.0';
 
 export interface PicoTheme {
   themeKey: string;
@@ -56,6 +56,11 @@ export interface ItalianPicoDellaMirandolaDignityResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+  };
+  picoCrossAxis: {
+    themeAphorismPair: string;
+    dignityStage: string;
+    sourceAnchor: string;
   };
 }
 
@@ -202,6 +207,11 @@ export function calculateItalianPicoDellaMirandolaDignity(
         : '내면 정화와 보편적 지혜의 조화를 통해 가능성을 넓히는 국면',
     integratedAction: `${activePicoTheme.practicalCounsel} (${focalPicoAphorism.actionGuidance})`,
   };
+  const picoCrossAxis = {
+    themeAphorismPair: `${activePicoTheme.themeKey} ↔ ${focalPicoAphorism.aphorismKey}`,
+    dignityStage: describePicoStage(Math.round((freeWillAgencyScore + syncreticUniversalWisdomScore + sovereignDignityResilienceScore) / 3)).split('(')[0].trim(),
+    sourceAnchor: focalPicoAphorism.sourceContext,
+  };
 
   const ritualAction = `[${activePicoTheme.themeTitleKo}] ${focalPicoAphorism.actionGuidance}`;
   const reflectionFocus = reflectiveQuestion;
@@ -226,6 +236,7 @@ export function calculateItalianPicoDellaMirandolaDignity(
       philosophicalCounsel,
     },
     picoSynthesisMatrix,
+    picoCrossAxis,
   };
 }
 
@@ -256,6 +267,7 @@ export function formatItalianPicoDellaMirandolaDignityPrompt(
   if (res.picoSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스 [핵심 긴장: ${res.picoSynthesisMatrix.dominantTension} | 조율 상태: ${res.picoSynthesisMatrix.alignmentState}]`,
+      `- 존엄성 교차 축: ${res.picoCrossAxis.dignityStage} | ${res.picoCrossAxis.sourceAnchor}`,
       `- 통합 실천: ${res.picoSynthesisMatrix.integratedAction}`,
     );
   }
