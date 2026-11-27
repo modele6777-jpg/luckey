@@ -23,7 +23,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SHANHAIJING_SACRED_BEASTS_ENGINE_VERSION = '2.2.0';
+export const SHANHAIJING_SACRED_BEASTS_ENGINE_VERSION = '2.4.0';
 
 export interface SacredBeast {
   name: string;
@@ -53,6 +53,7 @@ export interface ShanhaijingReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    shanhaijingCrossAxis: string;
   };
 }
 
@@ -202,10 +203,12 @@ export function calculateShanhaijingSacredBeasts(options?: {
 
   const shanhaijingWisdom = `산해경 주재 영수 [${activeBeast.name}(${activeBeast.nameHanja})]의 가호 아래 방호 결계가 형성되었습니다. ${activeBeast.auspiciousMessage}`;
   const calculatedAtKst = formatShanhaijingKstTimestamp(now);
+  const shanhaijingCrossAxis = `[${activeBeast.name}] × [${secondaryBeast.name}] × [${activeBeast.direction}] × [${elementHarmony.split('의')[0]}]`;
   const shanhaijingSynthesisMatrix = {
     dominantTension: `${activeBeast.name} (${activeBeast.direction}) ↔ ${secondaryBeast.name} (${elementHarmony})`,
     alignmentState: `${activeBeast.spiritualProtection}`,
     integratedAction: `${repellingAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    shanhaijingCrossAxis,
   };
   const ritualAction = `[${activeBeast.name} · ${activeBeast.direction}] ${repellingAction}`;
   const reflectionFocus = `산해경 8방위 영수(${activeBeast.name}) — ${elementHarmony}`;
@@ -252,7 +255,7 @@ export function formatShanhaijingSacredBeastsPrompt(report: ShanhaijingReport): 
 
 2. [벽사(辟邪) 개운 실천 & 교차 매트릭스]:
    - 벽사 행동 처방: ${report.repellingAction}
-   - 종합 수호 조언: ${report.shanhaijingWisdom}${report.shanhaijingSynthesisMatrix ? `\n   - 교차 매트릭스 [핵심 긴장: ${report.shanhaijingSynthesisMatrix.dominantTension} | 조율 상태: ${report.shanhaijingSynthesisMatrix.alignmentState}]\n   - 통합 실천: ${report.shanhaijingSynthesisMatrix.integratedAction}` : ''}
+   - 종합 수호 조언: ${report.shanhaijingWisdom}${report.shanhaijingSynthesisMatrix ? `\n   - 교차 매트릭스 [핵심 긴장: ${report.shanhaijingSynthesisMatrix.dominantTension} | 조율 상태: ${report.shanhaijingSynthesisMatrix.alignmentState}]\n   - 4중 교차 축: ${report.shanhaijingSynthesisMatrix.shanhaijingCrossAxis}\n   - 통합 실천: ${report.shanhaijingSynthesisMatrix.integratedAction}` : ''}
    - 실천 의례: ${report.ritualAction}
    - 성찰 초점: ${report.reflectionFocus}
    - 성찰 질문: ${report.reflectiveQuestion}

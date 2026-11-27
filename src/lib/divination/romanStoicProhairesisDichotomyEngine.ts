@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ROMAN_STOIC_PROHAIRESIS_ENGINE_VERSION = '2.2.0';
+export const ROMAN_STOIC_PROHAIRESIS_ENGINE_VERSION = '2.4.0';
 
 export interface StoicVirtue {
   id: string;
@@ -49,6 +49,7 @@ export interface RomanStoicProhairesisReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    stoicCrossAxis: string;
   };
 }
 
@@ -186,10 +187,12 @@ export function calculateRomanStoicProhairesis(
   const composite = Math.round(
     (internalControlFocusScore + externalSurrenderScore + amorFatiScore + apatheiaInnerPeaceScore) / 4
   );
+  const stoicCrossAxis = `[${dominantVirtue.greek}] × [${secondaryVirtue.greek}] × [${describeStoicProhairesisStage(composite).split(' — ')[0]}] × [${contextText.trim() || '보편 성찰'}]`;
   const stoicSynthesisMatrix = {
     dominantTension: `${dominantVirtue.nameKo} ↔ ${secondaryVirtue.nameKo}`,
     alignmentState: describeStoicProhairesisStage(composite),
     integratedAction: `${dominantVirtue.prescription}${contextText.trim() ? ` [질문 맥락: ${contextText.trim()}]` : ''}`,
+    stoicCrossAxis,
   };
 
   return {
@@ -231,6 +234,7 @@ export function formatRomanStoicProhairesisPrompt(
   if (report.stoicSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스 [핵심 긴장: ${report.stoicSynthesisMatrix.dominantTension} | 조율 상태: ${report.stoicSynthesisMatrix.alignmentState}]`,
+      `- 4중 교차 축: ${report.stoicSynthesisMatrix.stoicCrossAxis}`,
       `- 통합 실천: ${report.stoicSynthesisMatrix.integratedAction}`,
     );
   }
