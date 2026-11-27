@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TOLTEC_NAGUAL_DREAMING_ENGINE_VERSION = '2.2.0';
+export const TOLTEC_NAGUAL_DREAMING_ENGINE_VERSION = '2.4.0';
 
 function formatToltecKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -59,6 +59,7 @@ export interface ToltecNagualDreamingReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    toltecCrossAxis: string;
   };
 }
 
@@ -161,10 +162,12 @@ export function calculateToltecNagualDreaming(
     '톨텍 나구알리즘 4대 약속과 토날·나구알 상징은 언어 습관과 내면의 자각을 점검하기 위한 철학적 관조 은유이며, 단정적 미래 예측이나 의학적·심리적 진단을 대체하지 않습니다.';
   const ritualAction = `${primaryAgreement.impeccableAction} 잠들기 전 오늘의 말과 반응을 2분간 조용히 돌아보십시오.`;
   const reflectionFocus = `[${primaryAgreement.nameKo}] 실천과 [${secondaryAgreement.nameKo}]의 조화를 가로막는 미토테(마음의 소음)`;
+  const toltecCrossAxis = `[${primaryAgreement.nameKo}] × [${secondaryAgreement.nameKo}] × [${nagualRatio >= tonalRatio ? '나구알 우위' : '토날 우위'}] × [${q || '현실 자각'}]`;
   const toltecSynthesisMatrix = {
     dominantTension: `${primaryAgreement.nameKo} ↔ ${primaryAgreement.shadowTrap}`,
     alignmentState: `${nagualRatio >= tonalRatio ? '나구알(지각자) 우위' : '토날(현실) 우위'} · 보조 교차(${secondaryAgreement.nameKo})`,
     integratedAction: `${primaryAgreement.impeccableAction}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    toltecCrossAxis,
   };
 
   return {
@@ -191,7 +194,7 @@ export function calculateToltecNagualDreaming(
 
 export function formatToltecNagualDreamingPrompt(rep: ToltecNagualDreamingReport): string {
   const matrixLine = rep.toltecSynthesisMatrix
-    ? `\n· 톨텍 나구알 교차 매트릭스: 핵심 긴장(${rep.toltecSynthesisMatrix.dominantTension}) · 조율 상태(${rep.toltecSynthesisMatrix.alignmentState}) · 통합 실천(${rep.toltecSynthesisMatrix.integratedAction})`
+    ? `\n· 톨텍 나구알 교차 매트릭스: 핵심 긴장(${rep.toltecSynthesisMatrix.dominantTension}) · 조율 상태(${rep.toltecSynthesisMatrix.alignmentState}) · 4중 교차 축(${rep.toltecSynthesisMatrix.toltecCrossAxis}) · 통합 실천(${rep.toltecSynthesisMatrix.integratedAction})`
     : '';
   return `[고대 톨텍 나구알리즘 4대 약속 & 꿈의 제2주의 실측 데이터]
 · 엔진 버전: v${rep.engineVersion} | ${rep.calculatedAtKst}

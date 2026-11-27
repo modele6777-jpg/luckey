@@ -5198,6 +5198,7 @@ test('Tibetan Phowa Rainbow Body Engine: calculates Rigpa clarity and 5 Buddha w
   assert.equal(rep.engineVersion, TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.phowaSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.phowaSynthesisMatrix?.phowaCrossAxis.includes(rep.primaryWisdom.nameKo)));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.rigpaClarityScore >= 0 && rep.rigpaClarityScore <= 100);
   assert(rep.phowaReadinessIndex >= 0 && rep.phowaReadinessIndex <= 100);
@@ -5210,7 +5211,7 @@ test('Tibetan Phowa Rainbow Body Engine: calculates Rigpa clarity and 5 Buddha w
   assert(prompt.includes(rep.primaryWisdom.nameKo));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -5295,6 +5296,7 @@ test('Toltec Nagual Dreaming Engine: calculates four agreements and second atten
   assert.equal(rep.engineVersion, TOLTEC_NAGUAL_DREAMING_ENGINE_VERSION);
   assert(rep.calculatedAtKst.includes('+09:00 (KST)'));
   assert(Boolean(rep.toltecSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.toltecSynthesisMatrix?.toltecCrossAxis.includes(rep.primaryAgreement.nameKo)));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert.equal(rep.agreements.length, 4);
   assert(rep.secondAttentionIndex >= 0 && rep.secondAttentionIndex <= 100);
@@ -5310,7 +5312,7 @@ test('Toltec Nagual Dreaming Engine: calculates four agreements and second atten
   assert(prompt.includes('보조 교차 약속'));
   assert(prompt.includes('성찰 질문'));
   assert(prompt.includes('해석 경계'));
-  assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
@@ -5437,10 +5439,12 @@ test('Buddhist Yogacara Consciousness Engine: calculates eight consciousnesses p
   assert(rep.fourWisdomsHarmonizationIndex >= 0 && rep.fourWisdomsHarmonizationIndex <= 100);
   assert(rep.kleshaDefilementPurificationScore >= 0 && rep.kleshaDefilementPurificationScore <= 100);
   assert(rep.dominantWisdom.nameKo.length > 0);
+  assert(Boolean(rep.yogacaraSynthesisMatrix?.yogacaraCrossAxis.includes(rep.dominantWisdom.nameKo)));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatBuddhistYogacaraConsciousnessPrompt(rep);
   assert(prompt.includes('불교 유식학 8식 정화 & 아뢰야식 전식득지(轉識得智) 실측 데이터'));
   assert(prompt.includes(rep.dominantWisdom.nameKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
 });
 

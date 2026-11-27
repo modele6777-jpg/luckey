@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION = '2.5.0';
+export const BUDDHIST_YOGACARA_CONSCIOUSNESS_ENGINE_VERSION = '2.6.0';
 
 function toKstIso(now: Date): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -52,6 +52,7 @@ export interface YogacaraSynthesisMatrix {
   manasEgoRelease: string;
   actionCompletionReadiness: string;
   integrativeSummary: string;
+  yogacaraCrossAxis: string;
 }
 
 export interface BuddhistYogacaraConsciousnessReport {
@@ -211,6 +212,7 @@ function buildYogacaraTemporalRhythm(now: Date): YogacaraTemporalRhythm {
 
 function buildYogacaraSynthesisMatrix(
   dominant: YogacaraTransformedWisdom,
+  secondary: YogacaraTransformedWisdom,
   topic: YogacaraQuestionTopic,
   temporal: YogacaraTemporalRhythm
 ): YogacaraSynthesisMatrix {
@@ -223,12 +225,14 @@ function buildYogacaraSynthesisMatrix(
   const actionCompletionReadiness = dominant.id === 'perfect_action_wisdom' || topic === 'decision'
     ? '실행 전환 — 생각을 행동으로 옮기는 작은 성소작지가 고민을 가장 빠르게 정리합니다.'
     : '차분함 — 서두르기보다 알아차림을 동반한 꾸준한 실천이 알맞습니다.';
+  const yogacaraCrossAxis = `[${dominant.nameKo}] × [${secondary.nameKo}] × [${topic}] × [${temporal.kstWindowLabel.split(' ')[0]}]`;
 
   return {
     alayaMirrorClarity,
     manasEgoRelease,
     actionCompletionReadiness,
     integrativeSummary: `${temporal.kstWindowLabel}의 기운과 함께 ${dominant.nameKo}(${dominant.sanskrit})를 중심에 두면 분별 망상이 지혜로운 실천으로 전환됩니다.`,
+    yogacaraCrossAxis,
   };
 }
 
@@ -277,7 +281,7 @@ export function calculateBuddhistYogacaraConsciousness(
   const questionTopic = classifyYogacaraTopic(question);
   const situationalYogacaraAudit = buildYogacaraSituationalAudit(questionTopic);
   const temporalAlayaRhythm = buildYogacaraTemporalRhythm(now);
-  const yogacaraSynthesisMatrix = buildYogacaraSynthesisMatrix(dominantWisdom, questionTopic, temporalAlayaRhythm);
+  const yogacaraSynthesisMatrix = buildYogacaraSynthesisMatrix(dominantWisdom, secondaryWisdom, questionTopic, temporalAlayaRhythm);
   const boundaryNotice = '이 풀이는 유식학의 전식득지 상징을 빌려 마음의 분별과 집착을 돌아보는 정성적 성찰이며, 우열의 점수나 확정적 예언이 아닙니다.';
 
   const yogacaraMindOnlyGuidance = `세상의 모든 고통과 번뇌는 바깥 대상에 있는 것이 아니라 내 마음식(識)의 분별 투사에서 비롯됩니다. 지금 당신에게 개화하는 지혜는 [${dominantWisdom.nameKo}(${dominantWisdom.sanskrit})]입니다. ${dominantWisdom.enlightenedAction}에 집중할 때 망상이 걷히고 성취의 길이 맑아집니다.`;
@@ -322,7 +326,7 @@ export function formatBuddhistYogacaraConsciousnessPrompt(rep: BuddhistYogacaraC
 · 보조 지혜: [${rep.secondaryWisdom.nameKo} (${rep.secondaryWisdom.sanskrit})] — ${rep.secondaryWisdom.rootConsciousness}
 · 질문 맥락 감사(${rep.situationalYogacaraAudit.scriptureRef}): 번뇌 패턴(${rep.situationalYogacaraAudit.kleshaRootPattern}) → 종자 전환(${rep.situationalYogacaraAudit.bijaTransformation}) / 유심 실천(${rep.situationalYogacaraAudit.mindOnlyPractice})
 · KST 시공간 리듬(${rep.temporalAlayaRhythm.kstWindowLabel} · ${rep.temporalAlayaRhythm.seasonTone}): ${rep.temporalAlayaRhythm.satiTransformationFocus} (${rep.temporalAlayaRhythm.contemplativeCue})
-· 유식 교차 매트릭스: 대원경지(${rep.yogacaraSynthesisMatrix.alayaMirrorClarity}) | 평등성지(${rep.yogacaraSynthesisMatrix.manasEgoRelease}) | 성소작지(${rep.yogacaraSynthesisMatrix.actionCompletionReadiness})
+· 유식 교차 매트릭스: 대원경지(${rep.yogacaraSynthesisMatrix.alayaMirrorClarity}) | 평등성지(${rep.yogacaraSynthesisMatrix.manasEgoRelease}) | 성소작지(${rep.yogacaraSynthesisMatrix.actionCompletionReadiness}) | 4중 교차 축(${rep.yogacaraSynthesisMatrix.yogacaraCrossAxis})
 · 유식유심 실천 지침: ${rep.yogacaraMindOnlyGuidance}
 · 대원경지 거울 명상 리추얼: ${rep.mirrorMeditationRitual}
 · 성찰 초점: ${rep.reflectionFocus}

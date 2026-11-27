@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION = '2.2.0';
+export const TIBETAN_PHOWA_RAINBOW_BODY_ENGINE_VERSION = '2.4.0';
 
 function formatPhowaKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -59,6 +59,7 @@ export interface TibetanPhowaRainbowBodyReport {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    phowaCrossAxis: string;
   };
 }
 
@@ -157,10 +158,12 @@ export function calculateTibetanPhowaRainbowBody(options?: {
     '티베트 족첸(Dzogchen) 릭파와 포와·5대 붓다 지혜 상징은 내면의 명징함과 감정 승화를 돕기 위한 관조적 은유이며, 단정적 미래 예측이나 의학적 처방을 대체하지 않습니다.';
   const ritualAction = `${dailyPhowaRitual} 이어 ${primaryWisdom.element} 원소의 고요함에 3분간 머무르십시오.`;
   const reflectionFocus = `${primaryWisdom.nameKo}의 ${primaryWisdom.colorRay}으로 맑히는 번뇌와 ${secondaryWisdom.nameKo}의 균형`;
+  const phowaCrossAxis = `[${primaryWisdom.nameKo}] × [${secondaryWisdom.nameKo}] × [${primaryWisdom.element}] × [${question || '본각 정렬'}]`;
   const phowaSynthesisMatrix = {
     dominantTension: `${primaryWisdom.nameKo} ↔ ${secondaryWisdom.nameKo}`,
     alignmentState: `${primaryWisdom.colorRay} · 원소(${primaryWisdom.element})`,
     integratedAction: `${dailyPhowaRitual}${question ? ` [질문 맥락: ${question}]` : ''}`,
+    phowaCrossAxis,
   };
 
   return {
@@ -185,7 +188,7 @@ export function calculateTibetanPhowaRainbowBody(options?: {
 
 export function formatTibetanPhowaRainbowBodyPrompt(rep: TibetanPhowaRainbowBodyReport): string {
   const matrixLine = rep.phowaSynthesisMatrix
-    ? `\n· 포와·무지개체 교차 매트릭스: 핵심 긴장(${rep.phowaSynthesisMatrix.dominantTension}) · 조율 상태(${rep.phowaSynthesisMatrix.alignmentState}) · 통합 실천(${rep.phowaSynthesisMatrix.integratedAction})`
+    ? `\n· 포와·무지개체 교차 매트릭스: 핵심 긴장(${rep.phowaSynthesisMatrix.dominantTension}) · 조율 상태(${rep.phowaSynthesisMatrix.alignmentState}) · 4중 교차 축(${rep.phowaSynthesisMatrix.phowaCrossAxis}) · 통합 실천(${rep.phowaSynthesisMatrix.integratedAction})`
     : '';
   return `[티베트 족첸(Dzogchen) 릭파 본각 & 무지개체(Jalü) 5대 지혜 실측 데이터]
 · 엔진 버전: v${rep.engineVersion} | ${rep.calculatedAtKst}
