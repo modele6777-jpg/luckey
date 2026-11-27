@@ -1089,6 +1089,91 @@ html.duo-unfolded-mode .lucy-orb-copy { width: min(720px, 92%); }
 }
 .lucy-orb-dock .lucy-orb-send { display: grid; place-items: center; padding: 0; flex: 0 0 44px; }
 .lucy-orb-send:disabled { opacity: .42; }
+/* 👤 입력창 위 툴바: [프로필 칩] [+] [✨] + 추천 질문 마퀴 (Lucy Pro 입력창 위와 같은 배치). */
+.lucy-orb-toolbar { display: flex; align-items: center; gap: 5px; min-width: 0; }
+.lucy-orb-toolbar > .lucy-orb-lucy-questions { flex: 1 1 auto; min-width: 0; }
+.lucy-orb-dock .lucy-orb-profile-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: 96px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #fff6dc, #f3cf86);
+  color: #3a2410;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.1;
+  box-shadow: 0 2px 8px rgba(255, 200, 120, .26);
+}
+.lucy-orb-dock .lucy-orb-profile-pill span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lucy-orb-dock .lucy-orb-profile-pill:active { transform: scale(.96); }
+.lucy-orb-dock .lucy-orb-tool-btn {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 8px;
+  background: rgba(255, 240, 210, .12);
+  color: #fff6dc;
+  box-shadow: inset 0 0 0 1px rgba(243, 207, 134, .42);
+}
+.lucy-orb-dock .lucy-orb-tool-btn:active { transform: scale(.94); background: rgba(255, 240, 210, .2); }
+/* 2인 이상: 기준 대상을 바꾸는 칩 줄 (입력창 위, 스크롤 가능). */
+.lucy-orb-profile-chips {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.lucy-orb-profile-chips::-webkit-scrollbar { display: none; }
+.lucy-orb-profile-chip {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: rgba(240, 232, 255, .12);
+  box-shadow: inset 0 0 0 1px rgba(214, 196, 255, .26);
+}
+.lucy-orb-profile-chip.is-active { background: linear-gradient(180deg, #fff6dc, #f3cf86); box-shadow: 0 2px 8px rgba(255, 200, 120, .24); }
+.lucy-orb-dock .lucy-orb-profile-chip-pick {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  max-width: 90px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  color: #fff6dc;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+.lucy-orb-dock .lucy-orb-profile-chip-pick span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lucy-orb-profile-chip.is-active .lucy-orb-profile-chip-pick { color: #3a2410; }
+.lucy-orb-dock .lucy-orb-profile-chip-remove {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 3px;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(240, 232, 255, .16);
+  box-shadow: none;
+  color: #fbf7ff;
+  font-size: 11px;
+  line-height: 1;
+}
+.lucy-orb-profile-chip.is-active .lucy-orb-profile-chip-remove { background: rgba(58, 36, 16, .16); color: #3a2410; }
 /* 📷 입력창 옆 사진·파일 버튼: 입력창과 같은 유리 알약, 아이콘만. */
 .lucy-orb-dock .lucy-orb-camera {
   display: grid;

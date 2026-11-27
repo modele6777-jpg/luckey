@@ -48,6 +48,8 @@ const RESULT_BUDGET = 2400;
 
 export function createOrbToolExecutor(options: {
   profile?: UserProfile | null;
+  /** 궁합 상대 (프로필을 2명 이상 골랐을 때). 궁합 도구가 함께 읽는다. */
+  partnerProfile?: UserProfile | null;
   events?: OrbToolEvents;
   loader?: OrbToolLoader;
 }) {
@@ -62,7 +64,12 @@ export function createOrbToolExecutor(options: {
   let callsThisTurn = 0;
   const log: Array<{ tool: string; status: string; ms: number }> = [];
 
-  const hasBirthdate = Boolean(options.profile?.basic?.birthdate?.trim());
+  let currentProfile: UserProfile | null = options.profile || null;
+  let currentPartner: UserProfile | null = options.partnerProfile || null;
+  const hasBirthdate = () => Boolean(currentProfile?.basic?.birthdate?.trim());
+  const birthKey = (profile: UserProfile | null) => profile?.basic
+    ? [profile.basic.birthdate || '', profile.basic.birthtime || '', profile.basic.lunarSolar || 'solar', profile.basic.gender || ''].join(':')
+    : '';
 
   async function runTool(toolId: string, reason: string, dice = false): Promise<Record<string, unknown>> {
     const meta = ORB_TOOL_BY_ID.get(toolId);
@@ -78,7 +85,7 @@ export function createOrbToolExecutor(options: {
     if (cache.size + inFlight.size >= ORB_MAX_TOOLS_PER_SESSION) {
       return { ok: false, error: 'session_limit', message: '이번 상담에서는 도구를 충분히 썼습니다. 이미 받은 결과로 종합하세요.' };
     }
-    if (meta.needs === 'birthdate' && !hasBirthdate) {
+    if (meta.needs === 'birthdate' && !hasBirthdate()) {
       return {
         ok: false, error: 'needs_birthdate', tool: meta.name,
         message: '생년월일이 없어 계산하지 못했습니다. 마이 페이지에 생년월일을 넣으면 볼 수 있다고 안내하고, 생년월일 없이 되는 도구(주역·육임·기문·태을·타로)나 대화로 이어 가세요.',
@@ -98,7 +105,8 @@ export function createOrbToolExecutor(options: {
     try {
       const { engine, slim, cards } = await load();
       const report = runLucyCoreCalculation(engine.runDeterministicEngine, {
-        profile: options.profile || null,
+        profile: currentProfile,
+        partnerProfile: currentPartner,
         question: reason,
         focusTools: [toolId],
         ...(dice ? { ichingLines: drawOrbIchingLines() } : {}),
@@ -134,6 +142,16 @@ export function createOrbToolExecutor(options: {
     prewarm() { return load().then(() => undefined, () => undefined); },
     /** 손님이 새로 말하면(새 질문) 한 차례 호출 수를 다시 센다. */
     newTurn() { callsThisTurn = 0; },
+    /**
+     * 상담 도중 대상 프로필이 바뀌었을 때: 이후 계산은 새 사람의 사주로 한다.
+     * 다른 사람의 계산값을 이어 쓰지 않도록 저장해 둔 결과를 비운다.
+     */
+    setProfile(profile: UserProfile | null, partnerProfile: UserProfile | null = null) {
+      const changed = birthKey(currentProfile) !== birthKey(profile) || birthKey(currentPartner) !== birthKey(partnerProfile);
+      currentProfile = profile;
+      currentPartner = partnerProfile;
+      if (changed) cache.clear();
+    },
     /** 이번 상담에서 계산한 도구 기록 (품질·비용 확인용). */
     history() { return log.slice(); },
     async execute(call: OrbFunctionCall): Promise<Record<string, unknown>> {

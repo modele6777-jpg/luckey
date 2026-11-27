@@ -21,8 +21,8 @@ import {
   orbCardPickMessage, parseCardNumbers, pickOrbCards, saveOrbMemory, shuffleOrbDeck, summarizeOrbSession,
   type OrbDeckCard, type OrbMemoryEntry, type OrbPickedCard,
 } from '@/lib/orbConsult';
-import { Clover, KeyRound, MessageCirclePlus, Camera, Paperclip, Send, Volume2, VolumeX, X, type LucideIcon } from 'lucide-react';
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Clover, KeyRound, MessageCirclePlus, Camera, Paperclip, Send, Volume2, VolumeX, X, User, Plus, Sparkles, type LucideIcon } from 'lucide-react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
 import { setMicCaptureActive } from '@/lib/audioMixingPolicy';
 import { rememberBgmBeforeMic, resumeBgmAfterMicSoon } from '@/lib/micBgmResume';
@@ -36,6 +36,9 @@ import { CAPTION_CHAR_MS, captionSteps } from '@/lib/orb/orbCaption';
 import { drawOrbTarotPositions, randomIndex, rollOrbDice } from '@/lib/orb/orbDice';
 import { createOrbToolExecutor, type OrbToolExecutor } from '@/lib/orb/orbToolExecutor';
 import type { UserProfile } from '@/lib/sharedState';
+import type { ChatTargetProfile } from '@/types/chatProfile';
+import { orbProfileLabel, resolveOrbActiveProfile } from '@/lib/orb/orbProfile';
+import { LucyLibraryDialogs, LucyLibraryTrigger } from '@/components/chat/LucyLibraryDialogs';
 import './lucy-orb-counsel.css';
 
 const BOKCHAE = [
@@ -195,6 +198,16 @@ export function LucyOrbCounsel({
   profile = null,
   account = 'device',
   onFinish,
+  profiles = [],
+  activeProfileId,
+  partnerProfile = null,
+  profileContext = '',
+  profileChangeNote = '',
+  profileKey = '',
+  onSelectProfile,
+  onAddProfile,
+  onEditProfile,
+  onRemoveProfile,
 }: {
   open: boolean;
   nickname: string;
@@ -204,6 +217,21 @@ export function LucyOrbCounsel({
   /** 단골 기억(지난 상담 기록)을 계정별로 나눠 둔다. */
   account?: string;
   onFinish: (summary: string | null) => void;
+  /** 👥 입력창 위 상담 대상 프로필 (본인 + 궁합 상대, 최대 4명). */
+  profiles?: ChatTargetProfile[];
+  activeProfileId?: string;
+  /** 궁합 상대 — 계산 도구가 함께 읽는다. */
+  partnerProfile?: UserProfile | null;
+  /** 마스터 지시문에 넣는 사주 데이터 (기준 대상·궁합 상대). */
+  profileContext?: string;
+  /** 상담 도중 대상이 바뀌었을 때 음성 세션에 한 차례로 보내는 안내. */
+  profileChangeNote?: string;
+  /** 대상이 바뀌었는지 가르는 열쇠 (이름·생년월일시·관계). */
+  profileKey?: string;
+  onSelectProfile?: (profileId: string) => void;
+  onAddProfile?: () => void;
+  onEditProfile?: (profile: ChatTargetProfile) => void;
+  onRemoveProfile?: (profileId: string) => void;
 }) {
   const [phase, setPhase] = useState<Phase>('pick');
   const metricsRef = useRef<OrbSessionMetrics | null>(null);
@@ -341,6 +369,11 @@ export function LucyOrbCounsel({
   const closedRef = useRef(false);
   const onFinishRef = useRef(onFinish);
   onFinishRef.current = onFinish;
+  // 👥 입력창 위 툴바: 지금 상담의 기준 대상 이름·목록.
+  const activeProfile = resolveOrbActiveProfile(profiles, activeProfileId);
+  const profileLabel = orbProfileLabel(activeProfile, nickname);
+  // 이 음성 세션이 시작될 때의 프로필 열쇠 (상담 도중 바뀌었는지 판단용).
+  const profileKeyRef = useRef(profileKey);
 
   const publish = () => setLines([...linesRef.current]);
   const take = (who: Line['who'], buf: React.MutableRefObject<string>) => {
@@ -644,6 +677,7 @@ export function LucyOrbCounsel({
     const notes = (resume ? [recap, memoryBrief] : [memoryBrief, sharedMemory]).filter(Boolean).join('\n');
     const executor = resume && executorRef.current ? executorRef.current : createOrbToolExecutor({
       profile,
+      partnerProfile,
       events: {
         onToolStart: (_id, name) => setToolBusy(name),
         onToolEnd: () => setToolBusy(''),
@@ -660,6 +694,8 @@ export function LucyOrbCounsel({
       },
     });
     executorRef.current = executor;
+    // 이번 세션이 시작된 프로필: 상담 도중 프로필이 바뀌면 그때 새 사주를 알린다.
+    profileKeyRef.current = profileKey;
     let warmupStarted = false;
     const session = startGeminiLiveVoice({
       nickname,
@@ -672,6 +708,8 @@ export function LucyOrbCounsel({
           birthdate: Boolean(profile?.basic?.birthdate?.trim()),
           birthtime: Boolean(profile?.basic?.birthtime?.trim()),
         }),
+        // 지금 선택된 상담 대상(본인 또는 궁합 상대)의 사주 — 지시문에 함께 들어간다.
+        profile: profileContext,
       },
       onToolCall: (call) => executor.execute(call),
       onConnectionInfo: metrics.setConnection,
@@ -1165,6 +1203,35 @@ export function LucyOrbCounsel({
     userBuf.current = text;
     take('나', userBuf);
   };
+
+  // ✨ 추천 질문 라이브러리에서 고른 질문: 바로 보내거나(라이브) 입력창에 채운다. 모달은 스스로 닫힌다.
+  const libraryPromptRef = useRef<(text: string, sendNow: boolean) => void>(() => undefined);
+  libraryPromptRef.current = (text: string, sendNow: boolean) => {
+    const question = text.trim();
+    if (!question) return;
+    if (sendNow) { ask(question); return; }
+    setDraft(question);
+    orbInputRef.current?.focus();
+  };
+  const handleLibraryPrompt = useCallback((text: string, sendNow: boolean) => {
+    libraryPromptRef.current(text, sendNow);
+  }, []);
+
+  // 👥 상담 도중 대상 프로필이 바뀌면, 이후 계산과 대화가 새 사주를 따르게 한다.
+  useEffect(() => {
+    if (profileKeyRef.current === profileKey) return;
+    profileKeyRef.current = profileKey;
+    if (phase !== 'live') return;
+    // 도구는 새 대상의 사주로 다시 계산한다 (앞사람의 계산값을 이어 쓰지 않는다).
+    executorRef.current?.setProfile(profile, partnerProfile);
+    const session = sessionRef.current;
+    if (session && profileChangeNote && session.sendText(profileChangeNote, true)) {
+      setThinkingOn(true);
+      setNotice('상담 대상 사주를 바꿨어요. 이어지는 풀이는 새 사주 기준입니다.');
+      return;
+    }
+    setNotice('상담 대상 사주를 바꿨어요. 다음 상담부터 새 사주로 풀이합니다.');
+  }, [profileKey, profile, partnerProfile, profileChangeNote, phase]);
 
   // 금액을 누르면 바로 복채가 올라간다: 그 버튼에서 하트가 인스타 라이브처럼 떠오르고, 잠시 뒤 부적이 열린다.
   const offerBok = (id: string, origin?: HTMLElement | null) => {
@@ -1728,8 +1795,54 @@ export function LucyOrbCounsel({
         {/* 입력창: 메인화면(마스터를 고르기 전)에도 바로 보이고, 적어 보내면 그 말로 상담이 시작된다. */}
         {(phase === 'pick' || phase === 'live') && (
           <div className="lucy-orb-dock lucy-orb-composer">
+            {!talkPressed && profiles.length > 1 && (
+              <div className="lucy-orb-profile-chips" role="group" aria-label="상담 대상 프로필">
+                {profiles.map(item => {
+                  const selected = item.id === (activeProfile?.id || '');
+                  const name = orbProfileLabel(item, nickname);
+                  return (
+                    <span key={item.id} className={`lucy-orb-profile-chip ${selected ? 'is-active' : ''}`}>
+                      <button type="button" className="lucy-orb-profile-chip-pick" aria-pressed={selected}
+                        title={`${name} 사주로 상담`}
+                        onClick={() => onSelectProfile?.(item.id)}>
+                        <User size={10} aria-hidden="true" />
+                        <span>{name}</span>
+                      </button>
+                      <button type="button" className="lucy-orb-profile-chip-remove"
+                        aria-label={`${name} 프로필 빼기`} title="프로필 빼기"
+                        onClick={() => onRemoveProfile?.(item.id)}>×</button>
+                    </span>
+                  );
+                })}
+              </div>
+            )}
             {!talkPressed && (
-              <OrbQuestionMarquee questions={lucyQuestions} onSelect={setDraft} />
+              <div className="lucy-orb-toolbar">
+                <button type="button" className="lucy-orb-profile-pill"
+                  onClick={() => { if (activeProfile) onEditProfile?.(activeProfile); else onAddProfile?.(); }}
+                  title="내 사주 프로필 수정" aria-label={`사주 프로필 ${profileLabel} 수정`}>
+                  <User size={11} aria-hidden="true" />
+                  <span>{profileLabel}</span>
+                </button>
+                <button type="button" className="lucy-orb-tool-btn"
+                  onClick={() => onAddProfile?.()}
+                  title="궁합·상담 대상자 추가" aria-label="궁합·상담 대상자 추가">
+                  <Plus size={12} aria-hidden="true" />
+                </button>
+                <LucyLibraryTrigger
+                  id="lucy-orb-open-prompt-library-btn"
+                  type="button"
+                  stateKey="orb:library:prompt"
+                  aria-haspopup="dialog"
+                  aria-controls="hori-prompt-library-dialog"
+                  className="lucy-orb-tool-btn"
+                  title="사주·타로·점성술 추천질문 전체보기"
+                  aria-label="추천질문 라이브러리 열기"
+                >
+                  <Sparkles size={12} aria-hidden="true" />
+                </LucyLibraryTrigger>
+                <OrbQuestionMarquee questions={lucyQuestions} onSelect={setDraft} />
+              </div>
             )}
             {attachment && (
               <div className="lucy-orb-attach" role="status">
@@ -1839,6 +1952,8 @@ export function LucyOrbCounsel({
           </div>
           </>
         )}
+        {/* ✨ 추천 질문 라이브러리 (오브 입력창 위 버튼이 연다) */}
+        <LucyLibraryDialogs sessionKey="orb:library" isLight={false} onSelectPrompt={handleLibraryPrompt} />
       </section>
   );
 }
