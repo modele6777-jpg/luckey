@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const KASHMIR_SHAIVISM_SPANDA_ENGINE_VERSION = '2.3.0';
+export const KASHMIR_SHAIVISM_SPANDA_ENGINE_VERSION = '2.4.0';
 
 export interface KashmirShaivismTattva {
   id: string;
@@ -55,6 +55,7 @@ export interface KashmirShaivismSpandaReport {
     primarySecondaryNexus: string;
     recognitionState: string;
     pulseDirective: string;
+    spandaCrossAxis: string;
   };
   kashmirShaivismGuidance: string; // 카슈미르 시바파 지혜 지침
   spandaPulsationMeditationRitual: string; // 스판다 맥동 명상 리추얼
@@ -206,12 +207,14 @@ export function calculateKashmirShaivismSpanda(
     rhythmGuidance: `${spandaPulseWindow}과 ${seasonalLila}이 맞물려 있습니다. 생각을 더 보태기보다 지금 이 순간 숨 사이의 고요를 먼저 느껴보세요.`,
   };
 
+  const spandaCrossAxis = `[${dominantTattva.nameKo}] × [${secondaryTattva.nameKo}] × [${questionTheme}] × [${spandaPulseWindow.split('(')[0].trim()}]`;
   const spandaSynthesisMatrix = {
     primarySecondaryNexus: `${dominantTattva.nameKo} × ${secondaryTattva.nameKo}`,
     recognitionState: pratyabhijnaSelfRecognitionIndex >= 76
       ? '이미 갖추어진 내면의 여유와 중심을 자연스럽게 재인식하는 명료한 국면'
       : '복잡한 생각의 파도를 잠시 멈추고 순수한 알아차림으로 돌아가는 정돈 국면',
     pulseDirective: dominantTattva.transcendencePower,
+    spandaCrossAxis,
   };
 
   const kashmirShaivismGuidance = `카슈미르 시바파의 스판다 카리카는 말합니다: "그대 안에서 뛰고 있는 심장박동과 숨결이 곧 우주를 창조하고 거두어들이는 신성한 맥동이다." 현재 진동하는 신성한 양상은 [${dominantTattva.nameKo}]입니다. 당신은 무언가를 새로 쟁취할 필요가 없습니다. 이미 본래 완벽한 신성 자아임을 '재인식(프라티야비즈냐)'하십시오. ${dominantTattva.transcendencePower}의 권능이 지금 발현되고 있습니다.`;
@@ -259,6 +262,7 @@ export function formatKashmirShaivismSpandaPrompt(rep: KashmirShaivismSpandaRepo
 · 시공간 스판다 리듬 (${rep.temporalSpandaRhythm.calculatedAtKst}): ${rep.temporalSpandaRhythm.spandaPulseWindow} / ${rep.temporalSpandaRhythm.seasonalLila}
   - 리듬 지침: ${rep.temporalSpandaRhythm.rhythmGuidance}
 · 스판다 교차 매트릭스: ${rep.spandaSynthesisMatrix.primarySecondaryNexus} — ${rep.spandaSynthesisMatrix.recognitionState}
+· 4중 교차 축: ${rep.spandaSynthesisMatrix.spandaCrossAxis}
 · 카슈미르 시바파 지혜 지침: ${rep.kashmirShaivismGuidance}
 · 스판다 맥동 명상 리추얼: ${rep.spandaPulsationMeditationRitual}
 · 실천 의례(Ritual Action): ${rep.ritualAction}

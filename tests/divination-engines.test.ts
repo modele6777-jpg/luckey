@@ -4543,12 +4543,14 @@ test('Yoruba Ifa Odu Engine: calculates 16 Meji Odu and Ebo guidance', () => {
   const rep = calculateYorubaIfaOdu({ profile });
   assert.equal(rep.engineVersion, YORUBA_IFA_ODU_ENGINE_VERSION);
   assert(rep.oduName.length > 0);
+  assert(Boolean(rep.ifaSynthesisMatrix?.ifaCrossAxis?.includes(rep.oduName)));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.destinyAlignmentScore >= 0 && rep.destinyAlignmentScore <= 100);
   const prompt = formatYorubaIfaOduPrompt(rep);
   assert(prompt.includes('서아프리카 요루바 이파(Ifá) 16 오두 & 오룬밀라 운명의 지혜 정성 리포트'));
   assert(prompt.includes(rep.oduName));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('전통 의례를 통한 실제 신탁'));
   assert(prompt.includes('확정적 예언이 아닙니다'));
   assert(prompt.includes('실천 의례') && prompt.includes('성찰 초점'));
@@ -4772,6 +4774,7 @@ test('Maori Mauri Hauora Engine: calculates 4 Hauora pillars and Mauri vitality 
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.maoriSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.maoriSynthesisMatrix?.maoriCrossAxis?.includes(rep.pillars.dominantPillar.nameMaori)));
   const repQ = calculateMaoriMauriHauora({ profile, question: '마우리(생명력)를 고르게 세우기' });
   assert(repQ.reflectiveQuestion.includes('고르게 세우기'));
   const prompt = formatMaoriMauriHauoraPrompt(repQ);
@@ -4782,6 +4785,7 @@ test('Maori Mauri Hauora Engine: calculates 4 Hauora pillars and Mauri vitality 
   assert(prompt.includes(repQ.reflectionFocus));
   assert(prompt.includes('해석 경계'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -5567,11 +5571,13 @@ test('Kashmir Shaivism Spanda Engine: calculates cosmic pulsation, Pratyabhijna 
   assert(rep.prakashaVimarshaUnityScore >= 0 && rep.prakashaVimarshaUnityScore <= 100);
   assert(rep.threeMalasPurificationRate >= 0 && rep.threeMalasPurificationRate <= 100);
   assert(rep.dominantTattva.nameKo.length > 0);
+  assert(rep.spandaSynthesisMatrix.spandaCrossAxis.includes(rep.dominantTattva.nameKo));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatKashmirShaivismSpandaPrompt(rep);
   assert(prompt.includes('카슈미르 시바파 스판다 우주 맥동 & 프라티야비즈냐 재인식 실측 데이터'));
   assert(prompt.includes(rep.dominantTattva.nameKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes(rep.ritualAction));
 });
 
