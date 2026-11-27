@@ -48,7 +48,7 @@
  *    향후 28일(4주기 1순환) 내 최적 택일 후보일을 함께 제시한다.
  */
 
-export const TWENTY_EIGHT_MANSIONS_ENGINE_VERSION = 'LUCKEY-TM-v2.3.0';
+export const TWENTY_EIGHT_MANSIONS_ENGINE_VERSION = 'LUCKEY-TM-v2.4.0';
 
 export type MansionsQuestionTopic =
   | 'contract'
@@ -183,6 +183,7 @@ export interface TwentyEightMansionsResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    mansionsCrossAxis: string;
   };
 }
 
@@ -569,10 +570,12 @@ export function calculateTwentyEightMansions(params: { targetDate?: Date; questi
     '해석 경계: 28수 일진 택일은 천상열차분야지도의 7원 4주기 순환을 일진 판단의 참고 프레임으로 적용한 것이며, 실제 의사결정과 실행 시기 확정은 사용자의 현실 여건과 판단에 따릅니다.';
   const ritualAction = `${bestDomain.actionGuide} 단, ${worstDomain.domainKo} 관련 큰 결정은 ${worstDomain.bestDates[0].date}(${worstDomain.bestDates[0].mansionName}수)로 미루어 리스크를 줄이십시오.`;
   const reflectionFocus = `오늘 직성 ${mansion.fullName}(${mansion.grade})의 순환 에너지와 대칭 별자리 ${oppositeMansion.fullName}이 비추는 절제의 균형`;
+  const mansionsCrossAxis = `[${mansion.fullName}] × [${oppositeMansion.fullName}] × [${celestialCourt}] × [${phaseName}]`;
   const mansionsSynthesisMatrix = {
     dominantTension: `${mansion.fullName}(${mansion.grade}) ↔ ${oppositeMansion.fullName}(대칭)`,
     alignmentState: `${celestialCourt} · ${celestialBeastAlignment.directionMatch} · ${phaseName}`,
     integratedAction: `${bestDomain.actionGuide}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    mansionsCrossAxis,
   };
 
   return {
@@ -632,7 +635,7 @@ export function formatTwentyEightMansionsPrompt(result: TwentyEightMansionsResul
     ? `\n- 대칭 보조 별자리: ${result.oppositeMansion.fullName}(${result.oppositeMansion.group} · ${result.oppositeMansion.grade})`
     : '';
   const matrixBlock = result.mansionsSynthesisMatrix
-    ? `\n- 28수 천문 교차 매트릭스: 핵심 긴장(${result.mansionsSynthesisMatrix.dominantTension}) · 조율 상태(${result.mansionsSynthesisMatrix.alignmentState}) · 통합 실천(${result.mansionsSynthesisMatrix.integratedAction})`
+    ? `\n- 28수 천문 교차 매트릭스: 핵심 긴장(${result.mansionsSynthesisMatrix.dominantTension}) · 조율 상태(${result.mansionsSynthesisMatrix.alignmentState}) · 통합 실천(${result.mansionsSynthesisMatrix.integratedAction})\n- 4중 교차 축: ${result.mansionsSynthesisMatrix.mansionsCrossAxis}`
     : '';
   const reflectionBlock = result.reflectiveQuestion
     ? `\n- 성찰 질문: ${result.reflectiveQuestion}`

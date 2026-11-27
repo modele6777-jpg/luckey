@@ -39,7 +39,7 @@ import type { UserProfile } from '../sharedState';
 import { resolveEffectiveSolarDate } from '../lunarCalendar';
 import { parseBirthTime } from '../birthDateTime';
 
-export const TAIYI_ENGINE_VERSION = 'LUCKEY-TY-v2.3.0';
+export const TAIYI_ENGINE_VERSION = 'LUCKEY-TY-v2.4.0';
 
 function formatTaiyiKstTimestamp(now: Date = new Date()): string {
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
@@ -125,6 +125,7 @@ export interface TaiyiResult {
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
+    taiyiCrossAxis: string;
   };
   ritualAction?: string;
   reflectionFocus?: string;
@@ -367,10 +368,12 @@ export function calculateTaiyi(params: {
   );
 
   const q = (params.question || '').trim();
+  const taiyiCrossAxis = `[제${juNumber}국] × [태을 ${PALACES_16[taiyiPalace - 1].name}궁] × [${outcome.split('(')[0].trim()}] × [${macroStrategicMatrix.macroPhase}]`;
   const taiyiSynthesisMatrix = {
     dominantTension: `주산(${juSan}·${juSanType}) ↔ 객산(${gaekSan}·${gaekSanType})`,
     alignmentState: `${cycleName} 제${juNumber}국 · 태을 ${PALACES_16[taiyiPalace - 1].name}궁 · ${macroStrategicMatrix.macroPhase}`,
     integratedAction: `${macroStrategicMatrix.tacticalWindowAdvice}${q ? ` [질문 맥락: ${q}]` : ''}`,
+    taiyiCrossAxis,
   };
   const reflectiveQuestion = q
     ? `지금 "${q}" 앞에서 태을 제${juNumber}국(${PALACES_16[taiyiPalace - 1].name}궁 · ${outcome.split('(')[0].trim()})의 거시 대세를 타기 위해 내가 먼저 쥘 주도권의 한 수는 무엇인가요?`
@@ -517,6 +520,7 @@ export function formatTaiyiPrompt(result: TaiyiResult): string {
   * 공수 역학 밸런스 지수: ${c.outcome} 기반 주도권·방어 균형
   * 결단 실행 윈도우: ${result.macroStrategicMatrix.tacticalWindowAdvice}` : ''}${result.taiyiSynthesisMatrix ? `\n- 교차 매트릭스:
   * 핵심 긴장: ${result.taiyiSynthesisMatrix.dominantTension}
+  * 4중 교차 축: ${result.taiyiSynthesisMatrix.taiyiCrossAxis}
   * 조율 상태: ${result.taiyiSynthesisMatrix.alignmentState}
   * 통합 실천: ${result.taiyiSynthesisMatrix.integratedAction}` : ''}${result.ritualAction ? `\n- 실천 의례: ${result.ritualAction}` : ''}${result.reflectionFocus ? `\n- 성찰 초점: ${result.reflectionFocus}` : ''}${result.reflectiveQuestion ? `\n- 질문 맞춤 성찰 질문: ${result.reflectiveQuestion}` : ''}${result.interpretiveBoundary ? `\n- 해석 경계: ${result.interpretiveBoundary}` : ''}
 - [AI 해석 지침]: 본 리포트는 구현된 전통 역법 규칙에 따른 계산 참고값이며 실측 데이터나 확정적 승패 예측이 아닙니다. 주산·객산 및 판정 표시는 계산 결과에 맞추되, 시대 흐름·승부·투자 결과를 보장하는 사실처럼 말하지 마십시오.
