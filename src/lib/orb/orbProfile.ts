@@ -48,7 +48,9 @@ export function buildOrbProfileBrief(
   if (!profiles?.length) return '';
   const primary = resolveChatPrimaryProfile(profiles, activeProfileId) || profiles[0];
   const primaryName = displayName(primary, userDisplayName);
-  const blocks = profiles.map((profile, index) => {
+  // 기준 대상을 맨 앞에 둔다: 지시문 길이 제한에 걸려도 이번 상담 대상의 사주는 빠지지 않는다.
+  const ordered = [primary, ...profiles.filter(profile => profile.id !== primary.id)];
+  const blocks = ordered.map((profile, index) => {
     const isPrimary = profile.id === primary.id;
     const who = isPrimary ? '★ 이번 상담의 기준 대상' : '함께 보는 대상';
     return `${who}\n${formatProfileAnalysisContext(profile, index, userDisplayName)}`;

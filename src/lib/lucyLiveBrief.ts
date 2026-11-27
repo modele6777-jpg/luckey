@@ -48,7 +48,7 @@ export function buildOrbLiveInstruction(nickname: string, persona = '', greet = 
   const notesText = keepLines(notes, 1400);
   const rulesText = keepLines(rules, 2400);
   // 이번 상담 대상(본인 또는 궁합 상대)의 만세력·사주. 도구 결과와 함께 풀이의 근거가 된다.
-  const profileText = keepLines(profile, 3000);
+  const profileText = keepLines(profile, 4000);
   return `${who}
 사용자는 한국어로 말합니다. 사용자의 목소리는 영어처럼 들려도 한국어 발화로 알아듣고, 영어로 답하지 마세요.
 ${personaText ? `당신의 성격과 말투: ${personaText}
