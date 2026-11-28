@@ -29,7 +29,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DRUID_MOON_TREES_VERSION = 'LUCKEY-DRUID-MOON-TREES-v2.4.0';
+export const DRUID_MOON_TREES_VERSION = 'LUCKEY-DRUID-MOON-TREES-v2.5.0';
 
 export interface DruidTreeSituationalAudit {
   groveFocus: string;
@@ -48,6 +48,7 @@ export interface DruidTreeTemporalRhythm {
 
 export interface DruidTreeSynthesisMatrix {
   resonanceGrade: '고목공명' | '유연조화' | '뿌리안정';
+  druidCrossAxis: string;
   birthCycleLink: string;
   nextGroveStep: string;
 }
@@ -301,8 +302,10 @@ export function calculateDruidMoonTrees(
   const synthesisMessage = `켈트 드루이드 13달나무 역법에 따라, 당신은 [${birthTree.koreanName}]의 본질적 기질을 품고 있으며 현재 숲 공명은 [${resonanceGrade}] 상태입니다.`;
   const situationalTreeAudit = buildDruidTreeSituationalAudit(question, birthTree, activeCycleTree);
   const temporalTreeRhythm = buildDruidTreeTemporalRhythm(now);
+  const druidCrossAxis = `[${birthTree.oghamLetter}] × [${activeCycleTree.oghamLetter}] × [${resonanceGrade}] × [${temporalTreeRhythm.treeTempo}]`;
   const treeSynthesisMatrix: DruidTreeSynthesisMatrix = {
     resonanceGrade,
+    druidCrossAxis,
     birthCycleLink: `탄생 수호목 [${birthTree.koreanName}]과 활성목 [${activeCycleTree.koreanName}]이 ${temporalTreeRhythm.sacredGroveWindow}에서 어우러집니다.`,
     nextGroveStep: situationalTreeAudit.forestAction,
   };
@@ -347,6 +350,7 @@ export function formatDruidMoonTreesPrompt(report: DruidMoonTreesReport): string
 - **KST 시공간 리듬 (${report.temporalTreeRhythm.kstHour}시)**: ${report.temporalTreeRhythm.sacredGroveWindow} · ${report.temporalTreeRhythm.lunarTreeSeason} (${report.temporalTreeRhythm.treeTempo})
   - 시간대 지침: ${report.temporalTreeRhythm.groveTimingDirective}
 - **교차 매트릭스**: ${report.treeSynthesisMatrix.birthCycleLink}
+- **4중 교차 축**: ${report.treeSynthesisMatrix.druidCrossAxis}
 - **숲의 지혜 처방**: ${report.forestGuidance}
 - **드루이드 통합 나침반**: ${report.synthesisMessage}
 - **성찰 초점**: ${report.reflectionFocus}

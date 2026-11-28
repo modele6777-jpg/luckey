@@ -6,7 +6,7 @@
  * 양심의 명료함, 마음의 짐 내려놓기에 연결하는 정성적 성찰 엔진입니다.
  */
 
-export const EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-MAAT-v2.4.0';
+export const EGYPTIAN_MAAT_FEATHER_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-MAAT-v2.5.0';
 
 export type MaatQuestionTheme = 'relationship' | 'decision' | 'healing' | 'reflection';
 
@@ -20,6 +20,7 @@ export interface MaatTemporalRhythm {
 
 export interface MaatSynthesisMatrix {
   virtueTrapLink: string;
+  maatCrossAxis: string;
   scaleAlignmentState: '수평안정' | '경량명료' | '정화권고';
   nextScaleStep: string;
 }
@@ -204,8 +205,10 @@ export function calculateEgyptianMaatFeatherHeart(params: {
   const temporalMaatRhythm = buildMaatTemporalRhythm(now);
   const scaleAlignmentState: MaatSynthesisMatrix['scaleAlignmentState'] =
     heartLightnessScore >= 85 ? '경량명료' : heartLightnessScore >= 70 ? '수평안정' : '정화권고';
+  const maatCrossAxis = `[${balanceState}] × [${questionTheme}] × [${scaleAlignmentState}] × [${temporalMaatRhythm.scaleTempo}]`;
   const maatSynthesisMatrix: MaatSynthesisMatrix = {
     virtueTrapLink: `[${activeNegativeConfessionVirtue}]의 덕목으로 [${ammutShadowTrap}]을 비추어 균형을 잡습니다.`,
+    maatCrossAxis,
     scaleAlignmentState,
     nextScaleStep: themeContent.ritualAction,
   };
@@ -251,6 +254,7 @@ export function formatEgyptianMaatFeatherHeartPrompt(report: MaatWeighingReport)
 - **KST 시공간 리듬 (${report.temporalMaatRhythm.kstHour}시)**: ${report.temporalMaatRhythm.hallOfMaatWindow} · ${report.temporalMaatRhythm.seasonalBalancePhase} (${report.temporalMaatRhythm.scaleTempo})
   - **시간대 지침**: ${report.temporalMaatRhythm.weighingGuidance}
 - **교차 매트릭스**: ${report.maatSynthesisMatrix.virtueTrapLink}
+- **4중 교차 축**: ${report.maatSynthesisMatrix.maatCrossAxis}
 - **실천 조언**: ${report.practiceGuidance}
 - **일상 의례**: ${report.ritualAction}
 - **성찰 초점**: ${report.reflectionFocus}
