@@ -23,8 +23,8 @@ test('every card in the 78-card tarot deck has its own concise introduction', ()
 
   for (const card of TAROT_DECK) {
     const introduction = getTarotCardIntroduction(card);
-    assert.ok(introduction.length >= 20, `${card.id} should have a useful introduction`);
-    assert.ok(introduction.length <= 100, `${card.id} introduction should stay concise`);
+    assert.ok(introduction.length >= 45, `${card.id} should have a useful introduction`);
+    assert.ok(introduction.length <= 130, `${card.id} introduction should stay concise`);
     assert.match(introduction, /[.!?]$/);
   }
 });
@@ -37,6 +37,12 @@ test('the enlarged view renders the card introduction independently of orientati
     modal.indexOf('카드 한눈에 보기') < modal.indexOf('역방향 심층 상징 및 뜻'),
     'the general introduction appears separately before orientation-specific reversed details',
   );
+});
+
+test('the introduction has clear spacing before the symbolic keywords section', () => {
+  const introductionSection =
+    modal.match(/<motion\.section[\s\S]*?aria-label="카드 소개"[\s\S]*?<\/motion\.section>/)?.[0] || '';
+  assert.match(introductionSection, /mb-4 sm:mb-5/);
 });
 
 test('cards supplied without a catalog ID still get a short keyword-based introduction', () => {
