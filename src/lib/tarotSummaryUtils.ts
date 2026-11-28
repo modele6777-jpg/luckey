@@ -336,9 +336,25 @@ export function repairDirectionSummaryLine(diagnosis: string, cards?: any[]): st
   });
 }
 
+/** 괄호·쉼표로 이어 붙인 키워드 조각. 문장처럼 보여도 요약으로 쓰지 않는다. */
+export function isKeywordFragmentSentence(sentence: string): boolean {
+  const s = String(sentence || '')
+    .replace(/\[[^\]]{1,24}\]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!s) return false;
+  if (/^\(?\s*[가-힣A-Za-z]{1,12}(?:\s*[,·/]\s*[가-힣A-Za-z]{1,12}){1,6}\s*\)?\.?$/.test(s)) return true;
+  if (/키워드(?:는|가)?\s+[^.]{0,80}입니다/.test(s)) return true;
+  const list = s.match(/[가-힣]{1,8}(?:\s*,\s*[가-힣]{1,8}){2,}/);
+  if (!list) return false;
+  const bare = s.replace(/[.!?]/g, '').trim();
+  return list[0].length >= bare.length * 0.35;
+}
+
 function classifySummarySentence(sentence: string, role: SummaryRole): 'good' | 'skip' {
   const s = sentence.trim();
   if (s.length < 8) return 'skip';
+  if (isKeywordFragmentSentence(s)) return 'skip';
   if (role === 'decision' && isDirectionTitleStub(s)) return 'skip';
   if (GENERIC_SUMMARY.test(s) || isPictureOnly(s)) return 'skip';
   if (isCautionTeaser(s) || isDanglingAction(s)) return 'skip';
@@ -417,9 +433,18 @@ export function groundTarotSummaryParts(
   const concernLead = concernText
     ? `「${concernText.length > 40 ? `${concernText.slice(0, 40)}…` : concernText}」를 두고 `
     : '';
-  const energy = reversed
-    ? finishKoreanSentence(`${concernLead}${getTarotReversedData(lead).meaning || `지금 당신의 상태는 ${name} 역방향의 ${kws}처럼 흐름이 어긋나 있습니다`}`)
-    : finishKoreanSentence(`${concernLead}지금 당신의 에너지는 ${name}의 ${kws} 흐름 위에 있습니다`);
+  const coreRaw = (reversed
+    ? (getTarotReversedData(lead).meaning || details.reversedCore || '')
+    : (details.uprightCore || '')
+  ).replace(/\s+/g, ' ').trim();
+  const coreSentence = coreRaw && !isKeywordFragmentSentence(coreRaw)
+    ? coreRaw.replace(/[.!?]+$/g, '')
+    : '';
+  const energy = coreSentence
+    ? finishKoreanSentence(`${concernLead}${name}${particle} ${coreSentence}`)
+    : reversed
+      ? finishKoreanSentence(`${concernLead}${getTarotReversedData(lead).meaning || `지금 당신의 상태는 ${name} 역방향의 ${kws}처럼 흐름이 어긋나 있습니다`}`)
+      : finishKoreanSentence(`${concernLead}지금 당신의 에너지는 ${name}의 ${kws} 흐름 위에 있습니다`);
 
   const cautionRaw = (reversed ? getTarotCardCaution(lead) : details.shadowWarning || '').replace(/[.!?]\s*$/g, '').trim();
   const direction = reversed

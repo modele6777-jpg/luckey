@@ -24,5 +24,7 @@ export function useInterpretiveTarotSummary(reading: string | null | undefined, 
   }, [reading, concern, enabled, attempt, includeCaution]);
   const matching = enabled && result?.reading === reading && result?.concern === concern && result?.includeCaution === includeCaution ? result : null;
   const bullets = matching?.bullets.length === 3 ? matching.bullets : fallbackBullets;
-  return { bullets, error: matching?.error || false, loading: enabled && !!reading && reading.trim().length >= 40 && !matching, retry };
+  // 모델이 거절·실패해도 본문에서 만든 3줄이 있으면 실패 배너를 붙이지 않는다.
+  const failedWithoutSummary = Boolean(matching?.error) && bullets.length !== 3;
+  return { bullets, error: failedWithoutSummary, loading: enabled && !!reading && reading.trim().length >= 40 && !matching, retry };
 }

@@ -524,14 +524,28 @@ export function buildSpecificTarotDailyOracle(card: TarotCard, mode: string = "o
   const luckyAction = getTarotLuckyAction(card, isReversed);
 
   const cardMeaning = isReversed ? (revData?.meaning || details.reversedCore) : details.uprightCore;
+  const meaningSentence = String(cardMeaning || '').replace(/\s+/g, ' ').trim().replace(/[.!?]+$/g, '');
+  const nameParticle = (() => {
+    const last = cardName.trim().slice(-1);
+    const code = last.charCodeAt(0);
+    if (code < 0xac00 || code > 0xd7a3) return '는';
+    return (code - 0xac00) % 28 === 0 ? '는' : '은';
+  })();
+  const closedMeaning = meaningSentence && /(?:다|요|까|죠|니다)$/.test(meaningSentence)
+    ? meaningSentence
+    : meaningSentence ? `${meaningSentence}입니다` : '';
 
   const leadKeyword = keywords.split(',')[0]?.trim() || cardName;
-  const energySummary = isReversed
-    ? `[${cardName}] 역방향입니다. 오늘의 키워드는 ${keywords}입니다.`
-    : `지금 에너지는 [${cardName}]의 ${keywords} 흐름 위에 있습니다.`;
+  const energySummary = closedMeaning && !/키워드는/.test(closedMeaning)
+    ? (isReversed
+      ? `${cardName} 역방향은 ${closedMeaning}.`
+      : `${cardName}${nameParticle} ${closedMeaning}.`)
+    : (isReversed
+      ? `${cardName} 역방향은 흐름이 한쪽으로 기울어 있으니, 밀어붙이기보다 어긋난 부분을 먼저 살펴야 합니다.`
+      : `지금 에너지는 ${cardName}의 ${leadKeyword} 흐름 위에 있습니다.`);
   const decisionSummary = isReversed
-    ? `지금은 [${cardName}] 역방향처럼 결과를 밀기보다, 어긋난 부분 하나를 먼저 맞출 방향입니다.`
-    : `오늘은 ${leadKeyword}의 흐름을 따라 한 걸음 나아가되, 속도만 과하게 올리지 마세요.`;
+    ? `지금은 ${cardName} 역방향처럼 결과를 밀기보다, 어긋난 부분 하나를 먼저 맞출 방향입니다.`
+    : `${cardName}의 ${leadKeyword}만 붙잡지 말고, 오늘 확인할 조건 하나를 정한 뒤 한 걸음만 나아가세요.`;
   const actionSummary = luckyAction && luckyAction.length >= 2
     ? luckyAction.replace(/[.!?]\s*$/g, '') + '.'
     : '오늘 바로 할 수 있는 일 하나를 정해 10분 안에 손을 대고, 끝낸 뒤 결과를 한 줄로 적으세요.';
