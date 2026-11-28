@@ -9,6 +9,7 @@
  * 5) "모든 페이지의 가이드 기능은 조금만 더 구채적으로 작성해줘"
  * 6) "빅뱅 버튼 물음표는 가이드 터치 할때만 잠깐 나오개 해줘" (2026-11-28, 영구 저장 제거)
  * 7) "물음표 대신에 …으로 표시해줘" (2026-11-28, 중앙 문양을 말줄임표로)
+ * 8) "…이 나올때 점의 크기를 평상시 .으로 맞추고 버튼 중앙으로 맞춰줘" (2026-11-28, 점 3개·정중앙)
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -158,9 +159,24 @@ test('the ellipsis badge only flashes when the guide is tapped — it never stay
   // 중앙 구슬의 문양: 물음표 대신 말줄임표(…) + 페이드 + 설정 OFF와 무관.
   assert.match(BIGBANG, /data-bigbang-guide-badge="ellipsis"/);
   assert.doesNotMatch(BIGBANG, /data-bigbang-guide-badge="question"/);
-  // 말줄임표(…)를 그린다 — 물음표가 남지 않는다.
-  assert.match(BIGBANG, />…<\/span>/);
+  // 말줄임표는 글자 글리프가 아니라 평상시 중앙 점과 같은 크기의 점 3개로 그린다.
+  assert.doesNotMatch(BIGBANG, />…<\/span>/);
   assert.doesNotMatch(BIGBANG, />\?<\/span>/);
+  assert.match(BIGBANG, /data-bigbang-guide-dot="true"/);
+  assert.match(BIGBANG, /\[0, 1, 2\]\.map\(\(dotIndex\) =>/);
+  // 점 하나는 평상시 중앙 점(idle core)과 같은 w-2.5 h-2.5 rounded-full — 크기가 달라 보이지 않는다.
+  const idleCore = BIGBANG.match(/data-bigbang-idle-core="true" className="([^"]+)"/);
+  assert.ok(idleCore, 'idle center dot exists');
+  const idleSize = idleCore![1].match(/w-(\S+) h-(\S+) rounded-full/);
+  assert.ok(idleSize, 'idle center dot has an explicit size');
+  const guideDots = BIGBANG.slice(BIGBANG.indexOf('data-bigbang-guide-dot="true"') - 400, BIGBANG.indexOf('data-bigbang-guide-dot="true"') + 200);
+  assert.match(guideDots, new RegExp(`w-${idleSize![1]} h-${idleSize![2]} rounded-full`), 'guide dots keep the idle dot size');
+  assert.match(guideDots, /bg-cyan-300\/80 blur-\[1px\]/, 'guide dots keep the idle dot fill and blur');
+  // 점 3개 줄은 flex 정중앙 정렬 — 글자 베이스라인 때문에 아래로 처지지 않는다.
+  const badgeBlock = BIGBANG.slice(BIGBANG.indexOf('data-bigbang-guide-badge="ellipsis"') - 200, BIGBANG.indexOf('data-bigbang-guide-dot="true"'));
+  assert.match(badgeBlock, /inline-flex items-center justify-center gap-1/, 'badge dots are flex-centered');
+  assert.doesNotMatch(badgeBlock, /fontSize: 24/, 'no text glyph sizing is left');
+  assert.doesNotMatch(badgeBlock, /textShadow/, 'no text glyph shadow is left');
   assert.match(BIGBANG, /aria-label="스마트 가이드 안내 중"/);
   assert.match(BIGBANG, /data-bigbang-guide-badge-phase=\{guideBadgePhase\}/);
   // 배너 설정(guidePresentation.banner)과 무관하게 보인다 — 설정 OFF라도 탭하면 물음표가 뜬다.
