@@ -6,11 +6,12 @@ async function captureVisualCheck(page: Page, dialog: Locator, filename: string)
   if (!directory) return;
   await mkdir(directory, { recursive: true });
   await dialog.locator('.duo-dialog-body').evaluate((element) => { (element as HTMLElement).scrollTop = 0; });
-  await page.screenshot({ path: `${directory}/${filename}.png`, clip: { x: 0, y: 0, width: 700, height: 450 } });
+  const viewport = page.viewportSize();
+  await page.screenshot({ path: `${directory}/${filename}.png`, clip: { x: 0, y: 0, width: Math.min(700, viewport?.width ?? 700), height: Math.min(450, viewport?.height ?? 450) } });
 }
 
-async function openTrinityTarot(page: Page) {
-  await page.setViewportSize({ width: 700, height: 900 });
+async function openTrinityTarot(page: Page, viewport = { width: 626, height: 890 }) {
+  await page.setViewportSize(viewport);
   await page.addInitScript(() => {
     const now = new Date();
     const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -38,24 +39,32 @@ async function openTrinityTarot(page: Page) {
   });
 
   await page.goto('/trinity?tab=tarot');
-  await expect(page.locator('html')).toHaveClass(/duo-unfolded-portrait/);
-  await expect(page.locator('#duo-content-viewport')).toBeVisible();
-  await expect(page.locator('#duo-content-viewport').getByRole('heading', { name: '타로 리딩' })).toBeVisible();
-  await expect(page.locator('#duo-content-viewport').getByText('컵 10', { exact: true }).last()).toBeVisible();
+  const contentPane = page.locator('#duo-content-viewport, [data-workspace-pane="content"]').first();
+  if (viewport.width >= 600) {
+    await expect(page.locator('html')).toHaveClass(/duo-unfolded-portrait/);
+    await expect(page.locator('#duo-content-viewport')).toBeVisible();
+  } else {
+    await expect(page.locator('html')).not.toHaveClass(/duo-unfolded-mode/);
+    await expect(page.locator('#duo-content-viewport')).toHaveCount(0);
+    await expect(page.locator('[data-workspace-pane="content"]')).toBeVisible();
+  }
+  await expect(contentPane.getByRole('heading', { name: '타로 리딩' })).toBeVisible();
+  await expect(contentPane.getByText('컵 10', { exact: true }).last()).toBeVisible();
 }
 
 async function getGeometry(dialog: Locator) {
   return dialog.evaluate((element) => {
     const root = element as HTMLElement;
     const portal = root.parentElement as HTMLElement;
-    const pane = document.querySelector<HTMLElement>('#duo-content-viewport');
+    const pane = document.getElementById('duo-content-viewport') ?? document.querySelector<HTMLElement>('[data-workspace-pane="content"]');
     const nav = document.querySelector<HTMLElement>('.sites-pinned-sidebar');
+    const frame = document.querySelector<HTMLElement>('.prism-app-shell');
     const panel = root.querySelector<HTMLElement>('.duo-tarot-portrait-fill');
     const body = root.querySelector<HTMLElement>('.duo-dialog-body');
     const heading = root.querySelector<HTMLElement>('.duo-dialog-heading');
     const actions = root.querySelector<HTMLElement>('.duo-dialog-actions');
-    if (!pane || !nav || !panel || !body || !heading || !actions) {
-      throw new Error('Tarot popup fixture is missing its real pane, navigation, panel, scroll body, heading, or footer');
+    if (!pane || !nav || !frame || !panel || !body || !heading || !actions) {
+      throw new Error('Tarot popup fixture is missing its real pane, frame, navigation, panel, scroll body, heading, or footer');
     }
     const rect = (node: Element) => {
       const box = node.getBoundingClientRect();
@@ -71,6 +80,7 @@ async function getGeometry(dialog: Locator) {
       scope: portal.dataset.overlayScope,
       overlayPane: portal.dataset.overlayPane,
       portalIsContentPane: portal.parentElement === pane,
+      frame: rect(frame),
       pane: rect(pane),
       portal: rect(portal),
       root: rootRect,
@@ -172,6 +182,7 @@ async function swapPortraitPanes(page: Page) {
 
 test('Tarot detail and deck-back popups fill the actual portrait Duo content pane in both pane orders', async ({ page }) => {
   await openTrinityTarot(page);
+  expect(page.viewportSize()?.width, 'use the supported 626px inner portrait display instead of a desktop-like 700px canvas').toBe(626);
   const root = page.locator('html');
   await expect(root).not.toHaveClass(/duo-panels-swapped/);
 
@@ -200,4 +211,55 @@ test('Tarot detail and deck-back popups fill the actual portrait Duo content pan
   const swappedDetailDialog = page.getByRole('dialog', { name: '상세 보기' });
   await assertPopupFillsActivePane(swappedDetailDialog);
   await closeDialog(swappedDetailDialog);
+});
+
+test('Tarot detail and deck-back popups fill the folded cover canvas when iOS leaves main narrow', async ({ page }) => {
+  await openTrinityTarot(page, { width: 461, height: 678 });
+  expect(page.viewportSize()?.width, 'match the reported iPhone cover viewport at 3x screenshot scale').toBe(461);
+  const contentPane = page.locator('[data-workspace-pane="content"]');
+  // The user report recorded main=309px while the shell stayed 461px and the
+  // fixed rail started at 381px. Mirror that stale iOS/PWA layout pass instead
+  // of testing only the healthy 381px main that Playwright initially renders.
+  await page.locator('main.sites-pinned-main').evaluate((element) => {
+    const main = element as HTMLElement;
+    main.style.width = '309px';
+    main.style.maxWidth = '309px';
+  });
+  await expect.poll(() => page.locator('main.sites-pinned-main').evaluate((element) => element.getBoundingClientRect().width)).toBe(309);
+  await expect.poll(() => contentPane.evaluate((element) => element.getBoundingClientRect().width)).toBe(309);
+  const deckBackLauncher = contentPane.locator('button[title*="타로 카드 뒷면 덱 커스텀"]');
+
+  await deckBackLauncher.click();
+  const deckDialog = page.getByRole('dialog', { name: '타로 덱 뒷면 커스텀 컬렉션' });
+  await expect(deckDialog).toBeVisible();
+  await expect.poll(async () => (await getGeometry(deckDialog)).root.width).toBeGreaterThan(100);
+  const deck = await getGeometry(deckDialog);
+  expect(deck.scope).toBe('pane');
+  expect(deck.overlayPane).toBe('content');
+  expect(deck.navOverlapArea).toBe(0);
+  const expectedRight = Math.min(deck.frame.right, deck.nav.left);
+  expect(Math.abs(deck.root.left - deck.frame.left), 'folded popup starts at the visible app frame').toBeLessThanOrEqual(2);
+  expect(Math.abs(deck.root.right - expectedRight), 'deck popup reaches the fixed rail without leaving a dark strip').toBeLessThanOrEqual(2);
+  expect(Math.abs(deck.root.top - deck.frame.top)).toBeLessThanOrEqual(2);
+  expect(Math.abs(deck.root.bottom - deck.frame.bottom)).toBeLessThanOrEqual(2);
+  expect(Math.abs(deck.panel.left - (deck.root.left + deck.padding.left))).toBeLessThanOrEqual(2);
+  expect(Math.abs(deck.panel.right - (deck.root.right - deck.padding.right))).toBeLessThanOrEqual(2);
+  await captureVisualCheck(page, deckDialog, 'folded-tarot-deck-back-popup');
+  await closeDialog(deckDialog);
+
+  await contentPane.getByText('컵 10', { exact: true }).last().click();
+  const detailDialog = page.getByRole('dialog', { name: '상세 보기' });
+  await expect(detailDialog).toBeVisible();
+  const detail = await getGeometry(detailDialog);
+  expect(detail.scope).toBe('pane');
+  expect(detail.overlayPane).toBe('content');
+  expect(detail.navOverlapArea).toBe(0);
+  const detailRight = Math.min(detail.frame.right, detail.nav.left);
+  expect(Math.abs(detail.root.left - detail.frame.left)).toBeLessThanOrEqual(2);
+  expect(Math.abs(detail.root.right - detailRight), 'detail popup reaches the fixed rail without leaving a dark strip').toBeLessThanOrEqual(2);
+  expect(Math.abs(detail.root.top - detail.frame.top)).toBeLessThanOrEqual(2);
+  expect(Math.abs(detail.root.bottom - detail.frame.bottom)).toBeLessThanOrEqual(2);
+  expect(Math.abs(detail.panel.left - (detail.root.left + detail.padding.left))).toBeLessThanOrEqual(2);
+  expect(Math.abs(detail.panel.right - (detail.root.right - detail.padding.right))).toBeLessThanOrEqual(2);
+  await captureVisualCheck(page, detailDialog, 'folded-tarot-card-detail-popup');
 });

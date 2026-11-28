@@ -14,8 +14,10 @@ import type { OverlayPane } from '@/lib/overlayPane';
  *   narrower than the canvas (a wide rail reserve, a fold transition, an iOS
  *   layout pass), leaving the popup small, short and pushed to one side with a
  *   dark gap beside the rail.
- * - 'pane' (loading and transition overlays): the owning pane, so a channel
- *   loader still covers only its own half of an unfolded screen.
+ * - 'pane' (loading and transition overlays): the owning pane on an unfolded
+ *   screen, so a loader still covers only its half. On a folded screen there is
+ *   only one app canvas; use the frame so a stale/narrow main cannot leave a
+ *   dark strip between a modal and the fixed rail.
  */
 export type OverlayHostScope = 'canvas' | 'pane';
 
@@ -33,19 +35,32 @@ const canvasHostElement = () =>
 export function usePaneOverlayHost(pane: OverlayPane, scope: OverlayHostScope = 'pane'): HTMLElement | null {
   const [host, setHost] = useState<HTMLElement | null>(null);
   useLayoutEffect(() => {
-    // Only a pane-scoped overlay has to stay out of `main`. A canvas dialog must
-    // still reach the app frame on the folded cover screen and on a standalone
-    // page, where no `[data-workspace-pane]` exists and the pane is reported as
-    // `main` — skipping the frame there is what let the pane-less fallback in
-    // `useMainOverlayViewport` decide the dialog's size.
-    if (typeof document === 'undefined' || (pane === 'main' && scope === 'pane')) {
+    if (typeof document === 'undefined') {
       setHost(previous => (previous === null ? previous : null));
       return;
     }
-    const next = scope === 'canvas'
-      ? canvasHostElement() ?? paneElement(pane)
-      : paneElement(pane);
-    setHost(previous => (previous === next ? previous : next));
+    const updateHost = () => {
+      // `main` has no owning pane: leave it document-hosted so the measured
+      // main canvas remains the source of truth, as before.
+      if (pane === 'main' && scope === 'pane') {
+        setHost(previous => (previous === null ? previous : null));
+        return;
+      }
+      const unfolded = document.documentElement.classList.contains('duo-unfolded-mode');
+      const next = scope === 'canvas'
+        ? canvasHostElement() ?? paneElement(pane)
+        : unfolded
+          ? paneElement(pane)
+          : canvasHostElement() ?? paneElement(pane);
+      setHost(previous => (previous === next ? previous : next));
+    };
+    updateHost();
+    // A popup may remain open while the phone folds or unfolds. Keep its host
+    // aligned with the layout mode without changing the pane scope in Duo CSS.
+    if (scope !== 'pane' || pane === 'main') return;
+    const observer = new MutationObserver(updateHost);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
   }, [pane, scope]);
   return host;
 }

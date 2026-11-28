@@ -119,6 +119,49 @@ test('a dialog on the pane-less folded screen fills the canvas beside the rail',
   }
 });
 
+test('a pane-scoped folded dialog escapes a narrow content pane but stays beside the rail', async () => {
+  const screen = installFoldedScreen(309);
+  const content = screen.win.document.createElement('div');
+  content.dataset.workspacePane = 'content';
+  screen.main.appendChild(content);
+  const contentRect = box(0, 0, 309, 678);
+  Object.defineProperty(content, 'getBoundingClientRect', { value: () => contentRect, configurable: true });
+  Object.defineProperty(content, 'getClientRects', { value: () => [contentRect], configurable: true });
+  let root: AnyNode = null;
+  try {
+    const [{ WorkspacePortal }, { OverlayPaneContext }, { createRoot }] = await Promise.all([
+      import('../src/components/layout/DuoWorkspace.tsx'),
+      import('../src/components/layout/OverlayPaneContext.ts'),
+      import('react-dom/client'),
+    ]);
+    const host = screen.win.document.createElement('div');
+    screen.win.document.body.appendChild(host);
+    root = createRoot(host as AnyNode);
+    await act(async () => {
+      root.render(
+        <OverlayPaneContext.Provider value="content">
+          <WorkspacePortal scope="pane">
+            <div role="dialog" aria-modal="true" className="fixed inset-0">타로 상세</div>
+          </WorkspacePortal>
+        </OverlayPaneContext.Provider>,
+      );
+    });
+    const layer: AnyNode = screen.win.document.querySelector('[data-screen-overlay-layer]');
+    assert.ok(layer, 'the pane-scoped dialog layer is mounted');
+    assert.equal(layer.parentElement, screen.shell, 'a folded pane-scoped dialog uses the frame instead of the narrow content pane');
+    assert.equal(layer.dataset.overlayScope, 'pane', 'the pane scope remains intact for unfolded Duo styling');
+    assert.equal(layer.dataset.overlayPane, 'content');
+    assert.equal(layer.style.left, '0px');
+    assert.equal(layer.style.right, '80px', 'the fixed rail stays outside the dialog');
+    assert.equal(layer.style.width, 'auto');
+    assert.equal(layer.style.getPropertyValue('--overlay-width'), '381px', 'the full 381px canvas sizes the dialog, not the 309px pane');
+    assert.equal(layer.style.getPropertyValue('--overlay-height'), '678px');
+  } finally {
+    if (root) await act(async () => { root.unmount(); });
+    screen.restore();
+  }
+});
+
 test('the main overlay viewport measures the canvas, not a narrow main', async () => {
   const screen = installFoldedScreen();
   try {
