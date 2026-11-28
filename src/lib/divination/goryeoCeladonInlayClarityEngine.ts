@@ -7,6 +7,7 @@ export interface GoryeoCeladonResult {
   celadonCraft: string;
   companionCraft: string;
   celadonKilnAxis: string;
+  goryeoCrossAxis: string;
   topicBalanceHint: string;
   goryeoInsight: string;
   jadeTone: string;
@@ -113,13 +114,17 @@ export function calculateGoryeoCeladonInlayClarity(params: {
   const topicBalanceHint = GORYEO_TOPIC_HINTS[questionTopic];
   const shadowWarning = GORYEO_SHADOWS[idx];
 
+  const calculatedAtKst = formatKstIso(now);
+  const goryeoCrossAxis = `[${picked.craft.split('(')[0].trim()}] × [${companion.craft.split('(')[0].trim()}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-GORYEO-CELADON-v2.4.0',
-    calculatedAtKst: formatKstIso(now),
+    engineVersion: 'LUCKEY-GORYEO-CELADON-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     celadonCraft: picked.craft,
     companionCraft: companion.craft,
     celadonKilnAxis,
+    goryeoCrossAxis,
     topicBalanceHint,
     goryeoInsight: picked.insight,
     jadeTone: picked.tone,
@@ -136,6 +141,7 @@ export function formatGoryeoCeladonPrompt(res: GoryeoCeladonResult): string {
     `[고려 청자·비색 상감 여백 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 비색·가마 축: ${res.celadonKilnAxis}`,
+    `- 4중 교차 축: ${res.goryeoCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 청자 기법: ${res.celadonCraft} (${res.jadeTone})`,
     `- 동반 기법: ${res.companionCraft}`,
