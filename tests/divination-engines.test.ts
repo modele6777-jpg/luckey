@@ -7437,6 +7437,7 @@ test('Arthur Schopenhauer Will Representation Engine: calculates Will transcende
   assert(rep.situationalWillAudit.focusAxisKo.length > 0);
   assert(rep.temporalContemplationRhythm.heiterkeitSerenityIndex >= 0 && rep.temporalContemplationRhythm.heiterkeitSerenityIndex <= 100);
   assert(rep.schopenhauerSynthesisMatrix.overallSchopenhauerGrade.length > 0);
+  assert(rep.schopenhauerCrossAxis.includes('×'));
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
@@ -7444,6 +7445,7 @@ test('Arthur Schopenhauer Will Representation Engine: calculates Will transcende
   assert(prompt.includes('쇼펜하우어 의지와 표상(Wille und Vorstellung) & 자비(Mitleid) 정성 관조'));
   assert(prompt.includes(rep.activeSchopenhauerTheme.themeTitleKo));
   assert(prompt.includes('질문 맥락 관조 렌즈'));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('실천 의례:') && prompt.includes('성찰 초점:'));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
@@ -9002,6 +9004,7 @@ test('Friedrich Schiller Aesthetic Education Engine: calculates Play Drive, Aest
   assert(rep.activeSchillerTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.schillerSynthesisMatrix?.integratedAction));
+  assert(rep.schillerCrossAxis.includes('×'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGermanFriedrichSchillerAestheticEducationPrompt(rep);
@@ -9009,6 +9012,7 @@ test('Friedrich Schiller Aesthetic Education Engine: calculates Play Drive, Aest
   assert(prompt.includes(rep.activeSchillerTheme.themeTitleKo));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -9894,12 +9898,14 @@ test('Hermann Hesse engine matches the question to a literary theme and omits mi
   assertKstTimestamp(rep.calculatedAtKst);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.hesseSteppenwolfSynthesisMatrix?.integratedAction));
+  assert(rep.hesseCrossAxis.includes('×'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGermanHermannHesseDemianSteppenwolfPrompt(rep);
   assert.match(prompt, /문학적 참고/);
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('4중 교차 축'));
   assert.doesNotMatch(prompt, /\/100|원문|원전|Das Wasser lief|Die Welt zu lieben|양극성 치유/);
 });
 

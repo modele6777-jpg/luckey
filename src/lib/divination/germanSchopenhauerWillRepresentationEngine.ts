@@ -12,7 +12,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const SCHOPENHAUER_WILL_REPRESENTATION_VERSION = 'LUCKEY-SCHOPENHAUER-WILL-REPRESENTATION-v2.4.0';
+export const SCHOPENHAUER_WILL_REPRESENTATION_VERSION = 'LUCKEY-SCHOPENHAUER-WILL-REPRESENTATION-v2.5.0';
 
 export interface SchopenhauerTheme {
   themeKey: string;
@@ -68,6 +68,7 @@ export interface SchopenhauerWillRepresentationResult {
   situationalWillAudit: SchopenhauerSituationalWillAudit;
   temporalContemplationRhythm: SchopenhauerTemporalContemplationRhythm;
   schopenhauerSynthesisMatrix: SchopenhauerSynthesisMatrix;
+  schopenhauerCrossAxis: string;
   schopenhauerPersonalCounsel: {
     counselTitle: string;
     philosophicalGuidance: string;
@@ -299,9 +300,12 @@ export function calculateSchopenhauerWillRepresentation(
     `${situationalWillAudit.detachmentDirective} 또한 '${focalPhilosophicalAphorism.aphorismKo}'(${focalPhilosophicalAphorism.wisdomDimension})을 기억하며 ` +
     `${temporalContemplationRhythm.dailyContemplationPractice}`;
 
+  const calculatedAtKst = `${new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 19)}+09:00 (KST)`;
+  const schopenhauerCrossAxis = `[${situationalWillAudit.contemplativeLens}] × [${activeSchopenhauerTheme.themeTitleKo.split('(')[0].trim()}] × [${schopenhauerSynthesisMatrix.overallSchopenhauerGrade}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
     engineVersion: SCHOPENHAUER_WILL_REPRESENTATION_VERSION,
-    calculatedAtKst: `${new Date(now.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 19)}+09:00 (KST)`,
+    calculatedAtKst,
     willTranscendenceClarityScore,
     aestheticContemplationDepthScore,
     mitleidUniversalCompassionScore,
@@ -312,6 +316,7 @@ export function calculateSchopenhauerWillRepresentation(
     situationalWillAudit,
     temporalContemplationRhythm,
     schopenhauerSynthesisMatrix,
+    schopenhauerCrossAxis,
     schopenhauerPersonalCounsel: {
       counselTitle,
       philosophicalGuidance,
@@ -342,6 +347,7 @@ export function formatSchopenhauerWillRepresentationPrompt(res: SchopenhauerWill
     `- 성찰 질문: ${res.situationalWillAudit.reflectiveQuestion}`,
     `- KST 시공간 리듬: ${res.temporalContemplationRhythm.timeWindowKo} (${res.temporalContemplationRhythm.seasonKo}, ${describeSchopenhauerStage(res.temporalContemplationRhythm.heiterkeitSerenityIndex)}) — ${res.temporalContemplationRhythm.dailyContemplationPractice}`,
     `- 종합 경지: ${res.schopenhauerSynthesisMatrix.overallSchopenhauerGrade}`,
+    `- 4중 교차 축: ${res.schopenhauerCrossAxis}`,
     `- 핵심 관조 테마: ${res.activeSchopenhauerTheme.themeTitleKo} [${res.activeSchopenhauerTheme.themeTitleGerman}]`,
     `- 핵심 아포리즘: "${res.focalPhilosophicalAphorism.aphorismKo}" ("${res.focalPhilosophicalAphorism.aphorismGerman}")`,
     `- 통합 실존 처방: ${res.schopenhauerPersonalCounsel.philosophicalGuidance}`,
