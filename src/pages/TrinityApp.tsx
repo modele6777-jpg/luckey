@@ -256,7 +256,8 @@ import {
   buildLocalTarotReading,
   buildTarotBinaryChoicePromptAddon,
   buildTarotContextPromptAddon,
-  extractTarotSymbolicDirection,
+  isYesNoTarotSpread,
+  resolveTarotYesNoVerdict,
   isTarotStreamFailure,
   ensureCompleteTarotReading,
   POPULAR_TAROT_SPREAD_PRESETS,
@@ -837,7 +838,7 @@ function getInitialTrinityDailyResult(uid?: string) {
 /**
  * 🚫 타로 결과 음성 낭독 및 본문 표시 시 후행 요약 블록 깔끔하게 정리 & 핵심 3줄 요약 추출 유틸리티
  */
-import { stripSummaryFromTarotText, extractConciseSummary, deduplicateReadingText } from '@/lib/tarotSummaryUtils';
+import { stripSummaryFromTarotText, extractConciseSummary, deduplicateReadingText, stripSymbolicYesNoVerdict } from '@/lib/tarotSummaryUtils';
 export { stripSummaryFromTarotText, extractConciseSummary, deduplicateReadingText };
 
 export default function TrinityApp() {
@@ -1723,36 +1724,35 @@ function playDailyCardChimeAsync() {
   );
   const conciseSummaryBullets = interpretiveSummary.bullets;
 
-  // 예/아니오 타로 결과에서 모델이 명시한 상징적 참고만 표시하고 판정을 자동 생성하지 않음
-  const tarotYesNoVerdict = useMemo(() => {
-    if (!tarotResult) return null;
-    const isYesNoContext =
-      tarotConcernAnalysis.kind === 'yes_no' ||
-      tarotConcernAnalysis.theme === 'yes_no' ||
-      tarotSpreadRecommendation.theme === 'yes_no';
-    if (!isYesNoContext || !Array.isArray(drawnCards) || drawnCards.length === 0) return null;
-    const label = extractTarotSymbolicDirection(tarotResult);
-    if (!label) return null;
-    return {
-      type: label,
-      label,
-      badgeText: '실제 앱 카드의 상징적 참고이며, 현실의 결과나 결정에 대한 판정·보장이 아닙니다.',
-    };
-  }, [tarotResult, tarotConcernAnalysis, tarotSpreadRecommendation, drawnCards]);
+  // 예/아니오 전용 배열법(yes_no_gate)을 실제로 적용했을 때만 상징적 참고 배지를 표시한다.
+  const tarotYesNoSpread = useMemo(
+    () => isYesNoTarotSpread(tarotSpreadRecommendation),
+    [tarotSpreadRecommendation],
+  );
+  const tarotYesNoVerdict = useMemo(
+    () => resolveTarotYesNoVerdict({
+      result: tarotResult,
+      spread: tarotSpreadRecommendation,
+      cardCount: Array.isArray(drawnCards) ? drawnCards.length : 0,
+    }),
+    [tarotResult, tarotSpreadRecommendation, drawnCards],
+  );
 
   const displayTarotResult = useMemo(() => {
     // 타로 결과 상단에 별도의 핵심 3줄 요약 카드가 렌더링되므로, 하단 본문에서는 중복된 후행 요약 블록을 깔끔히 제거
     if (!tarotResult) return "";
-    return stripSummaryFromTarotText(tarotResult);
-  }, [tarotResult]);
+    const withoutYesNo = tarotYesNoSpread ? tarotResult : stripSymbolicYesNoVerdict(tarotResult);
+    return stripSummaryFromTarotText(withoutYesNo);
+  }, [tarotResult, tarotYesNoSpread]);
 
   // 🔊 타로 결과 음성 낭독 전용 텍스트 (핵심 3줄 요약 완전 배제: 본문 1~5단계 순수 리딩 + 맨 마지막 맹목적 믿음 경계 성찰 주의문 낭독)
   const tarotSpeechReadingText = useMemo(() => {
     if (!tarotResult) return "";
-    const cleanBody = prepareNaturalSpeechText(stripSummaryFromTarotText(tarotResult));
+    const withoutYesNo = tarotYesNoSpread ? tarotResult : stripSymbolicYesNoVerdict(tarotResult);
+    const cleanBody = prepareNaturalSpeechText(stripSummaryFromTarotText(withoutYesNo));
     const cautionSpeech = "주의사항을 전해드립니다. 타로는 정해진 미래를 맹목적으로 따르기 위한 것이 아니며, 현재의 마음을 비추고 현명한 선택을 돕는 내면의 성찰 도구입니다. 맹목적인 믿음을 지양하고, 모든 운명의 결정권과 최종 열쇠는 언제나 당신 자신의 주체적인 지혜와 용기에 있음을 기억하세요.";
     return `${cleanBody}\n\n${cautionSpeech}`;
-  }, [tarotResult]);
+  }, [tarotResult, tarotYesNoSpread]);
 
   const summarySpeechText = useMemo(() => {
     if (conciseSummaryBullets.length === 0) return "";
@@ -2578,7 +2578,7 @@ function playDailyCardChimeAsync() {
 
       try {
         const concernAnalysis = tarotConcernAnalysis;
-        const binaryChoicePromptAddon = buildTarotBinaryChoicePromptAddon(concernAnalysis);
+        const binaryChoicePromptAddon = buildTarotBinaryChoicePromptAddon(concernAnalysis, concernAnalysis.spread);
         const dailyCard = dailyResult?.drawnCard || null;
         const dailyCardContext = dailyCard
           ? {
@@ -2603,9 +2603,11 @@ function playDailyCardChimeAsync() {
         const decisionHint =
           concernAnalysis.kind === "binary_choice"
             ? ` [양자택일: [${concernAnalysis.optionA}]와 [${concernAnalysis.optionB}]의 카드 상징과 확인할 현실 조건을 비교하세요. 승자·점수·확률·미래 결과를 지어내지 마세요.]`
-            : concernAnalysis.kind === "yes_no"
+            : concernAnalysis.kind === "yes_no" && tarotYesNoSpread
               ? " [예/아니오 질문: 결과를 YES/NO로 판정하지 말고, 카드에 근거한 상징적 참고와 현재 확인할 조건을 설명하세요.]"
-              : " [카드 상징은 현재와 가까운 선택을 돌아보는 참고로 해석하세요. 사실처럼 단정하거나 정확한 시점·사건을 만들지 마세요.]";
+              : concernAnalysis.kind === "yes_no"
+                ? " [예/아니오형 질문이지만 이번 배열법은 예·아니오 전용 배열이 아니므로 YES/NO 판정이나 상징적 기울기 표기를 만들지 말고, 카드 상징과 현재 확인할 조건·다음 단계로 답하세요.]"
+                : " [카드 상징은 현재와 가까운 선택을 돌아보는 참고로 해석하세요. 사실처럼 단정하거나 정확한 시점·사건을 만들지 마세요.]";
         const spreadHint = ` [자동 적용 배열법: ${concernAnalysis.spread.name} — ${concernAnalysis.spread.positions.join(", ")}]`;
         const dailyAnchorHint = dailyCard
           ? ` [오늘의 지배 카드(배경 에너지): ${dailyCard.nameKo} (${dailyCard.name})${dailyCard.reversed ? ' (역방향)' : ''}]`
@@ -2642,7 +2644,7 @@ function playDailyCardChimeAsync() {
 실제로 뽑힌 카드와 정역방향: ${cardNames}
 ${dailyCard ? `오늘의 참고 카드: ${dailyCard.nameKo}. 이번 배열의 핵심 카드 해석에 도움이 될 때만 짧게 연결하세요.` : ''}
 ${binaryChoicePromptAddon}${contextPromptAddon}
-${buildTarotInterpretationGuidance({ question: tarotConcern, hasAppDraw: true })}
+${buildTarotInterpretationGuidance({ question: tarotConcern, hasAppDraw: true, yesNoSpread: tarotYesNoSpread })}
 카드 목록을 그대로 사용하고 임의로 추가하거나 바꾸지 마세요. 보고서 칸을 채우는 문서가 아니라, 눈앞에 카드를 펼쳐 두고 손님과 마주 앉아 설명하듯 자연스러운 상담 화법으로 읽어 주세요. 각 카드의 전통 도상 뜻, 정·역방향의 결, 배열 위치의 의미, 앞뒤 카드가 어떻게 대비·보완되며 흐름이 어디서 꺾이는지를 질문의 구체적인 상황에 붙여 짚고, 두세 문장마다 문단을 끊어 호흡을 주세요. 마무리는 이 질문에 맞는 행동 하나와, 질문자가 자기 상황을 되짚어 답할 수 있는 열린 질문 하나로 여유를 남기세요. 역방향 고유 의미를 유지하되 화면에서 대표 카드의 주의 안내를 별도로 한 번만 표시하므로 본문·요약·루시 조언에서 주의 문구를 반복하지 마세요.
 ${TAROT_READING_VOICE}`;
         }
@@ -2707,6 +2709,7 @@ ${TAROT_READING_VOICE}`;
           finalResponse,
           tarotConcern,
           selectedCards,
+          concernAnalysis,
         );
         finalResponse = deduplicateReadingText(finalResponse);
         setTarotResult(finalResponse);
@@ -2904,7 +2907,7 @@ ${TAROT_READING_VOICE}`;
       const baseConcernAnalysis = analyzeTarotConcern(tarotConcern);
       const activeDecisionAnalysis =
         followUpAnalysis.kind !== "open" ? followUpAnalysis : baseConcernAnalysis;
-      const followUpDecisionAddon = buildTarotBinaryChoicePromptAddon(activeDecisionAnalysis);
+      const followUpDecisionAddon = buildTarotBinaryChoicePromptAddon(activeDecisionAnalysis, tarotSpreadRecommendation);
       const profile = sharedState?.userProfile || getPersistentUserProfile();
       const profileContext = profile ? `\n\n${buildDeepSynapseContext(profile)}` : "";
 
@@ -3102,7 +3105,8 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
         dailyResult?.diagnosis || dailyResult?.summary || "";
 
       const followUpAnalysis = analyzeTarotConcern(userMessage);
-      const followUpDecisionAddon = buildTarotBinaryChoicePromptAddon(followUpAnalysis);
+      // 오늘의 타로는 1장 배열이라 예·아니오 전용 배열이 아니다 — YES/NO 판정을 붙이지 않는다.
+      const followUpDecisionAddon = buildTarotBinaryChoicePromptAddon(followUpAnalysis, null);
       const profile = sharedState?.userProfile || getPersistentUserProfile();
       const profileContext = profile ? `\n\n${buildDeepSynapseContext(profile)}` : "";
 
@@ -4033,6 +4037,7 @@ ${previousQAHistory ? `\n[이전 추가질문 이력]\n${previousQAHistory}\n` :
 {conciseSummaryBullets.length > 0 && tarotResult && (
                                             <TarotSummaryGraphicCard
                                               bullets={conciseSummaryBullets}
+                                              isYesNoSpread={tarotYesNoSpread}
                                               question={(isEffectiveDailyTarot(tarotConcern, customSpread, tarotSpreadRecommendation) || isDailyTarotConcern(tarotConcern)) ? '오늘의 타로' : (tarotConcern?.trim() || '오늘의 타로')}
                                               readingText={displayTarotResult || tarotResult || ""}
                                               isTTSActive={isSummaryTTSActive}

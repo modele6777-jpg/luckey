@@ -108,6 +108,8 @@ test('Tarot guidance only interprets actual app-drawn cards and avoids certainty
   assert.match(drawn, /확률·승률·수익률/);
   assert.match(drawn, /객관적인 승자를 지어내지 마세요/);
   assert.match(drawn, /상징적 기울기/);
+  assert.match(drawn, /예·아니오 전용 배열이 아니므로/);
+  assert.doesNotMatch(drawn, /단독 줄 '상징적 기울기: \[YES\]'/);
   assert.match(drawn, /현실에서 확인할 지점/);
   assert.match(drawn, /열린 질문 하나로 여유를 남기세요/);
   assert.match(drawn, /불확실한 부분은 그 자리에서 짧게/);
@@ -149,9 +151,8 @@ test('Tarot yes/no local fallback treats an actual card as symbolic reflection, 
     { id: 'wands_1', nameKo: '완드 2', type: 'minor', reversed: false },
     { id: 'cups_2', nameKo: '컵 2', type: 'minor', reversed: true },
   ], false, analysis);
-  assert.match(reading, /상징적 참고/);
-  assert.match(reading, /결과에 대한 YES\/NO 판정이나 보장이 아닙니다/);
-  assert.doesNotMatch(reading, /최종 판정: \[(?:YES|NO)\]/);
+  assert.match(reading, /이는 성찰을 위한 관점이지/);
+  assert.doesNotMatch(reading, /상징적 기울기|최종 판정: \[(?:YES|NO)\]/);
 });
 
 
