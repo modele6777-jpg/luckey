@@ -39,18 +39,18 @@ async function readChrome(locator: Locator) {
       borderWidth: style.borderWidth,
       borderStyle: style.borderStyle,
       boxShadow: style.boxShadow,
-      outlineStyle: style.outlineStyle,
+      color: style.color,
     };
   });
 }
 
-async function expectBorder(locator: Locator, active: boolean) {
-  // Header controls use transition-all; wait for their 300ms border-width transition to finish.
-  await expect.poll(async () => (await readChrome(locator)).borderWidth).toBe(active ? '1px' : '0px');
+async function expectActiveIcon(locator: Locator, active: boolean) {
+  await expect.poll(async () => (await readChrome(locator)).borderWidth).toBe('0px');
   const chrome = await readChrome(locator);
-  expect(chrome.borderWidth).toBe(active ? '1px' : '0px');
+  expect(chrome.borderWidth).toBe('0px');
   expect(chrome.boxShadow).toBe('none');
   if (!active) expect(chrome.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  if (active) expect(chrome.color).toBe('rgb(245, 197, 66)');
 }
 
 async function expectLucyHeaderControls(page: Page, mode: LucyMode) {
@@ -64,11 +64,11 @@ async function expectLucyHeaderControls(page: Page, mode: LucyMode) {
 
   await expect(toolButton).toBeVisible();
   await expect(toolButton).toHaveAttribute('aria-expanded', 'false');
-  await expectBorder(toolButton, false);
+  await expectActiveIcon(toolButton, false);
   if (mode === 'divination') {
     await expect(engineButton).toBeVisible();
     await expect(engineButton).toHaveAttribute('aria-expanded', 'false');
-    await expectBorder(engineButton, false);
+    await expectActiveIcon(engineButton, false);
   } else {
     await expect(engineButton).toHaveCount(0);
   }
@@ -76,71 +76,71 @@ async function expectLucyHeaderControls(page: Page, mode: LucyMode) {
   await expect(guide).toBeVisible();
   await expect(guide).toHaveAccessibleName(/가이드 열기/);
   await expect(guide).toHaveAttribute('aria-expanded', 'false');
-  await expectBorder(guide, false);
+  await expectActiveIcon(guide, false);
 
   await expect(speaker).toBeVisible();
   await expect(speaker).toHaveAttribute('aria-pressed', 'false');
   await expect(speaker).toHaveAccessibleName('자동읽기 꺼짐 (눌러서 켜기)');
-  await expectBorder(speaker, false);
+  await expectActiveIcon(speaker, false);
 
   await expect(smartGuide).toBeVisible();
   await expect(smartGuide).toHaveAttribute('aria-pressed', 'true');
   await expect(smartGuide).toHaveAccessibleName('스마트 가이드 켜짐 · 설정 열기');
-  await expectBorder(smartGuide, true);
+  await expectActiveIcon(smartGuide, true);
 
   await expect(search).toBeVisible();
   await expect(search).toHaveAttribute('aria-expanded', 'false');
   await expect(search).toHaveAttribute('aria-controls', 'lucy-search-overlay');
-  await expectBorder(search, false);
+  await expectActiveIcon(search, false);
 
   // Tool drawer is inactive until opened, and bordered only for the duration of its open state.
   await toolButton.tap();
   await expect(page.locator('[data-master-table-sheet]')).toBeVisible();
   await expect(toolButton).toHaveAttribute('aria-expanded', 'true');
-  await expectBorder(toolButton, true);
+  await expectActiveIcon(toolButton, true);
   if (mode === 'divination') {
     await expect(engineButton).toHaveAttribute('aria-expanded', 'false');
-    await expectBorder(engineButton, false);
+    await expectActiveIcon(engineButton, false);
   }
   await page.getByRole('button', { name: '도구 창 닫기' }).tap();
   await expect(page.locator('[data-master-table-sheet]')).toHaveCount(0);
   await expect(toolButton).toHaveAttribute('aria-expanded', 'false');
-  await expectBorder(toolButton, false);
+  await expectActiveIcon(toolButton, false);
 
   // Lucy Pro's extra pencil shares the engine sheet and tracks its open/close lifecycle.
   if (mode === 'divination') {
     await engineButton.tap();
     await expect(page.locator('[data-master-table-sheet]')).toBeVisible();
     await expect(engineButton).toHaveAttribute('aria-expanded', 'true');
-    await expectBorder(engineButton, true);
+    await expectActiveIcon(engineButton, true);
     await expect(toolButton).toHaveAttribute('aria-expanded', 'true');
-    await expectBorder(toolButton, true);
+    await expectActiveIcon(toolButton, true);
     await page.getByRole('button', { name: '도구 창 닫기' }).tap();
     await expect(engineButton).toHaveAttribute('aria-expanded', 'false');
     await expect(toolButton).toHaveAttribute('aria-expanded', 'false');
-    await expectBorder(engineButton, false);
-    await expectBorder(toolButton, false);
+    await expectActiveIcon(engineButton, false);
+    await expectActiveIcon(toolButton, false);
   }
 
-  // Search shows an active border only while its disclosure panel is open.
+  // Search turns yellow only while its panel is open.
   await search.tap();
   await expect(page.locator('#lucy-search-overlay')).toBeVisible();
   await expect(search).toHaveAttribute('aria-expanded', 'true');
-  await expectBorder(search, true);
+  await expectActiveIcon(search, true);
   await page.locator('#lucy-search-overlay').getByRole('button', { name: '닫기' }).tap();
   await expect(page.locator('#lucy-search-overlay')).toHaveCount(0);
   await expect(search).toHaveAttribute('aria-expanded', 'false');
-  await expectBorder(search, false);
+  await expectActiveIcon(search, false);
 
   // Guide button is active only while its guide dialog is open.
   await guide.tap();
   await expect(page.locator('[data-page-guide]')).toBeVisible();
   await expect(guide).toHaveAttribute('aria-expanded', 'true');
-  await expectBorder(guide, true);
+  await expectActiveIcon(guide, true);
   await page.getByRole('button', { name: '가이드 닫기' }).tap();
   await expect(page.locator('[data-page-guide]')).toHaveCount(0);
   await expect(guide).toHaveAttribute('aria-expanded', 'false');
-  await expectBorder(guide, false);
+  await expectActiveIcon(guide, false);
 
   // Smart Guide's pressed state is active even though its settings sheet is closed.
   await smartGuide.tap();
@@ -152,33 +152,33 @@ async function expectLucyHeaderControls(page: Page, mode: LucyMode) {
   await settings.getByRole('button', { name: '확인' }).tap();
   await expect(smartGuide).toHaveAttribute('aria-pressed', 'false');
   await expect(smartGuide).toHaveAccessibleName('스마트 가이드 꺼짐 · 설정 열기');
-  await expectBorder(smartGuide, false);
+  await expectActiveIcon(smartGuide, false);
 
   await smartGuide.tap();
   await expect(settings).toBeVisible();
   await settings.getByRole('switch', { name: '스마트 가이드' }).tap();
   await settings.getByRole('button', { name: '확인' }).tap();
   await expect(smartGuide).toHaveAttribute('aria-pressed', 'true');
-  await expectBorder(smartGuide, true);
+  await expectActiveIcon(smartGuide, true);
 
-  // Speaker is borderless while off and gets an active border only while auto-read is on.
+  // Speaker stays the normal color while off and turns yellow only while auto-read is on.
   await speaker.tap();
   await expect(speaker).toHaveAttribute('aria-pressed', 'true');
   await expect(speaker).toHaveAccessibleName('자동읽기 켜짐 (눌러서 끄기)');
   await speaker.evaluate(element => (element as HTMLButtonElement).blur());
-  await expectBorder(speaker, true);
+  await expectActiveIcon(speaker, true);
   await speaker.tap();
   await expect(speaker).toHaveAttribute('aria-pressed', 'false');
   await expect(speaker).toHaveAccessibleName('자동읽기 꺼짐 (눌러서 켜기)');
-  await expectBorder(speaker, false);
+  await expectActiveIcon(speaker, false);
 }
 
-test('Lucy Chat header borders only active controls and open panels', async ({ page }) => {
+test('Lucy Chat header turns only active icons yellow', async ({ page }) => {
   await openLucyMode(page, 'chat');
   await expectLucyHeaderControls(page, 'chat');
 });
 
-test('Lucy Pro header borders only active controls and open panels', async ({ page }) => {
+test('Lucy Pro header turns only active icons yellow', async ({ page }) => {
   await openLucyMode(page, 'divination');
   await expectLucyHeaderControls(page, 'divination');
 });

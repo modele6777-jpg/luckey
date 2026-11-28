@@ -216,6 +216,6 @@ test('Lucy Chat and Pro use active-only borders across their shared header contr
 
   const chromeStyleStart = readFileSync(new URL('../src/styles/lucy-starlight.css', import.meta.url), 'utf8');
   assert.match(chromeStyleStart, /\.lucy-chat-shell \.lucy-header-actions > button \{ border: 0 !important; background: transparent !important; box-shadow: none !important;/, 'inactive Lucy header controls have no box');
-  assert.match(chromeStyleStart, /\.lucy-chat-shell \.lucy-header-actions > button:is\(\[aria-pressed='true'\], \[aria-expanded='true'\]\) \{ border: 1px solid rgba\(120, 159, 139, \.78\) !important;/, 'only pressed or expanded controls receive an active border');
+  assert.match(chromeStyleStart, /\.lucy-chat-shell \.lucy-header-actions > button:is\(\[aria-pressed='true'\], \[aria-expanded='true'\]\) \{ border: 0 !important; color: #f5c542 !important;/, 'pressed or expanded controls turn the icon yellow with no border');
   assert.match(chromeStyleStart, /:focus-visible \{ outline: 2px solid currentColor !important;/, 'keyboard focus remains visible');
 });
