@@ -7,6 +7,7 @@ export interface EstonianRegilaulResult {
   forestMotif: string;
   companionMotif: string;
   forestSongAxis: string;
+  estonianCrossAxis: string;
   topicBalanceHint: string;
   regilaulInsight: string;
   nordicForestTone: string;
@@ -113,13 +114,17 @@ export function calculateEstonianRegilaulForestCalm(params: {
   const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = ESTONIAN_SHADOWS[idx];
 
+  const calculatedAtKst = formatKstIso(now);
+  const estonianCrossAxis = `[${picked.motif.split('(')[0].trim()}] × [${companion.motif.split('(')[0].trim()}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-ESTONIAN-REGILAUL-v2.4.0',
-    calculatedAtKst: formatKstIso(now),
+    engineVersion: 'LUCKEY-ESTONIAN-REGILAUL-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     forestMotif: picked.motif,
     companionMotif: companion.motif,
     forestSongAxis,
+    estonianCrossAxis,
     topicBalanceHint,
     regilaulInsight: picked.insight,
     nordicForestTone: picked.tone,
@@ -136,6 +141,7 @@ export function formatEstonianRegilaulPrompt(res: EstonianRegilaulResult): strin
     `[에스토니아 레기라울·숲의 정적 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 숲·선율 축: ${res.forestSongAxis}`,
+    `- 4중 교차 축: ${res.estonianCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 북방 상징: ${res.forestMotif} (${res.nordicForestTone})`,
     `- 동반 상징: ${res.companionMotif}`,

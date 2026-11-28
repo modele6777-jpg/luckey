@@ -14,7 +14,7 @@ import {
   type SajuAnalysisResult
 } from '../sajuAnalysis';
 
-export const ETHERIC_AURA_VERSION = 'LUCKEY-ETHERIC-AURA-v2.4.0';
+export const ETHERIC_AURA_VERSION = 'LUCKEY-ETHERIC-AURA-v2.5.0';
 
 export interface AuraLayerSpectrum {
   primaryLayerName: string;
@@ -48,6 +48,7 @@ export interface AuraTemporalRhythm {
 export interface AuraSynthesisMatrix {
   integrityGrade: '견고' | '안정' | '보강필요';
   spectrumShieldLink: string;
+  auraCrossAxis: string;
   nextShieldingStep: string;
 }
 
@@ -212,11 +213,13 @@ export function runEthericAuraBiofieldEngine(
   const integrityGrade: AuraSynthesisMatrix['integrityGrade'] =
     integrityScore >= 90 ? '견고' : integrityScore >= 82 ? '안정' : '보강필요';
   const spectrumShieldLink = `${primaryLayerName}(${primaryColor})의 파동이 ${temporalAuraRhythm.biofieldWindow} 리듬과 맞물려 작동합니다.`;
+  const auraCrossAxis = `[${primaryLayerName.split('(')[0].trim()}] × [${integrityGrade}] × [${situationalAuraAudit.shieldPriority}] × [${temporalAuraRhythm.shieldTempo}]`;
   const nextShieldingStep = `${situationalAuraAudit.groundingPrescription}`;
 
   const auraSynthesisMatrix: AuraSynthesisMatrix = {
     integrityGrade,
     spectrumShieldLink,
+    auraCrossAxis,
     nextShieldingStep,
   };
 
@@ -229,7 +232,7 @@ export function runEthericAuraBiofieldEngine(
     ? `‘${question.trim()}’ 상황에서 ${vulnerableZone}의 에너지 누수를 막기 위해 오늘 내가 세울 가장 분명한 경계는 무엇입니까?`
     : `[${primaryColor}] 오라 결계의 ${integrityGrade} 상태에서 오늘 가장 먼저 보호해야 할 나의 감각과 공간은 어디입니까?`;
 
-  const synthesisPromptGuidance = `[LUCKEY 에테르 오라 생체장 & 쉴딩 v2.4.0]
+  const synthesisPromptGuidance = `[LUCKEY 에테르 오라 생체장 & 쉴딩 v2.5.0]
 - 기준 시각(KST): ${calculatedAtKst}
 - 오라 생체장 스펙트럼: [${auraBiofieldTitle}]
   * 주 활성 층위: ${primaryLayerName}
@@ -246,6 +249,7 @@ export function runEthericAuraBiofieldEngine(
 - KST 시공간 리듬 (${temporalAuraRhythm.kstHour}시): ${temporalAuraRhythm.biofieldWindow} · ${temporalAuraRhythm.seasonalElementBalance} (${temporalAuraRhythm.shieldTempo})
   * 시간대 지침: ${temporalAuraRhythm.careDirective}
 - 오라 교차 매트릭스: ${spectrumShieldLink}
+- 4중 교차 축: ${auraCrossAxis}
 - 오라 보호 확언: "${shieldingAffirmation}"
 - 성찰 초점: ${reflectionFocus}
 - 질문 맞춤 성찰 질문: ${reflectionFocus}

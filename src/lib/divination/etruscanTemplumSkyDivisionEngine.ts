@@ -13,7 +13,7 @@ export interface TemplumSector {
 }
 
 export interface EtruscanTemplumResult {
-  engineVersion: 'LUCKEY-ETRUSCAN-TEMPLUM-v2.4.0';
+  engineVersion: 'LUCKEY-ETRUSCAN-TEMPLUM-v2.5.0';
   calculatedAtKst: string;
   questionFocus: string;
   questionTopic: EtruscanQuestionTopic;
@@ -22,6 +22,7 @@ export interface EtruscanTemplumResult {
   companionSector: TemplumSector;
   horizonAxis: string;
   templumCycle: string;
+  etruscanCrossAxis: string;
   topicCrossDirective: string;
   shadowWarning: string;
   ritualAction: string;
@@ -148,9 +149,12 @@ export function calculateEtruscanTemplumSkyDivision(params: {
   const topicCrossDirective = `${questionTopic} 맥락 · ${topicGuide.directive}`;
   const shadowWarning = `[${primarySector.name} 과잉 경계] ${primarySector.overuseTrap}을 경계하고, 대칭 구획(${mirrorSector.koreanLabel})의 균형을 함께 살피십시오. (${topicGuide.warning})`;
 
+  const calculatedAtKst = formatKstTimestamp(now);
+  const etruscanCrossAxis = `[${primarySector.vantageAspect}] × [${companionSector.vantageAspect}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-ETRUSCAN-TEMPLUM-v2.4.0',
-    calculatedAtKst: formatKstTimestamp(now),
+    engineVersion: 'LUCKEY-ETRUSCAN-TEMPLUM-v2.5.0',
+    calculatedAtKst,
     questionFocus,
     questionTopic,
     primarySector,
@@ -158,6 +162,7 @@ export function calculateEtruscanTemplumSkyDivision(params: {
     companionSector,
     horizonAxis: `${primarySector.koreanLabel} · ${mirrorSector.koreanLabel} · ${companionSector.koreanLabel}이 교차하는 관찰 지평`,
     templumCycle,
+    etruscanCrossAxis,
     topicCrossDirective,
     shadowWarning,
     ritualAction: primarySector.practicalChoice,
@@ -174,6 +179,7 @@ export function formatEtruscanTemplumPrompt(result: EtruscanTemplumResult): stri
     `- 연산 시각: ${result.calculatedAtKst} | 질문 맥락: ${result.questionTopic}`,
     `- 질문 초점: ${result.questionFocus}`,
     `- 구획 순환 축: ${result.templumCycle}`,
+    `- 4중 교차 축: ${result.etruscanCrossAxis}`,
     `- 맥락 교차 지침: ${result.topicCrossDirective}`,
     `- 중심 구획: ${result.primarySector.name} (${result.primarySector.koreanLabel}) — ${result.primarySector.coreInsight}`,
     `- 대칭 구획: ${result.mirrorSector.name} (${result.mirrorSector.koreanLabel})`,
