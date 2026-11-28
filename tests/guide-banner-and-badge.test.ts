@@ -8,6 +8,7 @@
  * 4) "가이드 창에 글씨가 삐져나와"
  * 5) "모든 페이지의 가이드 기능은 조금만 더 구채적으로 작성해줘"
  * 6) "빅뱅 버튼 물음표는 가이드 터치 할때만 잠깐 나오개 해줘" (2026-11-28, 영구 저장 제거)
+ * 7) "물음표 대신에 …으로 표시해줘" (2026-11-28, 중앙 문양을 말줄임표로)
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -121,7 +122,7 @@ test('the banner button resolves the guide of the exact screen, including dApp t
   assert.equal(resolveGuideForLocation('').id, 'lucy');
 });
 
-test('the question mark only flashes when the guide is tapped — it never stays saved', () => {
+test('the ellipsis badge only flashes when the guide is tapped — it never stays saved', () => {
   // 예전 버전이 localStorage에 영구 저장해 둔 표시는 다시 읽지 않고 한 번 지운다.
   const storage = memoryStorage({ [SMART_GUIDE_BADGE_KEY]: '1' });
   clearSmartGuideBadge(storage);
@@ -154,8 +155,13 @@ test('the question mark only flashes when the guide is tapped — it never stays
   const beforeGuideState = BIGBANG.slice(0, BIGBANG.indexOf('// 🧭 상하좌우 원뿔 모양'));
   assert.match(beforeGuideState, /guideBadgeFlashRef\.current\?\.cancel\(\)/, 'unmount cancels the badge timer');
 
-  // 중앙 구슬의 물음표: 테스트 가능한 속성 + 페이드 + 설정 OFF면 꺼진다.
-  assert.match(BIGBANG, /data-bigbang-guide-badge="question"/);
+  // 중앙 구슬의 문양: 물음표 대신 말줄임표(…) + 페이드 + 설정 OFF와 무관.
+  assert.match(BIGBANG, /data-bigbang-guide-badge="ellipsis"/);
+  assert.doesNotMatch(BIGBANG, /data-bigbang-guide-badge="question"/);
+  // 말줄임표(…)를 그린다 — 물음표가 남지 않는다.
+  assert.match(BIGBANG, />…<\/span>/);
+  assert.doesNotMatch(BIGBANG, />\?<\/span>/);
+  assert.match(BIGBANG, /aria-label="스마트 가이드 안내 중"/);
   assert.match(BIGBANG, /data-bigbang-guide-badge-phase=\{guideBadgePhase\}/);
   // 배너 설정(guidePresentation.banner)과 무관하게 보인다 — 설정 OFF라도 탭하면 물음표가 뜬다.
   assert.match(BIGBANG, /guideBadgePhase !== 'hidden' && !isPressing && !isCosmicSuctionActive && activePhase === 'idle'/);
@@ -163,10 +169,10 @@ test('the question mark only flashes when the guide is tapped — it never stays
   assert.match(BIGBANG, /guideBadgePhase === 'fading' \? 'opacity-0 scale-75' : 'opacity-100 scale-100'/);
   // 홀드·드래그·워프 조준 중에는 기존 아이콘이 먼저 나온다.
   const center = BIGBANG.slice(BIGBANG.indexOf('centerDirection === \'north\' || centerDirection === \'south\''), BIGBANG.indexOf('</motion.button>'));
-  assert.ok(center.indexOf('data-bigbang-center-gesture="hold"') < center.indexOf('data-bigbang-guide-badge="question"'), 'hold icon stays ahead of the badge');
-  assert.ok(center.indexOf('data-bigbang-center-gesture="double"') < center.indexOf('data-bigbang-guide-badge="question"'), 'double-tap (key) icon stays ahead of the badge');
-  // 한 번 탭의 페탈 피드백(1.2초)에 가려지지 않게, 물음표는 탭 피드백보다 먼저 그린다.
-  assert.ok(center.indexOf('data-bigbang-guide-badge="question"') < center.indexOf('data-bigbang-center-gesture="tap"'), 'badge shows instead of the tap petal, so the 1.2s tap feedback cannot hide it');
+  assert.ok(center.indexOf('data-bigbang-center-gesture="hold"') < center.indexOf('data-bigbang-guide-badge="ellipsis"'), 'hold icon stays ahead of the badge');
+  assert.ok(center.indexOf('data-bigbang-center-gesture="double"') < center.indexOf('data-bigbang-guide-badge="ellipsis"'), 'double-tap (key) icon stays ahead of the badge');
+  // 한 번 탭의 페탈 피드백(1.2초)에 가려지지 않게, 말줄임표는 탭 피드백보다 먼저 그린다.
+  assert.ok(center.indexOf('data-bigbang-guide-badge="ellipsis"') < center.indexOf('data-bigbang-center-gesture="tap"'), 'badge shows instead of the tap petal, so the 1.2s tap feedback cannot hide it');
 });
 
 test('the badge timer shows, fades, then hides itself — and can be restarted or cancelled', () => {
@@ -182,7 +188,7 @@ test('the badge timer shows, fades, then hides itself — and can be restarted o
     afterPaintFn: paint,
   });
 
-  assert.deepEqual(seen, ['shown'], '탭하면 바로 물음표가 뜬다');
+  assert.deepEqual(seen, ['shown'], '탭하면 바로 말줄임표가 뜬다');
   assert.equal(flash.phase, 'shown');
 
   clock.advance(SMART_GUIDE_BADGE_MS - SMART_GUIDE_BADGE_FADE_MS - 1);
@@ -229,7 +235,7 @@ test('the badge timer shows, fades, then hides itself — and can be restarted o
 });
 
 test('the countdown starts only after the badge has actually been painted', () => {
-  // 화면 전환 렌더로 메인 스레드가 막혀도, 물음표는 그려진 뒤에 제 시간만큼 보여야 한다.
+  // 화면 전환 렌더로 메인 스레드가 막혀도, 말줄임표는 그려진 뒤에 제 시간만큼 보여야 한다.
   const clock = fakeClock();
   const seen: SmartGuideBadgePhase[] = [];
   let releasePaint: (() => void) | null = null;

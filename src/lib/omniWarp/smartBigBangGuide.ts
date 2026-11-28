@@ -82,12 +82,13 @@ export type SmartGuideStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeIte
 export const SMART_GUIDE_STORAGE_KEY = 'luckey_smart_guide_v1';
 /**
  * 예전 버전이 빅뱅 버튼 안 물음표(?) 표시를 영구 저장하던 키.
+ * 지금은 물음표 대신 말줄임표(…)를 탭할 때만 잠깐 보여 준다(2026-11-28 사용자 지시).
  * 사용자 지시(2026-11-28): "빅뱅 버튼 물음표는 가이드 터치 할때만 잠깐 나오개 해줘"
  * — 이제는 읽지 않고, 예전에 남은 값만 한 번 지운다.
  */
 export const SMART_GUIDE_BADGE_KEY = 'luckey_smart_guide_badge_v1';
 /**
- * 가이드를 탭했을 때 빅뱅 버튼 안 물음표가 보이는 시간 (잠깐 떴다가 저절로 사라진다).
+ * 가이드를 탭했을 때 빅뱅 버튼 안 말줄임표(…)가 보이는 시간 (잠깐 떴다가 저절로 사라진다).
  * 화면 전환이 겹쳐도 눈에 남도록 1.4초에서 조금 늘렸다.
  */
 export const SMART_GUIDE_BADGE_MS = 2200;
@@ -294,7 +295,7 @@ export function hasSeenTodayTarot(storage: SmartGuideStorage | null | undefined,
 /**
  * 예전 버전이 localStorage에 영구 저장해 둔 물음표 표시를 지운다.
  * 사용자 지시(2026-11-28): "빅뱅 버튼 물음표는 가이드 터치 할때만 잠깐 나오개 해줘"
- * — 이제 표시는 화면 상태로만 잠깐 떴다 사라지므로, 앱을 다시 열거나 평상시에는 물음표가 없다.
+ * — 이제 표시는 화면 상태로만 잠깐 떴다 사라지므로, 앱을 다시 열거나 평상시에는 문양이 없다.
  */
 export function clearSmartGuideBadge(storage: SmartGuideStorage | null | undefined): void {
   try {
@@ -304,7 +305,7 @@ export function clearSmartGuideBadge(storage: SmartGuideStorage | null | undefin
   }
 }
 
-/** 가이드 탭으로 켜진 물음표 표시의 단계: 떠 있음 → 흐려지는 중 → 없음 */
+/** 가이드 탭으로 켜진 말줄임표(…) 표시의 단계: 떠 있음 → 흐려지는 중 → 없음 */
 export type SmartGuideBadgePhase = 'hidden' | 'shown' | 'fading';
 
 export interface SmartGuideBadgeFlash {
@@ -314,7 +315,7 @@ export interface SmartGuideBadgeFlash {
 }
 
 export interface SmartGuideBadgeFlashOptions {
-  /** 물음표가 보이는 시간 */
+  /** 말줄임표(…)가 보이는 시간 */
   showMs?: number;
   /** 마지막에 부드럽게 흐려지는 시간 */
   fadeMs?: number;
@@ -323,13 +324,13 @@ export interface SmartGuideBadgeFlashOptions {
   /**
    * 'shown'이 실제로 화면에 그려진 뒤에 사라지는 카운트를 시작한다.
    * 화면 전환 렌더로 메인 스레드가 막혀 있으면 타이머만 먼저 흘러
-   * 물음표가 흐려지는 순간에야 처음 보이는 일이 생기므로, 기본값은 두 프레임 뒤에 시작한다.
+   * 말줄임표가 흐려지는 순간에야 처음 보이는 일이 생기므로, 기본값은 두 프레임 뒤에 시작한다.
    */
   afterPaintFn?: (run: () => void) => void;
 }
 
 /**
- * 가이드를 탭했을 때만 물음표를 잠깐 띄우는 타이머.
+ * 가이드를 탭했을 때만 말줄임표(…)를 잠깐 띄우는 타이머.
  * 화면·DOM 없이 그대로 시험할 수 있게 순수 타이머만 다룬다.
  * - 시작하면 곧바로 'shown' → 첫 그림이 올라온 뒤 (showMs - fadeMs) 만큼 → 'fading' → fadeMs 뒤 'hidden'
  * - cancel하면 예약된 타이머를 모두 지운다 (이후 onChange 호출 없음)
@@ -361,7 +362,7 @@ export function startSmartGuideBadgeFlash(
   });
 
   enter('shown');
-  // 첫 그림이 올라온 뒤에야 사라지는 카운트를 건다 — 렌더가 늦어도 물음표는 제 시간만큼 보인다.
+  // 첫 그림이 올라온 뒤에야 사라지는 카운트를 건다 — 렌더가 늦어도 말줄임표는 제 시간만큼 보인다.
   afterPaint(() => {
     if (cancelled) return;
     timer = setTimer(() => {
