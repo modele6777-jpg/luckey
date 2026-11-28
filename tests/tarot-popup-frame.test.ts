@@ -31,15 +31,49 @@ test('a dialog is hosted on the app frame, not on the pane or main it was opened
 test('the dialog box is the canvas beside the rail, whichever edge the rail takes', () => {
   const host = { left: 0, top: 0, right: 461, bottom: 678, width: 461, height: 678 };
   // Folded duo and desktop: an 80px rail on the right edge.
-  assert.deepEqual(canvasBoxFromRects(host, { left: 381, top: 0, right: 461, bottom: 678, width: 80, height: 678 }), { left: 0, top: 0, right: 80, bottom: 0 });
+  assert.deepEqual(canvasBoxFromRects(host, { left: 381, top: 0, right: 461, bottom: 678, width: 80, height: 678 }), { left: 0, top: 0, right: 80, bottom: 0, railEdge: 'right' });
   // Unfolded portrait turns the rail into a bottom bar.
-  assert.deepEqual(canvasBoxFromRects(host, { left: 0, top: 624, right: 461, bottom: 678, width: 461, height: 54 }), { left: 0, top: 0, right: 0, bottom: 54 });
+  assert.deepEqual(canvasBoxFromRects(host, { left: 0, top: 624, right: 461, bottom: 678, width: 461, height: 54 }), { left: 0, top: 0, right: 0, bottom: 54, railEdge: 'bottom' });
   // A rail docked on the left or across the top.
-  assert.deepEqual(canvasBoxFromRects(host, { left: 0, top: 0, right: 80, bottom: 678, width: 80, height: 678 }), { left: 80, top: 0, right: 0, bottom: 0 });
-  assert.deepEqual(canvasBoxFromRects(host, { left: 0, top: 0, right: 461, bottom: 56, width: 461, height: 56 }), { left: 0, top: 56, right: 0, bottom: 0 });
+  assert.deepEqual(canvasBoxFromRects(host, { left: 0, top: 0, right: 80, bottom: 678, width: 80, height: 678 }), { left: 80, top: 0, right: 0, bottom: 0, railEdge: 'left' });
+  assert.deepEqual(canvasBoxFromRects(host, { left: 0, top: 0, right: 461, bottom: 56, width: 461, height: 56 }), { left: 0, top: 56, right: 0, bottom: 0, railEdge: 'top' });
   // No rail, or a rail that floats inside the frame: the dialog keeps the whole frame.
-  assert.deepEqual(canvasBoxFromRects(host, null), { left: 0, top: 0, right: 0, bottom: 0 });
-  assert.deepEqual(canvasBoxFromRects(host, { left: 20, top: 20, right: 80, bottom: 300, width: 60, height: 280 }), { left: 0, top: 0, right: 0, bottom: 0 });
+  assert.deepEqual(canvasBoxFromRects(host, null), { left: 0, top: 0, right: 0, bottom: 0, railEdge: 'none' });
+  assert.deepEqual(canvasBoxFromRects(host, { left: 20, top: 20, right: 80, bottom: 300, width: 60, height: 280 }), { left: 0, top: 0, right: 0, bottom: 0, railEdge: 'none' });
+  // A rail sitting a few pixels past a frame iOS reported too narrow still counts.
+  assert.deepEqual(canvasBoxFromRects(host, { left: 385, top: 0, right: 465, bottom: 678, width: 80, height: 678 }), { left: 0, top: 0, right: 76, bottom: 0, railEdge: 'right' });
+});
+
+test('the rail edge of the canvas is marked so the dialog never takes that inset twice', () => {
+  // iPhone report (2026-11-28, IMG_0565/0566): the popup layer already stopped at
+  // the 80px rail, then still padded itself by env(safe-area-inset-right) — the
+  // landscape Dynamic Island inset — so every popup kept a ~72px dark strip on
+  // its right while the left gutter was 12px.
+  assert.match(duoWorkspace, /data-rail-edge=\{canvasBox\?\.railEdge \?\? 'none'\}/);
+  assert.match(paneHost, /export type RailEdge = 'top' \| 'right' \| 'bottom' \| 'left' \| 'none'/);
+  assert.match(paneHost, /box\.railEdge = 'right'/);
+  // The gutter variables mirror env() in one place.
+  assert.ok(styles.includes('.duo-portal,\n.screen-portal {'), 'both portal layers share the gutter variables');
+  for (const edge of ['top', 'right', 'bottom', 'left']) {
+    assert.ok(
+      styles.includes(`--overlay-inset-${edge}: var(--s${edge === 'top' ? 'at' : edge === 'right' ? 'ar' : edge === 'bottom' ? 'ab' : 'al'}, env(safe-area-inset-${edge}, 0px));`),
+      `the ${edge} gutter mirrors the device inset`,
+    );
+    assert.ok(
+      styles.includes(`.duo-portal[data-rail-edge='${edge}'] { --overlay-inset-${edge}: 0px; }`),
+      `the ${edge} rail edge drops its own screen inset`,
+    );
+  }
+  const mobilePad = styles.match(/\.duo-portal > \.fixed\.inset-0 \{\s*padding: ([^;]+);/)?.[1] ?? '';
+  for (const edge of ['top', 'right', 'bottom', 'left']) {
+    assert.ok(mobilePad.includes(`var(--overlay-inset-${edge})`), `the ${edge} gutter reads the rail-aware inset`);
+  }
+  assert.doesNotMatch(mobilePad, /env\(/, 'no raw env() gutter survives beside the rail');
+  assert.ok(mobilePad.includes('max(.5rem, var(--overlay-inset-top))'));
+  assert.ok(mobilePad.includes('max(.75rem, var(--overlay-inset-right))'), 'the right gutter stays .75rem when the rail owns it');
+  assert.match(styles, /@media \(min-width: 640px\) \{\s*\.duo-portal > \.fixed\.inset-0 \{\s*padding: max\(\.75rem, var\(--overlay-inset-top\)\) max\(1rem, var\(--overlay-inset-right\)\)/);
+  // The panel's own height cap counts the same rail-aware insets.
+  assert.match(styles, /max-height: calc\(var\(--overlay-height, 100dvh\) - var\(--overlay-inset-top, 0px\) - var\(--overlay-inset-bottom, 0px\) - 2rem\)/);
 });
 
 test('a canvas box fills the layer while a pane host keeps percentage filling', () => {
@@ -62,8 +96,8 @@ test('a canvas box fills the layer while a pane host keeps percentage filling', 
 test('canvas dialog layer fills the host and keeps phone gutters', () => {
   assert.match(styles, /\.duo-portal\[data-overlay-scope='canvas'\] > \.fixed\.inset-0 \{[^}]*width: 100% !important/s);
   const mobilePad = styles.match(/\.duo-portal > \.fixed\.inset-0 \{\s*padding: ([^;]+);/)?.[1] ?? '';
-  assert.match(mobilePad, /safe-area-inset-left/);
-  assert.match(mobilePad, /\.75rem/, 'phone gutter stays narrow enough to use the whole canvas');
+  assert.match(mobilePad, /\.5rem/, 'phone gutter stays narrow enough to use the whole canvas');
+  assert.match(styles, /--overlay-inset-left: var\(--sal, env\(safe-area-inset-left, 0px\)\)/);
   assert.match(styles, /@media \(min-width: 640px\) \{\s*\.duo-portal > \.fixed\.inset-0 \{/);
 });
 
