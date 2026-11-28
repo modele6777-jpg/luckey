@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
-import { paneLayerStyle } from '../src/components/layout/paneOverlayHost.ts';
+import { canvasBoxFromRects, paneLayerStyle } from '../src/components/layout/paneOverlayHost.ts';
 
 const read = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8');
 const duoWorkspace = read('components/layout/DuoWorkspace.tsx');
@@ -11,30 +11,50 @@ const indexStyles = read('index.css');
 const backModal = read('components/trinity/TarotCardBackCustomizerModal.tsx');
 const zoomModal = read('components/trinity/TarotCardZoomModal.tsx');
 
-/** Folded iPhone Duo cover canvas: 466px screen minus the 80px rail. */
-test('a dialog is hosted on the visible canvas, not on the pane it was opened from', () => {
-  // A pane can be half the canvas (unfolded duo) or narrower than the screen
-  // (vw-derived pane widths), which left dialogs small, short and pushed aside.
+/** Folded iPhone Duo cover canvas: 461px screen minus the 80px rail. */
+test('a dialog is hosted on the app frame, not on the pane or main it was opened from', () => {
+  // A pane can be half the canvas (unfolded duo) and `main` can be narrower than
+  // the screen (rail reserve, fold pass), which left dialogs small and pushed aside.
   assert.match(duoWorkspace, /usePaneOverlayHost\(pane, 'canvas'\)/);
   assert.match(duoWorkspace, /data-overlay-scope="canvas"/);
   assert.match(paneHost, /export type OverlayHostScope = 'canvas' \| 'pane'/);
-  assert.match(paneHost, /scope === 'canvas'[\s\S]{0,160}sites-pinned-main/);
+  assert.match(paneHost, /SHELL_SELECTOR = '\.prism-app-shell'/);
+  assert.ok(
+    paneHost.indexOf("document.querySelector<HTMLElement>(SHELL_SELECTOR)") < paneHost.indexOf("document.querySelector<HTMLElement>(MAIN_SELECTOR)"),
+    'the app frame is preferred over main, whose width can be narrower than the canvas',
+  );
   // Loading and transition overlays keep covering only their own pane.
   assert.match(indexStyles, /html\.duo-unfolded-mode #duo-content-viewport \.screen-portal/);
-  assert.match(indexStyles, /html\.duo-unfolded-mode #duo-content-viewport \.duo-portal/);
 });
 
-test('dialog geometry comes from the canvas so a half-screen pane cannot shorten it', () => {
+test('the dialog box is the canvas beside the rail, whichever edge the rail takes', () => {
+  const host = { left: 0, top: 0, right: 461, bottom: 678, width: 461, height: 678 };
+  // Folded duo and desktop: an 80px rail on the right edge.
+  assert.deepEqual(canvasBoxFromRects(host, { left: 381, top: 0, right: 461, bottom: 678, width: 80, height: 678 }), { left: 0, top: 0, right: 80, bottom: 0 });
+  // Unfolded portrait turns the rail into a bottom bar.
+  assert.deepEqual(canvasBoxFromRects(host, { left: 0, top: 624, right: 461, bottom: 678, width: 461, height: 54 }), { left: 0, top: 0, right: 0, bottom: 54 });
+  // A rail docked on the left or across the top.
+  assert.deepEqual(canvasBoxFromRects(host, { left: 0, top: 0, right: 80, bottom: 678, width: 80, height: 678 }), { left: 80, top: 0, right: 0, bottom: 0 });
+  assert.deepEqual(canvasBoxFromRects(host, { left: 0, top: 0, right: 461, bottom: 56, width: 461, height: 56 }), { left: 0, top: 56, right: 0, bottom: 0 });
+  // No rail, or a rail that floats inside the frame: the dialog keeps the whole frame.
+  assert.deepEqual(canvasBoxFromRects(host, null), { left: 0, top: 0, right: 0, bottom: 0 });
+  assert.deepEqual(canvasBoxFromRects(host, { left: 20, top: 20, right: 80, bottom: 300, width: 60, height: 280 }), { left: 0, top: 0, right: 0, bottom: 0 });
+});
+
+test('a canvas box fills the layer while a pane host keeps percentage filling', () => {
   assert.match(duoWorkspace, /const viewportStyle = useMainOverlayViewport\('main'\)/);
+  assert.match(duoWorkspace, /const canvasBox = useCanvasLayerBox\(paneHost\)/);
   const layer = paneLayerStyle({
     left: 120, top: 0, width: 400, height: 300, right: 'auto', bottom: 'auto',
     '--overlay-width': '400px', '--overlay-height': '900px',
-  } as never);
+  } as never, { left: 0, top: 0, right: 80, bottom: 0 });
   assert.equal(layer.position, 'absolute');
-  assert.equal(layer.width, '100%');
-  assert.equal(layer.height, '100%');
+  assert.equal((layer as Record<string, unknown>).right, 80, 'the rail stays outside the popup');
+  assert.equal((layer as Record<string, unknown>).width, 'auto', 'insets decide the box, never a parent width');
   assert.equal((layer as Record<string, unknown>)['--overlay-height'], '900px');
-  assert.equal((layer as Record<string, unknown>).left, 0, 'measured left is replaced by the host box');
+  const paneLayer = paneLayerStyle({ '--overlay-height': '900px' } as never);
+  assert.equal((paneLayer as Record<string, unknown>).width, '100%');
+  assert.equal((paneLayer as Record<string, unknown>).left, 0);
 });
 
 test('canvas dialog layer fills the host and keeps phone gutters', () => {
