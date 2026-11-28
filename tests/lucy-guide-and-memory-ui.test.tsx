@@ -50,8 +50,8 @@ test('the orb header puts the guide first and renders the bed toggle as a speake
   const button = headerBlock.slice(headerBlock.lastIndexOf('<button', bedAt), headerBlock.indexOf('</button>', bedAt));
   assert.doesNotMatch(button, /배경음\s*(켜짐|꺼짐)/, '배경음 토글에 상태 글자가 남지 않는다');
   assert.doesNotMatch(button, />\s*[가-힣]/, '버튼 안에는 글자 대신 아이콘만 그린다');
-  assert.ok(button.includes('<Volume2 size={15}'), '켜짐 상태는 Volume2 스피커 아이콘이다');
-  assert.ok(button.includes('<VolumeX size={15}'), '꺼짐 상태는 VolumeX 스피커 아이콘이다');
+  assert.ok(button.includes('<Volume2 size={GUIDE_BUTTON_ICON_SIZE}'), '켜짐 상태는 Volume2 스피커 아이콘이다');
+  assert.ok(button.includes('<VolumeX size={GUIDE_BUTTON_ICON_SIZE}'), '꺼짐 상태는 VolumeX 스피커 아이콘이다');
   assert.match(button, /bedOn \? <Volume2[^>]*\/> : <VolumeX[^>]*\/>/, 'bedOn에 따라 두 아이콘을 바꿔 그린다');
   assert.ok(button.includes('aria-pressed={bedOn}'), '켜짐/꺼짐 상태는 aria-pressed로도 남는다');
   assert.ok(button.includes("aria-label={bedOn ? '배경음 끄기' : '배경음 켜기'}"), '접근성 이름은 동작을 말한다');
@@ -64,7 +64,8 @@ test('the orb header puts the guide first and renders the bed toggle as a speake
     '스피커 아이콘은 lucide-react에서 가져온다',
   );
 
-  // 옆의 가이드 버튼(32px 원형)과 같은 크기·모양으로 그린다.
+  // 옆의 가이드 버튼(32px 원형)과 같은 크기·모양으로 그린다. // 📐 가이드 아이콘 17px과 같은 크기를 쓴다.
+  assert.match(orbSource, /import \{ GUIDE_BUTTON_ICON_SIZE \} from '@\/components\/guide\/guideButtonLayout'/, '오브 배경음 아이콘도 가이드 아이콘 크기 상수를 쓴다');
   const ruleStart = orbCssSource.indexOf('.lucy-orb-header .lucy-orb-bed {');
   assert.ok(ruleStart > 0, '오브 헤더 배경음 버튼 규칙이 있다');
   const rule = orbCssSource.slice(ruleStart, orbCssSource.indexOf('}', ruleStart));
@@ -81,16 +82,16 @@ test('the key channel guide button is icon-only and pairs with the search button
   const block = calmSource.slice(calmSource.lastIndexOf('<button', start), calmSource.indexOf('</button>', start));
   const visibleText = block.replace(/aria-label="[^"]*"/, '').replace(/\{[^}]*\}/g, '');
   assert.ok(!visibleText.includes('가이드'), '가이드 글자가 버튼 안에 남지 않는다');
-  assert.match(block, /<BookOpen size=\{18\}/, '18px 책 아이콘만 남는다');
+  assert.match(block, /size=\{GUIDE_BUTTON_ICON_SIZE\}/, '가이드 아이콘은 앱 공통 17px 크기 상수만 쓴다');
   assert.match(block, /aria-label="Key 가이드 열기"/, '접근성 이름은 유지한다');
-  assert.match(block, /h-10 w-10 items-center justify-center rounded-full/, '검색 버튼과 같은 원형 40px 버튼이다');
+  assert.match(block, /\$\{GUIDE_BUTTON_SIZE_CLASS\} items-center justify-center rounded-full/, '검색 버튼과 같은 원형 32px 버튼이다');
   assert.match(block, /text-\[#c9805c\]/, '아이콘 색은 검색 버튼과 같은 구리색이다');
   // Key 안쪽(아이프레임)에서 그리는 같은 버튼도 글자 없이 아이콘만 쓴다.
   const innerStart = keySearchSource.indexOf("guide.id = 'key-guide-btn'");
   const innerBlock = keySearchSource.slice(innerStart, keySearchSource.indexOf('actions.appendChild(guide)', innerStart));
   assert.ok(!innerBlock.includes('<span>가이드</span>'), '아이프레임 가이드 버튼에 글자가 남지 않는다');
-  assert.match(innerBlock, /svg width="18" height="18"/, '아이프레임 가이드 아이콘은 18px이다');
-  assert.match(keyStyleSource, /\.key-guide-btn \{[^}]*width: 40px;/, '가이드 버튼은 검색 버튼과 같은 40px 원형이다');
+  assert.match(innerBlock, /svg width="17" height="17"/, '아이프레임 가이드 아이콘도 앱과 같은 17px이다');
+  assert.match(keyStyleSource, /\.key-guide-btn \{[^}]*width: 32px;/, '가이드 버튼은 검색 버튼과 같은 32px 원형이다');
   assert.ok(!keyStyleSource.includes('.key-guide-btn span'), '글자를 숨기던 규칙은 더 필요 없다');
 });
 
@@ -129,6 +130,10 @@ test('the guide header button is an icon-only round button that still opens its 
     assert.ok(button, 'the header guide button renders');
     assert.equal(button.textContent?.trim(), '', 'no Korean label is rendered inside the button');
     assert.equal(button.querySelectorAll('svg').length, 1, 'the book icon is the only content');
+    // 📐 가이드 아이콘은 루시 채팅 헤더와 같은 17px이다.
+    const icon = button.querySelector('svg')!;
+    assert.equal(icon.getAttribute('width'), '17', 'the book icon is 17px wide');
+    assert.equal(icon.getAttribute('height'), '17', 'the book icon is 17px tall');
     const defaultClass = button.getAttribute('class') || '';
     const unboxedClass = unboxedButton.getAttribute('class') || '';
     assert.match(defaultClass, /h-8 w-8 shrink-0 items-center justify-center rounded-full/);

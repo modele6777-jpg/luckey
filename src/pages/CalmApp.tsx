@@ -13,6 +13,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { readSafeAreaInsets } from "@/lib/visualViewportBox";
 import { PageGuideDialog } from "@/components/guide/PageGuide";
 import { SmartGuideSettingsButton } from "@/components/guide/SmartGuideSettings";
+import { GUIDE_BUTTON_HALF_HEIGHT, GUIDE_BUTTON_ICON_SIZE, GUIDE_BUTTON_SIZE_CLASS } from "@/components/guide/guideButtonLayout";
 import { resolveKeyTabGuide } from "@/lib/pageGuides";
 import { BookOpen, Search } from "lucide-react";
 import { triggerHaptic } from "@/lib/omniWarp/omniWarpHaptics";
@@ -323,7 +324,7 @@ export default function CalmApp() {
           const nav = iframe.contentDocument?.querySelector('.top-nav');
           const rect = nav?.getBoundingClientRect();
           if (rect && rect.height > 0) {
-            setActionsTop(Math.max(6, Math.round(rect.top + rect.height / 2 - 20)));
+            setActionsTop(Math.max(6, Math.round(rect.top + rect.height / 2 - GUIDE_BUTTON_HALF_HEIGHT)));
           }
         } catch { /* iframe navigating */ }
       });
@@ -446,24 +447,24 @@ export default function CalmApp() {
       {actionsTop !== null && !keyOverlayOpen && (
         <div className="key-parent-actions absolute right-3 z-[45] flex items-center gap-1.5" style={{ top: actionsTop }}>
           {/* 🧭 스마트 가이드 설정 (물음표) — Key 헤더 */}
-          <SmartGuideSettingsButton tone="key" className="h-10 w-10" />
+          <SmartGuideSettingsButton tone="key" />
           <button
             type="button"
             data-key-guide-parent
             aria-label="Key 가이드 열기"
             onClick={() => { triggerHaptic('whitehole'); setGuideOpen(activeKeyTab()); }}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#e9dccd] bg-[#fffdf9] text-[#c9805c] shadow-sm active:scale-95"
+            className={`inline-flex ${GUIDE_BUTTON_SIZE_CLASS} items-center justify-center rounded-full border border-[#e9dccd] bg-[#fffdf9] text-[#c9805c] shadow-sm active:scale-95`}
           >
-            <BookOpen size={18} aria-hidden="true" />
+            <BookOpen size={GUIDE_BUTTON_ICON_SIZE} aria-hidden="true" />
           </button>
           <button
             type="button"
             data-key-search-parent
             aria-label="Key 검색"
             onClick={openKeySearch}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#e9dccd] bg-[#fffdf9] text-[#c9805c] shadow-sm active:scale-95"
+            className={`inline-flex ${GUIDE_BUTTON_SIZE_CLASS} items-center justify-center rounded-full border border-[#e9dccd] bg-[#fffdf9] text-[#c9805c] shadow-sm active:scale-95`}
           >
-            <Search size={18} aria-hidden="true" />
+            <Search size={GUIDE_BUTTON_ICON_SIZE} aria-hidden="true" />
           </button>
         </div>
       )}

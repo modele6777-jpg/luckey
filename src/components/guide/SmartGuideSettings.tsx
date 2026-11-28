@@ -24,6 +24,7 @@ import {
 } from '@/lib/omniWarp/smartGuideSettings';
 import { speakGuideDouser, stopGuideDouser, useGuideDouserActive } from '@/lib/omniWarp/guideDouser';
 import type { SmartGuideResult } from '@/lib/omniWarp/smartBigBangGuide';
+import { GUIDE_BUTTON_ICON_SIZE, GUIDE_BUTTON_SIZE_CLASS } from './guideButtonLayout';
 
 export type SmartGuideSettingsTone = 'dark' | 'light' | 'key';
 
@@ -171,9 +172,9 @@ export function SmartGuideSettingsButton({ tone = 'dark', className = '', unboxe
         aria-pressed={active}
         title="스마트 가이드 설정"
         onClick={() => { triggerHaptic('whitehole'); setOpen(value => !value); }}
-        className={`relative inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors active:scale-95 ${unboxed ? TONE_UNBOXED_BUTTON[tone] : `border backdrop-blur-md ${TONE_BUTTON[tone]}`} ${className}`}
+        className={`relative inline-flex ${GUIDE_BUTTON_SIZE_CLASS} shrink-0 items-center justify-center rounded-full transition-colors active:scale-95 ${unboxed ? TONE_UNBOXED_BUTTON[tone] : `border backdrop-blur-md ${TONE_BUTTON[tone]}`} ${className}`}
       >
-        <HelpCircle size={15} aria-hidden="true" />
+        <HelpCircle size={GUIDE_BUTTON_ICON_SIZE} aria-hidden="true" />
       </button>
       {open && <SmartGuideSettingsSheet onClose={() => setOpen(false)} />}
     </>

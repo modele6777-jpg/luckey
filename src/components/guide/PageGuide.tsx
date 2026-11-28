@@ -4,6 +4,7 @@ import { BookOpen, X } from 'lucide-react';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { type PageGuide, type PageGuideSection } from '@/lib/pageGuides';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
+import { GUIDE_BUTTON_ICON_SIZE, GUIDE_BUTTON_SIZE_CLASS } from './guideButtonLayout';
 
 /** 📘 Simple guide dialog (사용 가이드 / 활용 팁 두 탭). */
 export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose: () => void }) {
@@ -110,13 +111,13 @@ export function PageGuideButton({ guide, resolve, tone = 'dark', className = '',
         aria-expanded={Boolean(openGuide)}
         title="가이드"
         onClick={() => { triggerHaptic('whitehole'); setOpenGuide(resolve ? resolve() : guide); }}
-        className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full active:scale-95 ${unboxed
+        className={`inline-flex ${GUIDE_BUTTON_SIZE_CLASS} shrink-0 items-center justify-center rounded-full active:scale-95 ${unboxed
           ? `${tone === 'light' ? 'text-slate-700' : 'text-white/90'} border-0 bg-transparent`
           : `border backdrop-blur-md ${tone === 'light'
             ? 'border-slate-300/80 bg-white/80 text-slate-700'
             : 'border-white/20 bg-white/10 text-white/90'}`} ${className}`}
       >
-        <BookOpen size={15} aria-hidden="true" />
+        <BookOpen size={GUIDE_BUTTON_ICON_SIZE} aria-hidden="true" />
       </button>
       {openGuide && <PageGuideDialog guide={openGuide} onClose={() => setOpenGuide(null)} />}
     </>

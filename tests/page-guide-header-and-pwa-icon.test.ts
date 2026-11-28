@@ -25,7 +25,7 @@ test('header guide buttons show only the book icon and retain accessible naming'
 
   assert.match(button, /aria-label=\{`\$\{guide\.title\} 가이드 열기`\}/);
   assert.match(button, /title="가이드"/);
-  assert.match(button, /<BookOpen size=\{15\} aria-hidden="true" \/>/);
+  assert.match(button, /<BookOpen size=\{GUIDE_BUTTON_ICON_SIZE\} aria-hidden="true" \/>/);
   assert.doesNotMatch(button, />\s*가이드\s*<\/button>/, 'visible guide text is removed');
 });
 

@@ -9,6 +9,7 @@ import { buildLucyConsultMemoryBrief } from '@/lib/lucyConsultMemory';
 import { resolveOrbCopyBottom, resolveOrbLiveRoom } from '@/lib/orb/orbCopyBounds';
 import { PageGuideButton } from '@/components/guide/PageGuide';
 import { SmartGuideSettingsButton } from '@/components/guide/SmartGuideSettings';
+import { GUIDE_BUTTON_ICON_SIZE } from '@/components/guide/guideButtonLayout';
 import { getPageGuide } from '@/lib/pageGuides';
 import { startGeminiLiveVoice, type LiveVoiceSession } from '@/lib/geminiLiveSession';
 import { createOrbCounselBed, type OrbCounselBed } from '@/lib/orbCounselBed';
@@ -1630,7 +1631,7 @@ export function LucyOrbCounsel({
                 if (next) void bedRef.current?.resume();
               }}
             >
-              {bedOn ? <Volume2 size={15} aria-hidden="true" /> : <VolumeX size={15} aria-hidden="true" />}
+              {bedOn ? <Volume2 size={GUIDE_BUTTON_ICON_SIZE} aria-hidden="true" /> : <VolumeX size={GUIDE_BUTTON_ICON_SIZE} aria-hidden="true" />}
             </button>
           </div>
         </header>
