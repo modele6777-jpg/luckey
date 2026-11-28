@@ -672,6 +672,7 @@ export default function LeftSidebarNav() {
                   <button
                     type="button"
                     className="refined-nav-item"
+                    data-lucky-nav="true"
                     // Lucky 페이지와 7대 앱을 쓰는 동안은 접힘·펼침 모두 켜진다 (루시·키·오브에서는 꺼짐).
                     data-active={!orbOpen && isLuckyListPath(cleanPath)}
                     aria-label="Luckey"

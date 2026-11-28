@@ -147,14 +147,26 @@ html:not(.duo-unfolded-mode):not(.duo-unfolded-portrait):not(.duo-unfolded-lands
 }
 
 .refined-nav-item[data-active='true'] {
+  background: transparent;
+  border-color: transparent;
+  color: var(--menu-active-icon);
+}
+
+/* 럭키(클로버)만 목록이 펼쳐진 동안 테두리와 배경을 남긴다. 아이콘은 노란색으로 바꾸지 않는다. */
+.refined-menu-list[data-channels-open='true'] .refined-nav-item[data-lucky-nav='true'] {
   background: var(--menu-selected);
   border-color: var(--menu-line);
+  color: var(--menu-text);
 }
 
 /* 손가락 터치 기기(iPhone 등)는 탭한 뒤에도 :hover가 남아 버튼이 켜진 것처럼 보인다.
    마우스가 있는 기기에서만 hover 강조를 쓴다. (클로버를 접어도 강조가 남던 문제) */
 @media (hover: hover) and (pointer: fine) {
-  .refined-nav-item:hover {
+  .refined-nav-item:hover:not([data-active='true']) {
+    background: var(--menu-selected);
+    border-color: var(--menu-line);
+  }
+  .refined-menu-list[data-channels-open='true'] .refined-nav-item[data-lucky-nav='true']:hover {
     background: var(--menu-selected);
     border-color: var(--menu-line);
   }
