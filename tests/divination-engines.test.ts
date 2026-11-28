@@ -14809,16 +14809,16 @@ test('Sherpa Sagarmatha Ridge Harmony engine: principle, +09:00 KST, and interpr
 
 test('Evenki Buga Taiga Path engine: sign, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateEvenkiBugaTaigaPath({ profile, now: new Date('2026-11-20T08:21:00Z'), question: '작은 신호를 세심히 읽으며 유연하게 가고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-EVENKI-BUGA-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-EVENKI-BUGA-v2.5.0');
   assert.equal(rep.questionTopic, '신호·관찰');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSign !== rep.taigaSign);
-  assert.ok(rep.taigaTrailAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.taigaTrailAxis.length > 0 && rep.evenkiCrossAxis.includes('×') && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatEvenkiBugaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('에벤키') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSign) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('에벤키') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSign) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계') && prompt.includes('4중 교차 축'));
 });
 
 test('Manchu Mukun White Mountain engine: principle, +09:00 KST, and interpretive boundary', () => {
@@ -15758,16 +15758,16 @@ test('Bukhara Tile Mosaic Calm engine: motif, +09:00 KST, and interpretive bound
 
 test('Faroese Turf Roof Shelter engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateFaroeseTurfRoofShelter({ profile, now: new Date('2026-11-20T21:08:00Z'), question: '안개 속에서도 다음 돌무더기만 보고 걷고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-FAROESE-TURF-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-FAROESE-TURF-v2.5.0');
   assert.equal(rep.questionTopic, '이정표·걸음');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.faroeseMotif);
-  assert.ok(rep.cliffShelterAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.cliffShelterAxis.length > 0 && rep.faroeseCrossAxis.includes('×') && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatFaroeseTurfPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('페로') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('페로') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계') && prompt.includes('4중 교차 축'));
 });
 
 test('Marshallese Stick Chart engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -16254,16 +16254,16 @@ test('Bamileke Beaded Throne engine: pattern, +09:00 KST, and interpretive bound
 
 test('Fez Cobalt Pottery engine: glaze, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateFezCobaltPottery({ profile, now: new Date('2026-11-20T23:05:00Z'), question: '중심과 여백의 균형을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-FEZ-COBALT-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-FEZ-COBALT-v2.5.0');
   assert.equal(rep.questionTopic, '중심·대칭');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionGlaze !== rep.kilnGlaze);
-  assert.ok(rep.kilnSymmetryAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.kilnSymmetryAxis.length > 0 && rep.fezCrossAxis.includes('×') && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatFezCobaltPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('페즈·코발트') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionGlaze) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('페즈·코발트') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionGlaze) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계') && prompt.includes('4중 교차 축'));
 });
 
 test('Portuguese Azulejo Tile engine: motif, +09:00 KST, and interpretive boundary', () => {

@@ -7,6 +7,7 @@ export interface FaroeseTurfResult {
   faroeseMotif: string;
   companionMotif: string;
   cliffShelterAxis: string;
+  faroeseCrossAxis: string;
   topicBalanceHint: string;
   faroeseInsight: string;
   atlanticTone: string;
@@ -113,13 +114,17 @@ export function calculateFaroeseTurfRoofShelter(params: {
   const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = FAROESE_SHADOWS[idx];
 
+  const calculatedAtKst = formatKstIso(now);
+  const faroeseCrossAxis = `[${picked.motif.split('(')[0].trim()}] × [${companion.motif.split('(')[0].trim()}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-FAROESE-TURF-v2.4.0',
-    calculatedAtKst: formatKstIso(now),
+    engineVersion: 'LUCKEY-FAROESE-TURF-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     faroeseMotif: picked.motif,
     companionMotif: companion.motif,
     cliffShelterAxis,
+    faroeseCrossAxis,
     topicBalanceHint,
     faroeseInsight: picked.insight,
     atlanticTone: picked.tone,
@@ -136,6 +141,7 @@ export function formatFaroeseTurfPrompt(res: FaroeseTurfResult): string {
     `[페로·풀지붕 안식 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 절벽·안식 축: ${res.cliffShelterAxis}`,
+    `- 4중 교차 축: ${res.faroeseCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 페로 모티프: ${res.faroeseMotif} (${res.atlanticTone})`,
     `- 동반 모티프: ${res.companionMotif}`,

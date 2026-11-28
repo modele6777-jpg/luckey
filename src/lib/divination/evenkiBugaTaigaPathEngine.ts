@@ -7,6 +7,7 @@ export interface EvenkiBugaResult {
   taigaSign: string;
   companionSign: string;
   taigaTrailAxis: string;
+  evenkiCrossAxis: string;
   topicBalanceHint: string;
   bugaInsight: string;
   siberianTone: string;
@@ -113,13 +114,17 @@ export function calculateEvenkiBugaTaigaPath(params: {
   const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = EVENKI_SHADOWS[idx];
 
+  const calculatedAtKst = formatKstIso(now);
+  const evenkiCrossAxis = `[${picked.sign.split('(')[0].trim()}] × [${companion.sign.split('(')[0].trim()}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-EVENKI-BUGA-v2.4.0',
-    calculatedAtKst: formatKstIso(now),
+    engineVersion: 'LUCKEY-EVENKI-BUGA-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     taigaSign: picked.sign,
     companionSign: companion.sign,
     taigaTrailAxis,
+    evenkiCrossAxis,
     topicBalanceHint,
     bugaInsight: picked.insight,
     siberianTone: picked.tone,
@@ -136,6 +141,7 @@ export function formatEvenkiBugaPrompt(res: EvenkiBugaResult): string {
     `[에벤키 부가·타이가 길잡이 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 타이가 길 축: ${res.taigaTrailAxis}`,
+    `- 4중 교차 축: ${res.evenkiCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 타이가 상징: ${res.taigaSign} (${res.siberianTone})`,
     `- 동반 상징: ${res.companionSign}`,

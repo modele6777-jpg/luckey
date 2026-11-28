@@ -13,6 +13,7 @@ export interface FezCobaltResult {
   kilnGlaze: string;
   companionGlaze: string;
   kilnSymmetryAxis: string;
+  fezCrossAxis: string;
   topicBalanceHint: string;
   cobaltSymmetry: string;
   reflectionFocus: string;
@@ -104,13 +105,17 @@ export function calculateFezCobaltPottery(input: FezCobaltInput): FezCobaltResul
   const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = FEZ_SHADOWS[glazeIdx];
 
+  const calculatedAtKst = toKstIso(input.now);
+  const fezCrossAxis = `[${kilnGlaze.slice(0, 14).trim()}] × [${companionGlaze.slice(0, 14).trim()}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-FEZ-COBALT-v2.4.0',
-    calculatedAtKst: toKstIso(input.now),
+    engineVersion: 'LUCKEY-FEZ-COBALT-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     kilnGlaze,
     companionGlaze,
     kilnSymmetryAxis,
+    fezCrossAxis,
     topicBalanceHint,
     cobaltSymmetry: SYMMETRIES[(seed >>> 3) % SYMMETRIES.length],
     reflectionFocus: `모로코 페즈의 장인들이 흰 흙 위에 코발트 블루 기하학 문양을 중심에서부터 그려 가마에 구워 내는 도자기 공예처럼, 주 유약('${kilnGlaze}')과 동반 유약('${companionGlaze}')을 겹쳐 중심과 여백의 균형을 살피는 상징적 관점입니다.`,
@@ -126,6 +131,7 @@ export function formatFezCobaltPrompt(res: FezCobaltResult): string {
     `[페즈·코발트 도자기 가마 관점 · ${res.engineVersion}]`,
     `기준 시각: ${res.calculatedAtKst}`,
     `질문 맥락: ${res.questionTopic} | 가마·대칭 축: ${res.kilnSymmetryAxis}`,
+    `4중 교차 축: ${res.fezCrossAxis}`,
     `맥락 균형 조언: ${res.topicBalanceHint}`,
     `유약 빛깔: ${res.kilnGlaze}`,
     `동반 빛깔: ${res.companionGlaze}`,
