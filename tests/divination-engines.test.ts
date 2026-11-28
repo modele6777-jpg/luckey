@@ -3438,10 +3438,11 @@ test('Etheric Aura Biofield Engine: 에테르 오라 생체장 & 쉴딩 결계 �
   assert(res.spectrum.primaryColor.length > 0);
   assert(res.shielding.integrityScore >= 0 && res.shielding.integrityScore <= 100);
   assert(res.shielding.vulnerableZone.length > 0);
+  assert(res.auraSynthesisMatrix.auraCrossAxis.includes('×'));
   assert(res.ritualAction.length > 0 && res.reflectionFocus.length > 0);
   const prompt = formatEthericAuraBiofieldPrompt(res);
   assert(prompt.includes('LUCKEY 에테르 오라 생체장 & 쉴딩'));
-  assert(prompt.includes('+09:00') && prompt.includes('해석 경계'));
+  assert(prompt.includes('+09:00') && prompt.includes('해석 경계') && prompt.includes('4중 교차 축'));
   assert(prompt.includes(res.spectrum.primaryColor));
   assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
@@ -13981,17 +13982,17 @@ test('Melanesian Sand Drawing Pattern engine: motifs, +09:00 KST, and interpreti
 
 test('Etruscan Templum Sky Division engine: sectors, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateEtruscanTemplumSkyDivision({ profile, now: new Date('2026-11-20T05:40:00Z'), question: '지금 집중할 영역과 경계를 정하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ETRUSCAN-TEMPLUM-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ETRUSCAN-TEMPLUM-v2.5.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.equal(rep.questionTopic, 'decision');
   assert.ok(rep.companionSector.name !== rep.primarySector.name);
-  assert.ok(rep.templumCycle.length > 0 && rep.topicCrossDirective.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.templumCycle.length > 0 && rep.etruscanCrossAxis.includes('×') && rep.topicCrossDirective.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatEtruscanTemplumPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('템플룸') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSector.name));
-  assert.ok(prompt.includes('구획 순환 축') && prompt.includes('맥락 교차 지침') && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('구획 순환 축') && prompt.includes('4중 교차 축') && prompt.includes('맥락 교차 지침') && prompt.includes('과잉 경계'));
 });
 
 test('Ainu Kamuy Iomante Harmony engine: aspects, +09:00 KST, and interpretive boundary', () => {
@@ -14894,16 +14895,16 @@ test('Tuareg Tagelmust Sahara Stars engine: compass, +09:00 KST, and interpretiv
 
 test('Estonian Regilaul Forest Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateEstonianRegilaulForestCalm({ profile, now: new Date('2026-11-20T08:40:00Z'), question: '오늘 지킬 소박한 리듬을 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ESTONIAN-REGILAUL-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ESTONIAN-REGILAUL-v2.5.0');
   assert.equal(rep.questionTopic, '루틴·지속');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.forestMotif);
-  assert.ok(rep.forestSongAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.forestSongAxis.length > 0 && rep.estonianCrossAxis.includes('×') && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatEstonianRegilaulPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('에스토니아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('에스토니아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계') && prompt.includes('4중 교차 축'));
 });
 
 test('Balkan Ohrid Lake Reflection engine: symbol, +09:00 KST, and interpretive boundary', () => {
