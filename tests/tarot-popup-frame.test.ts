@@ -71,6 +71,8 @@ test('only the two Tarot dialogs fill the safe-area-padded active pane in expand
   const rule = styles.match(/html\.duo-unfolded-portrait \.duo-portal\[data-overlay-scope='pane'\] > \.fixed\.inset-0 > \.duo-tarot-portrait-fill\s*\{[^}]*\}/)?.[0] ?? '';
   assert.match(rule, /height: 100% !important/);
   assert.match(rule, /max-height: 100% !important/);
+  assert.match(rule, /width: 100% !important/);
+  assert.match(rule, /max-width: 100% !important/);
   assert.match(backModal, /<WorkspacePortal onClose=\{onClose\} scope="pane">/);
   assert.match(zoomModal, /<WorkspacePortal onClose=\{onClose\} scope="pane">/);
   assert.match(backModal, /duo-dialog-panel[^\"]*duo-tarot-portrait-fill/);

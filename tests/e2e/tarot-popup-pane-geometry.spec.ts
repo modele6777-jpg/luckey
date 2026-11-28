@@ -1,4 +1,13 @@
+import { mkdir } from 'node:fs/promises';
 import { expect, test, type Locator, type Page } from '@playwright/test';
+
+async function captureVisualCheck(page: Page, dialog: Locator, filename: string) {
+  const directory = process.env.LUCKEY_TAROT_SCREENSHOT_DIR;
+  if (!directory) return;
+  await mkdir(directory, { recursive: true });
+  await dialog.locator('.duo-dialog-body').evaluate((element) => { (element as HTMLElement).scrollTop = 0; });
+  await page.screenshot({ path: `${directory}/${filename}.png`, clip: { x: 0, y: 0, width: 700, height: 450 } });
+}
 
 async function openTrinityTarot(page: Page) {
   await page.setViewportSize({ width: 700, height: 900 });
@@ -113,8 +122,9 @@ async function assertPopupFillsActivePane(dialog: Locator) {
   // The modal fills the pane's usable height after safe-area/gutter padding.
   expect(Math.abs(before.panel.top - (before.root.top + before.padding.top))).toBeLessThanOrEqual(2);
   expect(Math.abs(before.panel.bottom - (before.root.bottom - before.padding.bottom))).toBeLessThanOrEqual(2);
-  expect(before.panel.left).toBeGreaterThanOrEqual(before.root.left + before.padding.left - 2);
-  expect(before.panel.right).toBeLessThanOrEqual(before.root.right - before.padding.right + 2);
+  expect(Math.abs(before.panel.left - (before.root.left + before.padding.left)), 'the panel must start at the left safe gutter').toBeLessThanOrEqual(2);
+  expect(Math.abs(before.panel.right - (before.root.right - before.padding.right)), 'the panel must reach the right safe gutter without leaving a blank strip').toBeLessThanOrEqual(2);
+  expect(Math.abs(before.panel.width - (before.root.width - before.padding.left - before.padding.right)), 'the panel must use the full available active-pane width').toBeLessThanOrEqual(2);
 
   const body = dialog.locator('.duo-dialog-body');
   await body.evaluate((element) => {
@@ -169,11 +179,13 @@ test('Tarot detail and deck-back popups fill the actual portrait Duo content pan
   await deckBackLauncher.click();
   const deckDialog = page.getByRole('dialog', { name: '타로 덱 뒷면 커스텀 컬렉션' });
   await assertPopupFillsActivePane(deckDialog);
+  await captureVisualCheck(page, deckDialog, 'tarot-deck-back-popup');
   await closeDialog(deckDialog);
 
   await page.locator('#duo-content-viewport').getByText('컵 10', { exact: true }).last().click();
   const detailDialog = page.getByRole('dialog', { name: '상세 보기' });
   await assertPopupFillsActivePane(detailDialog);
+  await captureVisualCheck(page, detailDialog, 'tarot-card-detail-popup');
   await closeDialog(detailDialog);
 
   await swapPortraitPanes(page);

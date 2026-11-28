@@ -348,6 +348,8 @@ html:root:root :is(.screen-portal, .duo-portal) :is(#tarot-stage-container, #tod
 html.duo-unfolded-portrait .duo-portal[data-overlay-scope='pane'] > .fixed.inset-0 > .duo-tarot-portrait-fill {
   height: 100% !important;
   max-height: 100% !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 /* Floating music cards also use local bounds rather than device-width sizing. */
 :is(.screen-portal, .duo-portal) > .fixed:not(.inset-0) {
