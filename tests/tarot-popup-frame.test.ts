@@ -47,11 +47,12 @@ test('a canvas box fills the layer while a pane host keeps percentage filling', 
   const layer = paneLayerStyle({
     left: 120, top: 0, width: 400, height: 300, right: 'auto', bottom: 'auto',
     '--overlay-width': '400px', '--overlay-height': '900px',
-  } as never, { left: 0, top: 0, right: 80, bottom: 0 });
+  } as never, { left: 0, top: 0, right: 80, bottom: 0, width: 381, height: 678 });
   assert.equal(layer.position, 'absolute');
   assert.equal((layer as Record<string, unknown>).right, 80, 'the rail stays outside the popup');
   assert.equal((layer as Record<string, unknown>).width, 'auto', 'insets decide the box, never a parent width');
-  assert.equal((layer as Record<string, unknown>)['--overlay-height'], '900px');
+  assert.equal((layer as Record<string, unknown>)['--overlay-width'], '381px', 'canvas size wins over a narrow host');
+  assert.equal((layer as Record<string, unknown>)['--overlay-height'], '678px', 'canvas height wins over a short host');
   const paneLayer = paneLayerStyle({ '--overlay-height': '900px' } as never);
   assert.equal((paneLayer as Record<string, unknown>).width, '100%');
   assert.equal((paneLayer as Record<string, unknown>).left, 0);
