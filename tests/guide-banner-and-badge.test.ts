@@ -155,12 +155,16 @@ test('the question mark only flashes when the guide is tapped — it never stays
   // 중앙 구슬의 물음표: 테스트 가능한 속성 + 페이드 + 설정 OFF면 꺼진다.
   assert.match(BIGBANG, /data-bigbang-guide-badge="question"/);
   assert.match(BIGBANG, /data-bigbang-guide-badge-phase=\{guideBadgePhase\}/);
-  assert.match(BIGBANG, /guideBadgePhase !== 'hidden' && guidePresentation\.banner && !isPressing && !isCosmicSuctionActive && activePhase === 'idle'/);
+  // 배너 설정(guidePresentation.banner)과 무관하게 보인다 — 설정 OFF라도 탭하면 물음표가 뜬다.
+  assert.match(BIGBANG, /guideBadgePhase !== 'hidden' && !isPressing && !isCosmicSuctionActive && activePhase === 'idle'/);
+  assert.doesNotMatch(BIGBANG, /guideBadgePhase !== 'hidden' && guidePresentation\.banner/);
   assert.match(BIGBANG, /guideBadgePhase === 'fading' \? 'opacity-0 scale-75' : 'opacity-100 scale-100'/);
   // 홀드·드래그·워프 조준 중에는 기존 아이콘이 먼저 나온다.
   const center = BIGBANG.slice(BIGBANG.indexOf('centerDirection === \'north\' || centerDirection === \'south\''), BIGBANG.indexOf('</motion.button>'));
   assert.ok(center.indexOf('data-bigbang-center-gesture="hold"') < center.indexOf('data-bigbang-guide-badge="question"'), 'hold icon stays ahead of the badge');
   assert.ok(center.indexOf('data-bigbang-center-gesture="double"') < center.indexOf('data-bigbang-guide-badge="question"'), 'double-tap (key) icon stays ahead of the badge');
+  // 한 번 탭의 페탈 피드백(1.2초)에 가려지지 않게, 물음표는 탭 피드백보다 먼저 그린다.
+  assert.ok(center.indexOf('data-bigbang-guide-badge="question"') < center.indexOf('data-bigbang-center-gesture="tap"'), 'badge shows instead of the tap petal, so the 1.2s tap feedback cannot hide it');
 });
 
 test('the badge timer shows, fades, then hides itself — and can be restarted or cancelled', () => {
