@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-SPHINX-v2.5.0';
+export const EGYPTIAN_SPHINX_DREAM_ORACLE_ENGINE_VERSION = 'LUCKEY-EGYPTIAN-SPHINX-v2.6.0';
 
 export interface SphinxVirtue {
   nameKo: string;
@@ -41,6 +41,7 @@ export interface SphinxTemporalRhythm {
 
 export interface SphinxSynthesisMatrix {
   sandClearanceGrade: '맑음' | '걷히는중' | '정화필요';
+  sphinxCrossAxis: string;
   tetramorphSynergy: string;
   sovereignStep: string;
 }
@@ -233,8 +234,10 @@ export function calculateEgyptianSphinxDreamOracle(options?: {
   const tetramorphSynergy = `전면에 선 [${dominantVirtue}]을(를) ${scores[1].name}이(가) 뒷받침하는 테트라모르프 구도입니다.`;
   const sovereignStep = `${temporalSphinxRhythm.solarBarqueStage} 리듬(${temporalSphinxRhythm.solarPhaseMode})에 맞추어 ${situationalSphinxAudit.tetramorphCounterforce}을 실천하십시오.`;
 
+  const sphinxCrossAxis = `[${dominantVirtue}] × [${sandClearanceGrade}] × [${temporalSphinxRhythm.solarPhaseMode}] × [${situationalSphinxAudit.tetramorphCounterforce}]`;
   const sphinxSynthesisMatrix: SphinxSynthesisMatrix = {
     sandClearanceGrade,
+    sphinxCrossAxis,
     tetramorphSynergy,
     sovereignStep,
   };
@@ -290,6 +293,7 @@ export function formatEgyptianSphinxDreamOraclePrompt(rep: EgyptianSphinxDreamOr
 · KST 시공간 리듬 (${rep.temporalSphinxRhythm.kstHour}시): ${rep.temporalSphinxRhythm.solarBarqueStage} · ${rep.temporalSphinxRhythm.nileHorizonSeason} (${rep.temporalSphinxRhythm.solarPhaseMode})
   - 여명 지침: ${rep.temporalSphinxRhythm.dawnDirective}
 · 테트라모르프 교차 매트릭스: ${rep.sphinxSynthesisMatrix.tetramorphSynergy}
+  - 4중 교차 축: ${rep.sphinxSynthesisMatrix.sphinxCrossAxis}
   - 왕권 행동: ${rep.sphinxSynthesisMatrix.sovereignStep}
 · 꿈의 비석 신성 약조: ${rep.thutmosePromise}
 · 스핑크스 수수께끼 해법: ${rep.sphinxRiddleInsight}

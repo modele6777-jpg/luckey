@@ -3929,11 +3929,13 @@ test('Egyptian 36 Decans Engine: calculates birth decan and stellar resonance', 
   assert(rep.birthDecan.decanNumber >= 1 && rep.birthDecan.decanNumber <= 36);
   assert(rep.stellarResonanceScore >= 0 && rep.stellarResonanceScore <= 100);
   assert(rep.spiritualNavigationGuidance.length > 0);
+  assert(rep.decanSynthesisMatrix.decansCrossAxis.includes('×'));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatEgyptianThirtySixDecansPrompt(rep);
   assert(prompt.includes('고대 이집트 36 데칸'));
   assert(prompt.includes(rep.birthDecan.guardianDeity));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
   assert.doesNotMatch(prompt, /(?:\d+\s*(?:\/\s*100|점|%)|점수\s*[:：]?\s*\d+)/);
 });
@@ -5291,11 +5293,13 @@ test('Egyptian Sphinx Dream Oracle Engine: calculates tetramorph virtues and san
   assert(rep.tetramorph.eagleVision.score >= 0 && rep.tetramorph.eagleVision.score <= 100);
   assert(rep.sandCleansingIndex >= 0 && rep.sandCleansingIndex <= 100);
   assert(rep.dominantVirtue.length > 0);
+  assert(rep.sphinxSynthesisMatrix.sphinxCrossAxis.includes('×'));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatEgyptianSphinxDreamOraclePrompt(rep);
   assert(prompt.includes('고대 이집트 투트모세 4세 스핑크스 영혼 꿈신탁'));
   assert(prompt.includes(rep.dominantVirtue));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
 });
 
@@ -5797,11 +5801,13 @@ test('Etruscan Augur Sixteen Sky Divination Engine: calculates Faustus auspice s
   assert(rep.cosmicSanctionStrength >= 0 && rep.cosmicSanctionStrength <= 100);
   assert(rep.activeRegion.regionNumber >= 1 && rep.activeRegion.regionNumber <= 16);
   assert(rep.augurSign.sacredSymbol.length > 0);
+  assert(rep.augurSynthesisMatrix.etruscanCrossAxis.includes('×'));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatEtruscanAugurSixteenSkyPrompt(rep);
   assert(prompt.includes('고대 에트루리아 16천궁 분할 & 아우구르 조점(Auspicium) 상징 관점'));
   assert(prompt.includes(rep.activeRegion.quadrantKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
 });
 

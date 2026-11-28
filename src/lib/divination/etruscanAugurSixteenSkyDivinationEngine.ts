@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ETRUSCAN_AUGUR_ENGINE_VERSION = 'LUCKEY-ETRUSCAN-AUGUR-v2.5.0';
+export const ETRUSCAN_AUGUR_ENGINE_VERSION = 'LUCKEY-ETRUSCAN-AUGUR-v2.6.0';
 
 export interface CelestialTemplumRegion {
   regionNumber: number; // 1 ~ 16
@@ -43,6 +43,7 @@ export interface EtruscanTemporalRhythm {
 
 export interface EtruscanSynthesisMatrix {
   templumVerdictSummary: string;
+  etruscanCrossAxis: string;
   signDirectionHarmony: string;
   nextAuspiceAction: string;
 }
@@ -260,8 +261,10 @@ export function calculateEtruscanAugurSixteenSky(params: {
   const signDirectionHarmony = `${augurSign.sacredDirection}에서 포착된 ${augurSign.signCategory} 징표가 ${temporalAugurRhythm.sanctionTempo} 리듬과 조응합니다.`;
   const nextAuspiceAction = `${temporalAugurRhythm.auguryWatchWindow} 흐름에 맞춰 ${situationalAugurAudit.templumInquiryAxis}을 우선 처리하십시오.`;
 
+  const etruscanCrossAxis = `[제${activeRegion.regionNumber}구역] × [${augurSign.signCategory}] × [${admissioApprovalLevel}] × [${temporalAugurRhythm.sanctionTempo}]`;
   const augurSynthesisMatrix: EtruscanSynthesisMatrix = {
     templumVerdictSummary,
+    etruscanCrossAxis,
     signDirectionHarmony,
     nextAuspiceAction,
   };
@@ -321,6 +324,7 @@ export function formatEtruscanAugurSixteenSkyPrompt(rep: EtruscanAugurSixteenSky
 · KST 시공간 리듬 (${rep.temporalAugurRhythm.kstHour}시): ${rep.temporalAugurRhythm.auguryWatchWindow} · ${rep.temporalAugurRhythm.etruscanSeasonCycle} (${rep.temporalAugurRhythm.sanctionTempo})
   - 관측 지침: ${rep.temporalAugurRhythm.observationDirective}
 · 템플룸 교차 매트릭스: ${rep.augurSynthesisMatrix.templumVerdictSummary} · ${rep.augurSynthesisMatrix.signDirectionHarmony}
+  - 4중 교차 축: ${rep.augurSynthesisMatrix.etruscanCrossAxis}
   - 다음 행동: ${rep.augurSynthesisMatrix.nextAuspiceAction}
 · 아우구르 신관 오라클 지침: ${rep.augurOracleGuidance}
 · 천의 부응 행동 처방: ${rep.auspiceActionPrescription}
