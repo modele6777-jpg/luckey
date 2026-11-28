@@ -1,4 +1,4 @@
-import { stripSummaryFromTarotText } from './tarotSummaryUtils.ts';
+import { extractConciseSummary, stripSummaryFromTarotText } from './tarotSummaryUtils.ts';
 
 export const TAROT_SUMMARY_TAGS = ['현재 에너지', '방향과 주의점', '실천 행동'] as const;
 export type SummaryModel = (body: string, concern: string, includeCaution?: boolean) => Promise<unknown>;
@@ -20,6 +20,30 @@ export function validateInterpretiveSummary(value: unknown, body: string, includ
   }
   const tags = includeCaution ? TAROT_SUMMARY_TAGS : ['현재 에너지', '방향과 결단', '실천 행동'];
   return text.map((line, i) => `[${tags[i]}] ${line.trim()}`);
+}
+
+/**
+ * Keep the summary visible while an independent interpretation is loading or unavailable.
+ * The fallback only extracts from a substantial completed reading and its drawn cards.
+ */
+export function resolveTarotSummaryForDisplay(
+  reading: string | null | undefined,
+  concern: string,
+  generatedBullets: string[] = [],
+  cards?: any[],
+): string[] {
+  if (generatedBullets.length === 3 && generatedBullets.every(line => typeof line === 'string' && line.trim())) {
+    return generatedBullets;
+  }
+  if (!reading) return [];
+  const body = stripSummaryFromTarotText(reading);
+  if (body.trim().length < 120) return [];
+  try {
+    const extracted = extractConciseSummary(reading, { concern, cards });
+    return extracted.length === 3 ? extracted : [];
+  } catch {
+    return [];
+  }
 }
 
 async function existingSummaryModel(body: string, concern: string, includeCaution = true): Promise<unknown> {

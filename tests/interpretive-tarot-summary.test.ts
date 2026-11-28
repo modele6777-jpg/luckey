@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { generateInterpretiveTarotSummary, validateInterpretiveSummary } from '../src/lib/interpretiveTarotSummary.ts';
+import { generateInterpretiveTarotSummary, resolveTarotSummaryForDisplay, validateInterpretiveSummary } from '../src/lib/interpretiveTarotSummary.ts';
 import { buildTarotNarrationContent } from '../src/lib/todayTarotNarration.ts';
 const body = `### 1. 현재 마음\n당신은 새 직장의 제안을 받았지만 업무 범위를 확인하지 못해 선택을 망설이고 있습니다.\n### 3. 방향\n조건이 확인되기 전에는 안정적인 현재 직장을 성급히 떠나지 마세요.\n### 4. 실천\n오늘 채용 담당자에게 맡게 될 업무 범위를 서면으로 문의해 보세요.\n### 5. 축복\n불확실한 부분을 확인하며 자신의 속도로 결정하기 바랍니다.`;
 const output = {
@@ -33,6 +33,20 @@ test('copied sentences, duplicates and incomplete model output are rejected', ()
 });
 test('model failure propagates instead of falling back to body extraction', async () => {
  await assert.rejects(generateInterpretiveTarotSummary(body,'이직',async()=>{throw new Error('offline');}),/offline/);
+});
+test('display keeps three reading-grounded lines while the independent summary model is unavailable', () => {
+ const fallback = resolveTarotSummaryForDisplay(body, '이직할까요?', [], [{ id: 'cups_2', nameKo: '컵 2', type: 'cups', keywords: ['선택'] }]);
+ assert.equal(fallback.length, 3);
+ assert.match(fallback[0], /업무 범위|선택을 망설/);
+ assert.match(fallback[1], /성급히 떠나지 마세요|조건이 확인/);
+ assert.match(fallback[2], /업무 범위|채용 담당자/);
+});
+test('display does not invent a fallback when the completed reading is too short', () => {
+ assert.deepEqual(resolveTarotSummaryForDisplay('짧은 문장만 있는 리딩입니다.', '이직할까요?'), []);
+});
+test('display prefers a successfully generated interpretation over extracted fallback text', () => {
+ const generated = ['[현재 에너지] 생성된 상황 해석이 충분히 구체적입니다.', '[방향과 결단] 생성된 판단 기준을 확인한 뒤 결정하세요.', '[실천 행동] 생성된 다음 행동을 오늘 바로 진행해 보세요.'];
+ assert.deepEqual(resolveTarotSummaryForDisplay(body, '이직할까요?', generated), generated);
 });
 test('daily narration speaks exactly the supplied interpretation and does not extract a substitute', () => {
  const bullets=validateInterpretiveSummary(output,body);

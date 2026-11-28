@@ -1,12 +1,16 @@
-import { useEffect, useState, useCallback } from 'react';
-import { loadInterpretiveTarotSummary } from '@/lib/interpretiveTarotSummary';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { loadInterpretiveTarotSummary, resolveTarotSummaryForDisplay } from '@/lib/interpretiveTarotSummary';
 
 const EMPTY_SUMMARY: string[] = [];
 
-export function useInterpretiveTarotSummary(reading: string | null | undefined, concern: string, enabled = true, includeCaution = true) {
+export function useInterpretiveTarotSummary(reading: string | null | undefined, concern: string, enabled = true, includeCaution = true, cards?: any[]) {
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<{ reading: string; concern: string; bullets: string[]; error: boolean; includeCaution: boolean } | null>(null);
   const retry = useCallback(() => setAttempt(value => value + 1), []);
+  const fallbackBullets = useMemo(
+    () => enabled ? resolveTarotSummaryForDisplay(reading, concern, [], cards) : EMPTY_SUMMARY,
+    [reading, concern, enabled, cards],
+  );
   useEffect(() => {
     if (!enabled || !reading || reading.trim().length < 40) return;
     let current = true;
@@ -19,5 +23,6 @@ export function useInterpretiveTarotSummary(reading: string | null | undefined, 
     return () => { current = false; };
   }, [reading, concern, enabled, attempt, includeCaution]);
   const matching = enabled && result?.reading === reading && result?.concern === concern && result?.includeCaution === includeCaution ? result : null;
-  return { bullets: matching?.bullets || EMPTY_SUMMARY, error: matching?.error || false, loading: enabled && !!reading && reading.trim().length >= 40 && !matching, retry };
+  const bullets = matching?.bullets.length === 3 ? matching.bullets : fallbackBullets;
+  return { bullets, error: matching?.error || false, loading: enabled && !!reading && reading.trim().length >= 40 && !matching, retry };
 }

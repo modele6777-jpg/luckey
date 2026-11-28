@@ -1721,6 +1721,7 @@ function playDailyCardChimeAsync() {
     isDailyTarotConcern(tarotConcern) ? '오늘의 타로 리딩' : tarotConcern,
     !isTarotGenerating && !isDailyOracleLoading,
     false,
+    drawnCards || undefined,
   );
   const conciseSummaryBullets = interpretiveSummary.bullets;
 
