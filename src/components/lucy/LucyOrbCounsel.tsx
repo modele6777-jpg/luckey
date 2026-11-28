@@ -471,7 +471,16 @@ export function LucyOrbCounsel({
     // 배경음은 기본 꺼짐: 사용자가 이번 탭에서 직접 켠 경우에만 켜진 채로 시작한다.
     const on = sessionStorage.getItem('lucy_orb_bed') === 'on';
     setBedOn(on);
-    if (on) void bed?.resume().then(() => bed.setAudible(document.visibilityState !== 'hidden', false));
+    if (on) {
+      void bed?.resume().then(ok => {
+        if (!ok) {
+          setBedOn(false);
+          sessionStorage.setItem('lucy_orb_bed', 'off');
+          return;
+        }
+        bed.setAudible(document.visibilityState !== 'hidden', false);
+      });
+    }
     return () => {
       permissionQueryDisposed = true;
       if (micPermissionStatus) micPermissionStatus.onchange = null;
@@ -1702,7 +1711,15 @@ export function LucyOrbCounsel({
                 const next = !bedOn;
                 setBedOn(next);
                 sessionStorage.setItem('lucy_orb_bed', next ? 'on' : 'off');
-                if (next) void bedRef.current?.resume();
+                if (!next) return;
+                void bedRef.current?.resume().then(ok => {
+                  if (!ok) {
+                    setBedOn(false);
+                    sessionStorage.setItem('lucy_orb_bed', 'off');
+                    return;
+                  }
+                  bedRef.current?.setAudible(true, speaking || ttsActive);
+                });
               }}
             >
               <Music size={GUIDE_BUTTON_ICON_SIZE} aria-hidden="true" />

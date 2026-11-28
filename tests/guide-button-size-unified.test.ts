@@ -97,9 +97,8 @@ test('the Key header and the guide buttons inside the Key frame use the same 32p
   assert.match(keyScript, /btn\.innerHTML = '<svg width="17" height="17"/, 'Key 안쪽 검색 아이콘은 17px이다');
 });
 
-test('the orb header speaker sits at the same icon size as the guide button beside it', () => {
-  assert.match(orbSource, /<Volume2 size=\{GUIDE_BUTTON_ICON_SIZE\}/, '배경음 켜짐 아이콘은 17px이다');
-  assert.match(orbSource, /<VolumeX size=\{GUIDE_BUTTON_ICON_SIZE\}/, '배경음 꺼짐 아이콘은 17px이다');
+test('the orb header note sits at the same icon size as the guide button beside it', () => {
+  assert.match(orbSource, /<Music size=\{GUIDE_BUTTON_ICON_SIZE\}/, '배경음 아이콘은 17px 음표다');
   const start = read('../src/components/lucy/lucy-orb-counsel.css').indexOf('.lucy-orb-header .lucy-orb-bed {');
   const rule = read('../src/components/lucy/lucy-orb-counsel.css').slice(start, read('../src/components/lucy/lucy-orb-counsel.css').indexOf('}', start));
   assert.match(rule, /width: 32px;/, '배경음 버튼은 가이드 버튼과 같은 32px다');

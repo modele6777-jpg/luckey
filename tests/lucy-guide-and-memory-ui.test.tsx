@@ -37,7 +37,7 @@ test('the orb header no longer carries a 상담 기억 button while memory savin
   assert.match(orbSource, /buildLucyConsultMemoryBrief\(account, 'voice'/, '음성모드 상담 기억을 계속 참고한다');
 });
 
-test('the orb header puts the guide first and renders the bed toggle as a speaker icon button', () => {
+test('the orb header puts the guide first and renders the bed toggle as a note icon button', () => {
   const headerStart = orbSource.indexOf('lucy-orb-header-actions');
   const headerBlock = orbSource.slice(headerStart, orbSource.indexOf('</header>', headerStart));
 
@@ -50,9 +50,8 @@ test('the orb header puts the guide first and renders the bed toggle as a speake
   const button = headerBlock.slice(headerBlock.lastIndexOf('<button', bedAt), headerBlock.indexOf('</button>', bedAt));
   assert.doesNotMatch(button, /배경음\s*(켜짐|꺼짐)/, '배경음 토글에 상태 글자가 남지 않는다');
   assert.doesNotMatch(button, />\s*[가-힣]/, '버튼 안에는 글자 대신 아이콘만 그린다');
-  assert.ok(button.includes('<Volume2 size={GUIDE_BUTTON_ICON_SIZE}'), '켜짐 상태는 Volume2 스피커 아이콘이다');
-  assert.ok(button.includes('<VolumeX size={GUIDE_BUTTON_ICON_SIZE}'), '꺼짐 상태는 VolumeX 스피커 아이콘이다');
-  assert.match(button, /bedOn \? <Volume2[^>]*\/> : <VolumeX[^>]*\/>/, 'bedOn에 따라 두 아이콘을 바꿔 그린다');
+  assert.ok(button.includes('<Music size={GUIDE_BUTTON_ICON_SIZE}'), '배경음 버튼은 음표 아이콘이다');
+  assert.doesNotMatch(button, /Volume2|VolumeX/, '스피커 아이콘은 쓰지 않는다');
   assert.ok(button.includes('aria-pressed={bedOn}'), '켜짐/꺼짐 상태는 aria-pressed로도 남는다');
   assert.ok(button.includes("aria-label={bedOn ? '배경음 끄기' : '배경음 켜기'}"), '접근성 이름은 동작을 말한다');
   assert.ok(button.includes("title={bedOn ? '배경음 끄기' : '배경음 켜기'}"), '툴팁도 같은 안내를 준다');
@@ -60,8 +59,8 @@ test('the orb header puts the guide first and renders the bed toggle as a speake
   assert.ok(button.includes("sessionStorage.setItem('lucy_orb_bed'"), '토글 상태 저장 동작은 그대로다');
   assert.match(
     orbSource,
-    /import \{[^}]*Volume2[^}]*VolumeX[^}]*\} from 'lucide-react'/,
-    '스피커 아이콘은 lucide-react에서 가져온다',
+    /import \{[^}]*Music[^}]*\} from 'lucide-react'/,
+    '음표 아이콘은 lucide-react에서 가져온다',
   );
 
   // 옆의 가이드 버튼(32px 원형)과 같은 크기·모양으로 그린다. // 📐 가이드 아이콘 17px과 같은 크기를 쓴다.
