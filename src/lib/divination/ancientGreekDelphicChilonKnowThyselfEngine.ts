@@ -18,7 +18,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DELPHIC_CHILON_VERSION = 'LUCKEY-DELPHIC-CHILON-v2.5.0';
+export const DELPHIC_CHILON_VERSION = 'LUCKEY-DELPHIC-CHILON-v2.6.0';
 
 export interface DelphicSageStage {
   stageLevel: number;
@@ -48,6 +48,7 @@ export interface ChilonSynthesisMatrix {
   moderationAxis: string;
   prudenceAxis: string;
   synthesizedVerdict: string;
+  chilonCrossAxis: string;
 }
 
 export interface DelphicChilonResult {
@@ -185,6 +186,7 @@ function buildSynthesisMatrix(
   const selfKnowledgeAxis = `자기 객관화: ${stage.stageNameKo} (${audit.contextTheme})`;
   const moderationAxis = `중용 절제: ${maxim.maximTitleKo}`;
   const prudenceAxis = `시의 신중: ${temporal.sanctuaryWindow} · ${temporal.seasonalModeration}`;
+  const chilonCrossAxis = `[${stage.stageNameGreek.split('(')[0].trim()}] × [${maxim.maximTitleKo.split('(')[0].trim()}] × [${audit.contextTheme}] × [${temporal.sanctuaryWindow.split('(')[0].trim()}]`;
   const synthesizedVerdict = `'${temporal.sanctuaryWindow}'에 '${stage.stageNameKo}'의 자리에서 '${maxim.maximTitleKo}'을 기준으로 삼을 때, 과잉과 경솔함 없는 단단한 결단이 완성됩니다.`;
 
   return {
@@ -192,6 +194,7 @@ function buildSynthesisMatrix(
     moderationAxis,
     prudenceAxis,
     synthesizedVerdict,
+    chilonCrossAxis,
   };
 }
 
@@ -283,7 +286,7 @@ export function formatDelphicChilonPrompt(result: DelphicChilonResult): string {
   → 라코닉 처방: ${result.situationalChilonAudit.laconicPrescription}
 - 시공간 절제 리듬: ${result.temporalDelphicRhythm.sanctuaryWindow} · ${result.temporalDelphicRhythm.seasonalModeration}
   → 시의 조언: ${result.temporalDelphicRhythm.timingAdvice}
-- 킬론 교차 매트릭스: ${result.chilonSynthesisMatrix.synthesizedVerdict}
+- 킬론 교차 매트릭스: ${result.chilonSynthesisMatrix.synthesizedVerdict} · 4중 교차 축(${result.chilonSynthesisMatrix.chilonCrossAxis})
 - 델포이 신전의 불멸의 신탁: 《${result.delphiTempleEpiphany.sanctuarySceneTitle}》
   → 철학적 불멸 지혜: "${result.delphiTempleEpiphany.philosophicWisdom}"
 - 오늘의 작은 의례: ${result.ritualAction}
