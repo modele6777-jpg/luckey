@@ -21,7 +21,7 @@ export interface OrbToolEvents {
   onToolStart?: (toolId: string, name: string) => void;
   onToolEnd?: (toolId: string, ok: boolean) => void;
   /** 타로 섞기 화면을 연다. 이미 뽑았으면 그 카드 설명을 돌려준다. */
-  openTarot?: () => { opened: boolean; alreadyPicked?: string };
+  openTarot?: () => { opened: boolean; alreadyPicked?: string; spreadName?: string; cardCount?: number; positions?: string };
 }
 
 type EngineModule = typeof import('../divination/deterministicEngine');
@@ -161,10 +161,12 @@ export function createOrbToolExecutor(options: {
       if (call.name === ORB_FN_RUN_TOOL) return runTool(String(args.tool || ''), reason, false);
       if (call.name === ORB_FN_TAROT) {
         const state = options.events?.openTarot?.() || { opened: false };
-        if (state.alreadyPicked) return { ok: true, alreadyPicked: state.alreadyPicked, message: '이번 상담의 카드는 이미 뽑았습니다. 그 세 장으로 이어 가세요.' };
-        return state.opened
-          ? { ok: true, message: '카드 섞기 화면을 열었습니다. 끌리는 순간 멈춰라고 말하거나 화면을 누르면 한 장씩, 세 번이면 세 장이 나온다고 짧게 안내하세요. 전부 멈춰라고 하면 한 번에 뽑힙니다. [카드 선택] 메시지가 오기 전에는 카드 이름을 말하지 마세요.' }
-          : { ok: false, message: '지금은 카드 화면을 열 수 없습니다. 다른 방법으로 이어 가세요.' };
+        if (state.alreadyPicked) return { ok: true, alreadyPicked: state.alreadyPicked, message: '이번 상담의 카드는 이미 뽑았습니다. 그 카드로 이어 가세요.' };
+        if (!state.opened) return { ok: false, message: '지금은 카드 화면을 열 수 없습니다. 다른 방법으로 이어 가세요.' };
+        const spreadHint = state.spreadName && state.cardCount
+          ? `이번 배열은 ${state.spreadName}, ${state.cardCount}장(${state.positions || ''})입니다. `
+          : '';
+        return { ok: true, message: `카드 섞기 화면을 열었습니다. ${spreadHint}끌리는 순간 멈춰라고 말하거나 화면을 누르면 한 장씩 나옵니다. 전부 멈춰라고 하면 남은 카드를 한 번에 뽑습니다. [카드 선택] 메시지가 오기 전에는 카드 이름을 말하지 마세요.` };
       }
       return { ok: false, error: 'unknown_function', message: '없는 기능입니다.' };
     },

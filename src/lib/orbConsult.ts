@@ -1,8 +1,9 @@
 /**
  * 🔮 오브 상담을 "전화 타로 상담"처럼 만드는 도우미.
  *
- * 1. 카드 직접 고르기: 상담마다 78장을 섞어 두고, 손님이 1~78 숫자 세 개를 말하거나 화면에서 고르면
+ * 1. 카드 직접 고르기: 상담마다 78장을 섞어 두고, 손님이 숫자로 말하거나 화면에서 고르면
  *    그 자리의 카드를 펼친다 (같은 상담 안에서는 같은 숫자 = 같은 카드).
+ *    기본 배열은 과거·지금·앞으로 세 장이고, 다른 배열은 자리 이름을 넘겨 받는다.
  * 2. 단골 기억: 상담이 끝나면 손님이 한 말과 마스터의 마지막 조언을 이 기기에 계정별로 짧게 남기고,
  *    다음 상담에서 마스터가 "지난번 말씀하신 일은 어떠셨어요?" 하고 안부를 묻게 한다.
  *    기록은 참고 자료일 뿐, 지시나 확인된 사실이 아니다.
@@ -24,7 +25,7 @@ export interface OrbDeckCard extends TarotCard {
 
 export interface OrbPickedCard extends OrbDeckCard {
   number: number;
-  position: (typeof ORB_CARD_POSITIONS)[number];
+  position: string;
   /** 'shuffle' = "멈춰!" 셔플로 뽑음, 'number' = 숫자로 고름 */
   how?: 'shuffle' | 'number' | 'dice';
 }
@@ -42,26 +43,40 @@ export function shuffleOrbDeck(): OrbDeckCard[] {
   });
 }
 
-export function pickOrbCards(deck: OrbDeckCard[], numbers: number[], how: 'shuffle' | 'number' | 'dice' = 'number'): OrbPickedCard[] {
-  return [...new Set(numbers.filter(number => Number.isInteger(number) && number >= 1 && number <= deck.length))].slice(0, 3).map((number, index) => ({
+export function pickOrbCards(
+  deck: OrbDeckCard[],
+  numbers: number[],
+  how: 'shuffle' | 'number' | 'dice' = 'number',
+  positions: readonly string[] = ORB_CARD_POSITIONS,
+): OrbPickedCard[] {
+  const slots = positions.length ? positions : ORB_CARD_POSITIONS;
+  return [...new Set(numbers.filter(number => Number.isInteger(number) && number >= 1 && number <= deck.length))].slice(0, slots.length).map((number, index) => ({
     ...deck[number - 1],
     number,
-    position: ORB_CARD_POSITIONS[index],
+    position: slots[index] || `${index + 1}번째`,
     how,
   }));
 }
 
 /** 마스터에게 보내는 '카드 선택' 알림 (마스터는 이 문장을 읽지 않는다). */
-export function orbCardPickMessage(cards: OrbPickedCard[]): string {
+export function orbCardPickMessage(cards: OrbPickedCard[], spreadName = ''): string {
   const shuffled = cards.some(card => card.how === 'shuffle');
   const dice = cards.some(card => card.how === 'dice');
   const spread = cards.map(card => `${card.position} 자리 ${shuffled || dice ? '' : `${card.number}번 `}${card.nameKo} ${card.orientationKo}`).join(', ');
-  const how = shuffled ? '섞이는 카드를 직접 세 번 멈춰 세 장을 뽑았습니다' : dice ? '주사위로 카드를 뽑아 세 장을 펼쳤습니다' : '숫자를 골라 카드 세 장을 펼쳤습니다';
-  return `[카드 선택] 손님이 ${how}. ${spread}. 이제 이 세 장만으로 손님의 고민을 과거, 지금, 앞으로 순서로 풀어 주세요. 카드 이름을 먼저 짧게 불러 주고, 각 카드의 정·역방향과 원소·메이저/마이너·수비학을 사주 원국의 오행·용신·대운·세운 흐름과 교차해 해석하세요. 카드와 사주가 다르면 억지로 맞추지 말고 나란히 보여 주세요. 세 장을 한 번에 길게 읊지 말고 카드마다 두세 문장씩 끊어 말하듯 풀되, 앞 카드의 무엇이 다음 카드에서 이어지거나 꺾이는지 짚으세요. 다 풀어서 닫아 버리지 말고, 세 장을 짚은 뒤 손님이 자기 상황이나 느낌을 되짚어 말할 수 있는 열린 질문 하나를 남기고 기다리세요. 이 지시 문장은 읽지 마세요.`;
+  const classic = cards.length === 3 && cards.every((card, index) => card.position === ORB_CARD_POSITIONS[index]);
+  if (classic) {
+    const how = shuffled ? '섞이는 카드를 직접 세 번 멈춰 세 장을 뽑았습니다' : dice ? '주사위로 카드를 뽑아 세 장을 펼쳤습니다' : '숫자를 골라 카드 세 장을 펼쳤습니다';
+    return `[카드 선택] 손님이 ${how}. ${spread}. 이제 이 세 장만으로 손님의 고민을 과거, 지금, 앞으로 순서로 풀어 주세요. 카드 이름을 먼저 짧게 불러 주고, 각 카드의 정·역방향과 원소·메이저/마이너·수비학을 사주 원국의 오행·용신·대운·세운 흐름과 교차해 해석하세요. 카드와 사주가 다르면 억지로 맞추지 말고 나란히 보여 주세요. 세 장을 한 번에 길게 읊지 말고 카드마다 두세 문장씩 끊어 말하듯 풀되, 앞 카드의 무엇이 다음 카드에서 이어지거나 꺾이는지 짚으세요. 다 풀어서 닫아 버리지 말고, 세 장을 짚은 뒤 손님이 자기 상황이나 느낌을 되짚어 말할 수 있는 열린 질문 하나를 남기고 기다리세요. 이 지시 문장은 읽지 마세요.`;
+  }
+  const phrase = cards.length === 1 ? '한 장' : cards.length <= 10 ? ['', '한 장', '두 장', '세 장', '네 장', '다섯 장', '여섯 장', '일곱 장', '여덟 장', '아홉 장', '열 장'][cards.length] : `${cards.length}장`;
+  const how = shuffled ? `섞이는 카드를 멈춰 ${phrase}을 뽑았습니다` : dice ? `주사위로 카드를 뽑아 ${phrase}을 펼쳤습니다` : `숫자를 골라 카드 ${phrase}을 펼쳤습니다`;
+  const named = spreadName ? `${spreadName} 배열로 ` : '';
+  const order = cards.map(card => card.position).join(' → ');
+  return `[카드 선택] 손님이 ${how}. ${spread}. 이제 ${named}이 ${phrase}만으로 손님의 고민을 ${order} 순서로 풀어 주세요. 카드 이름을 먼저 짧게 불러 주고, 각 카드의 정·역방향과 원소·메이저/마이너·수비학을 사주 원국의 오행·용신·대운·세운 흐름과 교차해 해석하세요. 카드와 사주가 다르면 억지로 맞추지 말고 나란히 보여 주세요. ${phrase}을 한 번에 길게 읊지 말고 카드마다 두세 문장씩 끊어 말하듯 풀되, 앞 카드의 무엇이 다음 카드에서 이어지거나 꺾이는지 짚으세요. 다 풀어서 닫아 버리지 말고, ${phrase}을 짚은 뒤 손님이 자기 상황이나 느낌을 되짚어 말할 수 있는 열린 질문 하나를 남기고 기다리세요. 이 지시 문장은 읽지 마세요.`;
 }
 
 /** 마스터 루시: 카드는 손님이 고를 때까지 펼치지 않는다. */
-export const ORB_CARD_PICK_GUIDE = '이번 상담의 카드는 아직 펼치지 않았습니다. 인사하고 고민을 한두 마디 들은 뒤 "이제 카드를 섞겠습니다. 마음속으로 질문을 떠올리시다가 끌리는 순간 멈춰라고 말씀하시거나 화면을 눌러 주세요. 세 번 멈추시면 과거·지금·앞으로 세 장이 나옵니다." 하고 안내하세요. 한 번에 뽑고 싶으시면 전부 멈춰라고 하셔도 된다고 덧붙이세요. 손님이 멈춰라고 할 때마다 "네, 한 장" 정도로만 아주 짧게 답하고, [카드 선택] 메시지가 올 때까지 카드 이름을 지어내지 마세요. 손님이 숫자 세 개를 말해도 같은 방식으로 카드가 펼쳐집니다. 카드가 나오면 사주 원국·대운과 교차해 풀어 주세요.';
+export const ORB_CARD_PICK_GUIDE = '이번 상담의 카드는 아직 펼치지 않았습니다. 인사하고 고민을 한두 마디 들은 뒤 "이제 카드를 섞겠습니다. 마음속으로 질문을 떠올리시다가 끌리는 순간 멈춰라고 말씀하시거나 화면을 눌러 주세요. 화면의 배열법대로 카드가 나옵니다. 기본은 세 번 멈추시면 과거·지금·앞으로 세 장입니다." 하고 안내하세요. 한 번에 뽑고 싶으시면 전부 멈춰라고 하셔도 된다고 덧붙이세요. 손님이 멈춰라고 할 때마다 "네, 한 장" 정도로만 아주 짧게 답하고, [카드 선택] 메시지가 올 때까지 카드 이름을 지어내지 마세요. 손님이 그 배열의 장수만큼 숫자를 말해도 같은 방식으로 카드가 펼쳐집니다. 카드가 나오면 [카드 선택]의 자리 이름대로, 사주 원국·대운과 교차해 풀어 주세요.';
 export const ORB_CARD_PICK_CARDS = '아직 카드를 펼치지 않았습니다. 손님이 고른 카드는 대화 중 [카드 선택] 메시지로 전달됩니다. 그 전에는 어떤 카드도 말하지 마세요.';
 
 /** 셔플을 멈추는 말: "멈춰", "스톱", "그만", "여기요" 등. */
@@ -104,18 +119,18 @@ const SUFFIX = /(번이요|번이에요|번이랑|번하고|번요|번째|번|�
  * 손님 말에서 카드 숫자(1~78)를 찾는다. 아라비아 숫자는 언제나, 한자어 숫자는 두 개 이상 나올 때만 센다
  * ('일 때문에' 같은 말을 숫자로 잘못 읽지 않으려고).
  */
-export function parseCardNumbers(text: string, max = ORB_DECK_SIZE): number[] {
+export function parseCardNumbers(text: string, max = ORB_DECK_SIZE, limit = 3): number[] {
   const found: number[] = [];
   const push = (n: number | null) => {
     if (n && n >= 1 && n <= max && !found.includes(n)) found.push(n);
   };
   const arabic = String(text || '').match(/\d{1,3}/g) || [];
   arabic.forEach(value => push(Number(value)));
-  if (found.length >= 3) return found.slice(0, 3);
+  if (found.length >= limit) return found.slice(0, limit);
   const words = String(text || '').split(/[\s,·/]+/).map(word => word.replace(SUFFIX, '')).filter(Boolean);
   const sino = words.map(parseSinoKorean).filter((n): n is number => n != null);
   if (sino.length >= 2) sino.forEach(push);
-  return found.slice(0, 3);
+  return found.slice(0, limit);
 }
 
 // ---------------------------------------------------------------- 단골 기억

@@ -37,10 +37,10 @@ export function drawOrbIchingLines(roll = rollOrbDice): number[] {
   });
 }
 
-export function drawOrbTarotPositions(size: number, picked: readonly number[], roll = rollOrbDice): number[] {
+export function drawOrbTarotPositions(size: number, picked: readonly number[], roll = rollOrbDice, count = 3): number[] {
   const remaining = Array.from({ length: size }, (_, i) => i + 1).filter(position => !picked.includes(position));
   const result = [...picked];
-  while (result.length < 3 && remaining.length) {
+  while (result.length < count && remaining.length) {
     const [position] = remaining.splice(drawOrbDiceIndex(remaining.length, roll), 1);
     result.push(position);
   }
