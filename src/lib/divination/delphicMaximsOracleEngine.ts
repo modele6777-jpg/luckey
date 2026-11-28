@@ -20,7 +20,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const DELPHIC_MAXIMS_VERSION = 'LUCKEY-DELPHIC-MAXIMS-v2.4.0';
+export const DELPHIC_MAXIMS_VERSION = 'LUCKEY-DELPHIC-MAXIMS-v2.5.0';
 
 export interface DelphicMaximInfo {
   maximIndex: number;            // 1 ~ 147
@@ -54,6 +54,7 @@ export interface DelphicMaximsOracleReport {
     oracleTimingNote: string;
   };
   delphicSynthesisMatrix: {
+    delphicCrossAxis: string;
     coreMandate: string;
     sacredBoundary: string;
     reflectiveQuestion: string;
@@ -310,7 +311,9 @@ export function calculateDelphicMaximsOracle(params: {
 
   const oracleTimingNote = `${sanctuarySolarWindow}과 ${parnassusSeasonPhase}이 맞물려 있으므로, ${situationalOracleMaxim.practicalActionGuidance}`;
 
+  const delphicCrossAxis = `[제${coreSoulMaxim.maximIndex}잠언] × [제${situationalOracleMaxim.maximIndex}잠언] × [${questionFocus}] × [${coreSoulMaxim.domain === situationalOracleMaxim.domain ? '공명정합' : '보완조율'}]`;
   const delphicSynthesisMatrix = {
+    delphicCrossAxis,
     coreMandate: `[${situationalOracleMaxim.koreanTranslation}]의 잠언을 기준으로 ${questionFocus}에 응답하십시오.`,
     sacredBoundary: '성급한 맹세(Engua)와 과잉 반응(Meden Agan 위반)을 피하고 감당 가능한 범위만 확답하십시오.',
     reflectiveQuestion: `지금 내 선택에서 "${situationalOracleMaxim.koreanTranslation}"의 기준에 어긋나는 과잉이나 조급함은 어디에 있나요?`,
@@ -357,6 +360,7 @@ export function formatDelphicMaximsOraclePrompt(report: DelphicMaximsOracleRepor
 - **피티아 여사제의 신탁 통찰**: ${report.pythianOracleInsight}
 - **델포이 덕성(Arete) 실천 처방**: ${report.delphicVirtuePrescription}
 - **교차 매트릭스**: ${report.delphicSynthesisMatrix.coreMandate} | 경계: ${report.delphicSynthesisMatrix.sacredBoundary} | 성찰 질문: "${report.delphicSynthesisMatrix.reflectiveQuestion}"
+- **4중 교차 축**: ${report.delphicSynthesisMatrix.delphicCrossAxis}
 - **성찰 초점**: ${report.reflectionFocus}
 - **해석 경계**: 아폴론 신전 147 잠언의 중용·자아성찰 상징을 빌린 정성적 처세 참고 관점이며, 개인 점수나 확정 예언이 아닙니다.`;
 }
