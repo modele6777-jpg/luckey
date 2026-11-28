@@ -8,7 +8,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GAELIC_FIRE_FESTIVALS_ENGINE_VERSION = '2.5.0';
+export const GAELIC_FIRE_FESTIVALS_ENGINE_VERSION = '2.6.0';
 
 export interface GaelicFestivalStation {
   id: 'samhain' | 'imbolc' | 'bealtaine' | 'lughnasadh';
@@ -55,6 +55,7 @@ export interface GaelicWheelFireFestivalsReport {
   situationalGaelicAudit: GaelicSituationalAudit;
   temporalGaelicRhythm: GaelicTemporalRhythm;
   gaelicSynthesisMatrix: GaelicSynthesisMatrix;
+  gaelicCrossAxis: string;
   gaelicOmenGuidance: string;
   sacredHearthfireRitual: string;
   ritualAction: string;
@@ -245,6 +246,7 @@ export function calculateGaelicWheelFireFestivals(
 
   const kst = new Date(referenceDate.getTime() + 9 * 60 * 60 * 1000);
   const calculatedAtKst = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
+  const gaelicCrossAxis = `[${activeStation.gaelicName}] × [${activeStation.sacredElement.split('(')[0].trim()}] × [${temporalGaelicRhythm.fireTempo}] × [${calculatedAtKst.slice(11, 16)}]`;
 
   return {
     engineVersion: GAELIC_FIRE_FESTIVALS_ENGINE_VERSION,
@@ -258,6 +260,7 @@ export function calculateGaelicWheelFireFestivals(
     situationalGaelicAudit,
     temporalGaelicRhythm,
     gaelicSynthesisMatrix,
+    gaelicCrossAxis,
     gaelicOmenGuidance,
     sacredHearthfireRitual,
     ritualAction: situationalGaelicAudit.druidPrescription,
@@ -282,6 +285,7 @@ export function formatGaelicWheelFireFestivalsPrompt(report: GaelicWheelFireFest
 - **KST 시공간 리듬 (${report.temporalGaelicRhythm.kstHour}시)**: ${report.temporalGaelicRhythm.hearthWatchWindow} · ${report.temporalGaelicRhythm.colignySeasonPhase} (${report.temporalGaelicRhythm.fireTempo})
   - 시간대 지침: ${report.temporalGaelicRhythm.seasonalGuidance}
 - **순환 교차 매트릭스**: ${report.gaelicSynthesisMatrix.stationElementLink}
+- **4중 교차 축**: ${report.gaelicCrossAxis}
 - **켈트 드루이드 지혜 지침**: ${report.gaelicOmenGuidance}
 - **성스러운 난로불 리추얼**: ${report.sacredHearthfireRitual}
 - **성찰 초점**: ${report.reflectionFocus}

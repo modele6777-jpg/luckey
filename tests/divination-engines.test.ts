@@ -5894,11 +5894,13 @@ test('Gaelic Wheel Four Fire Festivals Engine: calculates fire festival stations
   assert(rep.tuathaDeDanannBlessing >= 0 && rep.tuathaDeDanannBlessing <= 100);
   assert(rep.anamCaraSoulDepth >= 0 && rep.anamCaraSoulDepth <= 100);
   assert(rep.activeStation.nameKo.length > 0);
+  assert(rep.gaelicCrossAxis.includes('×'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGaelicWheelFireFestivalsPrompt(rep);
   assert(prompt.includes('휠 오브 더 이어 켈트 4대 화제 축제 상징 관점'));
   assert(prompt.includes(rep.activeStation.nameKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/100') && !prompt.includes('%'));
 });
@@ -9688,12 +9690,14 @@ test('Victor Hugo Les Miserables Engine: calculates Mercy, Conscience, and Human
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.hugoSynthesisMatrix?.integratedAction));
+  assert(rep.hugoCrossAxis.includes('×'));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatFrenchVictorHugoLesMiserablesPrompt(rep);
   assert(prompt.includes('빅토르 위고 《레 미제라블》 자비와 도덕적 양심·인도주의 지표'));
   assert(prompt.includes(rep.activeHugoTheme.themeTitleKo));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -14966,16 +14970,16 @@ test('Nabataean Petra Cistern Water engine: conduit, +09:00 KST, and interpretiv
 
 test('Frisian Polder Dike Balance engine: principle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateFrisianPolderDikeBalance({ profile, now: new Date('2026-11-20T08:52:00Z'), question: '마음속 수위를 천천히 조절하고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-FRISIAN-POLDER-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-FRISIAN-POLDER-v2.5.0');
   assert.equal(rep.questionCategory, 'decision');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPrinciple !== rep.polderPrinciple);
-  assert.ok(rep.questionTopic.length > 0 && rep.dikeWaterAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.questionTopic.length > 0 && rep.dikeWaterAxis.length > 0 && rep.frisianCrossAxis.includes('×') && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatFrisianPolderPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('폴데르') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPrinciple) && prompt.includes(rep.dikeWaterAxis) && prompt.includes('주제별 균형 조언'));
+  assert.ok(prompt.includes('폴데르') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPrinciple) && prompt.includes(rep.dikeWaterAxis) && prompt.includes('4중 교차 축') && prompt.includes('주제별 균형 조언'));
 });
 
 test('Ukrainian Vyshyvanka Sunflower engine: motif, +09:00 KST, and interpretive boundary', () => {

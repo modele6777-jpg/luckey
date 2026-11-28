@@ -10,6 +10,7 @@ export interface FrisianPolderResult {
   polderPrinciple: string;
   companionPrinciple: string;
   dikeWaterAxis: string;
+  frisianCrossAxis: string;
   topicBalanceHint: string;
   frisianInsight: string;
   northSeaTone: string;
@@ -120,14 +121,18 @@ export function calculateFrisianPolderDikeBalance(params: {
     : '삶의 수위와 경계를 맞추는 오늘의 균형';
   const questionCategory = classifyFrisianCategory(trimmedQ);
 
+  const calculatedAtKst = formatKstIso(now);
+  const frisianCrossAxis = `[${picked.principle.split('(')[0].trim()}] × [${companion.principle.split('(')[0].trim()}] × [${questionCategory}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-FRISIAN-POLDER-v2.4.0',
-    calculatedAtKst: formatKstIso(now),
+    engineVersion: 'LUCKEY-FRISIAN-POLDER-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     questionCategory,
     polderPrinciple: picked.principle,
     companionPrinciple: companion.principle,
     dikeWaterAxis,
+    frisianCrossAxis,
     topicBalanceHint: TOPIC_BALANCE_HINTS[questionCategory],
     frisianInsight: `${picked.insight} (동반 원리: ${companion.principle})`,
     northSeaTone: picked.tone,
@@ -147,6 +152,7 @@ export function formatFrisianPolderPrompt(res: FrisianPolderResult): string {
     `- 북해 원리: ${res.polderPrinciple} (${res.northSeaTone})`,
     `- 동반 원리: ${res.companionPrinciple}`,
     `- 제방 수위 축: ${res.dikeWaterAxis}`,
+    `- 4중 교차 축: ${res.frisianCrossAxis}`,
     `- 주제별 균형 조언: ${res.topicBalanceHint}`,
     `- 중심 통찰: ${res.frisianInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
