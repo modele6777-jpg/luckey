@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const ELEUSINIAN_TRIPTOLEMOS_VERSION = 'LUCKEY-ELEUSINIAN-TRIPTOLEMOS-v2.5.0';
+export const ELEUSINIAN_TRIPTOLEMOS_VERSION = 'LUCKEY-ELEUSINIAN-TRIPTOLEMOS-v2.6.0';
 
 export interface TriptolemosChariotStage {
   stageLevel: number;
@@ -44,6 +44,7 @@ export interface TriptolemosSynthesisMatrix {
   sowingActionAxis: string;
   harvestCycleAxis: string;
   synthesizedVerdict: string;
+  triptolemosCrossAxis: string;
 }
 
 export interface EleusinianTriptolemosResult {
@@ -181,6 +182,7 @@ function buildSynthesisMatrix(
   const rootLawAxis = `근본 율법: ${law.lawTitleKo} (${audit.contextTheme})`;
   const sowingActionAxis = `전차 품계: ${stage.stageNameKo}`;
   const harvestCycleAxis = `대지 시의: ${temporal.eleusisFlightWindow} · ${temporal.demeterAgriculturalCycle}`;
+  const triptolemosCrossAxis = `[${stage.stageNameGreek.split('(')[0].trim()}] × [${law.lawTitleKo}] × [${audit.contextTheme}] × [${temporal.eleusisFlightWindow.split('(')[0].trim()}]`;
   const synthesizedVerdict = `'${temporal.eleusisFlightWindow}'의 흐름 속에서 '${stage.stageNameKo}'의 자리로 '${law.lawTitleKo}'을 실천할 때, 헛되지 않은 풍성한 결실이 무르익습니다.`;
 
   return {
@@ -188,6 +190,7 @@ function buildSynthesisMatrix(
     sowingActionAxis,
     harvestCycleAxis,
     synthesizedVerdict,
+    triptolemosCrossAxis,
   };
 }
 
@@ -279,7 +282,7 @@ export function formatEleusinianTriptolemosPrompt(result: EleusinianTriptolemosR
   → 전차 처방: ${result.situationalEleusisAudit.chariotPrescription}
 - 시공간 대지 리듬: ${result.temporalEleusisRhythm.eleusisFlightWindow} · ${result.temporalEleusisRhythm.demeterAgriculturalCycle}
   → 시의 조언: ${result.temporalEleusisRhythm.timingAdvice}
-- 트리프톨레모스 교차 매트릭스: ${result.triptolemosSynthesisMatrix.synthesizedVerdict}
+- 트리프톨레모스 교차 매트릭스: ${result.triptolemosSynthesisMatrix.synthesizedVerdict} · 4중 교차 축(${result.triptolemosSynthesisMatrix.triptolemosCrossAxis})
 - 엘레우시스 신비 비전: 《${result.eleusinianEpiphany.visionTitle}》
   → 영적 지혜: "${result.eleusinianEpiphany.spiritualWisdom}"
 - 오늘의 작은 의례: ${result.ritualAction}

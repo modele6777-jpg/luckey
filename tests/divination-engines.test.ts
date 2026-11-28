@@ -6406,12 +6406,14 @@ test('Ancient Greek Eleusinian Triptolemos Engine: calculates dragon chariot, sa
   assert(rep.situationalEleusisAudit.homericHymnCitation.length > 0);
   assert(rep.temporalEleusisRhythm.eleusisFlightWindow.length > 0);
   assert(rep.triptolemosSynthesisMatrix.synthesizedVerdict.length > 0);
+  assert(Boolean(rep.triptolemosSynthesisMatrix.triptolemosCrossAxis.includes(rep.situationalEleusisAudit.contextTheme)));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.shadowWarning.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatEleusinianTriptolemosPrompt(rep);
   assert(prompt.includes('고대 그리스 엘레우시스 밀의 《트리프톨레모스(Triptolemos)》'));
   assert(prompt.includes(rep.activeChariotStage.stageNameKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('과잉 경계'));
   assert(!prompt.includes('%'));
@@ -6663,12 +6665,14 @@ test('Ancient Greek Delphic Chilon Know Thyself Engine: calculates Gnothi Seauto
   assert(rep.situationalChilonAudit.delphicInscription.length > 0);
   assert(rep.temporalDelphicRhythm.sanctuaryWindow.length > 0);
   assert(rep.chilonSynthesisMatrix.synthesizedVerdict.length > 0);
+  assert(Boolean(rep.chilonSynthesisMatrix.chilonCrossAxis.includes(rep.situationalChilonAudit.contextTheme)));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.shadowWarning.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatDelphicChilonPrompt(rep);
   assert(prompt.includes('델포이 아폴론 신전 7현인 《스파르타의 킬론(Chilon)》'));
   assert(prompt.includes(rep.activeSageStage.stageNameKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('과잉 경계'));
   assert(!prompt.includes('%'));
@@ -14912,9 +14916,9 @@ test('Garifuna Dugu Caribbean Rhythm engine: rhythm, +09:00 KST, and interpretiv
 
 test('Alpine Savoy Col Wisdom engine: principle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAlpineSavoyColWisdom({ profile, now: new Date('2026-11-20T08:46:00Z'), question: '더 부드럽게 건널 수 있는 고개를 찾고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-ALPINE-SAVOY-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-ALPINE-SAVOY-v2.5.0');
   assert.equal(rep.questionTopic, 'route');
-  assert.ok(rep.savoyAltitudeAxis.length > 0);
+  assert.ok(rep.savoyAltitudeAxis.length > 0 && rep.savoyCrossAxis.includes('route'));
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionPrinciple.length > 0 && rep.companionPrinciple !== rep.ridgePrinciple);
   assert.ok(rep.alpineWeather.length > 0 && rep.shadowWarning.length > 0);
@@ -14922,7 +14926,7 @@ test('Alpine Savoy Col Wisdom engine: principle, +09:00 KST, and interpretive bo
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatAlpineSavoyPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('사보이') && prompt.includes('고도·동행 축') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.alpineWeather) && prompt.includes(rep.reflectionFocus));
+  assert.ok(prompt.includes('사보이') && prompt.includes('고도·동행 축') && prompt.includes('4중 교차 축') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.alpineWeather) && prompt.includes(rep.reflectionFocus));
 });
 
 test('Nabataean Petra Cistern Water engine: conduit, +09:00 KST, and interpretive boundary', () => {

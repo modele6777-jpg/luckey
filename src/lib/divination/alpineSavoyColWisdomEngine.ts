@@ -23,6 +23,7 @@ export interface AlpineSavoyResult {
   calculatedAtKst: string;
   questionTopic: SavoyQuestionTopic;
   savoyAltitudeAxis: string;
+  savoyCrossAxis: string;
   ridgePrinciple: string;
   companionPrinciple: string;
   alpineWeather: string;
@@ -125,12 +126,14 @@ export function calculateAlpineSavoyColWisdom(params: {
   const alpineWeather = ALPINE_WEATHERS[weatherIdx];
   const shadowWarning = questionTopic === 'general' ? SAVOY_SHADOW_WARNINGS[idx] : SAVOY_TOPIC_WARNINGS[questionTopic];
   const savoyAltitudeAxis = `${picked.principle.split('(')[0].trim()} ↔ ${companion.principle.split('(')[0].trim()} (${alpineWeather.split('(')[0].trim()})`;
+  const savoyCrossAxis = `[${picked.principle.split('(')[0].trim()}] × [${companion.principle.split('(')[0].trim()}] × [${alpineWeather.split('(')[0].trim()}] × [${questionTopic}]`;
 
   return {
-    engineVersion: 'LUCKEY-ALPINE-SAVOY-v2.4.0',
+    engineVersion: 'LUCKEY-ALPINE-SAVOY-v2.5.0',
     calculatedAtKst: formatKstStandard(now),
     questionTopic,
     savoyAltitudeAxis,
+    savoyCrossAxis,
     ridgePrinciple: picked.principle,
     companionPrinciple: companion.principle,
     alpineWeather,
@@ -149,6 +152,7 @@ export function formatAlpineSavoyPrompt(res: AlpineSavoyResult): string {
     `[알프스 사보이·고갯마루 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `- 고도·동행 축: ${res.savoyAltitudeAxis}`,
+    `- 4중 교차 축: ${res.savoyCrossAxis}`,
     `- 산악 지혜: ${res.ridgePrinciple} (${res.alpineTone})`,
     `- 보조 맥락: ${res.companionPrinciple}`,
     `- 고산 기상 국면: ${res.alpineWeather}`,
