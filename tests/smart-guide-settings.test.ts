@@ -97,23 +97,22 @@ test('the recommended destination is the same whether the guide is on or off', (
   assert.ok(on.path in { '/': 1 } || Object.values(SMART_GUIDE_STOPS).some(stop => stop.path === on.path));
 });
 
-test('a single tap only recommends, and the move button is what navigates', () => {
-  const runStart = BIGBANG.indexOf('const runSmartGuide');
-  const runEnd = BIGBANG.indexOf('const commitSmartGuide', runStart);
-  const run = BIGBANG.slice(runStart, runEnd);
-  assert.ok(runStart >= 0 && runEnd > runStart, 'runSmartGuide proposes before commitSmartGuide navigates');
-  assert.doesNotMatch(run, /navigate\(guide\.path\)/);
-  assert.match(run, /setSmartGuidePhase\('offer'\)/);
-  assert.match(run, /setSmartGuide\(guide\)/);
-  assert.match(run, /if \(guidePresentation\.douser\) \{[\s\S]*?speakGuideDouser\(guide\);/);
-
-  const commitEnd = BIGBANG.indexOf('const goToNextRecommended', runEnd);
-  const commit = BIGBANG.slice(runEnd, commitEnd);
-  assert.match(commit, /navigate\(guide\.path\)/);
-  assert.match(commit, /prism-navigate', \{ detail: \{ path: guide\.path \} \}/);
-  assert.match(commit, /if \(!guidePresentation\.banner\) \{\s*closeSmartGuide\(\);/);
-  assert.match(commit, /navigate\(guide\.path\);[\s\S]{0,280}showArrived\(\)/);
-  assert.doesNotMatch(commit, /if \(guidePresentation\.banner\)\s*\{[^}]*navigate\(guide\.path\)/);
+test('the button always navigates, and only the banner and the speech follow the settings', () => {
+  const start = BIGBANG.indexOf('const runSmartGuide');
+  const end = BIGBANG.indexOf('const goToKeyChannel', start) > 0 ? BIGBANG.indexOf('const goToKeyChannel', start) : BIGBANG.length;
+  const body = BIGBANG.slice(start, end);
+  // 이동은 설정과 무관하게 실행된다.
+  assert.match(body, /navigate\(guide\.path\)/);
+  assert.match(body, /prism-navigate', \{ detail: \{ path: guide\.path \} \}/);
+  // 배너와 도슨트만 설정을 따른다.
+  assert.match(body, /if \(guidePresentation\.banner\) showSmartGuide\(guide\);/);
+  assert.match(body, /else closeSmartGuide\(\);/);
+  assert.match(body, /if \(guidePresentation\.douser\) \{[\s\S]*?speakGuideDouser\(guide\);/);
+  // 내비게이션 블록이 배너 조건 안으로 들어가 있지 않다.
+  const navIndex = body.indexOf('navigate(guide.path)');
+  const bannerIndex = body.indexOf('if (guidePresentation.banner)');
+  assert.ok(navIndex > bannerIndex, 'navigation sits after the banner block, not inside it');
+  assert.doesNotMatch(body, /if \(guidePresentation\.banner\)\s*\{[^}]*navigate\(guide\.path\)/);
 });
 
 test('the douser reads the same reason and hint the banner shows', () => {
@@ -187,7 +186,7 @@ test('the question-mark icon opens a sheet with the two switches', () => {
   assert.match(SETTINGS_UI, /onToggle=\{\(\) => toggle\(\{ guide: !settings\.guide \}\)\}/);
   assert.match(SETTINGS_UI, /onToggle=\{\(\) => toggle\(\{ douser: !settings\.douser \}\)\}/);
   assert.match(SETTINGS_UI, /writeSmartGuideSettings\(patch\)/);
-  assert.match(SETTINGS_UI, /빅뱅 버튼을 한 번 탭하면 바로 이동하지 않고 추천을 먼저 보여 줘요/);
+  assert.match(SETTINGS_UI, /스마트 가이드를 꺼도 빅뱅 버튼 한 번 탭의 추천 이동은 그대로예요/);
   // 도슨트는 가이드가 켜져 있을 때만 의미가 있다.
   assert.match(SETTINGS_UI, /disabled=\{!settings\.guide\}/);
   // 저장·동기화
