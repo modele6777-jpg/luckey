@@ -4016,21 +4016,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       ? { base: (isTarotIntent ? 'tarot_saju' : 'saju') as 'saju' | 'tarot_saju', deep: wantsDeepEngines }
       : undefined;
 
-    // 🔮 점술모드만 도구를 고른다. 루시채팅은 엔진을 돌리지 않고 여러 관점으로만 답한다.
+    // 🔮 점술모드만 기초 도구를 고른다. 루시채팅은 엔진함의 심층 관점만 질문에 맞게 여러 개 매칭한다.
     const divinationSelection: SelectedDivinationToolsResult = divinationMode
       // 점술모드: 기초 도구 15종 + 심층 관점을 질문·고민에 맞춰 소수만 고른다
       ? selectOptimalDivinationTools(combinedContextText, [], counselingUserProfile, false, { allowMaster: false, requireBasicAndDeep, divinationMode })
       : turnPlan.deepPerspectivesOnly
-        ? {
-            selectedTools: [],
-            isCasualMessage: true,
-            isMasterMobilization: false,
-            selectionReason: '루시채팅 · 여러 관점',
-            promptInjection: '',
-            firedEngineBadges: [],
-            deepPerspectiveKeys: [],
-            calculationAudit: [],
-          }
+        ? selectOptimalDivinationTools(combinedContextText, [], counselingUserProfile, false, { allowMaster: false, requireBasicAndDeep: false, deepOnly: true })
         : selectOptimalDivinationTools(combinedContextText, isMaster ? ALL_CHANNELS : channels, counselingUserProfile, isMaster, { allowMaster: isMasterMode || requireBasicAndDeep, requireBasicAndDeep });
     // 🧭 루시프로 통합 상담: 사주·13대 도구 계산 결과를 왼쪽 점술 테이블에 넘긴다 (데이터만, 지시문 아님).
     if (divinationMode && !divinationSelection.isCasualMessage) {
