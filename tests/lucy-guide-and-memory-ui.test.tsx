@@ -142,12 +142,14 @@ test('the guide header button is an icon-only round button that still opens its 
     assert.equal(button.getAttribute('title'), '가이드');
 
     await act(async () => { button.dispatchEvent(new win.MouseEvent('click', { bubbles: true })); });
+    assert.equal(button.getAttribute('aria-expanded'), 'true', 'the Guide button exposes its open state');
     const dialog = win.document.querySelector('[data-page-guide]');
     assert.ok(dialog, 'pressing the icon still opens the guide dialog');
 
     const closeButton = win.document.querySelector('[data-page-guide] [aria-label="가이드 닫기"]');
     assert.ok(closeButton, 'the guide dialog can still be closed accessibly');
     await act(async () => { closeButton.dispatchEvent(new win.MouseEvent('click', { bubbles: true })); });
+    assert.equal(button.getAttribute('aria-expanded'), 'false', 'closing the Guide clears its expanded state');
     assert.equal(win.document.querySelector('[data-page-guide]'), null, 'closing the default guide removes its dialog');
 
     await act(async () => { unboxedButton.dispatchEvent(new win.MouseEvent('click', { bubbles: true })); });
@@ -162,7 +164,7 @@ test('the guide header button is an icon-only round button that still opens its 
   }
 });
 
-test('Lucy chat and divination headers unbox the Smart Guide and auto-read controls without changing the book Guide or search', () => {
+test('Lucy Chat and Pro use active-only borders across their shared header controls', () => {
   const headerStart = pageSource.indexOf('lucy-header-actions');
   const headerEnd = pageSource.indexOf('{/*  Export Chat */', headerStart);
   const header = pageSource.slice(headerStart, headerEnd);
@@ -199,12 +201,11 @@ test('Lucy chat and divination headers unbox the Smart Guide and auto-read contr
   const searchEnd = header.indexOf('</button>', searchIndex) + '</button>'.length;
   const search = header.slice(searchStart, searchEnd);
   assert.ok(searchStart > 0 && searchEnd > searchStart, 'the separate search control stays in the header');
-  assert.match(search, /bg-white\/10/, 'the dark search background remains unchanged');
-  assert.match(search, /bg-amber-50\/80/, 'the light search background remains unchanged');
-  assert.match(search, /border-white\/15|border-amber-900\/10/, 'the search border styles remain unchanged');
+  assert.match(search, /aria-expanded=\{isSearchOpen\}/, 'search exposes whether its panel is open');
+  assert.match(search, /aria-controls="lucy-search-overlay"/, 'search is linked to its disclosure panel');
 
   const chromeStyleStart = readFileSync(new URL('../src/styles/lucy-starlight.css', import.meta.url), 'utf8');
-  assert.match(chromeStyleStart, /\.lucy-chat-shell \.lucy-header-actions > :is\(\[data-smart-guide-settings-button='true'\], \[data-auto-tts-toggle='true'\]\)/, 'the no-box override targets only Lucy Smart Guide and auto-read controls');
-  assert.match(chromeStyleStart, /:not\(:focus-visible\) \{ outline: none !important;/, 'pressed state loses its box without suppressing keyboard focus');
+  assert.match(chromeStyleStart, /\.lucy-chat-shell \.lucy-header-actions > button \{ border: 0 !important; background: transparent !important; box-shadow: none !important;/, 'inactive Lucy header controls have no box');
+  assert.match(chromeStyleStart, /\.lucy-chat-shell \.lucy-header-actions > button:is\(\[aria-pressed='true'\], \[aria-expanded='true'\]\) \{ border: 1px solid rgba\(120, 159, 139, \.78\) !important;/, 'only pressed or expanded controls receive an active border');
   assert.match(chromeStyleStart, /:focus-visible \{ outline: 2px solid currentColor !important;/, 'keyboard focus remains visible');
 });

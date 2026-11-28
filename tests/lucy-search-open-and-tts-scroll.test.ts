@@ -23,7 +23,7 @@ test('opening the search panel renders its final height immediately, never from 
   assert.doesNotMatch(searchPanel, /initial=\{\{ height: 0/);
   assert.doesNotMatch(searchPanel, /animate=\{\{ height: 'auto'/);
   // 검색 창은 높이 애니메이션 없이 바로 그려진다.
-  assert.match(page, /\{isSearchOpen && \(\s*<div className="lucy-search-overlay"/);
+  assert.match(page, /\{isSearchOpen && \(\s*<div id="lucy-search-overlay" className="lucy-search-overlay"/);
 });
 
 test('the search and close buttons are explicit buttons, not form submitters', () => {
