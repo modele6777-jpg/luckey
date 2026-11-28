@@ -14573,16 +14573,16 @@ test('Sindhi Bhitai Indus Melody engine: sur, +09:00 KST, and interpretive bound
 
 test('Corsican Paghjella Maquis Harmony engine: voice, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateCorsicanPaghjellaMaquisHarmony({ profile, now: new Date('2026-11-20T07:52:00Z'), question: '내 자리의 한 음을 맑게 내고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CORSICAN-PAGHJELLA-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CORSICAN-PAGHJELLA-v2.5.0');
   assert.equal(rep.questionTopic, '일·성실');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionVoice !== rep.corsicanVoice);
-  assert.ok(rep.paghjellaAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.paghjellaAxis.length > 0 && rep.corsicanCrossAxis.includes('×') && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatCorsicanPaghjellaPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('코르시카') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionVoice) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('코르시카') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionVoice) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계') && prompt.includes('4중 교차 축'));
 });
 
 test('Pashtun Roshaniya Inner Light engine: lamp, +09:00 KST, and interpretive boundary', () => {
@@ -15568,16 +15568,16 @@ test('Azeri Carpet Flame Poise engine: motif, +09:00 KST, and interpretive bound
 
 test('Dalmatian Stone Lavender Calm engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateDalmatianStoneLavenderCalm({ profile, now: new Date('2026-11-20T20:24:00Z'), question: '거친 돌을 울타리로 바꾸고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-DALMATIAN-STONE-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-DALMATIAN-STONE-v2.5.0');
   assert.equal(rep.questionTopic, '경계·정리');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.dalmatianMotif);
-  assert.ok(rep.limestoneBreezeAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.limestoneBreezeAxis.length > 0 && rep.dalmatianCrossAxis.includes('×') && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatDalmatianStonePrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('달마티아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('달마티아') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계') && prompt.includes('4중 교차 축'));
 });
 
 test('Kuba Raffia Geometry Order engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -15877,16 +15877,16 @@ test('Minangkabau Rumah Gadang engine: motif, +09:00 KST, and interpretive bound
 
 test('Costa Rica Diquis Spheres engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateCostaRicaDiquisSpheres({ profile, now: new Date('2026-11-20T21:36:00Z'), question: '모난 마음을 둥글리고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-DIQUIS-SPHERES-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-DIQUIS-SPHERES-v2.5.0');
   assert.equal(rep.questionTopic, '마음·유연');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.symbolicMotif);
-  assert.ok(rep.sphereAlignmentAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.sphereAlignmentAxis.length > 0 && rep.diquisCrossAxis.includes('×') && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatDiquisSpheresPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('디퀴스') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('디퀴스') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계') && prompt.includes('4중 교차 축'));
 });
 
 test('Siwa Oasis Salt Spring engine: motif, +09:00 KST, and interpretive boundary', () => {

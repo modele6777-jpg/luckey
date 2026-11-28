@@ -8,6 +8,7 @@ export interface DiquisSpheresResult {
   symbolicMotif: string;
   companionMotif: string;
   sphereAlignmentAxis: string;
+  diquisCrossAxis: string;
   topicBalanceHint: string;
   ritualAction: string;
   shadowWarning: string;
@@ -102,9 +103,12 @@ export function calculateCostaRicaDiquisSpheres(params: {
   const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = DIQUIS_SHADOWS[idx];
 
+  const calculatedAtKst = getKstTimeString(now);
+  const diquisCrossAxis = `[${picked.motif.slice(0, 14).trim()}] × [${companion.motif.slice(0, 14).trim()}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-DIQUIS-SPHERES-v2.4.0',
-    calculatedAtKst: getKstTimeString(now),
+    engineVersion: 'LUCKEY-DIQUIS-SPHERES-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     reflectionFocus: q
       ? `질문 "${q}" 속에서 모난 마음을 천천히 둥글려 가는 코스타리카 디퀴스 돌공과 동반 배치(${companion.motif.slice(0, 26)}…) 관점`
@@ -112,6 +116,7 @@ export function calculateCostaRicaDiquisSpheres(params: {
     symbolicMotif: picked.motif,
     companionMotif: companion.motif,
     sphereAlignmentAxis,
+    diquisCrossAxis,
     topicBalanceHint,
     ritualAction: picked.ritual,
     shadowWarning,
@@ -126,6 +131,7 @@ export function formatDiquisSpheresPrompt(result: DiquisSpheresResult): string {
     `[디퀴스·정글 돌공 관점 (${result.engineVersion})]`,
     `- 기준 시각: ${result.calculatedAtKst}`,
     `- 질문 맥락: ${result.questionTopic} | 석구 축: ${result.sphereAlignmentAxis}`,
+    `- 4중 교차 축: ${result.diquisCrossAxis}`,
     `- 맥락 균형 조언: ${result.topicBalanceHint}`,
     `- 성찰 초점: ${result.reflectionFocus}`,
     `- 상징 모티프: ${result.symbolicMotif}`,
