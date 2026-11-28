@@ -85,7 +85,7 @@ test('the key channel guide button is icon-only and pairs with the search button
   assert.match(block, /size=\{GUIDE_BUTTON_ICON_SIZE\}/, '가이드 아이콘은 앱 공통 17px 크기 상수만 쓴다');
   assert.match(block, /aria-label="Key 가이드 열기"/, '접근성 이름은 유지한다');
   assert.match(block, /\$\{GUIDE_BUTTON_SIZE_CLASS\} items-center justify-center rounded-full/, '검색 버튼과 같은 원형 32px 버튼이다');
-  assert.match(block, /text-\[#c9805c\]/, '아이콘 색은 검색 버튼과 같은 구리색이다');
+  assert.match(block, /GUIDE_BUTTON_TONE_TEXT\.key/, '아이콘 색은 검색 버튼과 같은 구리색 상수다');
   // Key 안쪽(아이프레임)에서 그리는 같은 버튼도 글자 없이 아이콘만 쓴다.
   const innerStart = keySearchSource.indexOf("guide.id = 'key-guide-btn'");
   const innerBlock = keySearchSource.slice(innerStart, keySearchSource.indexOf('actions.appendChild(guide)', innerStart));
@@ -124,7 +124,7 @@ test('the guide header button is an icon-only round button that still opens its 
     ));
 
     const buttons = Array.from(host.querySelectorAll('[data-page-guide-button]')) as any[];
-    assert.equal(buttons.length, 2, '기본형과 무박스형 가이드 버튼이 모두 렌더링된다');
+    assert.equal(buttons.length, 2, '기본형과 명시적 무박스형 가이드 버튼이 모두 렌더링된다');
     const button = buttons[0]!;
     const unboxedButton = buttons[1]!;
     assert.ok(button, 'the header guide button renders');
@@ -136,13 +136,19 @@ test('the guide header button is an icon-only round button that still opens its 
     assert.equal(icon.getAttribute('height'), '17', 'the book icon is 17px tall');
     const defaultClass = button.getAttribute('class') || '';
     const unboxedClass = unboxedButton.getAttribute('class') || '';
+    // 📢 2026-11-28 사용자 지시: 모든 채널 상단 아이콘은 루시 채팅 헤더와 같은 투명 버튼이 기본이다.
     assert.match(defaultClass, /h-8 w-8 shrink-0 items-center justify-center rounded-full/);
-    assert.match(defaultClass, /border backdrop-blur-md/);
-    assert.match(defaultClass, /border-slate-300\/80 bg-white\/80 text-slate-700/);
+    assert.match(defaultClass, /border-0 bg-transparent/);
+    assert.match(defaultClass, /text-slate-700/);
+    assert.match(defaultClass, /transition-all/, 'hover·눌름 효과가 있다');
+    assert.match(defaultClass, /active:scale-95/, '누르면 살짝 줄어든다');
+    assert.match(defaultClass, /hover:opacity-70/, 'hover하면 루시 채팅처럼 흐려진다');
+    assert.doesNotMatch(defaultClass, /border backdrop-blur-md|border-slate-300\/80|bg-white\/80/, '테두리·배경 상자가 없다');
     assert.match(unboxedClass, /h-8 w-8 shrink-0 items-center justify-center rounded-full/);
     assert.match(unboxedClass, /border-0 bg-transparent/);
     assert.match(unboxedClass, /text-slate-700/);
     assert.doesNotMatch(unboxedClass, /border-slate-300\/80|bg-white\/80|backdrop-blur-md/);
+    assert.equal(defaultClass.replace(/\s+/g, ' ').trim(), unboxedClass.replace(/\s+/g, ' ').trim(), '기본값과 명시적 unboxed 결과가 완전히 같다');
     assert.ok(button.getAttribute('aria-label')?.includes('가이드'), 'the accessible name keeps 가이드');
     assert.equal(button.getAttribute('title'), '가이드');
 

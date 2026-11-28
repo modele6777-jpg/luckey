@@ -4,7 +4,7 @@ import { BookOpen, X } from 'lucide-react';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import { type PageGuide, type PageGuideSection } from '@/lib/pageGuides';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
-import { GUIDE_BUTTON_ICON_SIZE, GUIDE_BUTTON_SIZE_CLASS } from './guideButtonLayout';
+import { GUIDE_BUTTON_ICON_SIZE, GUIDE_BUTTON_INTERACTION_CLASS, GUIDE_BUTTON_SIZE_CLASS, GUIDE_BUTTON_TONE_TEXT } from './guideButtonLayout';
 
 /** 📘 Simple guide dialog (사용 가이드 / 활용 팁 두 탭). */
 export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose: () => void }) {
@@ -98,8 +98,8 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
   );
 }
 
-/** Round "가이드" button for page headers (top right). */
-export function PageGuideButton({ guide, resolve, tone = 'dark', className = '', unboxed = false }: { guide: PageGuide; resolve?: () => PageGuide; tone?: 'dark' | 'light'; className?: string; unboxed?: boolean }) {
+/** Round "가이드" button for page headers (top right). — 루시 채팅 헤더와 같은 투명·32px·17px 버튼이 기본이다. */
+export function PageGuideButton({ guide, resolve, tone = 'dark', className = '', unboxed = true }: { guide: PageGuide; resolve?: () => PageGuide; tone?: 'dark' | 'light'; className?: string; unboxed?: boolean }) {
   // 누르는 순간 지금 화면(dApp)에 맞는 가이드를 고른다.
   const [openGuide, setOpenGuide] = useState<PageGuide | null>(null);
   return (
@@ -111,8 +111,8 @@ export function PageGuideButton({ guide, resolve, tone = 'dark', className = '',
         aria-expanded={Boolean(openGuide)}
         title="가이드"
         onClick={() => { triggerHaptic('whitehole'); setOpenGuide(resolve ? resolve() : guide); }}
-        className={`inline-flex ${GUIDE_BUTTON_SIZE_CLASS} shrink-0 items-center justify-center rounded-full active:scale-95 ${unboxed
-          ? `${tone === 'light' ? 'text-slate-700' : 'text-white/90'} border-0 bg-transparent`
+        className={`inline-flex ${GUIDE_BUTTON_SIZE_CLASS} shrink-0 items-center justify-center rounded-full ${GUIDE_BUTTON_INTERACTION_CLASS} ${unboxed
+          ? `${GUIDE_BUTTON_TONE_TEXT[tone]} border-0 bg-transparent`
           : `border backdrop-blur-md ${tone === 'light'
             ? 'border-slate-300/80 bg-white/80 text-slate-700'
             : 'border-white/20 bg-white/10 text-white/90'}`} ${className}`}

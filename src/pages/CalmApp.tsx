@@ -13,7 +13,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { readSafeAreaInsets } from "@/lib/visualViewportBox";
 import { PageGuideDialog } from "@/components/guide/PageGuide";
 import { SmartGuideSettingsButton } from "@/components/guide/SmartGuideSettings";
-import { GUIDE_BUTTON_HALF_HEIGHT, GUIDE_BUTTON_ICON_SIZE, GUIDE_BUTTON_SIZE_CLASS } from "@/components/guide/guideButtonLayout";
+import { GUIDE_BUTTON_HALF_HEIGHT, GUIDE_BUTTON_ICON_SIZE, GUIDE_BUTTON_INTERACTION_CLASS, GUIDE_BUTTON_SIZE_CLASS, GUIDE_BUTTON_TONE_TEXT } from "@/components/guide/guideButtonLayout";
 import { resolveKeyTabGuide } from "@/lib/pageGuides";
 import { BookOpen, Search } from "lucide-react";
 import { triggerHaptic } from "@/lib/omniWarp/omniWarpHaptics";
@@ -453,7 +453,7 @@ export default function CalmApp() {
             data-key-guide-parent
             aria-label="Key 가이드 열기"
             onClick={() => { triggerHaptic('whitehole'); setGuideOpen(activeKeyTab()); }}
-            className={`inline-flex ${GUIDE_BUTTON_SIZE_CLASS} items-center justify-center rounded-full border border-[#e9dccd] bg-[#fffdf9] text-[#c9805c] shadow-sm active:scale-95`}
+            className={`inline-flex ${GUIDE_BUTTON_SIZE_CLASS} items-center justify-center rounded-full ${GUIDE_BUTTON_TONE_TEXT.key} ${GUIDE_BUTTON_INTERACTION_CLASS}`}
           >
             <BookOpen size={GUIDE_BUTTON_ICON_SIZE} aria-hidden="true" />
           </button>
@@ -462,7 +462,7 @@ export default function CalmApp() {
             data-key-search-parent
             aria-label="Key 검색"
             onClick={openKeySearch}
-            className={`inline-flex ${GUIDE_BUTTON_SIZE_CLASS} items-center justify-center rounded-full border border-[#e9dccd] bg-[#fffdf9] text-[#c9805c] shadow-sm active:scale-95`}
+            className={`inline-flex ${GUIDE_BUTTON_SIZE_CLASS} items-center justify-center rounded-full ${GUIDE_BUTTON_TONE_TEXT.key} ${GUIDE_BUTTON_INTERACTION_CLASS}`}
           >
             <Search size={GUIDE_BUTTON_ICON_SIZE} aria-hidden="true" />
           </button>
