@@ -7304,10 +7304,12 @@ test('Montaigne Essais Wisdom Engine: calculates Que sais-je inquiry, Self-intro
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.montaigneEssaisSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.montaigneEssaisSynthesisMatrix?.montaigneCrossAxis.includes('×')));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatMontaigneEssaisWisdomPrompt(rep);
   assert(prompt.includes('몽테뉴 수상록(Essais) 회의주의·자기성찰 지표'));
   assert(prompt.includes(rep.activeThematicEssay.essayTitleKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스') && prompt.includes('해석 경계'));
   assert(!prompt.includes('/100'));
@@ -8745,10 +8747,12 @@ test('Charles de Montesquieu Spirit of Laws Engine: calculates Checks and Balanc
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.montesquieuSynthesisMatrix?.integratedAction));
+  assert(Boolean(rep.montesquieuSynthesisMatrix?.montesquieuCrossAxis.includes('×')));
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatFrenchMontesquieuSpiritOfLawsPrompt(rep);
   assert(prompt.includes('샤를 드 몽테스키외 《법의 정신》 견제와 균형 & 권력분립 지표'));
   assert(prompt.includes(rep.activeMontesquieuTheme.themeTitleKo));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
   assert(!prompt.includes('/100'));
@@ -9592,7 +9596,8 @@ test('Paul Ricoeur Narrative Identity and Healing Engine: calculates Emplotment,
   assert(prompt.includes(rep.activeRicoeurTheme.themeTitleKo));
   assert.ok(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert.ok(prompt.includes('성찰 초점'));
-  assert.ok(prompt.includes('교차 매트릭스'));
+  assert.ok(rep.ricoeurSynthesisMatrix.ricoeurCrossAxis.includes('×'));
+  assert.ok(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100'));
 });
 

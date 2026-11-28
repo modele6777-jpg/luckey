@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const MONTAIGNE_ESSAIS_WISDOM_VERSION = 'LUCKEY-MONTAIGNE-ESSAIS-WISDOM-v2.4.0';
+export const MONTAIGNE_ESSAIS_WISDOM_VERSION = 'LUCKEY-MONTAIGNE-ESSAIS-WISDOM-v2.5.0';
 
 export interface MontaigneThematicEssay {
   essayKey: string;
@@ -47,6 +47,7 @@ export interface MontaigneEssaisWisdomResult {
     humanisticGuidance: string;
   };
   montaigneEssaisSynthesisMatrix?: {
+    montaigneCrossAxis: string;
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
@@ -165,7 +166,10 @@ export function calculateMontaigneEssaisWisdom(
     `${activeThematicEssay.practicalReflection} 또한 몽테뉴의 격언인 '${focalHumanistMaxim.maximKo}'(${focalHumanistMaxim.humanistDimension})을 기억하여, ` +
     `${focalHumanistMaxim.guidance}`;
 
+  const kstTimeLabel = formatMontaigneEssaisKstTimestamp(now);
+  const montaigneCrossAxis = `[${activeThematicEssay.essayKey}] × [${focalHumanistMaxim.maximKey}] × [${query?.trim() || '보편성찰'}] × [${kstTimeLabel.slice(11, 16)}]`;
   const montaigneEssaisSynthesisMatrix = {
+    montaigneCrossAxis,
     dominantTension: `${activeThematicEssay.essayTitleKo} ↔ ${focalHumanistMaxim.humanistDimension}`,
     alignmentState:
       queSaisJeInquiryScore >= 85 && naturalModerationScore >= 85
@@ -181,7 +185,7 @@ export function calculateMontaigneEssaisWisdom(
 
   return {
     engineVersion: MONTAIGNE_ESSAIS_WISDOM_VERSION,
-    calculatedAtKst: formatMontaigneEssaisKstTimestamp(now),
+    calculatedAtKst: kstTimeLabel,
     queSaisJeInquiryScore,
     selfIntrospectionHonestyScore,
     naturalModerationScore,
@@ -220,6 +224,7 @@ export function formatMontaigneEssaisWisdomPrompt(res: MontaigneEssaisWisdomResu
   if (res.montaigneEssaisSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스 [핵심 긴장: ${res.montaigneEssaisSynthesisMatrix.dominantTension} | 조율 상태: ${res.montaigneEssaisSynthesisMatrix.alignmentState}]`,
+      `- 4중 교차 축: ${res.montaigneEssaisSynthesisMatrix.montaigneCrossAxis}`,
       `- 통합 실천: ${res.montaigneEssaisSynthesisMatrix.integratedAction}`,
     );
   }

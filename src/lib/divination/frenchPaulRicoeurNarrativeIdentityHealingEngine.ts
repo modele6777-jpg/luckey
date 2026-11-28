@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_PAUL_RICOEUR_NARRATIVE_IDENTITY_HEALING_VERSION = 'LUCKEY-PAUL-RICOEUR-NARRATIVE-IDENTITY-HEALING-v2.5.0';
+export const FRENCH_PAUL_RICOEUR_NARRATIVE_IDENTITY_HEALING_VERSION = 'LUCKEY-PAUL-RICOEUR-NARRATIVE-IDENTITY-HEALING-v2.6.0';
 
 export interface RicoeurTheme {
   themeKey: string;
@@ -44,6 +44,7 @@ export interface FrenchPaulRicoeurNarrativeIdentityHealingResult {
   activeRicoeurTheme: RicoeurTheme;
   focalRicoeurAphorism: RicoeurAphorism;
   ricoeurSynthesisMatrix: {
+    ricoeurCrossAxis: string;
     coreInsight: string;
     recommendedAction: string;
     cautionNotice: string;
@@ -172,7 +173,9 @@ export function calculateFrenchPaulRicoeurNarrativeIdentityHealing(
 
   const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
   const kstTimeLabel = `${kst.toISOString().slice(0, 19)}+09:00 (KST)`;
+  const ricoeurCrossAxis = `[${activeRicoeurTheme.themeKey}] × [${focalRicoeurAphorism.aphorismKey}] × [${query?.trim() || '서사화치유'}] × [${kstTimeLabel.slice(11, 16)}]`;
   const ricoeurSynthesisMatrix = {
+    ricoeurCrossAxis,
     coreInsight: activeRicoeurTheme.themeTitleKo,
     recommendedAction: activeRicoeurTheme.practicalCounsel,
     cautionNotice: '과거의 상처나 한 시점의 좌절을 인생 전체의 고정된 결론으로 단정 짓지 마십시오.',
@@ -220,6 +223,7 @@ export function formatFrenchPaulRicoeurNarrativeIdentityHealingPrompt(
     `- 해석학적 통찰: ${res.activeRicoeurTheme.hermeneuticInsight}`,
     `- 행동 조언: ${res.activeRicoeurTheme.practicalCounsel}`,
     `- 교차 매트릭스: 핵심(${res.ricoeurSynthesisMatrix.coreInsight}) | 실행(${res.ricoeurSynthesisMatrix.recommendedAction}) | 주의(${res.ricoeurSynthesisMatrix.cautionNotice})`,
+    `- 4중 교차 축: ${res.ricoeurSynthesisMatrix.ricoeurCrossAxis}`,
     `- 리쾨르 원전 테제: "${res.focalRicoeurAphorism.aphorismKo}" (${res.focalRicoeurAphorism.aphorismFrench})`,
     `- 원전 출처: [${res.focalRicoeurAphorism.sourceContext}]`,
     `- 구체적 실천 지침: ${res.focalRicoeurAphorism.actionGuidance}`,
