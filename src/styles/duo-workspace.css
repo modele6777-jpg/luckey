@@ -94,7 +94,8 @@
    measured device inset stays in one place and a harness can reproduce an
    iPhone's landscape inset. */
 .duo-portal,
-.screen-portal {
+.screen-portal,
+.main-viewport-overlay {
   --overlay-inset-top: var(--sat, env(safe-area-inset-top, 0px));
   --overlay-inset-right: var(--sar, env(safe-area-inset-right, 0px));
   --overlay-inset-bottom: var(--sab, env(safe-area-inset-bottom, 0px));
@@ -102,7 +103,7 @@
 }
 /* The permanent navigation rail sits inside the screen edge it occupies, so that
    edge's inset is already spent by the rail. A dialog that stops at the rail must
-   keep only its base gutter there — never the iPhone's ~59–72px landscape inset
+   keep only its base gutter there — never the iPhone's ~59–84px landscape inset
    a second time, which left a dark strip on the side of every popup. */
 .duo-portal[data-rail-edge='top'] { --overlay-inset-top: 0px; }
 .duo-portal[data-rail-edge='right'] { --overlay-inset-right: 0px; }

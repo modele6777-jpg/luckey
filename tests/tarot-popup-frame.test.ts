@@ -53,7 +53,7 @@ test('the rail edge of the canvas is marked so the dialog never takes that inset
   assert.match(paneHost, /export type RailEdge = 'top' \| 'right' \| 'bottom' \| 'left' \| 'none'/);
   assert.match(paneHost, /box\.railEdge = 'right'/);
   // The gutter variables mirror env() in one place.
-  assert.ok(styles.includes('.duo-portal,\n.screen-portal {'), 'both portal layers share the gutter variables');
+  assert.ok(styles.includes('.duo-portal,\n.screen-portal,\n.main-viewport-overlay {'), 'both portal layers share the gutter variables');
   for (const edge of ['top', 'right', 'bottom', 'left']) {
     assert.ok(
       styles.includes(`--overlay-inset-${edge}: var(--s${edge === 'top' ? 'at' : edge === 'right' ? 'ar' : edge === 'bottom' ? 'ab' : 'al'}, env(safe-area-inset-${edge}, 0px));`),
