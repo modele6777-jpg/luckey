@@ -21,8 +21,8 @@ export type LiveVoiceSession = {
   releaseMic: () => void;
   /** 닫힌 마이크를 다시 연다. 열렸으면 true. */
   acquireMic: () => Promise<boolean>;
-  /** 지금 재생 중인 마스터 목소리의 크기 (0~1, 오브 맥동용). */
-  outputLevel: () => number;
+  /** 아이폰이 마이크 전환으로 재생을 멈춘 뒤, 다시 울리게 한다. */
+  wake: () => void;
 };
 
 import { setMicCaptureActive } from './audioMixingPolicy';
@@ -111,6 +111,39 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
   const capture = new AudioContext();
   void playback.resume();
   void capture.resume();
+  const queuedAudio: Array<{ data: string; mime?: string }> = [];
+  const playbackNeedsWake = () => {
+    const state = playback.state as string | undefined;
+    return state === 'suspended' || state === 'interrupted';
+  };
+  const flushQueuedAudio = () => {
+    if (stopped || playbackNeedsWake() || !queuedAudio.length) return;
+    if (!sources.size && nextAt > playback.currentTime + 0.4) nextAt = 0;
+    let messageAudio: { start: number; end: number } | null = null;
+    for (const item of queuedAudio.splice(0)) {
+      const audio = playPcmNow(item.data, item.mime);
+      if (audio) messageAudio = { start: messageAudio?.start ?? audio.start, end: audio.end };
+    }
+    if (!messageAudio) return;
+    lastAudio = messageAudio;
+    if (pendingCaptionText.length && handlers.onCaption) scheduleCaption(pendingCaptionText.splice(0).join(''), messageAudio);
+  };
+  const wakePlayback = () => {
+    if (stopped) return;
+    if (!playbackNeedsWake()) { flushQueuedAudio(); return; }
+    void playback.resume().then(() => flushQueuedAudio()).catch(() => undefined);
+  };
+  if (typeof playback.addEventListener === 'function') {
+    playback.addEventListener('statechange', () => {
+      if (!stopped && playbackNeedsWake()) wakePlayback();
+    });
+  }
+  // 마이크 세션이 바뀌면 아이폰이 재생 컨텍스트를 interrupted 로 둔다. 바꿀 때마다 다시 깨운다.
+  const setMic = (active: boolean) => {
+    setMicCaptureActive(active);
+    void playback.resume().then(() => flushQueuedAudio()).catch(() => undefined);
+    void capture.resume().catch(() => undefined);
+  };
   const primedMic = handlers.micStream;
   let stopped = false;
   let failed = false;
@@ -184,6 +217,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     captionTimer = null;
     captions.length = 0;
     pendingCaptionText.length = 0;
+    queuedAudio.length = 0;
     lastAudio = null;
     handlers.onCaptionReset?.();
     for (const source of sources) {
@@ -205,7 +239,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     }, remainingMs + 250);
   };
 
-  const playPcm = (data: string, mime?: string) => {
+  const playPcmNow = (data: string, mime?: string) => {
     const rate = parseRate(mime);
     const binary = atob(data);
     const bytes = new Uint8Array(binary.length);
@@ -227,6 +261,14 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     handlers.onAudioScheduled?.((startAt - playback.currentTime) * 1000);
     markSpeaking();
     return { start: startAt, end: nextAt };
+  };
+  const playPcm = (data: string, mime?: string) => {
+    if (playbackNeedsWake()) {
+      queuedAudio.push({ data, mime });
+      wakePlayback();
+      return;
+    }
+    return playPcmNow(data, mime);
   };
 
   // 연결이 끝나기 전에 보낸 말·첨부는 보낸 순서대로 보관했다가 setupComplete 에서 그대로 보낸다.
@@ -382,7 +424,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     pendingSends.length = 0;
     micGeneration += 1;
     micAcquire = null;
-    setMicCaptureActive(false);
+    setMic(false);
     if (speakTimer) clearTimeout(speakTimer);
     if (setupTimer) clearTimeout(setupTimer);
     handlers.onAudioLevel?.(0);
@@ -437,7 +479,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     // on a provider token. An Orb guest can continue by text after refusal.
     if (handlers.micStream !== null) {
       try {
-        setMicCaptureActive(true);
+        setMic(true);
         const next = await (primedMic || requestLucyMicrophone());
         if (stopped) {
           next.getTracks().forEach(track => track.stop());
@@ -445,14 +487,14 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
         }
         if (muted && handlers.releaseMicWhileMuted) {
           next.getTracks().forEach(track => track.stop());
-          setMicCaptureActive(false);
+          setMic(false);
         } else {
           stream = next;
           next.getAudioTracks().forEach(track => { track.enabled = false; });
         }
       } catch (error) {
         if (stopped) return;
-        setMicCaptureActive(false);
+        setMic(false);
         const message = lucyMicrophonePermissionMessage(error);
         if (!handlers.onNotice) {
           fail('mic-denied', message);
@@ -462,7 +504,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       }
     } else {
       // null is an explicit no-capture sentinel used by automatic reconnects.
-      setMicCaptureActive(false);
+      setMic(false);
     }
 
     let token = '';
@@ -577,11 +619,12 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
     },
     interrupt: stopPlayback,
     outputLevel,
+    wake: wakePlayback,
     releaseMic: () => {
       micGeneration += 1;
       micAcquire = null;
       if (stream) detachStream();
-      setMicCaptureActive(false);
+      setMic(false);
     },
     acquireMic: async () => {
       if (stopped) return false;
@@ -589,7 +632,7 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
       if (micAcquire?.generation === micGeneration) return micAcquire.promise;
       const generation = ++micGeneration;
       // Start the permission request in this user action and share it with overlapping taps.
-      setMicCaptureActive(true);
+      setMic(true);
       const promise = requestLucyMicrophone().then(next => {
         if (stopped || generation !== micGeneration) {
           next.getTracks().forEach(track => track.stop());
@@ -598,15 +641,16 @@ export function startGeminiLiveVoice(handlers: LiveVoiceHandlers): LiveVoiceSess
         try {
           next.getAudioTracks().forEach(track => { track.enabled = !muted; });
           void capture.resume().catch(() => undefined);
+          wakePlayback();
           attachStream(next);
           return true;
         } catch {
           next.getTracks().forEach(track => track.stop());
-          if (!stopped && generation === micGeneration) setMicCaptureActive(false);
+          if (!stopped && generation === micGeneration) setMic(false);
           return false;
         }
       }, () => {
-        if (!stopped && generation === micGeneration) setMicCaptureActive(false);
+        if (!stopped && generation === micGeneration) setMic(false);
         return false;
       }).finally(() => {
         if (micAcquire?.generation === generation) micAcquire = null;

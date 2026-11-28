@@ -951,8 +951,10 @@ export function LucyOrbCounsel({
       // 실시간 대화는 마이크를 계속 열어 둔다.
       void session.acquireMic().then(ok => {
         if (generation !== voiceModeGeneration.current || voiceModeRef.current !== 'realtime' || sessionRef.current !== session) return;
-        if (ok) session.setMuted(false);
-        else {
+        if (ok) {
+          session.wake();
+          session.setMuted(false);
+        } else {
           setMicUnavailable(true);
           setNotice(current => current || '마이크를 열지 못했어요. 권한을 허용한 뒤 다시 연결해 주세요.');
         }
@@ -1563,7 +1565,10 @@ export function LucyOrbCounsel({
         data-orb-counsel="true"
         role="region"
         aria-label="오브 상담"
-        onPointerDown={() => { if (bedAudible) void bedRef.current?.resume().then(() => bedRef.current?.setAudible(bedAudible, speaking)); }}
+        onPointerDown={() => {
+          sessionRef.current?.wake();
+          if (bedAudible) void bedRef.current?.resume().then(() => bedRef.current?.setAudible(bedAudible, speaking));
+        }}
       >
         {Array.from({ length: 18 }, (_, index) => (
           <span key={`mote-${index}`} className="lucy-mote" style={{ left: `${3 + index * 5.4}%`, animationDelay: `${(index * 0.83) % 12}s`, ['--mote-x' as string]: `${(index % 2 ? 1 : -1) * (10 + (index % 4) * 8)}px` }} />
