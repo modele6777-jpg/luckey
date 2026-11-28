@@ -90,6 +90,7 @@ import {
   createDefaultGreeting,
   LUCY_GREETING_BODIES,
   isGreetingMessage,
+  isLucyChatStyleGreeting,
   saveUnifiedMessagesSafely,
   loadSavedUnifiedMessages,
   mergeUnifiedMessages,
@@ -1997,6 +1998,21 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     setLucyMasterLink(fromOffer ? 'linked' : 'undecided');
     setLucyProMessages([greeting]);
   }, [isMasterMode, setLucyProMessages, clearLucyProMessages, userDisplayName, chatAccount]);
+
+  // 루시프로에는 루시채팅의 일상 인사("오늘 하루는 어땠어")를 남기지 않는다.
+  useEffect(() => {
+    if (!isMasterMode || isTarotHouseGreetingPending()) return;
+    const current = lucyProMessages || [];
+    const kept = current.filter((message) => !isLucyChatStyleGreeting(message));
+    if (kept.length === current.length && kept.length > 0) return;
+    if (kept.length > 0) {
+      setLucyProMessages(kept);
+      return;
+    }
+    setLucyProMessages([
+      createTarotHouseGreeting(userDisplayName, isDuoUnfoldedState().unfolded ? 'unfolded' : 'folded', false),
+    ]);
+  }, [isMasterMode, lucyProMessages, setLucyProMessages, userDisplayName]);
   // 📜 상담 카드: 통합 상담 한 번을 한 장으로 남긴다.
   const [sessionCardOffer, setSessionCardOffer] = useState<MasterSessionCardSource | null>(null);
   const [sessionCard, setSessionCard] = useState<MasterSessionCardSource | null>(null);
@@ -2959,6 +2975,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // Filter messages by search query if search is active (대화 기록이 비어있다면 기본 루시 인사말 표시 보장)
   const filteredMessages = useMemo(() => {
+    if (isMasterMode) {
+      const kept = lucyMessages.filter((message) => !isLucyChatStyleGreeting(message));
+      if (kept.length > 0) return kept;
+      const house = createTarotHouseGreeting(userDisplayName, isDuoUnfoldedState().unfolded ? 'unfolded' : 'folded', false);
+      return [{ ...house, id: 'tarot-house-live' }];
+    }
     const isMasterGreeting = false;
     const rawList = lucyMessages.length > 0
       ? (lucyMessages.length === 1 && isGreetingMessage(lucyMessages[0])

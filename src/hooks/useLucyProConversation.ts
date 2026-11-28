@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type React from 'react';
 import { loadProHistory, saveProHistory, freshProHistory, normalizeProHistory, proHistoryKey } from '@/lib/lucyProHistory';
 import { getLucyChatDay as getTodayDateKey, subscribeLucyMidnight } from '@/lib/lucyChatDay';
-import { hasRealUserConversation, mergeUnifiedMessages, type UnifiedMessage, type PersonaType } from '@/lib/chatHistorySync';
+import { hasRealUserConversation, isLucyChatStyleGreeting, mergeUnifiedMessages, type UnifiedMessage, type PersonaType } from '@/lib/chatHistorySync';
 import { auth, db, doc, onSnapshot, setDoc, getDocFromServer } from '@/lib/firebase';
 import { cleanFirestoreData } from '@/lib/sharedStateSync';
 
@@ -113,7 +113,7 @@ export function useLucyProConversation(account: string, cloudUid?: string) {
       const local = history.messages.filter(message => (message.timestamp || 0) >= remoteReset);
       const incoming = normalizeProHistory(remote, day).messages;
       publishedRef.current={uid:cloudUid,signature:syncDataSignature({day,messages:incoming,resetAt:remoteReset})};
-      const merged = mergeUnifiedMessages(incoming, local);
+      const merged = mergeUnifiedMessages(incoming, local, { injectGreeting: false }).filter(message => !isLucyChatStyleGreeting(message));
       const activeId = activeAssistMsgIdRef.current.lucy;
       const active = messagesRef.current.find(message => message.id === activeId && (message.timestamp || 0) >= remoteReset);
       if (active && !merged.some(message => message.id === active.id)) merged.push(active);

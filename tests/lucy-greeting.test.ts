@@ -44,3 +44,24 @@ test('the generic traveler greeting does not add an artificial name', () => {
   assert.equal(typeof message.content, 'string');
   assert.ok((message.content as string).startsWith('안녕!'));
 });
+
+test('Lucy Pro merge does not invent a Lucy Chat greeting', async () => {
+  const { mergeUnifiedMessages, isLucyChatStyleGreeting, createDefaultGreeting } = await import('../src/lib/chatHistorySync');
+  const { normalizeProHistory } = await import('../src/lib/lucyProHistory');
+  const { getLucyChatDay } = await import('../src/lib/lucyChatDay');
+  const casual = createDefaultGreeting('lucy', '제제', false, false, new Date(2026, 10, 29, 3, 36));
+  assert.equal(isLucyChatStyleGreeting(casual), true);
+  assert.match(String(casual.content), /오늘 하루는 어땠어/);
+  const house = {
+    id: 'tarot-house-1',
+    role: 'model' as const,
+    content: '어서 와, 제제, 루시의 타로 하우스에 온 걸 환영해',
+    timestamp: Date.now(),
+  };
+  const merged = mergeUnifiedMessages([casual, house], [], { injectGreeting: false });
+  assert.deepEqual(merged.map((message) => message.id), ['tarot-house-1']);
+  assert.equal(mergeUnifiedMessages([], [], { injectGreeting: false }).length, 0);
+  const normalized = normalizeProHistory({ day: getLucyChatDay(), messages: [casual, house] });
+  assert.equal(normalized.messages.some((message) => isLucyChatStyleGreeting(message)), false);
+  assert.equal(normalized.messages.some((message) => message.id === 'tarot-house-1'), true);
+});

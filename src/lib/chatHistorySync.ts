@@ -144,6 +144,24 @@ export function isGreetingMessage(m: UnifiedMessage | null | undefined): boolean
   return false;
 }
 
+/** 루시 채팅의 일상 인사(시간 안부·수다 권유·옛 프로 기본 인사). 타로 하우스 인사는 제외. */
+export function isLucyChatStyleGreeting(m: UnifiedMessage | null | undefined): boolean {
+  if (!m || m.role === 'user') return false;
+  const id = String(m.id || '');
+  if (id.startsWith('tarot-house')) return false;
+  if (isGreetingMessage(m)) return true;
+  if (typeof m.content !== 'string') return false;
+  const body = m.content;
+  return (
+    body.includes('오늘 하루는 어땠어') ||
+    body.includes('수다 떨 준비되어 있어') ||
+    body.includes('나랑 가볍게 수다 떨자') ||
+    body.includes('넓은 화면으로 다시 만났네') ||
+    body.includes('안녕! 루시 프로야') ||
+    (body.includes('루시 프로의') && body.includes('카탈로그'))
+  );
+}
+
 /**
  * 메시지가 오늘(자정 이후) 생성된 메시지인지 판별
  */
@@ -340,17 +358,19 @@ function isEmptyPlaceholder(m: UnifiedMessage): boolean {
  */
 export function mergeUnifiedMessages(
   primary: UnifiedMessage[],
-  incoming: UnifiedMessage[]
+  incoming: UnifiedMessage[],
+  options?: { injectGreeting?: boolean },
 ): UnifiedMessage[] {
+  const injectGreeting = options?.injectGreeting !== false;
   const cleanPrimary = retainRecentConversation(primary, Date.now(), true);
   const cleanIncoming = retainRecentConversation(incoming, Date.now(), true);
 
   const hasPrimaryUser = hasRealUserConversation(cleanPrimary);
   const hasIncomingUser = hasRealUserConversation(cleanIncoming);
 
-  // 오늘 실제 유저 대화가 아직 없는 경우: 항상 기본 루시 인사말 표시
+  // 오늘 실제 유저 대화가 아직 없는 경우: 루시채팅만 기본 인사말을 붙인다. 루시프로는 붙이지 않는다.
   if (!hasPrimaryUser && !hasIncomingUser && cleanPrimary.length === 0 && cleanIncoming.length === 0) {
-    return [createDefaultGreeting()];
+    return injectGreeting ? [createDefaultGreeting()] : [];
   }
 
   // 병합용 맵
@@ -359,7 +379,8 @@ export function mergeUnifiedMessages(
   let greetingKept: UnifiedMessage | null = null;
 
   [...cleanPrimary, ...cleanIncoming].forEach((msg) => {
-    if (isGreetingMessage(msg)) {
+    if (isGreetingMessage(msg) || (!injectGreeting && isLucyChatStyleGreeting(msg))) {
+      if (!injectGreeting) return;
       if (!greetingKept) {
         greetingKept = msg;
       }
@@ -404,6 +425,8 @@ export function mergeUnifiedMessages(
 
   const merged = Array.from(map.values());
   merged.sort((a, b) => Number(a.timestamp || 0) - Number(b.timestamp || 0));
+
+  if (!injectGreeting) return merged;
 
   if (greetingKept) {
     const firstTs = merged.length > 0 ? Number(merged[0].timestamp || Date.now()) : Date.now();
