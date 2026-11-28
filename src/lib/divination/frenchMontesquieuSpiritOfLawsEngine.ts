@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION = 'LUCKEY-MONTESQUIEU-SPIRIT-OF-LAWS-v2.5.0';
+export const FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION = 'LUCKEY-MONTESQUIEU-SPIRIT-OF-LAWS-v2.6.0';
 
 export interface MontesquieuTheme {
   themeKey: string;
@@ -49,6 +49,7 @@ export interface FrenchMontesquieuSpiritOfLawsResult {
     philosophicalCounsel: string;
   };
   montesquieuSynthesisMatrix?: {
+    montesquieuCrossAxis: string;
     dominantTension: string;
     alignmentState: string;
     integratedAction: string;
@@ -184,7 +185,10 @@ export function calculateFrenchMontesquieuSpiritOfLaws(
     `${activeMontesquieuTheme.practicalCounsel} 아울러 몽테스키외의 명언 "${focalMontesquieuAphorism.aphorismKo}"를 되새기며, ` +
     `${focalMontesquieuAphorism.actionGuidance}`;
 
+  const kstTimeLabel = formatMontesquieuKstTimestamp(now);
+  const montesquieuCrossAxis = `[${activeMontesquieuTheme.themeKey}] × [${focalMontesquieuAphorism.aphorismKey}] × [${query?.trim() || '공적균형'}] × [${kstTimeLabel.slice(11, 16)}]`;
   const montesquieuSynthesisMatrix = {
+    montesquieuCrossAxis,
     dominantTension: `${activeMontesquieuTheme.themeTitleKo} ↔ ${focalMontesquieuAphorism.sourceContext}`,
     alignmentState:
       checksAndBalancesPrudenceIndex >= 88 && contextualSpiritOfLawsWisdomIndex >= 88
@@ -200,7 +204,7 @@ export function calculateFrenchMontesquieuSpiritOfLaws(
 
   return {
     engineVersion: FRENCH_MONTESQUIEU_SPIRIT_OF_LAWS_VERSION,
-    calculatedAtKst: formatMontesquieuKstTimestamp(now),
+    calculatedAtKst: kstTimeLabel,
     checksAndBalancesPrudenceIndex,
     politicalLibertyTemperanceScore,
     contextualSpiritOfLawsWisdomIndex,
@@ -243,6 +247,7 @@ export function formatFrenchMontesquieuSpiritOfLawsPrompt(
   if (res.montesquieuSynthesisMatrix) {
     lines.push(
       `- 교차 매트릭스 [핵심 긴장: ${res.montesquieuSynthesisMatrix.dominantTension} | 조율 상태: ${res.montesquieuSynthesisMatrix.alignmentState}]`,
+      `- 4중 교차 축: ${res.montesquieuSynthesisMatrix.montesquieuCrossAxis}`,
       `- 통합 실천: ${res.montesquieuSynthesisMatrix.integratedAction}`,
     );
   }
