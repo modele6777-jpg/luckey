@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { X, Pencil } from 'lucide-react';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
 import {
@@ -19,7 +19,8 @@ import { DivinationToolTabBar, resolveToolTabViews } from './MasterToolTabs';
 import { LucyDeepPerspectivePanel } from '@/components/chat/LucyEngineCatalogDialog';
 import { LucyOrbToolIcon } from '@/components/icons/LucyOrbToolIcon';
 import type { DivinationToolId } from '@/lib/fifteenDivinationTools';
-import { CLOSED_LUCY_SHEET, isLucySheetButtonExpanded, pickActiveDivinationTab, reduceLucySheet } from '@/lib/lucyToolSheetRouting';
+import { isLucySheetButtonExpanded, pickActiveDivinationTab } from '@/lib/lucyToolSheetRouting';
+import { dispatchLucySheet, getLucySheetState, useLucySheetState } from '@/lib/lucySheetStore';
 
 /**
  * 📱 도구함 창(점술모드 오브 버튼 · 일반 채팅 연필 버튼).
@@ -172,17 +173,19 @@ function DrawnCards({ cards }: { cards: LucyTableState['cards'] }) {
 }
 
 /**
- * 헤더의 도구함 버튼.
- * - 점술모드: 오브(구슬) 아이콘 → 15개 점술 도구 창 (사용자: "루시점술 모드에 해당 도구 버튼을 상단 헤더에 오브모양으로 만들어줘", 2026-11-27)
- * - 일반 채팅: 연필 아이콘 → 엔진함(심층 관점 설명)
+ * 🔮 도구함·엔진함 창 호스트.
+ *
+ * 헤더에 **항상** 살아 있어서, 도구함(오브) 버튼이 숨겨진 펼친 화면 루시프로에서도
+ * 연필(엔진함) 버튼과 답변 끝 관점 버튼의 `openLucyEngineBox()` 요청을 받아 창을 연다.
+ * (사용자 제보 2026-11-28: "펼친화면 루시프로 엔진함이 안나와")
  */
-export function MasterTableSheetButton({ tone = 'dark', isMasterMode = false }: { tone?: 'dark' | 'light'; isMasterMode?: boolean }) {
-  const [sheet, dispatchSheet] = useReducer(reduceLucySheet, CLOSED_LUCY_SHEET);
+export function LucyToolSheetHost() {
+  const sheet = useLucySheetState();
 
   // 답변 끝 버튼(관점·도구)에서 함을 열 때도 같은 창을 쓴다.
   useEffect(() => {
-    const onEngineBox = () => dispatchSheet({ type: 'engine-box' });
-    const onTool = () => dispatchSheet({ type: 'divination-tool' });
+    const onEngineBox = () => dispatchLucySheet({ type: 'engine-box' });
+    const onTool = () => dispatchLucySheet({ type: 'divination-tool' });
     window.addEventListener(LUCY_ENGINE_BOX_OPEN_EVENT, onEngineBox);
     window.addEventListener(LUCY_DIVINATION_TOOL_EVENT, onTool);
     return () => {
@@ -191,38 +194,54 @@ export function MasterTableSheetButton({ tone = 'dark', isMasterMode = false }: 
     };
   }, []);
 
+  // 페이지를 떠나며 창 호스트가 사라지면 열림 상태도 닫아 둔다 (다시 들어왔을 때 유령 창이 뜨지 않게).
+  useEffect(() => () => {
+    if (getLucySheetState().open) dispatchLucySheet({ type: 'close' });
+  }, []);
+
+  const closeSheet = useCallback(() => {
+    dispatchLucySheet({ type: 'close' });
+    window.dispatchEvent(new CustomEvent(LUCY_ENGINE_BOX_CLOSE_EVENT));
+    clearEngineFocus();
+    clearDivinationToolRequest();
+  }, []);
+
+  if (!sheet.open) return null;
+  return <MasterTableSheet onClose={closeSheet} variant={sheet.variant} />;
+}
+
+/**
+ * 헤더의 도구함 버튼.
+ * - 점술모드: 오브(구슬) 아이콘 → 15개 점술 도구 창 (사용자: "루시점술 모드에 해당 도구 버튼을 상단 헤더에 오브모양으로 만들어줘", 2026-11-27)
+ * - 일반 채팅: 연필 아이콘 → 엔진함(심층 관점 설명)
+ * 창 자체는 `LucyToolSheetHost`가 들고 있다.
+ */
+export function MasterTableSheetButton({ tone = 'dark', isMasterMode = false }: { tone?: 'dark' | 'light'; isMasterMode?: boolean }) {
+  const sheet = useLucySheetState();
+
   // 버튼을 직접 눌러 열 때는 지난 답변의 이동 요청을 따라가지 않는다.
   const openFromButton = () => {
     clearEngineFocus();
     clearDivinationToolRequest();
     window.dispatchEvent(new CustomEvent(LUCY_ENGINE_BOX_CLOSE_EVENT));
-    dispatchSheet({ type: 'button', isMasterMode });
-  };
-  const closeSheet = () => {
-    dispatchSheet({ type: 'close' });
-    window.dispatchEvent(new CustomEvent(LUCY_ENGINE_BOX_CLOSE_EVENT));
-    clearEngineFocus();
-    clearDivinationToolRequest();
+    dispatchLucySheet({ type: 'button', isMasterMode });
   };
 
   return (
-    <>
-      <button
-        type="button"
-        data-master-table-sheet-button
-        data-tool-sheet-variant={isMasterMode ? 'divination' : 'chat'}
-        data-tool-button-icon={isMasterMode ? 'orb' : 'pencil'}
-        aria-label={isMasterMode ? '점술 도구 보기' : '엔진함 보기'}
-        aria-expanded={isLucySheetButtonExpanded(sheet, isMasterMode)}
-        title={isMasterMode ? '점술 도구' : '엔진함'}
-        onClick={() => { triggerHaptic('whitehole'); openFromButton(); }}
-        className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border backdrop-blur-md active:scale-95 ${tone === 'light'
-          ? 'border-slate-300/80 bg-white/80 text-slate-700'
-          : 'border-amber-200/30 bg-amber-400/10 text-amber-100'}`}
-      >
-        {isMasterMode ? <LucyOrbToolIcon size={16} /> : <Pencil size={15} aria-hidden="true" />}
-      </button>
-      {sheet.open && <MasterTableSheet onClose={closeSheet} variant={sheet.variant} />}
-    </>
+    <button
+      type="button"
+      data-master-table-sheet-button
+      data-tool-sheet-variant={isMasterMode ? 'divination' : 'chat'}
+      data-tool-button-icon={isMasterMode ? 'orb' : 'pencil'}
+      aria-label={isMasterMode ? '점술 도구 보기' : '엔진함 보기'}
+      aria-expanded={isLucySheetButtonExpanded(sheet, isMasterMode)}
+      title={isMasterMode ? '점술 도구' : '엔진함'}
+      onClick={() => { triggerHaptic('whitehole'); openFromButton(); }}
+      className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border backdrop-blur-md active:scale-95 ${tone === 'light'
+        ? 'border-slate-300/80 bg-white/80 text-slate-700'
+        : 'border-amber-200/30 bg-amber-400/10 text-amber-100'}`}
+    >
+      {isMasterMode ? <LucyOrbToolIcon size={16} /> : <Pencil size={15} aria-hidden="true" />}
+    </button>
   );
 }

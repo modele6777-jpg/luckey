@@ -9,10 +9,11 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import React from 'react';
+import React, { act } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { Window } from 'happy-dom';
 import { readFileSync } from 'node:fs';
-import { MasterTableSheetButton } from '../src/components/duo/MasterTableSheet';
+import { LucyToolSheetHost, MasterTableSheetButton } from '../src/components/duo/MasterTableSheet';
 import { MasterEngineCatalogButton } from '../src/components/duo/MasterEngineCatalogButton';
 import { LucyOrbToolIcon } from '../src/components/icons/LucyOrbToolIcon';
 import { getPageGuide } from '../src/lib/pageGuides';
@@ -24,6 +25,7 @@ const ORB_ICON = read('src/components/icons/LucyOrbToolIcon.tsx');
 const ENGINE_BUTTON = read('src/components/duo/MasterEngineCatalogButton.tsx');
 const PAGE = read('src/pages/LucyStandalonePage.tsx');
 const SHEET_BUTTON = SHEET.slice(SHEET.indexOf('export function MasterTableSheetButton'));
+const SHEET_HOST = SHEET.slice(SHEET.indexOf('export function LucyToolSheetHost'), SHEET.indexOf('export function MasterTableSheetButton'));
 
 const masterButtonMarkup = renderToStaticMarkup(<MasterTableSheetButton tone="dark" isMasterMode />);
 const chatButtonMarkup = renderToStaticMarkup(<MasterTableSheetButton tone="dark" />);
@@ -117,6 +119,18 @@ test('only expanded Lucy Pro hides the Tools Cabinet button', () => {
   assert.match(PAGE, /\{isMasterMode && <MasterEngineCatalogButton/, 'the Engine Cabinet remains visible in Lucy Pro');
 });
 
+test('the sheet host stays mounted in the header even when the Tools Cabinet button is hidden', () => {
+  // 사용자 제보(2026-11-28): 펼친 화면 루시프로에서 도구함(오브) 버튼이 숨겨지면
+  // 그 버튼이 들고 있던 창 호스트까지 사라져 엔진함이 열리지 않았다.
+  const guardStart = PAGE.indexOf('{shouldShowLucyToolsCabinet(isMasterMode, isActuallyUnfoldedDual) && (');
+  assert.ok(guardStart >= 0, 'the Tools Cabinet button keeps its own visibility rule');
+  const guardEnd = PAGE.indexOf(')}', guardStart);
+  const guarded = PAGE.slice(guardStart, guardEnd);
+  assert.match(guarded, /<MasterTableSheetButton/, 'only the orb/pencil tool button sits inside the guard');
+  assert.doesNotMatch(guarded, /LucyToolSheetHost/, 'the sheet host is not hidden together with the tool button');
+  assert.match(PAGE.slice(guardEnd), /^\)\}[\s\S]{0,400}?<LucyToolSheetHost \/>/, 'the host is mounted right outside the guard, in the same header');
+});
+
 test('the engine box request opens the shared sheet and drops any stale perspective jump', async () => {
   const { Window } = await import('happy-dom');
   const win = new Window({ url: 'https://engine-box.invalid' });
@@ -143,11 +157,107 @@ test('the engine box request opens the shared sheet and drops any stale perspect
 
 test('the answer perspective and tool buttons still open the shared sheet', () => {
   // #1414(v1.8.579)가 넣은 답변 끝 버튼 → 함 열기 배선은 그대로 살아 있어야 한다.
-  assert.match(SHEET_BUTTON, /LUCY_ENGINE_BOX_OPEN_EVENT/);
-  assert.match(SHEET_BUTTON, /LUCY_DIVINATION_TOOL_EVENT/);
-  assert.match(SHEET_BUTTON, /reduceLucySheet/);
-  assert.match(SHEET_BUTTON, /\{ type: 'button', isMasterMode \}/);
-  assert.match(SHEET_BUTTON, /<MasterTableSheet onClose=\{closeSheet\} variant=\{sheet.variant\} \/>/);
+  assert.match(SHEET_HOST, /LUCY_ENGINE_BOX_OPEN_EVENT/);
+  assert.match(SHEET_HOST, /LUCY_DIVINATION_TOOL_EVENT/);
+  assert.match(SHEET_HOST, /dispatchLucySheet\(\{ type: 'engine-box' \}\)/);
+  assert.match(SHEET_HOST, /dispatchLucySheet\(\{ type: 'divination-tool' \}\)/);
+  assert.match(SHEET_HOST, /<MasterTableSheet onClose=\{closeSheet\} variant=\{sheet.variant\} \/>/);
+  // 헤더 도구함 버튼은 같은 창을 저장소로 열고, 자기 aria-expanded만 본다.
+  assert.match(SHEET_BUTTON, /dispatchLucySheet\(\{ type: 'button', isMasterMode \}\)/);
+  assert.match(SHEET_BUTTON, /aria-expanded=\{isLucySheetButtonExpanded\(sheet, isMasterMode\)\}/);
+});
+
+test('expanded Lucy Pro opens the engine box from the header pencil', async () => {
+  // 펼친 화면 루시프로(isMasterMode=true, isActuallyUnfoldedDual=true)는 도구함 버튼이 없으므로
+  // 헤더에는 연필(MasterEngineCatalogButton)과 창 호스트(LucyToolSheetHost)만 있다.
+  // 연필을 누르면 data-master-table-sheet-variant="chat" 창이 실제로 DOM에 떠야 한다.
+  const win = new Window({ url: 'https://pro-engine-box.invalid' });
+  const names = ['window', 'document', 'navigator', 'HTMLElement', 'Element', 'Node', 'MutationObserver', 'getComputedStyle', 'IS_REACT_ACT_ENVIRONMENT', 'requestAnimationFrame', 'cancelAnimationFrame', 'CustomEvent', 'Event'];
+  const saved = new Map(names.map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
+  for (const key of names) {
+    const value = key === 'window' ? win : key === 'document' ? win.document : key === 'getComputedStyle' ? win.getComputedStyle.bind(win) : key === 'IS_REACT_ACT_ENVIRONMENT' ? true : key === 'CustomEvent' ? win.CustomEvent : key === 'Event' ? win.Event : key === 'requestAnimationFrame' ? win.requestAnimationFrame.bind(win) : key === 'cancelAnimationFrame' ? win.cancelAnimationFrame.bind(win) : (win as any)[key];
+    Object.defineProperty(globalThis, key, { value, configurable: true, writable: true });
+  }
+  // happy-dom's observers keep firing on a zero-size layout and loop the overlay listeners.
+  class NoopObserver { observe() {} unobserve() {} disconnect() {} takeRecords() { return []; } }
+  for (const name of ['ResizeObserver', 'IntersectionObserver']) {
+    saved.set(name, Object.getOwnPropertyDescriptor(globalThis, name));
+    Object.defineProperty(globalThis, name, { value: NoopObserver, configurable: true, writable: true });
+  }
+  let root: any;
+  try {
+    const host = win.document.createElement('div'); win.document.body.appendChild(host);
+    const { createRoot } = await import('react-dom/client'); root = createRoot(host as any);
+    await act(async () => root.render(<><LucyToolSheetHost /><MasterEngineCatalogButton tone="dark" /></>));
+    assert.equal(win.document.querySelector('[data-master-table-sheet-variant]'), null, 'the box starts closed');
+    const pencil = host.querySelector('[data-master-engine-catalog-button]') as any;
+    assert.ok(pencil, 'the expanded pro header keeps the engine pencil');
+    assert.equal(pencil.getAttribute('aria-expanded'), 'false');
+
+    await act(async () => {
+      pencil.dispatchEvent(new win.MouseEvent('click', { bubbles: true, detail: 1 }));
+      await new Promise(resolve => setTimeout(resolve, 20));
+    });
+
+    const sheet = win.document.querySelector('[data-master-table-sheet-variant="chat"]');
+    assert.ok(sheet, 'the engine box really opens in the expanded pro header');
+    assert.ok(win.document.querySelector('[data-master-table-sheet-variant="chat"] [data-lucy-engine-panel]'), 'the opened box is the deep-perspective engine cabinet');
+    assert.equal((host.querySelector('[data-master-engine-catalog-button]') as any).getAttribute('aria-expanded'), 'true');
+
+    // 창의 닫기 버튼으로 닫히고 버튼 상태도 돌아온다.
+    const closeButton = win.document.querySelector('[data-master-table-sheet-variant="chat"] [aria-label="도구 창 닫기"]') as any;
+    assert.ok(closeButton, 'the engine box has its close button');
+    await act(async () => {
+      closeButton.dispatchEvent(new win.MouseEvent('click', { bubbles: true, detail: 1 }));
+      await new Promise(resolve => setTimeout(resolve, 20));
+    });
+    assert.equal(win.document.querySelector('[data-master-table-sheet-variant="chat"]'), null, 'the close button closes the engine box');
+    assert.equal((host.querySelector('[data-master-engine-catalog-button]') as any).getAttribute('aria-expanded'), 'false');
+  } finally {
+    if (root) await act(async () => root.unmount());
+    for (const [key, descriptor] of saved) {
+      if (descriptor) Object.defineProperty(globalThis, key, descriptor);
+      else delete (globalThis as any)[key];
+    }
+    await win.happyDOM.close();
+  }
+});
+
+test('the collapsed Lucy Pro still opens its tools cabinet from the orb button', async () => {
+  const win = new Window({ url: 'https://pro-tools-cabinet.invalid' });
+  const names = ['window', 'document', 'navigator', 'HTMLElement', 'Element', 'Node', 'MutationObserver', 'getComputedStyle', 'IS_REACT_ACT_ENVIRONMENT', 'requestAnimationFrame', 'cancelAnimationFrame', 'CustomEvent', 'Event'];
+  const saved = new Map(names.map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
+  for (const key of names) {
+    const value = key === 'window' ? win : key === 'document' ? win.document : key === 'getComputedStyle' ? win.getComputedStyle.bind(win) : key === 'IS_REACT_ACT_ENVIRONMENT' ? true : key === 'CustomEvent' ? win.CustomEvent : key === 'Event' ? win.Event : key === 'requestAnimationFrame' ? win.requestAnimationFrame.bind(win) : key === 'cancelAnimationFrame' ? win.cancelAnimationFrame.bind(win) : (win as any)[key];
+    Object.defineProperty(globalThis, key, { value, configurable: true, writable: true });
+  }
+  // happy-dom's observers keep firing on a zero-size layout and loop the overlay listeners.
+  class NoopObserver { observe() {} unobserve() {} disconnect() {} takeRecords() { return []; } }
+  for (const name of ['ResizeObserver', 'IntersectionObserver']) {
+    saved.set(name, Object.getOwnPropertyDescriptor(globalThis, name));
+    Object.defineProperty(globalThis, name, { value: NoopObserver, configurable: true, writable: true });
+  }
+  let root: any;
+  try {
+    const host = win.document.createElement('div'); win.document.body.appendChild(host);
+    const { createRoot } = await import('react-dom/client'); root = createRoot(host as any);
+    await act(async () => root.render(<><LucyToolSheetHost /><MasterTableSheetButton tone="dark" isMasterMode /></>));
+
+    const orb = host.querySelector('[data-master-table-sheet-button]') as any;
+    await act(async () => {
+      orb.dispatchEvent(new win.MouseEvent('click', { bubbles: true, detail: 1 }));
+      await new Promise(resolve => setTimeout(resolve, 20));
+    });
+    assert.ok(win.document.querySelector('[data-master-table-sheet-variant="divination"]'), 'the orb still opens the divination tools cabinet');
+    assert.equal(orb.getAttribute('aria-expanded'), 'true');
+  } finally {
+    if (root) await act(async () => root.unmount());
+    for (const [key, descriptor] of saved) {
+      if (descriptor) Object.defineProperty(globalThis, key, descriptor);
+      else delete (globalThis as any)[key];
+    }
+    await win.happyDOM.close();
+  }
 });
 
 test('the header shows the orb plus the engine pencil only in the pro mode', () => {
