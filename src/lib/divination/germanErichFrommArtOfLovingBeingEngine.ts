@@ -14,7 +14,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_ERICH_FROMM_VERSION = 'LUCKEY-ERICH-FROMM-LOVE-BEING-v2.5.0';
+export const GERMAN_ERICH_FROMM_VERSION = 'LUCKEY-ERICH-FROMM-LOVE-BEING-v2.6.0';
 
 export interface FrommTheme {
   themeKey: string;
@@ -53,6 +53,7 @@ export interface GermanErichFrommArtOfLovingBeingResult {
     alignmentState: string;
     integratedAction: string;
   };
+  frommCrossAxis: string;
   ritualAction: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
@@ -198,9 +199,12 @@ export function calculateGermanErichFrommArtOfLovingBeing(
     ? `"${trimmedQuery}"라는 관계와 삶의 자리에서 '${activeFrommTheme.themeTitleKo}'을 실천한다면, 무언가를 소유하려는 불안을 내려놓고 오늘 먼저 건네고 싶은 배려와 존중은 무엇인가요?`
     : `'${activeFrommTheme.themeTitleKo}'의 관점에서 지금 내 삶을 비춰볼 때, 소유보다 존재의 충만함을 선택해 먼저 표현하고 싶은 따뜻함은 무엇인가요?`;
 
+  const calculatedAtKst = formatFrommKstTimestamp(now);
+  const frommCrossAxis = `[${activeFrommTheme.themeTitleKo.split('—')[0].trim()}] × [${focalFrommAphorism.sourceContext}] × [${frommSynthesisMatrix.alignmentState}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
     engineVersion: GERMAN_ERICH_FROMM_VERSION,
-    calculatedAtKst: formatFrommKstTimestamp(now),
+    calculatedAtKst,
     activeCareAndResponsibilityIndex,
     respectAndKnowledgeWisdomScore,
     beingModeFulfillmentIndex,
@@ -213,6 +217,7 @@ export function calculateGermanErichFrommArtOfLovingBeing(
       philosophicalCounsel,
     },
     frommSynthesisMatrix,
+    frommCrossAxis,
     ritualAction: focalFrommAphorism.actionGuidance,
     reflectionFocus: activeFrommTheme.practicalCounsel,
     reflectiveQuestion,
@@ -246,6 +251,7 @@ export function formatGermanErichFrommArtOfLovingBeingPrompt(
       `- 통합 실천: ${res.frommSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 4중 교차 축: ${res.frommCrossAxis}`);
   lines.push(`- 성찰 초점: ${res.reflectionFocus}`);
   lines.push(`- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`);
   lines.push(`- 해석 경계: 에리히 프롬의 능동적 사랑·존재 양식(Being) 상징을 빌린 정성적 관계 성찰 관점이며, 심리 진단이나 미래 단정이 아닙니다.`);

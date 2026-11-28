@@ -8705,6 +8705,7 @@ test('Erich Fromm Art of Loving Being Engine: calculates Active Care, Respect & 
   assert(rep.activeFrommTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.frommSynthesisMatrix?.integratedAction));
+  assert(rep.frommCrossAxis.includes('×'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGermanErichFrommArtOfLovingBeingPrompt(rep);
@@ -8712,6 +8713,7 @@ test('Erich Fromm Art of Loving Being Engine: calculates Active Care, Respect & 
   assert(prompt.includes(rep.activeFrommTheme.themeTitleKo));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -8832,6 +8834,7 @@ test('Albert Schweitzer Reverence for Life Engine: calculates Reverence for Life
   assert(rep.activeSchweitzerTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.schweitzerSynthesisMatrix?.integratedAction));
+  assert(rep.schweitzerCrossAxis.includes('×'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGermanAlbertSchweitzerReverenceForLifePrompt(rep);
@@ -8839,6 +8842,7 @@ test('Albert Schweitzer Reverence for Life Engine: calculates Reverence for Life
   assert(prompt.includes(rep.activeSchweitzerTheme.themeTitleKo));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });
@@ -9355,6 +9359,7 @@ test('Edmund Husserl Phenomenological Reduction Engine: calculates Epoché Suspe
   assert(rep.activeHusserlTheme.themeTitleKo.length > 0);
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(Boolean(rep.husserlSynthesisMatrix?.integratedAction));
+  assert(rep.husserlCrossAxis.includes('×'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatGermanEdmundHusserlPhenomenologicalReductionPrompt(rep);
@@ -9362,6 +9367,7 @@ test('Edmund Husserl Phenomenological Reduction Engine: calculates Epoché Suspe
   assert(prompt.includes(rep.activeHusserlTheme.themeTitleKo));
   assert(prompt.includes('성찰 초점'));
   assert(prompt.includes('교차 매트릭스'));
+  assert(prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100'));
   assert(!prompt.includes('%'));
 });

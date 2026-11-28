@@ -23,6 +23,8 @@ export type LiveVoiceSession = {
   acquireMic: () => Promise<boolean>;
   /** 아이폰이 마이크 전환으로 재생을 멈춘 뒤, 다시 울리게 한다. */
   wake: () => void;
+  /** 현재 출력 오디오 레벨(0~1)을 반환한다. */
+  outputLevel: () => number;
 };
 
 import { setMicCaptureActive } from './audioMixingPolicy';

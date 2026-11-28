@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_EDMUND_HUSSERL_PHENOMENOLOGY_VERSION = 'LUCKEY-EDMUND-HUSSERL-PHENOMENOLOGY-v2.5.0';
+export const GERMAN_EDMUND_HUSSERL_PHENOMENOLOGY_VERSION = 'LUCKEY-EDMUND-HUSSERL-PHENOMENOLOGY-v2.6.0';
 
 export interface HusserlTheme {
   themeKey: string;
@@ -52,6 +52,7 @@ export interface GermanEdmundHusserlPhenomenologicalReductionResult {
     alignmentState: string;
     integratedAction: string;
   };
+  husserlCrossAxis: string;
   ritualAction: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
@@ -196,9 +197,12 @@ export function calculateGermanEdmundHusserlPhenomenologicalReduction(
     ? `"${trimmedQuery}"라는 현상 앞에서 '${activeHusserlTheme.themeTitleKo}'을 적용한다면, 섣부른 짐작을 괄호에 넣고 지금 있는 그대로 바라보아야 할 본질은 무엇인가요?`
     : `'${activeHusserlTheme.themeTitleKo}'의 시선으로 오늘의 일상을 비춰볼 때, 잠시 멈춰 판단을 유보하고 새로 살피고 싶은 것은 무엇인가요?`;
 
+  const calculatedAtKst = formatHusserlKstTimestamp(now);
+  const husserlCrossAxis = `[${activeHusserlTheme.themeTitleKo.split('—')[0].trim()}] × [${focalHusserlAphorism.sourceContext}] × [${husserlSynthesisMatrix.alignmentState}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
     engineVersion: GERMAN_EDMUND_HUSSERL_PHENOMENOLOGY_VERSION,
-    calculatedAtKst: formatHusserlKstTimestamp(now),
+    calculatedAtKst,
     phenomenologicalEpochéScore,
     returnToThingsThemselvesIndex,
     essentialWesensschauScore,
@@ -211,6 +215,7 @@ export function calculateGermanEdmundHusserlPhenomenologicalReduction(
       philosophicalCounsel,
     },
     husserlSynthesisMatrix,
+    husserlCrossAxis,
     ritualAction: focalHusserlAphorism.actionGuidance,
     reflectionFocus: activeHusserlTheme.practicalCounsel,
     reflectiveQuestion,
@@ -243,6 +248,7 @@ export function formatGermanEdmundHusserlPhenomenologicalReductionPrompt(
       `- 통합 실천: ${res.husserlSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 4중 교차 축: ${res.husserlCrossAxis}`);
   lines.push(`- 성찰 초점: ${res.reflectionFocus}`);
   lines.push(`- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`);
   lines.push(`- 해석 경계: 후설의 판단중지(에포케)·본질직관·생활세계 상징을 빌린 정성적 성찰 관점이며, 개인 평가나 미래 단정이 아닙니다.`);
