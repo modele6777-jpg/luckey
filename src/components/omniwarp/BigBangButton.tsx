@@ -2320,20 +2320,26 @@ export function BigBangButton() {
                   ) : guideBadgePhase !== 'hidden' && !isPressing && !isCosmicSuctionActive && activePhase === 'idle' ? (
                     /* 💬 가이드를 탭했을 때만 말줄임표(…)가 잠깐 떴다 저절로 사라진다 (평상시·앱 재시작엔 없다).
                        배너 설정과 무관하게 늘 보인다 — 설정 때문에 조용히 사라지는 경우를 없앤다.
-                       사용자 지시(2026-11-28): "물음표 대신에 …으로 표시해줘" → 물음표 대신 말줄임표 문양. */
+                       사용자 지시(2026-11-28): "물음표 대신에 …으로 표시해줘" → 물음표 대신 말줄임표 문양.
+                       사용자 지시(2026-11-28): "…이 나올때 점의 크기를 평상시 .으로 맞추고 버튼 중앙으로 맞춰줘"
+                       → 글자 글리프 대신 평상시 중앙 점(w-2.5 h-2.5)과 똑같은 점 3개를 flex로 정중앙에 놓는다. */
                     <span
                       data-bigbang-guide-badge="ellipsis"
                       data-bigbang-guide-badge-phase={guideBadgePhase}
                       aria-label="스마트 가이드 안내 중"
-                      className={`relative -rotate-45 select-none font-black leading-[0.6] text-cyan-100 drop-shadow-[0_0_9px_rgba(34,211,238,0.95)] transition-all ease-out ${
+                      className={`relative -rotate-45 inline-flex items-center justify-center gap-1 leading-none select-none drop-shadow-[0_0_9px_rgba(34,211,238,0.95)] transition-all ease-out ${
                         guideBadgePhase === 'fading' ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
                       }`}
-                      style={{
-                        fontSize: 24,
-                        textShadow: '0 0 10px rgba(34,211,238,0.85)',
-                        transitionDuration: `${SMART_GUIDE_BADGE_FADE_MS}ms`,
-                      }}
-                    >…</span>
+                      style={{ transitionDuration: `${SMART_GUIDE_BADGE_FADE_MS}ms` }}
+                    >
+                      {[0, 1, 2].map((dotIndex) => (
+                        <span
+                          key={`guide-dot-${dotIndex}`}
+                          data-bigbang-guide-dot="true"
+                          className="block w-2.5 h-2.5 rounded-full bg-cyan-300/80 blur-[1px]"
+                        />
+                      ))}
+                    </span>
                   ) : centerGesture === 'tap' ? (
                     <svg data-bigbang-center-gesture="tap" width="25" height="25" viewBox="0 0 26 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" className="-rotate-45 text-cyan-200" aria-hidden="true">
                       {[0, 120, 240].map(angle => <path key={angle} d="M13 14C9 12 5 8 7 5C9 2 12 4 13 6C14 4 17 2 19 5C21 8 17 12 13 14Z" transform={`rotate(${angle} 13 14)`} fill="currentColor" fillOpacity="0.18" />)}
