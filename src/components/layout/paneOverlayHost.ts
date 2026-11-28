@@ -33,7 +33,12 @@ const canvasHostElement = () =>
 export function usePaneOverlayHost(pane: OverlayPane, scope: OverlayHostScope = 'pane'): HTMLElement | null {
   const [host, setHost] = useState<HTMLElement | null>(null);
   useLayoutEffect(() => {
-    if (pane === 'main' || typeof document === 'undefined') {
+    // Only a pane-scoped overlay has to stay out of `main`. A canvas dialog must
+    // still reach the app frame on the folded cover screen and on a standalone
+    // page, where no `[data-workspace-pane]` exists and the pane is reported as
+    // `main` — skipping the frame there is what let the pane-less fallback in
+    // `useMainOverlayViewport` decide the dialog's size.
+    if (typeof document === 'undefined' || (pane === 'main' && scope === 'pane')) {
       setHost(previous => (previous === null ? previous : null));
       return;
     }
@@ -56,6 +61,8 @@ export interface CanvasBox {
 }
 
 const EPSILON = 2;
+/** How far a screen-edge rail may sit past a frame that iOS reported too narrow. */
+const RAIL_OVERHANG_MAX = 96;
 
 interface RectLike { left: number; top: number; right: number; bottom: number; width: number; height: number }
 
@@ -70,6 +77,15 @@ export function canvasBoxFromRects(hostRect: RectLike, navRect: RectLike | null)
   const railOnRight = Math.abs(hostRect.right - navRect.right) <= EPSILON
     && navRect.left - hostRect.left > 1
     && navRect.width < hostRect.width * 0.6;
+  // A rail fixed to the screen edge can sit slightly past its own frame when iOS
+  // reports a frame narrower than the screen (`right: 0` follows the screen).
+  // The popup still stops at the rail rather than growing under it.
+  const railOverhangsRight = !railOnRight
+    && navRect.right - hostRect.right > EPSILON
+    && navRect.right - hostRect.right < RAIL_OVERHANG_MAX
+    && navRect.left > hostRect.left + 1
+    && navRect.left < hostRect.right
+    && navRect.width < hostRect.width * 0.6;
   const railOnLeft = Math.abs(navRect.left - hostRect.left) <= EPSILON
     && hostRect.right - navRect.right > 1
     && navRect.width < hostRect.width * 0.6;
@@ -79,7 +95,7 @@ export function canvasBoxFromRects(hostRect: RectLike, navRect: RectLike | null)
   const railOnTop = Math.abs(navRect.top - hostRect.top) <= EPSILON
     && hostRect.bottom - navRect.bottom > 1
     && navRect.height < hostRect.height * 0.6;
-  if (railOnRight) box.right = Math.max(0, Math.round(hostRect.right - navRect.left));
+  if (railOnRight || railOverhangsRight) box.right = Math.max(0, Math.round(hostRect.right - navRect.left));
   else if (railOnLeft) box.left = Math.max(0, Math.round(navRect.right - hostRect.left));
   else if (railOnBottom) box.bottom = Math.max(0, Math.round(hostRect.bottom - navRect.top));
   else if (railOnTop) box.top = Math.max(0, Math.round(navRect.bottom - hostRect.top));
@@ -119,7 +135,10 @@ export function useCanvasLayerBox(host: HTMLElement | null): CanvasBox | null {
     const nav = document.querySelector<HTMLElement>(NAV_SELECTOR);
     const update = () => {
       const next = readCanvasBox(host);
-      setBox(previous => (sameBox(previous, next) ? previous : next));
+      // A frame that reports no size for a frame mid-fold must not pin the layer
+      // to the screen corner: without a box the layer fills its host instead.
+      const usable = next.width > 0 && next.height > 0 ? next : null;
+      setBox(previous => (sameBox(previous, usable) ? previous : usable));
     };
     update();
     const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null;
