@@ -159,6 +159,11 @@ test('the question-mark icon opens a sheet with the two switches', () => {
   // 기존 가이드(BookOpen)와 구분되는 물음표 아이콘
   assert.match(SETTINGS_UI, /HelpCircle/);
   assert.match(SETTINGS_UI, /data-smart-guide-settings-button="true"/);
+  // 설정 창은 사이드 메뉴를 뺀 본문 캔버스에만 가운데 정렬된다.
+  assert.match(SETTINGS_UI, /useMainOverlayViewport\('main'\)/);
+  assert.match(SETTINGS_UI, /data-smart-guide-settings-frame=\{confined \? 'canvas' : 'viewport'\}/);
+  assert.doesNotMatch(SETTINGS_UI, /fixed inset-0/);
+
   assert.match(SETTINGS_UI, /data-smart-guide-enabled=\{active \? 'true' : 'false'\}/);
   assert.match(SETTINGS_UI, /aria-pressed=\{active\}/);
   // 켜짐 상태는 접근성 속성에 남기고, 버튼 자체에는 점/발광 표시를 두지 않는다. 활성 테두리는 공유 Lucy 헤더가 적용한다.

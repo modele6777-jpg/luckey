@@ -14,6 +14,7 @@
 import { useEffect, useState } from 'react';
 import { HelpCircle, X } from 'lucide-react';
 import { ScreenPortal } from '@/components/layout/ScreenPortal';
+import { useMainOverlayViewport } from '@/hooks/useMainOverlayViewport';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import {
   DEFAULT_SMART_GUIDE_SETTINGS,
@@ -74,6 +75,11 @@ function SettingsSwitch({ on, label, onToggle, disabled = false }: { on: boolean
 export function SmartGuideSettingsSheet({ onClose }: { onClose: () => void }) {
   const settings = useSmartGuideSettings();
   const douserActive = useGuideDouserActive();
+  // 사이드 메뉴(.sites-pinned-sidebar)를 뺀 본문 캔버스 기준으로 가운데에 띄운다.
+  const viewport = useMainOverlayViewport('main');
+  const paneWidth = Number(viewport.width) || 0;
+  const paneHeight = Number(viewport.height) || 0;
+  const confined = paneWidth >= 48 && paneHeight >= 48;
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
@@ -90,7 +96,14 @@ export function SmartGuideSettingsSheet({ onClose }: { onClose: () => void }) {
 
   return (
     <ScreenPortal>
-      <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/45 p-4 backdrop-blur-[2px]" onClick={onClose}>
+      <div
+        className="fixed z-[70] flex items-center justify-center bg-black/45 p-4 backdrop-blur-[2px]"
+        data-smart-guide-settings-frame={confined ? 'canvas' : 'viewport'}
+        style={confined
+          ? { left: viewport.left, top: viewport.top, width: viewport.width, height: viewport.height }
+          : { left: 0, top: 0, right: 0, bottom: 0 }}
+        onClick={onClose}
+      >
         <div
           role="dialog"
           aria-modal="true"
