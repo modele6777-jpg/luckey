@@ -1237,7 +1237,7 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
                   >
                     {isAutoRead ? (
                       <>
-                        <Volume2 size={13} className="text-cyan-300 animate-pulse shrink-0" />
+                        <Volume2 size={13} className="shrink-0" />
                         <span className="text-[11px]">자동읽기 ON</span>
                       </>
                     ) : (
@@ -1658,11 +1658,12 @@ export const LucyQuickChatBubble: React.FC<LucyQuickChatBubbleProps> = ({
                         : 'bg-slate-800/80 text-slate-400 border border-slate-700 hover:text-slate-200'
                     }`}
                     style={{ color: isAutoRead ? '#67e8f9' : '#94a3b8' }}
+                    aria-pressed={isAutoRead}
                     title={isAutoRead ? '자동읽기 켜짐 (한 번 더 누르면 즉시 끄기)' : '자동읽기 꺼짐 (누르면 켜기)'}
                     aria-label={isAutoRead ? '자동읽기 켜짐' : '자동읽기 꺼짐'}
                   >
                     {isAutoRead ? (
-                      <Volume2 size={14} className="animate-pulse text-cyan-300" />
+                      <Volume2 size={14} />
                     ) : (
                       <VolumeX size={14} />
                     )}

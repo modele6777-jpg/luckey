@@ -1820,6 +1820,8 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
             {/* 자동 낭독 토글 스위치 버튼 */}
             <button
               type="button"
+              data-auto-tts-toggle="true"
+              aria-pressed={isAutoTtsEnabled}
               onClick={toggleAutoTts}
               className={`px-2.5 py-1.5 rounded-xl border text-[11px] sm:text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm ${
                 isAutoTtsEnabled
@@ -1830,7 +1832,7 @@ export function TrinityDestinyReportView({ onConsult }: TrinityDestinyReportView
             >
               {isAutoTtsEnabled ? (
                 <>
-                  <Volume2 size={13} className="text-amber-400 animate-pulse" />
+                  <Volume2 size={13} />
                   <span>자동 낭독 ON</span>
                 </>
               ) : (

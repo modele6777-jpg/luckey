@@ -4586,12 +4586,12 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             >
               {isAutoTts ? (
                 <>
-                  <Volume2 size={15} className={isLight ? 'text-slate-500 shrink-0' : 'text-white/85 shrink-0'} />
+                  <Volume2 size={15} className="shrink-0" />
                   <span className="hidden xs:inline">자동읽기 ON</span>
                 </>
               ) : (
                 <>
-                  <VolumeX size={15} className={isLight ? 'text-slate-400 shrink-0' : 'text-white/75 shrink-0'} />
+                  <VolumeX size={15} className="shrink-0" />
                   <span className="hidden xs:inline">자동읽기 OFF</span>
                 </>
               )}
