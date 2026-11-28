@@ -113,6 +113,14 @@
 .screen-portal[data-rail-edge='right'] { --overlay-inset-right: 0px; }
 .screen-portal[data-rail-edge='bottom'] { --overlay-inset-bottom: 0px; }
 .screen-portal[data-rail-edge='left'] { --overlay-inset-left: 0px; }
+/* Unfolded portrait is two stacked screens. A popup on one half must not spend
+   the other half's safe-area inset (status bar above, home indicator below). */
+html.duo-unfolded-portrait :is(.screen-portal, .duo-portal)[data-portrait-half='upper'] {
+  --overlay-inset-bottom: 0px;
+}
+html.duo-unfolded-portrait :is(.screen-portal, .duo-portal)[data-portrait-half='lower'] {
+  --overlay-inset-top: 0px;
+}
 .duo-portal > .fixed.inset-0 {
   padding: max(.5rem, var(--overlay-inset-top)) max(.75rem, var(--overlay-inset-right)) max(.5rem, var(--overlay-inset-bottom)) max(.75rem, var(--overlay-inset-left));
 }

@@ -79,6 +79,11 @@ export interface CanvasBox {
    * filling the canvas beside it must not subtract the same inset again.
    */
   railEdge?: RailEdge;
+  /**
+   * Unfolded portrait only: which stacked half this popup belongs to.
+   * Landscape and the folded cover stay one canvas beside the rail.
+   */
+  portraitHalf?: 'upper' | 'lower';
 }
 
 export type RailEdge = 'top' | 'right' | 'bottom' | 'left' | 'none';
@@ -150,14 +155,47 @@ const boxSize = (hostRect: RectLike, box: CanvasBox) => ({
 
 const sameBox = (a: CanvasBox | null, b: CanvasBox | null) => Boolean(a && b)
   && a!.left === b!.left && a!.top === b!.top && a!.right === b!.right && a!.bottom === b!.bottom
-  && a!.width === b!.width && a!.height === b!.height && a!.railEdge === b!.railEdge;
+  && a!.width === b!.width && a!.height === b!.height && a!.railEdge === b!.railEdge
+  && (a!.portraitHalf ?? 'none') === (b!.portraitHalf ?? 'none');
+
+/**
+ * Unfolded portrait stacks two screens. A popup opened on one of them must
+ * cover that half only — not the other half, and not the navigation row.
+ * The box stays in host coordinates so the layer can keep living on the app
+ * frame. Landscape and the folded cover never call this.
+ */
+export function clipCanvasBoxToPane(hostRect: RectLike, box: CanvasBox, paneRect: RectLike | null): CanvasBox {
+  if (!paneRect || paneRect.width < 1 || paneRect.height < 1 || hostRect.width < 1 || hostRect.height < 1) return box;
+  const canvasLeft = hostRect.left + box.left;
+  const canvasTop = hostRect.top + box.top;
+  const canvasRight = hostRect.right - box.right;
+  const canvasBottom = hostRect.bottom - box.bottom;
+  const left = Math.max(canvasLeft, paneRect.left);
+  const top = Math.max(canvasTop, paneRect.top);
+  const right = Math.min(canvasRight, paneRect.right);
+  const bottom = Math.min(canvasBottom, paneRect.bottom);
+  if (right - left < 48 || bottom - top < 48) return box;
+  const paneMid = (paneRect.top + paneRect.bottom) / 2;
+  const hostMid = (hostRect.top + hostRect.bottom) / 2;
+  return {
+    left: Math.max(0, Math.round(left - hostRect.left)),
+    top: Math.max(0, Math.round(top - hostRect.top)),
+    right: Math.max(0, Math.round(hostRect.right - right)),
+    bottom: Math.max(0, Math.round(hostRect.bottom - bottom)),
+    width: Math.max(0, Math.round(right - left)),
+    height: Math.max(0, Math.round(bottom - top)),
+    railEdge: box.railEdge,
+    portraitHalf: paneMid < hostMid ? 'upper' : 'lower',
+  };
+}
 
 /**
  * Keep the dialog box in step with the shell, the rail and a fold or rotation.
  * The box is expressed inside the host, so it never depends on `visualViewport`
  * or on any other element's width.
+ * In unfolded portrait the box is clipped to the pane that opened the popup.
  */
-export function useCanvasLayerBox(host: HTMLElement | null): CanvasBox | null {
+export function useCanvasLayerBox(host: HTMLElement | null, pane: OverlayPane = 'main'): CanvasBox | null {
   const [box, setBox] = useState<CanvasBox | null>(null);
   useLayoutEffect(() => {
     if (!host || typeof document === 'undefined') {
@@ -166,7 +204,12 @@ export function useCanvasLayerBox(host: HTMLElement | null): CanvasBox | null {
     }
     const nav = document.querySelector<HTMLElement>(NAV_SELECTOR);
     const update = () => {
-      const next = readCanvasBox(host);
+      const measured = readCanvasBox(host);
+      const portraitSplit = document.documentElement.classList.contains('duo-unfolded-portrait');
+      const paneNode = portraitSplit && pane !== 'main' ? paneElement(pane) : null;
+      const next = paneNode
+        ? clipCanvasBoxToPane(host.getBoundingClientRect(), measured, paneNode.getBoundingClientRect())
+        : measured;
       // A frame that reports no size for a frame mid-fold must not pin the layer
       // to the screen corner: without a box the layer fills its host instead.
       const usable = next.width > 0 && next.height > 0 ? next : null;
@@ -176,6 +219,10 @@ export function useCanvasLayerBox(host: HTMLElement | null): CanvasBox | null {
     const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null;
     observer?.observe(host);
     if (nav) observer?.observe(nav);
+    const sourcePane = pane !== 'main' ? paneElement(pane) : null;
+    if (sourcePane) observer?.observe(sourcePane);
+    const classObserver = new MutationObserver(update);
+    classObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     window.addEventListener('resize', update);
     window.addEventListener('orientationchange', update);
     // Folding animates the shell and the rail; re-read once the transition settles.
@@ -183,12 +230,13 @@ export function useCanvasLayerBox(host: HTMLElement | null): CanvasBox | null {
     const settleAgain = window.setTimeout(update, 320);
     return () => {
       observer?.disconnect();
+      classObserver.disconnect();
       window.removeEventListener('resize', update);
       window.removeEventListener('orientationchange', update);
       window.clearTimeout(settle);
       window.clearTimeout(settleAgain);
     };
-  }, [host]);
+  }, [host, pane]);
   return box;
 }
 

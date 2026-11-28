@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
-import { canvasBoxFromRects, paneLayerStyle } from '../src/components/layout/paneOverlayHost.ts';
+import { canvasBoxFromRects, clipCanvasBoxToPane, paneLayerStyle } from '../src/components/layout/paneOverlayHost.ts';
 
 const read = (path: string) => readFileSync(new URL(`../src/${path}`, import.meta.url), 'utf8');
 const duoWorkspace = read('components/layout/DuoWorkspace.tsx');
+const screenPortal = read('components/layout/ScreenPortal.tsx');
 const paneHost = read('components/layout/paneOverlayHost.ts');
 const styles = read('styles/duo-workspace.css');
 const indexStyles = read('index.css');
@@ -76,9 +77,35 @@ test('the rail edge of the canvas is marked so the dialog never takes that inset
   assert.match(styles, /max-height: calc\(var\(--overlay-height, 100dvh\) - var\(--overlay-inset-top, 0px\) - var\(--overlay-inset-bottom, 0px\) - 2rem\)/);
 });
 
+test('an unfolded portrait popup fills only the half that opened it', () => {
+  const host = { left: 0, top: 0, right: 461, bottom: 844, width: 461, height: 844 };
+  const rail = { left: 0, top: 790, right: 461, bottom: 844, width: 461, height: 54 };
+  const canvas = { ...canvasBoxFromRects(host, rail), width: 461, height: 790 };
+  const upperPane = { left: 0, top: 0, right: 461, bottom: 395, width: 461, height: 395 };
+  const lowerPane = { left: 0, top: 395, right: 461, bottom: 790, width: 461, height: 395 };
+  const upper = clipCanvasBoxToPane(host, canvas, upperPane);
+  const lower = clipCanvasBoxToPane(host, canvas, lowerPane);
+  assert.equal(upper.top, 0);
+  assert.equal(upper.height, 395);
+  assert.equal(upper.bottom, 844 - 395);
+  assert.equal(upper.portraitHalf, 'upper');
+  assert.equal(lower.top, 395);
+  assert.equal(lower.bottom, 54, 'the lower half still stops above the bottom navigation');
+  assert.equal(lower.portraitHalf, 'lower');
+  assert.equal(lower.height, 395);
+  // Swapping the panes must follow the element, not the content/lucy name.
+  const swapped = clipCanvasBoxToPane(host, canvas, { left: 0, top: 0, right: 461, bottom: 395, width: 461, height: 395 });
+  assert.equal(swapped.portraitHalf, 'upper');
+  assert.match(paneHost, /clipCanvasBoxToPane/);
+  assert.match(paneHost, /duo-unfolded-portrait/);
+  assert.match(screenPortal, /useCanvasLayerBox\(paneHost, pane\)/);
+  assert.match(styles, /data-portrait-half='upper'/);
+  assert.match(styles, /data-portrait-half='lower'/);
+});
+
 test('a canvas box fills the layer while a pane host keeps percentage filling', () => {
   assert.match(duoWorkspace, /const viewportStyle = useMainOverlayViewport\('main'\)/);
-  assert.match(duoWorkspace, /const canvasBox = useCanvasLayerBox\(paneHost\)/);
+  assert.match(duoWorkspace, /const canvasBox = useCanvasLayerBox\(paneHost, pane\)/);
   const layer = paneLayerStyle({
     left: 120, top: 0, width: 400, height: 300, right: 'auto', bottom: 'auto',
     '--overlay-width': '400px', '--overlay-height': '900px',

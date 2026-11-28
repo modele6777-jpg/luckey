@@ -24,9 +24,10 @@ export function WorkspacePortal({ children, onClose, scope = 'canvas' }: { child
   const pane = useOverlayPane(portalRef, host);
   // Canvas remains the safe default for generic dialogs. A modal that must stay
   // inside its source app can opt into that pane and use its measured rectangle.
+  // Unfolded portrait still clips a canvas dialog to the half that opened it.
   const paneHost = usePaneOverlayHost(pane, scope);
-  // Canvas dialogs exclude the fixed rail; pane dialogs measure their own pane.
-  const canvasBox = useCanvasLayerBox(paneHost);
+  // Canvas dialogs exclude the fixed rail; portrait halves clip to the source pane.
+  const canvasBox = useCanvasLayerBox(paneHost, pane);
   useLayoutEffect(() => { setHostKey(paneHost); }, [paneHost]);
   const viewportStyle = useMainOverlayViewport('main');
   const closeRef = useRef(onClose);
@@ -96,7 +97,7 @@ export function WorkspacePortal({ children, onClose, scope = 'canvas' }: { child
   return createPortal(
     <OverlayPaneContext.Provider value={pane}>
       <ScreenOverlayContext.Provider value={layers}>
-        <div ref={portalRef} className="duo-portal" data-overlay-scope={scope} data-responsive-canvas="true" data-rail-edge={canvasBox?.railEdge ?? 'none'} style={paneHost ? paneLayerStyle(viewportStyle, canvasBox) : viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
+        <div ref={portalRef} className="duo-portal" data-overlay-scope={scope} data-responsive-canvas="true" data-rail-edge={canvasBox?.railEdge ?? 'none'} data-portrait-half={canvasBox?.portraitHalf ?? 'none'} style={paneHost ? paneLayerStyle(viewportStyle, canvasBox) : viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
       </ScreenOverlayContext.Provider>
     </OverlayPaneContext.Provider>, paneHost ?? document.body
   );

@@ -115,14 +115,14 @@ export function ScreenPortal({ children }: { children: ReactNode }) {
   // Dialogs fill the app frame beside the navigation rail, not the pane they
   // were opened from and not the strip the rail paints over.
   const paneHost = usePaneOverlayHost(pane, 'canvas');
-  const canvasBox = useCanvasLayerBox(paneHost);
+  const canvasBox = useCanvasLayerBox(paneHost, pane);
   useLayoutEffect(() => { setHostKey(paneHost); }, [paneHost]);
   const viewportStyle = useMainOverlayViewport('main');
   if (typeof document === 'undefined') return null;
   return createPortal(
     <OverlayPaneContext.Provider value={pane}>
       <ScreenOverlayContext.Provider value={layers}>
-        <div ref={ref} className="screen-portal" data-responsive-canvas="true" data-overlay-scope="canvas" data-rail-edge={canvasBox?.railEdge ?? 'none'} style={paneHost ? paneLayerStyle(viewportStyle, canvasBox) : viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
+        <div ref={ref} className="screen-portal" data-responsive-canvas="true" data-overlay-scope="canvas" data-rail-edge={canvasBox?.railEdge ?? 'none'} data-portrait-half={canvasBox?.portraitHalf ?? 'none'} style={paneHost ? paneLayerStyle(viewportStyle, canvasBox) : viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
       </ScreenOverlayContext.Provider>
     </OverlayPaneContext.Provider>,
     paneHost ?? document.body,
