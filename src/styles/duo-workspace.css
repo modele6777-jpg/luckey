@@ -344,8 +344,11 @@ html:root:root :is(.screen-portal, .duo-portal) :is(#tarot-stage-container, #tod
   min-height: 0;
   max-height: max(3rem, calc(var(--overlay-height) - 2rem)) !important;
 }
-/* Only the two Tarot inspection dialogs fill their safe-area-padded active app pane in expanded portrait Duo. */
-html.duo-unfolded-portrait .duo-portal[data-overlay-scope='pane'] > .fixed.inset-0 > .duo-tarot-portrait-fill {
+/* The two Tarot inspection dialogs fill the canvas their layer measured — the
+   app frame minus the rail — on the folded cover screen and on every Duo
+   layout. The layer already carries the safe-area padding, so 100% of it is
+   exactly the visible popup area the user asked to fill. */
+html:root :is(.screen-portal, .duo-portal) > .fixed.inset-0 > .duo-tarot-portrait-fill {
   height: 100% !important;
   max-height: 100% !important;
   width: 100% !important;

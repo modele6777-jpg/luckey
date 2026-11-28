@@ -67,17 +67,27 @@ test('canvas dialog layer fills the host and keeps phone gutters', () => {
   assert.match(styles, /@media \(min-width: 640px\) \{\s*\.duo-portal > \.fixed\.inset-0 \{/);
 });
 
-test('only the two Tarot dialogs fill the safe-area-padded active pane in expanded portrait Duo', () => {
-  const rule = styles.match(/html\.duo-unfolded-portrait \.duo-portal\[data-overlay-scope='pane'\] > \.fixed\.inset-0 > \.duo-tarot-portrait-fill\s*\{[^}]*\}/)?.[0] ?? '';
+test('the two Tarot dialogs use the canvas host, never a pane', () => {
+  // v1.8.669: the pane scope left the deck-back and card-detail popups sized by
+  // the pane they were opened from, which on the folded cover screen was a main
+  // narrower than the frame — the popup stopped short of the rail with a dark
+  // strip on its right. Both dialogs are now plain canvas dialogs like every
+  // other WorkspacePortal in the app.
+  assert.doesNotMatch(backModal, /scope="pane"/, 'the deck-back popup uses the canvas host');
+  assert.doesNotMatch(zoomModal, /scope="pane"/, 'the card-detail popup uses the canvas host');
+  assert.match(backModal, /<WorkspacePortal onClose=\{onClose\}>/);
+  assert.match(zoomModal, /<WorkspacePortal onClose=\{onClose\}>/);
+  assert.match(backModal, /duo-dialog-panel[^\"]*duo-tarot-portrait-fill/);
+  assert.match(zoomModal, /duo-dialog-panel[^\"]*duo-tarot-portrait-fill/);
+});
+
+test('only the two Tarot dialogs fill the whole measured canvas in every layout', () => {
+  const rule = styles.match(/html:root :is\(\.screen-portal, \.duo-portal\) > \.fixed\.inset-0 > \.duo-tarot-portrait-fill\s*\{[^}]*\}/)?.[0] ?? '';
   assert.match(rule, /height: 100% !important/);
   assert.match(rule, /max-height: 100% !important/);
   assert.match(rule, /width: 100% !important/);
   assert.match(rule, /max-width: 100% !important/);
-  assert.match(backModal, /<WorkspacePortal onClose=\{onClose\} scope="pane">/);
-  assert.match(zoomModal, /<WorkspacePortal onClose=\{onClose\} scope="pane">/);
-  assert.match(backModal, /duo-dialog-panel[^\"]*duo-tarot-portrait-fill/);
-  assert.match(zoomModal, /duo-dialog-panel[^\"]*duo-tarot-portrait-fill/);
-  assert.match(styles, /padding: max\(\.5rem, env\(safe-area-inset-top, 0px\)\)[^;]*max\(\.5rem, env\(safe-area-inset-bottom, 0px\)\)/);
+  assert.doesNotMatch(styles, /duo-unfolded-portrait \.duo-portal\[data-overlay-scope='pane'\] > \.fixed\.inset-0 > \.duo-tarot-portrait-fill/, 'the fill no longer depends on the pane scope or on one Duo layout');
   assert.match(paneHost, /railOnBottom/);
   assert.match(styles, /\.duo-dialog-body \{ min-height: 0; overflow-y: auto;/);
   assert.match(backModal, /flex-1 min-h-0 overflow-y-auto no-scrollbar[^\"]*duo-dialog-body/);
