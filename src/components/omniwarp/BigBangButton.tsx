@@ -2317,8 +2317,9 @@ export function BigBangButton() {
                     <Clover data-bigbang-center-gesture="hold" size={25} strokeWidth={1.8} className="-rotate-45 text-cyan-200" aria-hidden="true" />
                   ) : centerGesture === 'double' ? (
                     <KeyRound data-bigbang-center-gesture="double" size={25} strokeWidth={1.8} className="-rotate-45 text-cyan-200" aria-hidden="true" />
-                  ) : guideBadgePhase !== 'hidden' && guidePresentation.banner && !isPressing && !isCosmicSuctionActive && activePhase === 'idle' ? (
-                    /* ❓ 가이드를 탭했을 때만 물음표가 잠깐 떴다 저절로 사라진다 (평상시·앱 재시작엔 없다). */
+                  ) : guideBadgePhase !== 'hidden' && !isPressing && !isCosmicSuctionActive && activePhase === 'idle' ? (
+                    /* ❓ 가이드를 탭했을 때만 물음표가 잠깐 떴다 저절로 사라진다 (평상시·앱 재시작엔 없다).
+                       배너 설정과 무관하게 늘 보인다 — 설정 때문에 조용히 사라지는 경우를 없앤다. */
                     <span
                       data-bigbang-guide-badge="question"
                       data-bigbang-guide-badge-phase={guideBadgePhase}
