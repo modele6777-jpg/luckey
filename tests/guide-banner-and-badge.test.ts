@@ -148,6 +148,8 @@ test('the question mark only flashes when the guide is tapped — it never stays
 
   // 타이머로 스스로 사라지고, 연속 탭·언마운트에서는 예약된 타이머를 정리한다.
   assert.match(BIGBANG, /guideBadgeFlashRef\.current = startSmartGuideBadgeFlash\(setGuideBadgePhase\)/);
+  // 사라지는 카운트는 첫 그림이 올라온 뒤에 시작한다 (기본값).
+  assert.match(read('src/lib/omniWarp/smartBigBangGuide.ts'), /requestAnimationFrame\(\(\) => requestAnimationFrame\(run\)\)/);
   assert.match(BIGBANG, /const clearGuideBadge = useCallback\(\(\) => \{\s*guideBadgeFlashRef\.current\?\.cancel\(\)/);
   const beforeGuideState = BIGBANG.slice(0, BIGBANG.indexOf('// 🧭 상하좌우 원뿔 모양'));
   assert.match(beforeGuideState, /guideBadgeFlashRef\.current\?\.cancel\(\)/, 'unmount cancels the badge timer');
@@ -168,14 +170,16 @@ test('the question mark only flashes when the guide is tapped — it never stays
 });
 
 test('the badge timer shows, fades, then hides itself — and can be restarted or cancelled', () => {
-  // 가짜 시계로 실제 타이머 흐름을 그대로 돌린다.
+  // 가짜 시계로 실제 타이머 흐름을 그대로 돌린다. (첫 그림은 이미 올라온 것으로 본다)
   const clock = fakeClock();
   const seen: SmartGuideBadgePhase[] = [];
+  const paint = (run: () => void) => run();
   const flash = startSmartGuideBadgeFlash(phase => seen.push(phase), {
     showMs: SMART_GUIDE_BADGE_MS,
     fadeMs: SMART_GUIDE_BADGE_FADE_MS,
     setTimeoutFn: clock.setTimeoutFn,
     clearTimeoutFn: clock.clearTimeoutFn,
+    afterPaintFn: paint,
   });
 
   assert.deepEqual(seen, ['shown'], '탭하면 바로 물음표가 뜬다');
@@ -198,12 +202,14 @@ test('the badge timer shows, fades, then hides itself — and can be restarted o
   const first = startSmartGuideBadgeFlash(phase => again.push(phase), {
     setTimeoutFn: restartClock.setTimeoutFn,
     clearTimeoutFn: restartClock.clearTimeoutFn,
+    afterPaintFn: paint,
   });
   restartClock.advance(SMART_GUIDE_BADGE_MS);
   first.cancel();
   const second = startSmartGuideBadgeFlash(phase => again.push(phase), {
     setTimeoutFn: restartClock.setTimeoutFn,
     clearTimeoutFn: restartClock.clearTimeoutFn,
+    afterPaintFn: paint,
   });
   restartClock.advance(SMART_GUIDE_BADGE_MS);
   assert.deepEqual(again, ['shown', 'fading', 'hidden', 'shown', 'fading', 'hidden']);
@@ -214,11 +220,50 @@ test('the badge timer shows, fades, then hides itself — and can be restarted o
   const handle = startSmartGuideBadgeFlash(phase => cancelled.push(phase), {
     setTimeoutFn: cancelClock.setTimeoutFn,
     clearTimeoutFn: cancelClock.clearTimeoutFn,
+    afterPaintFn: paint,
   });
   handle.cancel();
   cancelClock.advance(10_000);
   assert.deepEqual(cancelled, ['shown'], '취소 뒤에는 콜백이 오지 않는다');
   assert.equal(second.phase, 'hidden');
+});
+
+test('the countdown starts only after the badge has actually been painted', () => {
+  // 화면 전환 렌더로 메인 스레드가 막혀도, 물음표는 그려진 뒤에 제 시간만큼 보여야 한다.
+  const clock = fakeClock();
+  const seen: SmartGuideBadgePhase[] = [];
+  let releasePaint: (() => void) | null = null;
+  const flash = startSmartGuideBadgeFlash(phase => seen.push(phase), {
+    setTimeoutFn: clock.setTimeoutFn,
+    clearTimeoutFn: clock.clearTimeoutFn,
+    afterPaintFn: (run) => { releasePaint = run; },
+  });
+
+  assert.deepEqual(seen, ['shown'], '일단 바로 그린다');
+  clock.advance(5_000);
+  assert.deepEqual(seen, ['shown'], '아직 그려지지 않았으면 사라지지 않는다');
+  assert.equal(clock.pending(), 0, '그림 전에는 타이머도 걸지 않는다');
+
+  assert.ok(releasePaint, '첫 그림 콜백이 예약돼 있다');
+  releasePaint!();
+  clock.advance(SMART_GUIDE_BADGE_MS);
+  assert.deepEqual(seen, ['shown', 'fading', 'hidden'], '그려진 뒤에야 제 시간만큼 보이고 사라진다');
+  assert.equal(flash.phase, 'hidden');
+
+  // 그려지기 전에 취소하면 이후 타이머가 걸리지 않는다.
+  const earlyClock = fakeClock();
+  const early: SmartGuideBadgePhase[] = [];
+  let releaseLate: (() => void) | null = null;
+  const pending = startSmartGuideBadgeFlash(phase => early.push(phase), {
+    setTimeoutFn: earlyClock.setTimeoutFn,
+    clearTimeoutFn: earlyClock.clearTimeoutFn,
+    afterPaintFn: (run) => { releaseLate = run; },
+  });
+  pending.cancel();
+  releaseLate!();
+  earlyClock.advance(10_000);
+  assert.deepEqual(early, ['shown']);
+  assert.equal(earlyClock.pending(), 0);
 });
 
 test('page guide text cannot spill out of its card', () => {

@@ -317,12 +317,18 @@ export interface SmartGuideBadgeFlashOptions {
   fadeMs?: number;
   setTimeoutFn?: (handler: () => void, ms: number) => unknown;
   clearTimeoutFn?: (id: unknown) => void;
+  /**
+   * 'shown'이 실제로 화면에 그려진 뒤에 사라지는 카운트를 시작한다.
+   * 화면 전환 렌더로 메인 스레드가 막혀 있으면 타이머만 먼저 흘러
+   * 물음표가 흐려지는 순간에야 처음 보이는 일이 생기므로, 기본값은 두 프레임 뒤에 시작한다.
+   */
+  afterPaintFn?: (run: () => void) => void;
 }
 
 /**
  * 가이드를 탭했을 때만 물음표를 잠깐 띄우는 타이머.
  * 화면·DOM 없이 그대로 시험할 수 있게 순수 타이머만 다룬다.
- * - 시작하면 곧바로 'shown' → (showMs - fadeMs) 뒤 'fading' → fadeMs 뒤 'hidden'
+ * - 시작하면 곧바로 'shown' → 첫 그림이 올라온 뒤 (showMs - fadeMs) 만큼 → 'fading' → fadeMs 뒤 'hidden'
  * - cancel하면 예약된 타이머를 모두 지운다 (이후 onChange 호출 없음)
  */
 export function startSmartGuideBadgeFlash(
@@ -341,20 +347,35 @@ export function startSmartGuideBadgeFlash(
     onChange(next);
   };
 
+  let cancelled = false;
+  const afterPaint = options.afterPaintFn ?? ((run: () => void) => {
+    if (typeof requestAnimationFrame === 'function') {
+      // 한 프레임은 'shown'을 그리는 데, 다음 프레임은 그 그림이 실제로 올라온 뒤를 뜻한다.
+      requestAnimationFrame(() => requestAnimationFrame(run));
+      return;
+    }
+    run();
+  });
+
   enter('shown');
-  timer = setTimer(() => {
-    enter('fading');
+  // 첫 그림이 올라온 뒤에야 사라지는 카운트를 건다 — 렌더가 늦어도 물음표는 제 시간만큼 보인다.
+  afterPaint(() => {
+    if (cancelled) return;
     timer = setTimer(() => {
-      timer = null;
-      enter('hidden');
-    }, fadeMs);
-  }, Math.max(0, showMs - fadeMs));
+      enter('fading');
+      timer = setTimer(() => {
+        timer = null;
+        enter('hidden');
+      }, fadeMs);
+    }, Math.max(0, showMs - fadeMs));
+  });
 
   return {
     get phase() {
       return phase;
     },
     cancel() {
+      cancelled = true;
       if (timer !== null) {
         clearTimer(timer);
         timer = null;
