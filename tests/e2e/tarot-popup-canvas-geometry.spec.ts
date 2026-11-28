@@ -7,7 +7,10 @@ async function captureVisualCheck(page: Page, dialog: Locator, filename: string)
   await mkdir(directory, { recursive: true });
   await dialog.locator('.duo-dialog-body').evaluate((element) => { (element as HTMLElement).scrollTop = 0; });
   const viewport = page.viewportSize();
-  await page.screenshot({ path: `${directory}/${filename}.png`, clip: { x: 0, y: 0, width: Math.min(700, viewport?.width ?? 700), height: Math.min(450, viewport?.height ?? 450) } });
+  await page.screenshot({
+    path: `${directory}/${filename}.png`,
+    clip: { x: 0, y: 0, width: Math.min(viewport?.width ?? 700, viewport?.width ?? 700), height: Math.min(viewport?.height ?? 450, viewport?.height ?? 450) },
+  });
 }
 
 async function openTrinityTarot(page: Page, viewport = { width: 626, height: 890 }) {
@@ -79,6 +82,7 @@ async function getGeometry(dialog: Locator) {
     return {
       scope: portal.dataset.overlayScope,
       overlayPane: portal.dataset.overlayPane,
+      portalIsFrame: portal.parentElement === frame,
       portalIsContentPane: portal.parentElement === pane,
       frame: rect(frame),
       pane: rect(pane),
@@ -96,6 +100,7 @@ async function getGeometry(dialog: Locator) {
       nav: navRect,
       navOverlapArea: overlapWidth * overlapHeight,
       overlayHeight: Number.parseFloat(portalStyle.getPropertyValue('--overlay-height')) || 0,
+      overlayWidth: Number.parseFloat(portalStyle.getPropertyValue('--overlay-width')) || 0,
       bodyOverflowY: getComputedStyle(body).overflowY,
       bodyClientHeight: body.clientHeight,
       bodyScrollHeight: body.scrollHeight,
@@ -104,7 +109,27 @@ async function getGeometry(dialog: Locator) {
   });
 }
 
-async function assertPopupFillsActivePane(dialog: Locator) {
+type Rect = { left: number; top: number; right: number; bottom: number; width: number; height: number };
+
+/**
+ * The canvas a popup must fill: the app frame with the navigation rail cut from
+ * whichever screen edge it sits on. Written out here so the expectation does not
+ * simply reuse the production helper.
+ */
+function expectedCanvas(frame: Rect, nav: Rect): Rect {
+  const tolerance = 2;
+  const railOnRight = Math.abs(nav.right - frame.right) <= tolerance && nav.width < frame.width * 0.6;
+  const railOnBottom = Math.abs(nav.bottom - frame.bottom) <= tolerance && nav.height < frame.height * 0.6;
+  const railOnLeft = Math.abs(nav.left - frame.left) <= tolerance && nav.width < frame.width * 0.6;
+  const railOnTop = Math.abs(nav.top - frame.top) <= tolerance && nav.height < frame.height * 0.6;
+  if (railOnRight) return { ...frame, right: nav.left, width: nav.left - frame.left };
+  if (railOnBottom) return { ...frame, bottom: nav.top, height: nav.top - frame.top };
+  if (railOnLeft) return { ...frame, left: nav.right, width: frame.right - nav.right };
+  if (railOnTop) return { ...frame, top: nav.bottom, height: frame.bottom - nav.bottom };
+  return frame;
+}
+
+async function assertPopupFillsCanvas(dialog: Locator) {
   await expect(dialog).toBeVisible();
   await expect.poll(async () => (await getGeometry(dialog)).root.height).toBeGreaterThan(100);
   // Wait for the entrance transform to settle by observing actual rendered bounds,
@@ -118,23 +143,28 @@ async function assertPopupFillsActivePane(dialog: Locator) {
   }).toBeLessThanOrEqual(2);
 
   const before = await getGeometry(dialog);
-  expect(before.scope).toBe('pane');
+  // Both Tarot inspection popups are plain canvas dialogs: hosted on the app
+  // frame, filling the frame minus the rail, on every screen mode.
+  expect(before.scope).toBe('canvas');
   expect(before.overlayPane).toBe('content');
-  expect(before.portalIsContentPane).toBe(true);
-  for (const edge of ['left', 'top', 'right', 'bottom', 'width', 'height'] as const) {
-    expect(Math.abs(before.root[edge] - before.pane[edge]), `modal root ${edge} must match the actual active content-pane ${edge}`).toBeLessThanOrEqual(1.5);
-    expect(Math.abs(before.portal[edge] - before.pane[edge]), `portal ${edge} must match the actual active content-pane ${edge}`).toBeLessThanOrEqual(1.5);
+  expect(before.portalIsFrame, 'the popup layer is hosted on the app frame, not on a pane').toBe(true);
+  const canvas = expectedCanvas(before.frame, before.nav);
+  for (const edge of ['left', 'top', 'right', 'bottom'] as const) {
+    expect(Math.abs(before.root[edge] - canvas[edge]), `popup root ${edge} must reach the canvas edge beside the rail`).toBeLessThanOrEqual(2);
+    expect(Math.abs(before.portal[edge] - canvas[edge]), `portal ${edge} must reach the canvas edge beside the rail`).toBeLessThanOrEqual(2);
   }
-  expect(Math.abs(before.overlayHeight - before.pane.height), 'the overlay-height cap must use the measured content pane, not the full canvas').toBeLessThanOrEqual(1.5);
-  expect(before.navOverlapArea, 'the modal root must never overlap the fixed navigation').toBe(0);
+  expect(Math.abs(before.root.width - canvas.width), 'the popup uses the whole canvas width, never a narrower pane').toBeLessThanOrEqual(2);
+  expect(Math.abs(before.overlayWidth - canvas.width), 'the overlay-width cap uses the measured canvas').toBeLessThanOrEqual(2);
+  expect(Math.abs(before.overlayHeight - canvas.height), 'the overlay-height cap uses the measured canvas').toBeLessThanOrEqual(2);
+  expect(before.navOverlapArea, 'the popup must never overlap the fixed navigation').toBe(0);
   expect(before.bodyOverflowY).toBe('auto');
 
-  // The modal fills the pane's usable height after safe-area/gutter padding.
+  // The panel fills the canvas minus its safe-area gutters, on both axes.
   expect(Math.abs(before.panel.top - (before.root.top + before.padding.top))).toBeLessThanOrEqual(2);
   expect(Math.abs(before.panel.bottom - (before.root.bottom - before.padding.bottom))).toBeLessThanOrEqual(2);
   expect(Math.abs(before.panel.left - (before.root.left + before.padding.left)), 'the panel must start at the left safe gutter').toBeLessThanOrEqual(2);
   expect(Math.abs(before.panel.right - (before.root.right - before.padding.right)), 'the panel must reach the right safe gutter without leaving a blank strip').toBeLessThanOrEqual(2);
-  expect(Math.abs(before.panel.width - (before.root.width - before.padding.left - before.padding.right)), 'the panel must use the full available active-pane width').toBeLessThanOrEqual(2);
+  expect(Math.abs(before.panel.width - (before.root.width - before.padding.left - before.padding.right)), 'the panel must use the full available canvas width').toBeLessThanOrEqual(2);
 
   const body = dialog.locator('.duo-dialog-body');
   await body.evaluate((element) => {
@@ -180,7 +210,7 @@ async function swapPortraitPanes(page: Page) {
   await expect(page.locator('html')).toHaveClass(/duo-panels-swapped/);
 }
 
-test('Tarot detail and deck-back popups fill the actual portrait Duo content pane in both pane orders', async ({ page }) => {
+test('Tarot detail and deck-back popups fill the whole canvas in both pane orders', async ({ page }) => {
   await openTrinityTarot(page);
   expect(page.viewportSize()?.width, 'use the supported 626px inner portrait display instead of a desktop-like 700px canvas').toBe(626);
   const root = page.locator('html');
@@ -189,13 +219,13 @@ test('Tarot detail and deck-back popups fill the actual portrait Duo content pan
   const deckBackLauncher = page.locator('#duo-content-viewport button[title*="타로 카드 뒷면 덱 커스텀"]');
   await deckBackLauncher.click();
   const deckDialog = page.getByRole('dialog', { name: '타로 덱 뒷면 커스텀 컬렉션' });
-  await assertPopupFillsActivePane(deckDialog);
+  await assertPopupFillsCanvas(deckDialog);
   await captureVisualCheck(page, deckDialog, 'tarot-deck-back-popup');
   await closeDialog(deckDialog);
 
   await page.locator('#duo-content-viewport').getByText('컵 10', { exact: true }).last().click();
   const detailDialog = page.getByRole('dialog', { name: '상세 보기' });
-  await assertPopupFillsActivePane(detailDialog);
+  await assertPopupFillsCanvas(detailDialog);
   await captureVisualCheck(page, detailDialog, 'tarot-card-detail-popup');
   await closeDialog(detailDialog);
 
@@ -204,12 +234,12 @@ test('Tarot detail and deck-back popups fill the actual portrait Duo content pan
   expect(swappedContentPane?.y, 'the actual Tarot content pane moves to the lower half when swapped').toBeGreaterThan(100);
 
   await deckBackLauncher.click();
-  await assertPopupFillsActivePane(page.getByRole('dialog', { name: '타로 덱 뒷면 커스텀 컬렉션' }));
+  await assertPopupFillsCanvas(page.getByRole('dialog', { name: '타로 덱 뒷면 커스텀 컬렉션' }));
   await closeDialog(page.getByRole('dialog', { name: '타로 덱 뒷면 커스텀 컬렉션' }));
 
   await page.locator('#duo-content-viewport').getByText('컵 10', { exact: true }).last().click();
   const swappedDetailDialog = page.getByRole('dialog', { name: '상세 보기' });
-  await assertPopupFillsActivePane(swappedDetailDialog);
+  await assertPopupFillsCanvas(swappedDetailDialog);
   await closeDialog(swappedDetailDialog);
 });
 
@@ -231,35 +261,19 @@ test('Tarot detail and deck-back popups fill the folded cover canvas when iOS le
 
   await deckBackLauncher.click();
   const deckDialog = page.getByRole('dialog', { name: '타로 덱 뒷면 커스텀 컬렉션' });
-  await expect(deckDialog).toBeVisible();
-  await expect.poll(async () => (await getGeometry(deckDialog)).root.width).toBeGreaterThan(100);
+  await assertPopupFillsCanvas(deckDialog);
   const deck = await getGeometry(deckDialog);
-  expect(deck.scope).toBe('pane');
   expect(deck.overlayPane).toBe('content');
-  expect(deck.navOverlapArea).toBe(0);
-  const expectedRight = Math.min(deck.frame.right, deck.nav.left);
-  expect(Math.abs(deck.root.left - deck.frame.left), 'folded popup starts at the visible app frame').toBeLessThanOrEqual(2);
-  expect(Math.abs(deck.root.right - expectedRight), 'deck popup reaches the fixed rail without leaving a dark strip').toBeLessThanOrEqual(2);
-  expect(Math.abs(deck.root.top - deck.frame.top)).toBeLessThanOrEqual(2);
-  expect(Math.abs(deck.root.bottom - deck.frame.bottom)).toBeLessThanOrEqual(2);
-  expect(Math.abs(deck.panel.left - (deck.root.left + deck.padding.left))).toBeLessThanOrEqual(2);
-  expect(Math.abs(deck.panel.right - (deck.root.right - deck.padding.right))).toBeLessThanOrEqual(2);
+  expect(deck.portalIsContentPane, 'a narrow pane no longer owns the popup layer').toBe(false);
+  expect(Math.abs(deck.root.right - deck.nav.left), 'deck popup reaches the fixed rail without leaving a dark strip').toBeLessThanOrEqual(2);
   await captureVisualCheck(page, deckDialog, 'folded-tarot-deck-back-popup');
   await closeDialog(deckDialog);
 
   await contentPane.getByText('컵 10', { exact: true }).last().click();
   const detailDialog = page.getByRole('dialog', { name: '상세 보기' });
-  await expect(detailDialog).toBeVisible();
+  await assertPopupFillsCanvas(detailDialog);
   const detail = await getGeometry(detailDialog);
-  expect(detail.scope).toBe('pane');
   expect(detail.overlayPane).toBe('content');
-  expect(detail.navOverlapArea).toBe(0);
-  const detailRight = Math.min(detail.frame.right, detail.nav.left);
-  expect(Math.abs(detail.root.left - detail.frame.left)).toBeLessThanOrEqual(2);
-  expect(Math.abs(detail.root.right - detailRight), 'detail popup reaches the fixed rail without leaving a dark strip').toBeLessThanOrEqual(2);
-  expect(Math.abs(detail.root.top - detail.frame.top)).toBeLessThanOrEqual(2);
-  expect(Math.abs(detail.root.bottom - detail.frame.bottom)).toBeLessThanOrEqual(2);
-  expect(Math.abs(detail.panel.left - (detail.root.left + detail.padding.left))).toBeLessThanOrEqual(2);
-  expect(Math.abs(detail.panel.right - (detail.root.right - detail.padding.right))).toBeLessThanOrEqual(2);
+  expect(Math.abs(detail.root.right - detail.nav.left), 'detail popup reaches the fixed rail without leaving a dark strip').toBeLessThanOrEqual(2);
   await captureVisualCheck(page, detailDialog, 'folded-tarot-card-detail-popup');
 });
