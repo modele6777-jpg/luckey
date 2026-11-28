@@ -7,6 +7,7 @@ export interface ChechenVainakhResult {
   vainakhCode: string;
   companionCode: string;
   honorBalanceAxis: string;
+  vainakhCrossAxis: string;
   topicBalanceHint: string;
   kovakhInsight: string;
   caucasusTone: string;
@@ -110,16 +111,20 @@ export function calculateChechenVainakhKovakhHonor(params: {
   const picked = CODES[idx];
   const companion = CODES[(idx + companionOffset) % CODES.length];
   const honorBalanceAxis = `${picked.code.split('(')[0].trim()} ↔ ${companion.code.split('(')[0].trim()} (${questionTopic})`;
+  const kstHour = new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCHours();
+  const kstWindow = kstHour < 6 ? '새벽 능선' : kstHour < 12 ? '오전 석탑' : kstHour < 18 ? '오후 고원' : '저녁 환대';
+  const vainakhCrossAxis = `[${picked.code.split('(')[0].trim()}] × [${companion.code.split('(')[0].trim()}] × [${questionTopic}] × [${kstWindow}]`;
   const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = VAINAKH_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-CHECHEN-VAINAKH-v2.4.0',
+    engineVersion: 'LUCKEY-CHECHEN-VAINAKH-v2.5.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     vainakhCode: picked.code,
     companionCode: companion.code,
     honorBalanceAxis,
+    vainakhCrossAxis,
     topicBalanceHint,
     kovakhInsight: `${picked.insight} (동반 덕목: ${companion.code})`,
     caucasusTone: picked.tone,
@@ -136,6 +141,7 @@ export function formatChechenVainakhPrompt(res: ChechenVainakhResult): string {
     `[체첸 바이나흐·카바흐 명예 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 명예 축: ${res.honorBalanceAxis}`,
+    `- 4중 교차 축: ${res.vainakhCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 바이나흐 덕목: ${res.vainakhCode} (${res.caucasusTone})`,
     `- 동반 덕목: ${res.companionCode}`,

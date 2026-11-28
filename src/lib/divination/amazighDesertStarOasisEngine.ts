@@ -39,6 +39,7 @@ export interface AmazighDesertResult {
   calculatedAtKst: string;
   questionTopic: AmazighQuestionTopic;
   caravanCompassAxis: string;
+  amazighCrossAxis: string;
   primaryWaypoint: AmazighWaypoint;
   supportWaypoint: AmazighWaypoint;
   desertPhase: string;
@@ -149,6 +150,7 @@ export function calculateAmazighDesertStarOasis(params: {
     ? AMAZIGH_SHADOW_WARNINGS[primaryWaypoint.id]
     : AMAZIGH_TOPIC_WARNINGS[questionTopic];
   const caravanCompassAxis = `${primaryWaypoint.koreanLabel} ↔ ${supportWaypoint.koreanLabel} (${desertPhase.split('(')[0].trim()})`;
+  const amazighCrossAxis = `[${primaryWaypoint.koreanLabel}] × [${supportWaypoint.koreanLabel}] × [${desertPhase.split('(')[0].trim()}] × [${questionTopic}]`;
 
   const qualitativeSynthesis =
     `북아프리카 아마지그(베르베르) 사막 유목의 지혜로 바라보면, '${desertPhase}' 국면에서 ` +
@@ -167,10 +169,11 @@ export function calculateAmazighDesertStarOasis(params: {
 
   return {
     engineName: '아마지그 사막 별·오아시스 길잡이 (Amazigh Desert Compass)',
-    engineVersion: 'LUCKEY-AMAZIGH-DESERT-v2.4.0',
+    engineVersion: 'LUCKEY-AMAZIGH-DESERT-v2.5.0',
     calculatedAtKst: formatAmazighKstTimestamp(now),
     questionTopic,
     caravanCompassAxis,
+    amazighCrossAxis,
     primaryWaypoint,
     supportWaypoint,
     desertPhase,
@@ -190,6 +193,7 @@ export function formatAmazighDesertPrompt(res: AmazighDesertResult): string {
     `[보조 상징 관점 — ${res.engineName}]`,
     `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst} | 질문 맥락: ${res.questionTopic}`,
     `- 사막 나침반 축: ${res.caravanCompassAxis}`,
+    `- 4중 교차 축: ${res.amazighCrossAxis}`,
     `- 주된 길잡이: ${res.primaryWaypoint.amazighTerm} · ${res.primaryWaypoint.koreanLabel}`,
     `- 보조 길잡이: ${res.supportWaypoint.amazighTerm} · ${res.supportWaypoint.koreanLabel}`,
     `- 사막 여정 국면: ${res.desertPhase}`,
