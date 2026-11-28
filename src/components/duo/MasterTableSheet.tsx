@@ -15,7 +15,7 @@ import {
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { MasterSajuBoard } from './MasterSajuBoard';
 import { MasterToolTabPanel } from './MasterToolTabPanel';
-import { DivinationToolTabBar, resolveToolTabViews } from './MasterToolTabs';
+import { DivinationToolTabBar, resolveToolTabViews, toolWindowHasSelection } from './MasterToolTabs';
 import { LucyDeepPerspectivePanel } from '@/components/chat/LucyEngineCatalogDialog';
 import { LucyOrbToolIcon } from '@/components/icons/LucyOrbToolIcon';
 import type { DivinationToolId } from '@/lib/fifteenDivinationTools';
@@ -71,7 +71,7 @@ export function DivinationTableBody({ table, onClose, compact = false }: {
     window.addEventListener(LUCY_DIVINATION_TOOL_EVENT, onRequest);
     return () => window.removeEventListener(LUCY_DIVINATION_TOOL_EVENT, onRequest);
   }, []);
-  const views = useMemo(() => resolveToolTabViews(table, true), [table]);
+  const views = useMemo(() => resolveToolTabViews(table, !toolWindowHasSelection(table)), [table]);
   // 루시가 이번 질문에 쓰지 않은 도구는 잠겨 있으므로, 잠긴 탭이 골라져 있으면 첫 열린 탭으로 돌린다.
   const activeTab = useMemo<DivinationToolId>(
     () => pickActiveDivinationTab(views, tab, requestedTab),
@@ -86,7 +86,7 @@ export function DivinationTableBody({ table, onClose, compact = false }: {
           <button type="button" onClick={onClose} aria-label="도구 창 닫기" className="flex h-8 w-8 items-center justify-center rounded-full text-slate-300 hover:bg-white/10"><X size={18} /></button>
         )}
       </div>
-      <DivinationToolTabBar table={table} unlockCosmicProTools activeTab={activeTab} onSelect={(id) => { setRequestedTab(null); setTab(id); }} compact={compact} />
+      <DivinationToolTabBar table={table} unlockCosmicProTools={!toolWindowHasSelection(table)} activeTab={activeTab} onSelect={(id) => { setRequestedTab(null); setTab(id); }} compact={compact} />
       <div className="flex min-h-0 flex-1 flex-col">
         {activeTab === 'saju' ? (
           <MasterSajuBoard saju={table.saju} lastAnswer={table.lastAnswer} />
@@ -185,7 +185,11 @@ export function LucyToolSheetHost() {
   // 답변 끝 버튼(관점·도구)에서 함을 열 때도 같은 창을 쓴다.
   useEffect(() => {
     const onEngineBox = () => dispatchLucySheet({ type: 'engine-box' });
-    const onTool = () => dispatchLucySheet({ type: 'divination-tool' });
+    const onTool = () => {
+      // 펼친 화면은 왼쪽 점술 테이블이 도구창이다. 그 탭으로만 옮기고 창을 겹쳐 띄우지 않는다.
+      if (document.querySelector('[data-duo-divination-tarot="true"]')) return;
+      dispatchLucySheet({ type: 'divination-tool' });
+    };
     window.addEventListener(LUCY_ENGINE_BOX_OPEN_EVENT, onEngineBox);
     window.addEventListener(LUCY_DIVINATION_TOOL_EVENT, onTool);
     return () => {

@@ -20,8 +20,8 @@ import { MasterSajuBoard } from './MasterSajuBoard';
 import { MasterReadingStage } from './MasterReadingStage';
 import { MasterDailyCard } from './MasterDailyCard';
 import { MasterToolTabPanel } from './MasterToolTabPanel';
-import { DivinationToolTabBar, resolveToolTabViews } from './MasterToolTabs';
-import { getLucyTableState, clearTableTools, LUCY_TABLE_EVENT, type LucyTableState } from '@/lib/lucyTableBus';
+import { DivinationToolTabBar, resolveToolTabViews, toolWindowHasSelection } from './MasterToolTabs';
+import { getLucyTableState, clearTableTools, getLastDivinationToolRequest, LUCY_DIVINATION_TOOL_EVENT, LUCY_TABLE_EVENT, type LucyTableState } from '@/lib/lucyTableBus';
 import type { DivinationToolId } from '@/lib/fifteenDivinationTools';
 import { useTTSState } from '@/utils/tts';
 import { CosmicRoomHeader } from './DuoCosmicAmbientRoom';
@@ -39,7 +39,9 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
   // 통합 상담: 들어오면 사주 원국에서 시작하고, 그 뒤에는 사용자가 탭으로 고른 화면을 유지한다.
   const [tab, setTab] = useState<DivinationToolId>('saju');
   const [table, setTable] = useState<LucyTableState>(() => getLucyTableState());
-  const tabViews = resolveToolTabViews(table, true);
+  // 고민이 정해지면 그 도구만 열고, 나머지는 뒤로 민다. 고르기 전에는 15개를 둘러볼 수 있다.
+  const unlockAll = !toolWindowHasSelection(table);
+  const tabViews = resolveToolTabViews(table, unlockAll);
   const activeTab = tabViews.find(view => view.id === tab && !view.locked)?.id
     ?? (tabViews.find(view => !view.locked)?.id ?? 'saju') as DivinationToolId;
   const tts = useTTSState();
@@ -53,8 +55,24 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
       const next = (e as CustomEvent<LucyTableState>).detail;
       if (next) setTable(next);
     };
+    const onTool = (e: Event) => {
+      const toolId = (e as CustomEvent<{ toolId?: DivinationToolId }>).detail?.toolId;
+      if (!toolId) return;
+      setReadingDismissed(true);
+      setTab(toolId);
+      window.requestAnimationFrame(() => {
+        document.querySelector(`[data-duo-divination-tarot] [data-table-face="${toolId}"]`)
+          ?.scrollIntoView({ inline: 'center', block: 'nearest' });
+      });
+    };
+    const pending = getLastDivinationToolRequest()?.toolId;
+    if (pending) setTab(pending);
     window.addEventListener(LUCY_TABLE_EVENT, onTable);
-    return () => window.removeEventListener(LUCY_TABLE_EVENT, onTable);
+    window.addEventListener(LUCY_DIVINATION_TOOL_EVENT, onTool);
+    return () => {
+      window.removeEventListener(LUCY_TABLE_EVENT, onTable);
+      window.removeEventListener(LUCY_DIVINATION_TOOL_EVENT, onTool);
+    };
   }, []);
 
   useEffect(() => {
@@ -92,16 +110,16 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
         {/* 도구 탭: 15개를 가로 스크롤로 (낭독은 루시가 읽는 동안에만) */}
         <DivinationToolTabBar
           table={table}
-          unlockCosmicProTools
+          unlockCosmicProTools={unlockAll}
           activeTab={showReading ? 'reading' : activeTab}
           onSelect={id => { setReadingDismissed(reading); setTab(id); }}
           readingTab={reading ? { active: showReading, onSelect: () => setReadingDismissed(false) } : undefined}
         />
         {showReading ? (
           <MasterReadingStage />
-        ) : tab === 'saju' ? (
+        ) : activeTab === 'saju' ? (
           <MasterSajuBoard saju={table.saju} lastAnswer={table.lastAnswer} />
-        ) : tab === 'tarot' ? (
+        ) : activeTab === 'tarot' ? (
           <>
             {cards.length === 0 && <MasterDailyCard />}
             <div className="flex-1 min-h-0 flex flex-col">
@@ -117,7 +135,7 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
             </div>
           </>
         ) : (
-          <MasterToolTabPanel toolId={tab} table={table} />
+          <MasterToolTabPanel toolId={activeTab} table={table} />
         )}
       </div>
       {pick && (

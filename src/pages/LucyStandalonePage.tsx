@@ -4016,12 +4016,21 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       ? { base: (isTarotIntent ? 'tarot_saju' : 'saju') as 'saju' | 'tarot_saju', deep: wantsDeepEngines }
       : undefined;
 
-    // 🔮 점술모드만 기초 도구를 고른다. 루시채팅은 엔진함의 심층 관점만 질문에 맞게 여러 개 매칭한다.
+    // 🔮 점술모드만 도구를 고른다. 루시채팅은 엔진을 돌리지 않고 여러 관점으로만 답한다.
     const divinationSelection: SelectedDivinationToolsResult = divinationMode
       // 점술모드: 기초 도구 15종 + 심층 관점을 질문·고민에 맞춰 소수만 고른다
       ? selectOptimalDivinationTools(combinedContextText, [], counselingUserProfile, false, { allowMaster: false, requireBasicAndDeep, divinationMode })
       : turnPlan.deepPerspectivesOnly
-        ? selectOptimalDivinationTools(combinedContextText, [], counselingUserProfile, false, { allowMaster: false, requireBasicAndDeep: false, deepOnly: true })
+        ? {
+            selectedTools: [],
+            isCasualMessage: true,
+            isMasterMobilization: false,
+            selectionReason: '루시채팅 · 여러 관점',
+            promptInjection: '',
+            firedEngineBadges: [],
+            deepPerspectiveKeys: [],
+            calculationAudit: [],
+          }
         : selectOptimalDivinationTools(combinedContextText, isMaster ? ALL_CHANNELS : channels, counselingUserProfile, isMaster, { allowMaster: isMasterMode || requireBasicAndDeep, requireBasicAndDeep });
     // 🧭 루시프로 통합 상담: 사주·13대 도구 계산 결과를 왼쪽 점술 테이블에 넘긴다 (데이터만, 지시문 아님).
     if (divinationMode && !divinationSelection.isCasualMessage) {
@@ -4729,6 +4738,14 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               return false;
             })();
 
+            const answerEngines = resolveMessagePerspectives(msg);
+            const showAnswerEngines = shouldShowAnswerEngines({
+              role: msg.role,
+              isGreeting,
+              isGenerating: isLucyGenerating && index === filteredMessages.length - 1,
+              engines: answerEngines,
+            });
+
             return (
               <motion.div
                 key={msgId}
@@ -4746,7 +4763,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                       style={{ color: isLight ? '#92400e' : '#fcd34d' }}
                     >
                       <span className="w-2 h-2 rounded-full bg-amber-500 dark:bg-amber-400" />
-                      Lucy
+                      {isMasterMode ? 'Lucy Pro' : 'Lucy'}
                     </span>
                   ) : (
                     <span
@@ -4757,7 +4774,18 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                       {userDisplayName}
                     </span>
                   )}
-
+                  {!isUser && (
+                    <LucyAnswerEngineBar
+                      engines={answerEngines}
+                      isLight={isLight}
+                      isMasterMode={isMasterMode}
+                      show={showAnswerEngines}
+                      besideName
+                      className=""
+                      onOpenPerspective={handleOpenAnswerPerspective}
+                      onOpenTool={handleOpenAnswerTool}
+                    />
+                  )}
 
                   <span className={`text-[10px] ${isLight ? 'text-slate-400' : 'text-white/70'}`}>{timeStr}</span>
                 </div>
@@ -4847,26 +4875,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                     </>
                   ) : (
                     <>
-                      {/* ✨ 이 답변의 도구(점술모드)·관점 배지 — 답변 맨 처음(첫 말풍선 위)에 얹혀 각각의 함으로 열린다 */}
-                      {(() => {
-                        const answerEngines = resolveMessagePerspectives(msg);
-                        const showAnswerEngines = shouldShowAnswerEngines({
-                          role: msg.role,
-                          isGreeting,
-                          isGenerating: isLucyGenerating && index === filteredMessages.length - 1,
-                          engines: answerEngines,
-                        });
-                        return (
-                          <LucyAnswerEngineBar
-                            engines={answerEngines}
-                            isLight={isLight}
-                            isMasterMode={isMasterMode}
-                            show={showAnswerEngines}
-                            onOpenPerspective={handleOpenAnswerPerspective}
-                            onOpenTool={handleOpenAnswerTool}
-                          />
-                        );
-                      })()}
                       <LucyKakaoBubbleGroup
                       msgId={msgId}
                       verifiedTarotMarkers={msg.tarotDraw?.source === 'app-random' ? msg.tarotDraw.markers : undefined}

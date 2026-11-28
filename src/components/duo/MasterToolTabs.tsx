@@ -38,7 +38,10 @@ export function resolveToolTabViews(table: LucyTableState, unlockCosmicProTools 
 
 export const LOCKED_TOOL_TAB_NOTE = '이번 질문에서는 활용되지 않아 잠겨 있어요';
 
-/** 잠긴 도구 탭의 안내 (탭을 누를 수 없고 왜 잠겼는지만 보여준다). */
+/** 이번 고민에 대해 루시가 도구를 골랐는지. 고르기 전에는 도구창을 둘러볼 수 있다. */
+export function toolWindowHasSelection(table: LucyTableState): boolean {
+  return table.activeEngines.total > 0 || table.tools.length > 0;
+}
 export function lockedToolTabNote(view: DivinationToolTabView): string {
   return view.state === 'needs_info'
     ? '이번 질문에서는 계산되지 않아 잠겨 있어요'
@@ -86,10 +89,12 @@ export function DivinationToolTabBar({ table, activeTab, onSelect, compact = fal
             }}
             className={`relative flex shrink-0 flex-col items-center justify-center rounded-xl border ${compact ? 'w-[3.1rem] px-0.5 py-1.5' : 'w-[3.35rem] px-1 py-1.5'} ${
               view.locked
-                ? 'cursor-not-allowed border-white/8 bg-white/[0.02] text-slate-500 opacity-55'
+                ? 'cursor-not-allowed border-white/8 bg-white/[0.02] text-slate-500 opacity-45'
                 : selected
                   ? 'border-amber-300/80 bg-amber-400/20 text-amber-50'
-                  : 'border-white/12 bg-white/[0.05] text-slate-200'
+                  : view.active
+                    ? 'border-white/12 bg-white/[0.05] text-slate-200'
+                    : 'border-white/8 bg-white/[0.02] text-slate-400 opacity-70'
             }`}
           >
             <span className="text-[15px] leading-none" aria-hidden="true">{view.locked ? '🔒' : view.icon}</span>
