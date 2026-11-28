@@ -7,6 +7,7 @@ export interface CorsicanPaghjellaResult {
   corsicanVoice: string;
   companionVoice: string;
   paghjellaAxis: string;
+  corsicanCrossAxis: string;
   topicBalanceHint: string;
   paghjellaInsight: string;
   maquisTone: string;
@@ -113,13 +114,17 @@ export function calculateCorsicanPaghjellaMaquisHarmony(params: {
   const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = CORSICAN_SHADOWS[idx];
 
+  const calculatedAtKst = formatKstIso(now);
+  const corsicanCrossAxis = `[${picked.voice.split('(')[0].trim()}] × [${companion.voice.split('(')[0].trim()}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-CORSICAN-PAGHJELLA-v2.4.0',
-    calculatedAtKst: formatKstIso(now),
+    engineVersion: 'LUCKEY-CORSICAN-PAGHJELLA-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     corsicanVoice: picked.voice,
     companionVoice: companion.voice,
     paghjellaAxis,
+    corsicanCrossAxis,
     topicBalanceHint,
     paghjellaInsight: picked.insight,
     maquisTone: picked.tone,
@@ -136,6 +141,7 @@ export function formatCorsicanPaghjellaPrompt(res: CorsicanPaghjellaResult): str
     `[코르시카 파겔라·마키 화음 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 합창 축: ${res.paghjellaAxis}`,
+    `- 4중 교차 축: ${res.corsicanCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 합창 성부: ${res.corsicanVoice} (${res.maquisTone})`,
     `- 동반 성부: ${res.companionVoice}`,

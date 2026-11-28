@@ -7,6 +7,7 @@ export interface DalmatianStoneResult {
   dalmatianMotif: string;
   companionMotif: string;
   limestoneBreezeAxis: string;
+  dalmatianCrossAxis: string;
   topicBalanceHint: string;
   dalmatianInsight: string;
   adriaticTone: string;
@@ -113,13 +114,17 @@ export function calculateDalmatianStoneLavenderCalm(params: {
   const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = DALMATIAN_SHADOWS[idx];
 
+  const calculatedAtKst = formatKstIso(now);
+  const dalmatianCrossAxis = `[${picked.motif.split('(')[0].trim()}] × [${companion.motif.split('(')[0].trim()}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-DALMATIAN-STONE-v2.4.0',
-    calculatedAtKst: formatKstIso(now),
+    engineVersion: 'LUCKEY-DALMATIAN-STONE-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     dalmatianMotif: picked.motif,
     companionMotif: companion.motif,
     limestoneBreezeAxis,
+    dalmatianCrossAxis,
     topicBalanceHint,
     dalmatianInsight: picked.insight,
     adriaticTone: picked.tone,
@@ -136,6 +141,7 @@ export function formatDalmatianStonePrompt(res: DalmatianStoneResult): string {
     `[달마티아·라벤더 석축 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 석축 축: ${res.limestoneBreezeAxis}`,
+    `- 4중 교차 축: ${res.dalmatianCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 달마티아 모티프: ${res.dalmatianMotif} (${res.adriaticTone})`,
     `- 동반 모티프: ${res.companionMotif}`,
