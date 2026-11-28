@@ -16,7 +16,7 @@ import { LucyAnswerEngineBar } from '@/components/chat/LucyAnswerPerspectiveBar'
 import { resolveMessagePerspectives, shouldShowAnswerEngines } from '@/lib/lucyAnswerPerspectives';
 import type { DivinationToolId } from '@/lib/lucyToolRegistry';
 import { buildActiveEngineTray } from '@/lib/lucyActiveEngineTray';
-import { MasterTableSheetButton } from '@/components/duo/MasterTableSheet';
+import { MasterTableSheetButton, LucyToolSheetHost } from '@/components/duo/MasterTableSheet';
 import { MasterEngineCatalogButton } from '@/components/duo/MasterEngineCatalogButton';
 import { shouldShowLucyToolsCabinet } from '@/lib/lucyToolSheetRouting';
 import { extractAllToolFacts, pickCalculatedToolData, type ToolFact } from '@/lib/lucyMasterToolFacts';
@@ -4450,6 +4450,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             {shouldShowLucyToolsCabinet(isMasterMode, isActuallyUnfoldedDual) && (
               <MasterTableSheetButton tone={isLight ? 'light' : 'dark'} isMasterMode={isMasterMode} />
             )}
+            {/* ✏️ 도구함·엔진함 창 호스트: 도구함 버튼이 숨겨진 펼친 화면 루시프로에서도
+                연필(엔진함)·답변 끝 관점/도구 버튼이 창을 열 수 있도록 항상 마운트한다. (2026-11-28 수정) */}
+            <LucyToolSheetHost />
             {/* ✏️ 점술모드 전용 엔진함: 일반 채팅과 같은 엔진함(심층 관점 설명)을 연다 (사용자: "루시점술모드에도 상단에 연필버튼 만들어서 엔진함을 만들어줘", 2026-11-27) */}
             {isMasterMode && <MasterEngineCatalogButton tone={isLight ? 'light' : 'dark'} />}
             {/* 📘 가이드 */}
