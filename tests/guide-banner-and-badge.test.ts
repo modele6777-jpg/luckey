@@ -130,8 +130,8 @@ test('the question mark only flashes when the guide is tapped — it never stays
   assert.doesNotThrow(() => clearSmartGuideBadge(null));
   assert.doesNotThrow(() => clearSmartGuideBadge(undefined));
 
-  // 잠깐 떴다가 저절로 사라진다 (사용자 지시: 약 1.2~1.5초 + 부드러운 페이드).
-  assert.ok(SMART_GUIDE_BADGE_MS >= 1200 && SMART_GUIDE_BADGE_MS <= 1500, `badge shows ${SMART_GUIDE_BADGE_MS}ms`);
+  // 잠깐 떴다가 저절로 사라진다 (화면 전환이 겹쳐도 눈에 남는 2초 안팎 + 부드러운 페이드).
+  assert.ok(SMART_GUIDE_BADGE_MS >= 1800 && SMART_GUIDE_BADGE_MS <= 2600, `badge shows ${SMART_GUIDE_BADGE_MS}ms`);
   assert.ok(SMART_GUIDE_BADGE_FADE_MS > 0 && SMART_GUIDE_BADGE_FADE_MS < SMART_GUIDE_BADGE_MS);
 
   // 가이드 탭으로 스마트 가이드가 실행될 때만 잠깐 표시한다.
