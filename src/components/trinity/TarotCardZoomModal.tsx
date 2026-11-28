@@ -8,6 +8,7 @@ import {
   Compass,
 } from 'lucide-react';
 import { type TarotCard, getTarotCardImageUrl, getTarotReversedData } from '@/data/tarotData';
+import { getTarotCardIntroduction } from '@/data/tarotCardIntroductions';
 
 export interface TarotCardZoomData {
   id?: string;
@@ -74,6 +75,7 @@ export function TarotCardZoomModal({
   const nameKo = card?.nameKo || '타로 카드';
   const nameEn = card?.name || '';
   const keywords = card?.keywords && card.keywords.length > 0 ? card.keywords : [];
+  const introduction = getTarotCardIntroduction(card);
   const cardType = card ? ((card as any).type as string | undefined) : undefined;
 
   let typeBadgeLabel = 'TAROT CARD';
@@ -247,6 +249,22 @@ export function TarotCardZoomModal({
                 </div>
               </motion.div>
             </div>
+
+            {introduction && (
+              <motion.section
+                aria-label="카드 소개"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.1 }}
+                className="relative z-10 rounded-2xl border border-yellow-500/20 bg-yellow-500/[0.06] px-3 py-2.5 text-left"
+              >
+                <div className="mb-1 flex items-center gap-1.5 text-[11px] font-bold text-yellow-200">
+                  <Sparkles size={12} className="shrink-0 text-yellow-400" />
+                  <span>카드 한눈에 보기</span>
+                </div>
+                <p className="text-[11px] leading-relaxed text-white/80 sm:text-xs">{introduction}</p>
+              </motion.section>
+            )}
 
             {/* 🔄 역방향 심층 상징 및 뜻 (Reversed Meaning & Shadow Wisdom) */}
             {isCardReversed && (() => {

@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.8.672",
+  "version": "1.8.673",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -38,6 +38,7 @@
     "test:orb-voice-mode": "tsx --test tests/orb-voice-mode.test.ts tests/orb-mic-lifecycle.test.ts tests/lucy-orb-mic-permission.test.ts tests/orb-visual-states.test.ts",
     "test:lucy-pro-header-orb": "tsx --test tests/lucy-pro-header-orb-and-engine-button.test.tsx",
     "test:tarot-popup-frame": "tsx --test tests/tarot-popup-frame.test.ts",
+    "test:tarot-card-introductions": "tsx --test tests/tarot-card-introductions.test.ts",
     "test:tarot-yesno-gate": "tsx --test tests/tarot-yesno-spread-gate.test.tsx"
   },
   "dependencies": {
