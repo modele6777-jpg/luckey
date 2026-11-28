@@ -156,3 +156,13 @@ test('every channel header icon is the same transparent button as the Lucy chat 
   assert.match(bedRule, /background: transparent;/, '오브 배경음 버튼에 배경 상자가 없다');
   assert.match(orbCss, /\.lucy-orb-header \.lucy-orb-bed:hover \{ background: transparent; opacity: \.7; \}/, 'hover 시 루시 채팅처럼 흐려진다');
 });
+
+test('the ON state shows the same thin sage ring as the Lucy chat header on every page', () => {
+  const indexCss = read('../src/index.css');
+  assert.match(
+    indexCss,
+    /\[data-page-guide-button\]\[aria-expanded='true'\],\s*\[data-smart-guide-settings-button\]\[aria-pressed='true'\] \{\s*border: 1px solid rgba\(120, 159, 139, \.78\);/,
+    '켜짐 상태에서만 루시 채팅과 같은 얇은 테두리가 보인다',
+  );
+  assert.match(lucyCss, /\.lucy-chat-shell \.lucy-header-actions > button:is\(\[aria-pressed='true'\], \[aria-expanded='true'\]\) \{ border: 1px solid rgba\(120, 159, 139, \.78\)/, '루시 채팅 헤더의 기준 규칙과 같은 색·두께다');
+});
