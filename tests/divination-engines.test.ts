@@ -14683,17 +14683,17 @@ test('Latvian Dainas Mara Harmony engine: motif, +09:00 KST, and interpretive bo
 
 test('Cherokee Gadugi Harmony engine: principle, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateCherokeeGadugiHarmony({ profile, now: new Date('2026-11-20T08:04:00Z'), question: '신뢰와 조화에 마음을 보태고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CHEROKEE-GADUGI-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CHEROKEE-GADUGI-v2.5.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   // '마음'이 들어간 질문은 현재 분류기에서 마음·건강 주제로 묶인다.
   assert.equal(rep.questionTopic, 'health');
   assert.ok(rep.companionPrinciple !== rep.gadugiPrinciple);
-  assert.ok(rep.duyuktvBalanceAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.duyuktvBalanceAxis.length > 0 && rep.cherokeeCrossAxis.includes('×') && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatCherokeeGadugiPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('체로키') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPrinciple));
+  assert.ok(prompt.includes('체로키') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionPrinciple) && prompt.includes('4중 교차 축'));
   assert.ok(prompt.includes('두육트브 조화 축') && prompt.includes('맥락 균형 조언') && prompt.includes('과잉 경계'));
 });
 
@@ -15050,16 +15050,16 @@ test('Yapese Rai Stone Trust engine: stone, +09:00 KST, and interpretive boundar
 
 test('Chukchi Bering Tundra Hearth engine: symbol, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateChukchiBeringTundraHearth({ profile, now: new Date('2026-11-20T09:04:00Z'), question: '거친 바람 속에서 내 안의 온기를 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CHUKCHI-BERING-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CHUKCHI-BERING-v2.5.0');
   assert.equal(rep.questionTopic, '안식·온기');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSymbol !== rep.tundraSymbol);
-  assert.ok(rep.tundraHearthAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.tundraHearthAxis.length > 0 && rep.chukchiCrossAxis.includes('×') && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatChukchiBeringPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('축치') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSymbol) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('축치') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSymbol) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계') && prompt.includes('4중 교차 축'));
 });
 
 test('Palmyrene Oasis Colonnade engine: pillar, +09:00 KST, and interpretive boundary', () => {
@@ -15702,16 +15702,16 @@ test('Hebridean Tartan Loom Calm engine: motif, +09:00 KST, and interpretive bou
 
 test('Chiloe Palafito Tide Poise engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateChiloePalafitoTidePoise({ profile, now: new Date('2026-11-20T20:59:00Z'), question: '밀물과 썰물을 다 품는 기둥을 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CHILOE-PALAFITO-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CHILOE-PALAFITO-v2.5.0');
   assert.equal(rep.questionTopic, '일·물때');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.chiloeMotif);
-  assert.ok(rep.tidePoiseAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.tidePoiseAxis.length > 0 && rep.chiloeCrossAxis.includes('×') && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatChiloePalafitoPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('치로에') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('치로에') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계') && prompt.includes('4중 교차 축'));
 });
 
 test('Bunun Jade Mountain Song engine: motif, +09:00 KST, and interpretive boundary', () => {

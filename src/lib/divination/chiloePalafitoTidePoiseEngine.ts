@@ -7,6 +7,7 @@ export interface ChiloePalafitoResult {
   chiloeMotif: string;
   companionMotif: string;
   tidePoiseAxis: string;
+  chiloeCrossAxis: string;
   topicBalanceHint: string;
   chiloeInsight: string;
   fjordTone: string;
@@ -113,13 +114,17 @@ export function calculateChiloePalafitoTidePoise(params: {
   const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = CHILOE_SHADOWS[idx];
 
+  const calculatedAtKst = formatKstIso(now);
+  const chiloeCrossAxis = `[${picked.motif.split('(')[0].trim()}] × [${companion.motif.split('(')[0].trim()}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-CHILOE-PALAFITO-v2.4.0',
-    calculatedAtKst: formatKstIso(now),
+    engineVersion: 'LUCKEY-CHILOE-PALAFITO-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     chiloeMotif: picked.motif,
     companionMotif: companion.motif,
     tidePoiseAxis,
+    chiloeCrossAxis,
     topicBalanceHint,
     chiloeInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     fjordTone: picked.tone,
@@ -136,6 +141,7 @@ export function formatChiloePalafitoPrompt(res: ChiloePalafitoResult): string {
     `[치로에·팔라피토 물때 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 물때 축: ${res.tidePoiseAxis}`,
+    `- 4중 교차 축: ${res.chiloeCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 치로에 모티프: ${res.chiloeMotif} (${res.fjordTone})`,
     `- 동반 결: ${res.companionMotif}`,

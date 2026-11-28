@@ -7,6 +7,7 @@ export interface ChukchiBeringResult {
   tundraSymbol: string;
   companionSymbol: string;
   tundraHearthAxis: string;
+  chukchiCrossAxis: string;
   topicBalanceHint: string;
   chukchiInsight: string;
   beringTone: string;
@@ -113,13 +114,17 @@ export function calculateChukchiBeringTundraHearth(params: {
   const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = CHUKCHI_SHADOWS[idx];
 
+  const calculatedAtKst = formatKstIso(now);
+  const chukchiCrossAxis = `[${picked.symbol.split('(')[0].trim()}] × [${companion.symbol.split('(')[0].trim()}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-CHUKCHI-BERING-v2.4.0',
-    calculatedAtKst: formatKstIso(now),
+    engineVersion: 'LUCKEY-CHUKCHI-BERING-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     tundraSymbol: picked.symbol,
     companionSymbol: companion.symbol,
     tundraHearthAxis,
+    chukchiCrossAxis,
     topicBalanceHint,
     chukchiInsight: `${picked.insight} (동반 상징: ${companion.symbol})`,
     beringTone: picked.tone,
@@ -136,6 +141,7 @@ export function formatChukchiBeringPrompt(res: ChukchiBeringResult): string {
     `[축치 베링해·툰드라 화덕 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 극지 축: ${res.tundraHearthAxis}`,
+    `- 4중 교차 축: ${res.chukchiCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 극지 상징: ${res.tundraSymbol} (${res.beringTone})`,
     `- 동반 상징: ${res.companionSymbol}`,
