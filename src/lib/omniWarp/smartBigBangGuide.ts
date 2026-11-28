@@ -80,6 +80,8 @@ export interface SmartGuideResult {
 export type SmartGuideStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
 export const SMART_GUIDE_STORAGE_KEY = 'luckey_smart_guide_v1';
+/** 빅뱅 버튼 안에 물음표(?) 문양이 남았는지 (한 번이라도 스마트 가이드를 실행했는지) */
+export const SMART_GUIDE_BADGE_KEY = 'luckey_smart_guide_badge_v1';
 /** 배너가 저절로 사라지기까지의 시간 */
 export const SMART_GUIDE_TOAST_MS = 4000;
 /** 최근 안내 이력은 이만큼만 남긴다 */
@@ -276,6 +278,30 @@ export function hasSeenTodayTarot(storage: SmartGuideStorage | null | undefined,
   } catch {
     return false;
   }
+}
+
+/**
+ * 빅뱅 버튼 중앙 구슬에 물음표(?) 문양을 남겼는지 읽는다.
+ * 사용자 지시(2026-11-28): "가이드탭을 누를때마다 빅뱅 버튼 안에 물음표 문양이 남게 해줘"
+ * — 한 번이라도 스마트 가이드가 실행되면 표시가 남고, 앱을 다시 열어도 유지된다.
+ */
+export function readSmartGuideBadge(storage: SmartGuideStorage | null | undefined): boolean {
+  if (!storage) return false;
+  try {
+    return storage.getItem(SMART_GUIDE_BADGE_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+/** 가이드를 실행할 때마다 물음표 표시를 남긴다. 저장이 막혀도 이번 화면에서는 남긴다. */
+export function markSmartGuideBadge(storage: SmartGuideStorage | null | undefined): boolean {
+  try {
+    storage?.setItem(SMART_GUIDE_BADGE_KEY, '1');
+  } catch {
+    /* 저장 공간이 막혀도 표시는 남긴다 */
+  }
+  return true;
 }
 
 /** 가이드 도슨트가 읽을 문장 (배너의 이유 + 할 일을 그대로 말로) */

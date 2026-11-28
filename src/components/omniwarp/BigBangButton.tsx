@@ -44,11 +44,15 @@ import {
   hasSeenTodayTarot,
   guideDateKey,
   SMART_GUIDE_TOAST_MS,
+  readSmartGuideBadge,
+  markSmartGuideBadge,
   type SmartGuideResult,
 } from '@/lib/omniWarp/smartBigBangGuide';
 import { resolveSmartGuidePresentation, useSmartGuideSettings } from '@/lib/omniWarp/smartGuideSettings';
 import { isGuideDouserActive, speakGuideDouser, stopGuideDouser } from '@/lib/omniWarp/guideDouser';
 import { SmartGuideBanner } from '@/components/guide/SmartGuideBanner';
+import { PageGuideDialog } from '@/components/guide/PageGuide';
+import { resolveGuideForLocation, type PageGuide } from '@/lib/pageGuides';
 import { getPersistentUserProfile } from '@/contexts/AppContext';
 // 🎯 미세 드래그 판정 임계값 (터치스크린 미세 떨림/지문 면적 20px 노이즈 면역 + 확실한 드래그 제스처 감지)
 const DRAG_ACTIVATION_THRESHOLD = 26;
@@ -266,6 +270,10 @@ export function BigBangButton() {
   // 🧭 한 번 탭하면 지금 가장 쓸모 있는 다음 한 곳을 골라 안내하는 스마트 가이드 배너
   const [smartGuide, setSmartGuide] = useState<SmartGuideResult | null>(null);
   const smartGuideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // ❓ 가이드를 한 번이라도 실행했는지 — 빅뱅 버튼 중앙 구슬에 물음표 문양으로 남는다.
+  const [guideBadge, setGuideBadge] = useState<boolean>(() => readSmartGuideBadge(safeLocalStorage));
+  // 📘 배너의 "이 페이지 가이드 보기"로 여는 페이지 가이드 창
+  const [bannerPageGuide, setBannerPageGuide] = useState<PageGuide | null>(null);
   // 🧭 헤더 물음표 아이콘에서 켜고 끄는 설정 (배너 · 도슨트). 이동은 설정과 무관하게 늘 한다.
   const guideSettings = useSmartGuideSettings();
   const guidePresentation = resolveSmartGuidePresentation(guideSettings);
@@ -281,6 +289,16 @@ export function BigBangButton() {
     closeSmartGuide();
     stopGuideDouser();
   }, [closeSmartGuide]);
+  // 📘 배너 안의 "이 페이지 가이드 보기": 배너·도슨트를 정리하고 지금 화면의 가이드 창을 바로 연다.
+  const openPageGuideFromBanner = useCallback(() => {
+    const path = typeof window !== 'undefined'
+      ? `${window.location.pathname}${window.location.search}`
+      : currentCleanPath;
+    const resolved = resolveGuideForLocation(path || currentCleanPath, { master: isLucyMasterModeOn() });
+    dismissSmartGuide();
+    setBannerPageGuide(resolved);
+    triggerHaptic('whitehole');
+  }, [currentCleanPath, dismissSmartGuide]);
   // 도슨트가 읽는 동안에는 배너를 유지하고, 읽기가 끝나면 잠시 뒤 사라진다.
   const armSmartGuideAutoHide = useCallback((delay: number = SMART_GUIDE_TOAST_MS) => {
     if (smartGuideTimerRef.current) clearTimeout(smartGuideTimerRef.current);
@@ -1141,6 +1159,9 @@ export function BigBangButton() {
     if (guide.needsProMode) enterDivinationMode();
 
     recordSmartGuideRecommendation(safeLocalStorage, guide.path, now);
+    // ❓ 가이드를 실행할 때마다 빅뱅 버튼 안에 물음표 문양을 남긴다 (설정 OFF면 그리지 않는다).
+    markSmartGuideBadge(safeLocalStorage);
+    setGuideBadge(true);
     // 스마트 가이드가 꺼져 있으면 배너·도슨트만 나오지 않고, 이동은 그대로 한다.
     if (guidePresentation.banner) showSmartGuide(guide);
     else closeSmartGuide();
@@ -1718,7 +1739,15 @@ export function BigBangButton() {
     <>
       {cloverWind !== 'off' && <BigBangLuckyBreeze settling={cloverWind === 'settling'} buttonRef={buttonRef} />}
       {/* 🧭 스마트 원클릭 가이드 배너: 한 번 탭해 도착한 화면 위에 무엇을 하면 되는지 알려 준다 (탭하면 닫힘) */}
-      {smartGuide && <SmartGuideBanner guide={smartGuide} onClose={dismissSmartGuide} />}
+      {smartGuide && (
+        <SmartGuideBanner
+          guide={smartGuide}
+          onClose={dismissSmartGuide}
+          onOpenPageGuide={openPageGuideFromBanner}
+        />
+      )}
+      {/* 📘 배너에서 연 페이지 가이드 창 (본문 캔버스 안에서 열린다) */}
+      {bannerPageGuide && <PageGuideDialog guide={bannerPageGuide} onClose={() => setBannerPageGuide(null)} />}
       {/* 🚀 Crystal Ball Big Bang Button (군더더기 없는 현대적이고 웅장한 대형 코스믹 아티팩트) */}
       <div
         className={`fixed bottom-safe-fab-center w-[84px] h-[84px] pointer-events-none flex items-center justify-center select-none ${
@@ -2270,6 +2299,14 @@ export function BigBangButton() {
                     <Clover data-bigbang-center-gesture="hold" size={25} strokeWidth={1.8} className="-rotate-45 text-cyan-200" aria-hidden="true" />
                   ) : centerGesture === 'double' ? (
                     <KeyRound data-bigbang-center-gesture="double" size={25} strokeWidth={1.8} className="-rotate-45 text-cyan-200" aria-hidden="true" />
+                  ) : guideBadge && guidePresentation.banner && !isPressing && !isCosmicSuctionActive && activePhase === 'idle' ? (
+                    /* ❓ 스마트 가이드를 한 번이라도 실행했으면 빅뱅 버튼 중앙 구슬에 물음표가 남는다. */
+                    <span
+                      data-bigbang-guide-badge="question"
+                      aria-hidden="true"
+                      className="relative -rotate-45 select-none font-black leading-none text-cyan-100 drop-shadow-[0_0_9px_rgba(34,211,238,0.95)]"
+                      style={{ fontSize: 21, textShadow: '0 0 10px rgba(34,211,238,0.85)' }}
+                    >?</span>
                   ) : (
                     <>
                       <span data-bigbang-idle-core="true" className="w-2.5 h-2.5 rounded-full bg-cyan-300/80 blur-[1px] animate-pulse" />

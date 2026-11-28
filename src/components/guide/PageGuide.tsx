@@ -38,8 +38,8 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
           <div className="flex shrink-0 items-start gap-3">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700"><BookOpen size={20} /></span>
             <div className="min-w-0 flex-1">
-              <h2 id={`page-guide-title-${guide.id}`} className="text-base font-black text-slate-900">{guide.title}</h2>
-              <p className="mt-0.5 text-[13px] leading-relaxed text-slate-600 break-keep">{guide.intro}</p>
+              <h2 id={`page-guide-title-${guide.id}`} className="text-base font-black text-slate-900 [overflow-wrap:anywhere]">{guide.title}</h2>
+              <p className="mt-0.5 text-[13px] leading-relaxed text-slate-600 break-keep [overflow-wrap:anywhere]">{guide.intro}</p>
             </div>
             <button type="button" onClick={close} aria-label="가이드 닫기" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"><X size={18} /></button>
           </div>
@@ -61,18 +61,18 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
           {section === 'guide' ? (
             <ol className="-mx-1 mt-3.5 min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-1" data-page-guide-steps>
               {guide.steps.map((step, index) => (
-                <li key={index} className="flex gap-3 rounded-2xl bg-slate-50 px-3.5 py-2.5">
+                <li key={index} className="flex min-w-0 gap-3 rounded-2xl bg-slate-50 px-3.5 py-2.5">
                   <span className="mt-[1px] flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-400 text-[11px] font-black text-slate-950">{index + 1}</span>
-                  <span className="text-[13.5px] leading-relaxed text-slate-700 break-keep">{step}</span>
+                  <span className="min-w-0 flex-1 text-[13.5px] leading-relaxed text-slate-700 break-keep [overflow-wrap:anywhere]">{step}</span>
                 </li>
               ))}
             </ol>
           ) : section === 'uses' ? (
             <ul className="-mx-1 mt-3.5 min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-1" data-page-guide-uses>
               {guide.uses.map((use, index) => (
-                <li key={index} className="flex gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 px-3.5 py-2.5">
+                <li key={index} className="flex min-w-0 gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 px-3.5 py-2.5">
                   <span className="text-lg leading-none" aria-hidden="true">{use.icon}</span>
-                  <span className="min-w-0 break-keep">
+                  <span className="min-w-0 flex-1 break-keep [overflow-wrap:anywhere]">
                     <span className="block text-[13px] font-bold leading-snug text-slate-900">{use.when}</span>
                     <span className="mt-0.5 block text-[13px] leading-relaxed text-slate-700">→ {use.how}</span>
                   </span>
@@ -82,9 +82,9 @@ export function PageGuideDialog({ guide, onClose }: { guide: PageGuide; onClose:
           ) : (
             <ul className="-mx-1 mt-3.5 min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain px-1" data-page-guide-tips>
               {guide.tips.map((tip, index) => (
-                <li key={index} className="flex gap-3 rounded-2xl bg-amber-50/70 px-3.5 py-2.5">
+                <li key={index} className="flex min-w-0 gap-3 rounded-2xl bg-amber-50/70 px-3.5 py-2.5">
                   <span className="text-lg leading-none" aria-hidden="true">{tip.icon}</span>
-                  <span className="text-[13.5px] leading-relaxed text-slate-700 break-keep">{tip.text}</span>
+                  <span className="min-w-0 flex-1 text-[13.5px] leading-relaxed text-slate-700 break-keep [overflow-wrap:anywhere]">{tip.text}</span>
                 </li>
               ))}
             </ul>
