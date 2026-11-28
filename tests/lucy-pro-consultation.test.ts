@@ -33,17 +33,26 @@ test('a different concern resets the bundle instead of stacking tools', () => {
   assert.deepEqual(plan.bundle.toolIds, ['saju', 'ziwei', 'sukuyo']);
 });
 
-test('the bundle stops growing at the cap and deepens with the tools already open', () => {
-  const full: LucyProBundle = {
+test('asking to go deeper keeps the open tools and does not add more', () => {
+  const plan = nextLucyProBundle(career, '그럼 더 자세히 봐줘', ['saju', 'ziwei']);
+  assert.equal(plan.continued, true);
+  assert.deepEqual(plan.added, []);
+  assert.deepEqual(plan.bundle.toolIds, career.toolIds);
+  assert.match(lucyProContinuationNote(plan), /이미 켜 둔 도구/);
+});
+
+test('the same concern can keep adding tools until all 15 are open', () => {
+  assert.equal(LUCY_PRO_BUNDLE_CAP, 15);
+  const six: LucyProBundle = {
     concern: '이직을 해야 할까',
     topic: 'career',
     toolIds: ['saju', 'qimen', 'liuren', 'taiyi', 'iching', 'kyusei'],
   };
-  assert.equal(full.toolIds.length, LUCY_PRO_BUNDLE_CAP);
-  const plan = nextLucyProBundle(full, '그럼 더 자세히 봐줘', ['saju', 'ziwei']);
+  const plan = nextLucyProBundle(six, '그럼 다른 도구도 봐줘', ['saju']);
   assert.equal(plan.continued, true);
-  assert.deepEqual(plan.added, []);
-  assert.deepEqual(plan.bundle.toolIds, full.toolIds);
+  assert.equal(plan.added.length, 2);
+  assert.equal(plan.bundle.toolIds.length, 8);
+  assert.deepEqual(plan.bundle.toolIds.slice(2), six.toolIds);
 });
 
 test('resetting the consultation helper does not throw outside a previous bundle', () => {

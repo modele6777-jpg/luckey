@@ -2,13 +2,14 @@ import { CONCERN_TOOL_ORDER } from '@/lib/divination/concernToolOrder';
 import { FIFTEEN_DIVINATION_TOOLS, type DivinationToolId } from '@/lib/fifteenDivinationTools';
 import { detectMasterConcernTopic, type MasterConcernTopic } from '@/lib/lucyMasterPrompts';
 
-/** 한 고민에 동시에 켜 두는 기초 도구 상한. */
-export const LUCY_PRO_BUNDLE_CAP = 6;
+/** 한 고민에 동시에 켜 두는 기초 도구 상한. 15대 도구를 모두 켤 수 있다. */
+export const LUCY_PRO_BUNDLE_CAP = 15;
 /** 같은 고민이 이어질 때 한 번에 새로 덧붙이는 도구 수. */
 export const LUCY_PRO_NEW_PER_TURN = 2;
 
 const RESET_RE = /다른\s*(?:얘기|이야기|고민|주제|질문)|새\s*(?:고민|얘기|이야기)|주제\s*(?:를\s*)?바꾸|그건\s*됐|그건\s*그만|다른\s*걸\s*볼/;
 const FOLLOW_RE = /^(?:그럼|그러면|그래서|근데|그런데|그리고|또|더|자세히|왜|어떻게|언제|시기|그(?:건|거|사람|애)|이(?:건|거)|방금|아까)/;
+const DEEPEN_RE = /더\s*깊게|깊이\s*(?:봐|보고)|자세히\s*(?:봐|보고)|더\s*자세히|깊게\s*봐/;
 
 export interface LucyProBundle {
   concern: string;
@@ -80,14 +81,18 @@ export function nextLucyProBundle(
   const nextTopic = detectMasterConcernTopic(clean);
   const topic = nextTopic !== 'general' ? nextTopic : previous!.topic;
   const carried = previous!.toolIds;
-  const slots = Math.min(LUCY_PRO_NEW_PER_TURN, Math.max(0, LUCY_PRO_BUNDLE_CAP - carried.length));
+  // 더 깊게 보자는 말에는 도구를 더 켜지 않고, 이미 켠 도구로 깊게 본다.
+  const deepen = DEEPEN_RE.test(clean);
+  const slots = deepen ? 0 : Math.min(LUCY_PRO_NEW_PER_TURN, Math.max(0, LUCY_PRO_BUNDLE_CAP - carried.length));
   const added: DivinationToolId[] = [];
   // 짧은 후속("그럼 시기는?")은 문장만으로 도구를 갈아타지 않는다.
-  // 이번 턴에 실제로 타로가 들어왔으면 그건 덧붙이고, 나머지는 지금 고민의 다음 도구를 붙인다.
+  // 이번 턴에 실제로 타로가 들어왔으면 그건 덧붙이고, 나머지는 이 고민에 맞는 순서대로 15개까지 붙인다.
   const brought = fresh.filter(id => id !== 'saju');
+  const rest = (Object.keys(FIFTEEN_DIVINATION_TOOLS) as DivinationToolId[])
+    .filter(id => id !== 'saju' && !CONCERN_TOOL_ORDER[topic].includes(id));
   const pool = nextTopic === 'general'
-    ? [...brought.filter(id => id === 'tarot'), ...CONCERN_TOOL_ORDER[topic]]
-    : [...brought, ...CONCERN_TOOL_ORDER[topic]];
+    ? [...brought.filter(id => id === 'tarot'), ...CONCERN_TOOL_ORDER[topic], ...rest]
+    : [...brought, ...CONCERN_TOOL_ORDER[topic], ...rest];
   for (const id of pool) {
     if (added.length >= slots) break;
     if (id === 'saju' || carried.includes(id) || added.includes(id)) continue;
@@ -112,7 +117,7 @@ export function lucyProContinuationNote(plan: LucyProConsultationPlan): string {
   const added = plan.added.map(name);
   const addedLine = added.length
     ? `이번에 덧붙인 도구는 ${added.join(', ')}이다.`
-    : '새로 켤 자리는 없고, 이미 켜 둔 도구로 더 깊게 본다.';
+    : '새 도구는 더 켜지 말고, 이미 켜 둔 도구들이 함께 가리키는 곳을 더 깊게 풀어라.';
   return `[심화 상담] 같은 고민이 이어진다. 이미 켜 둔 도구(${kept.join(', ') || '없음'})는 끄지 말고 이어서 보라. ${addedLine} 상담을 처음부터 다시 열지 마.`;
 }
 
