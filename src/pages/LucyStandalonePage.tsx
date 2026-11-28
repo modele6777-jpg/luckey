@@ -18,7 +18,7 @@ import type { DivinationToolId } from '@/lib/lucyToolRegistry';
 import { buildActiveEngineTray } from '@/lib/lucyActiveEngineTray';
 import { MasterTableSheetButton, LucyToolSheetHost } from '@/components/duo/MasterTableSheet';
 import { MasterEngineCatalogButton } from '@/components/duo/MasterEngineCatalogButton';
-import { shouldShowLucyToolsCabinet } from '@/lib/lucyToolSheetRouting';
+import { isCosmicProOnTheLeft, shouldShowLucyToolsCabinet } from '@/lib/lucyToolSheetRouting';
 import { extractAllToolFacts, pickCalculatedToolData, type ToolFact } from '@/lib/lucyMasterToolFacts';
 import { LUCY_PRO_TOOLS } from '@/lib/divination/smartAgentRouter';
 import { shouldOfferLucyMaster, dismissLucyMasterOffer, markLucyMasterFromOffer, consumeLucyMasterFromOffer, shouldOfferReturnToLucy, dismissReturnToLucyOffer } from '@/lib/lucyMasterOffer';
@@ -838,6 +838,47 @@ function LucyThinkingIndicator({ isLight, master }: { isLight: boolean; master: 
   );
 }
 
+function useCosmicProOnTheLeft(isMasterMode: boolean, location: string) {
+  // 펼친 가로 화면에서 코스믹 프로가 왼쪽일 때만 도구함(오브)을 숨긴다.
+  // 좌우를 바꾸거나, 왼쪽이 다른 채널이거나, 세로로 펼치면 오브 버튼을 다시 보여 준다.
+  const read = useCallback(() => {
+    if (!isMasterMode || typeof document === 'undefined') return false;
+    const fold = isDuoUnfoldedState();
+    return isCosmicProOnTheLeft({
+      unfolded: fold.unfolded,
+      landscape: fold.orientation === 'landscape',
+      panesSwapped: document.documentElement.classList.contains('duo-panels-swapped'),
+      cosmicProMounted: Boolean(document.querySelector('#duo-content-viewport [data-duo-divination-tarot="true"]')),
+    });
+  }, [isMasterMode, location]);
+
+  const [onLeft, setOnLeft] = useState(read);
+  useEffect(() => {
+    const sync = () => setOnLeft(read());
+    sync();
+    const watch = (node: Element | null) => {
+      if (!node) return () => {};
+      const observer = new MutationObserver(sync);
+      observer.observe(node, { attributes: true, attributeFilter: ['class'] });
+      return () => observer.disconnect();
+    };
+    const stopRoot = watch(document.documentElement);
+    const stopBody = watch(document.body);
+    let frame = 0;
+    const unsubscribe = subscribeFoldState(() => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => { frame = 0; sync(); });
+    });
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      stopRoot();
+      stopBody();
+      unsubscribe();
+    };
+  }, [read]);
+  return onLeft;
+}
+
 function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
   // Lucy and Lucy+ share one required basic-tool + deep-perspective answer policy.
   // 🌟 실제 펼친 듀얼스크린 감지:
@@ -856,6 +897,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
   // Lucy Plus is a distinct bubble step, active only in the unfolded Lucy cosmic room.
   const [isMasterMode, setIsMasterMode] = useState<boolean>(() => isLucyMasterModeOn());
+  const cosmicProOnLeft = useCosmicProOnTheLeft(isMasterMode, location);
   const bubbleMarker = useLucyBubbleMarker();
   const isCosmicRoomActive = isActuallyUnfoldedDual && isLucyChatPath(location) && !isMasterMode;
 
@@ -4446,8 +4488,9 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
           {/* Right Action Tools: 검색 · 자동 읽기 · 내보내기 */}
           <div className="lucy-header-actions flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* ✏️ 도구함: 점술모드는 오브(구슬)·15개 도구 탭, 일반 채팅은 연필·엔진함(심층 관점 설명) */}
-            {shouldShowLucyToolsCabinet(isMasterMode, isActuallyUnfoldedDual) && (
+            {/* ✏️ 도구함: 점술모드는 오브(구슬)·15개 도구 탭, 일반 채팅은 연필·엔진함(심층 관점 설명).
+                펼친 가로 화면에서 코스믹 프로가 왼쪽에 있을 때만 오브 버튼을 숨긴다. */}
+            {shouldShowLucyToolsCabinet(isMasterMode, cosmicProOnLeft) && (
               <MasterTableSheetButton tone={isLight ? 'light' : 'dark'} isMasterMode={isMasterMode} />
             )}
             {/* ✏️ 도구함·엔진함 창 호스트: 도구함 버튼이 숨겨진 펼친 화면 루시프로에서도

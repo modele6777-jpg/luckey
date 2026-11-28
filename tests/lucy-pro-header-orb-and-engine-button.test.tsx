@@ -17,7 +17,7 @@ import { LucyToolSheetHost, MasterTableSheetButton } from '../src/components/duo
 import { MasterEngineCatalogButton } from '../src/components/duo/MasterEngineCatalogButton';
 import { LucyOrbToolIcon } from '../src/components/icons/LucyOrbToolIcon';
 import { getPageGuide } from '../src/lib/pageGuides';
-import { CLOSED_LUCY_SHEET, isLucySheetButtonExpanded, reduceLucySheet, shouldShowLucyToolsCabinet } from '../src/lib/lucyToolSheetRouting';
+import { CLOSED_LUCY_SHEET, isCosmicProOnTheLeft, isLucySheetButtonExpanded, reduceLucySheet, shouldShowLucyToolsCabinet } from '../src/lib/lucyToolSheetRouting';
 
 const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const SHEET = read('src/components/duo/MasterTableSheet.tsx');
@@ -111,18 +111,26 @@ test('Lucy Pro Engine Cabinet and Tools Cabinet active states remain independent
   assert.match(SHEET_BUTTON, /window\.dispatchEvent\(new CustomEvent\(LUCY_ENGINE_BOX_CLOSE_EVENT\)\)/, 'opening a header cabinet clears stale Engine state');
 });
 
-test('only expanded Lucy Pro hides the Tools Cabinet button', () => {
-  assert.equal(shouldShowLucyToolsCabinet(true, true), false, 'expanded Lucy Pro hides the Tools Cabinet');
-  assert.equal(shouldShowLucyToolsCabinet(true, false), true, 'collapsed Lucy Pro keeps the Tools Cabinet');
+test('Lucy Pro hides the Tools Cabinet only while Cosmic Pro is on the left', () => {
+  assert.equal(isCosmicProOnTheLeft({ unfolded: true, landscape: true, panesSwapped: false, cosmicProMounted: true }), true);
+  assert.equal(shouldShowLucyToolsCabinet(true, true), false, 'Cosmic Pro on the left hides the orb');
+  assert.equal(isCosmicProOnTheLeft({ unfolded: true, landscape: true, panesSwapped: true, cosmicProMounted: true }), false, 'a swapped layout moves Cosmic Pro off the left');
+  assert.equal(isCosmicProOnTheLeft({ unfolded: true, landscape: false, panesSwapped: false, cosmicProMounted: true }), false, 'portrait puts Cosmic Pro above or below, not on the left');
+  assert.equal(isCosmicProOnTheLeft({ unfolded: true, landscape: true, panesSwapped: false, cosmicProMounted: false }), false, 'another channel on the left is not Cosmic Pro');
+  assert.equal(isCosmicProOnTheLeft({ unfolded: false, landscape: false, panesSwapped: false, cosmicProMounted: false }), false);
+  assert.equal(shouldShowLucyToolsCabinet(true, false), true, 'Lucy Pro shows the orb again when Cosmic Pro is not on the left');
   assert.equal(shouldShowLucyToolsCabinet(false, true), true, 'expanded Lucy Chat keeps its Tools Cabinet');
-  assert.match(PAGE, /shouldShowLucyToolsCabinet\(isMasterMode, isActuallyUnfoldedDual\)/);
+  assert.match(PAGE, /shouldShowLucyToolsCabinet\(isMasterMode, cosmicProOnLeft\)/);
+  assert.match(PAGE, /isCosmicProOnTheLeft\(/);
+  assert.match(PAGE, /#duo-content-viewport \[data-duo-divination-tarot="true"\]/);
+  assert.match(PAGE, /duo-panels-swapped/);
   assert.match(PAGE, /\{isMasterMode && <MasterEngineCatalogButton/, 'the Engine Cabinet remains visible in Lucy Pro');
 });
 
 test('the sheet host stays mounted in the header even when the Tools Cabinet button is hidden', () => {
   // 사용자 제보(2026-11-28): 펼친 화면 루시프로에서 도구함(오브) 버튼이 숨겨지면
   // 그 버튼이 들고 있던 창 호스트까지 사라져 엔진함이 열리지 않았다.
-  const guardStart = PAGE.indexOf('{shouldShowLucyToolsCabinet(isMasterMode, isActuallyUnfoldedDual) && (');
+  const guardStart = PAGE.indexOf('{shouldShowLucyToolsCabinet(isMasterMode, cosmicProOnLeft) && (');
   assert.ok(guardStart >= 0, 'the Tools Cabinet button keeps its own visibility rule');
   const guardEnd = PAGE.indexOf(')}', guardStart);
   const guarded = PAGE.slice(guardStart, guardEnd);

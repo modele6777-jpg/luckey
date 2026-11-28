@@ -20,9 +20,23 @@ export function isLucySheetButtonExpanded(state: LucySheetState, isMasterMode: b
   return state.open && state.variant === (isMasterMode ? 'divination' : 'chat');
 }
 
-/** Expanded Lucy Pro keeps Engine Cabinet but omits the separate Tools Cabinet button. */
-export function shouldShowLucyToolsCabinet(isMasterMode: boolean, isExpandedDuo: boolean): boolean {
-  return !(isMasterMode && isExpandedDuo);
+/**
+ * 코스믹 프로가 펼친 화면의 왼쪽에 있는지.
+ * 가로로 펼쳐져 있고, 좌우가 바뀌지 않았으며, 콘텐츠 칸에 코스믹 프로(점술 테이블)가
+ * 떠 있을 때만 참이다. 세로 펼침(위·아래), 좌우 맞바꿈, 왼쪽이 다른 채널이면 거짓.
+ */
+export function isCosmicProOnTheLeft(input: {
+  unfolded: boolean;
+  landscape: boolean;
+  panesSwapped: boolean;
+  cosmicProMounted: boolean;
+}): boolean {
+  return input.unfolded && input.landscape && !input.panesSwapped && input.cosmicProMounted;
+}
+
+/** 도구함(오브)은 루시프로이면서 코스믹 프로가 왼쪽에 있을 때만 숨긴다. */
+export function shouldShowLucyToolsCabinet(isMasterMode: boolean, cosmicProOnLeft: boolean): boolean {
+  return !(isMasterMode && cosmicProOnLeft);
 }
 
 export type LucySheetAction =
