@@ -4466,6 +4466,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
               }`}
               title="대화 내역 검색"
               aria-label="대화 검색"
+              aria-expanded={isSearchOpen}
+              aria-controls="lucy-search-overlay"
             >
               <Search size={16} />
             </button>
@@ -4535,7 +4537,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       </header>
 
       {isSearchOpen && (
-        <div className="lucy-search-overlay" role="dialog" aria-label="대화 검색" onClick={closeSearch}>
+        <div id="lucy-search-overlay" className="lucy-search-overlay" role="dialog" aria-label="대화 검색" onClick={closeSearch}>
           <div className="lucy-search-panel" data-no-scroll-top="true" onClick={(e) => e.stopPropagation()}>
             <div className="lucy-search-bar">
               <Search size={18} aria-hidden="true" />

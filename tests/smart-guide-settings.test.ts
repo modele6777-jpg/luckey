@@ -161,7 +161,7 @@ test('the question-mark icon opens a sheet with the two switches', () => {
   assert.match(SETTINGS_UI, /data-smart-guide-settings-button="true"/);
   assert.match(SETTINGS_UI, /data-smart-guide-enabled=\{active \? 'true' : 'false'\}/);
   assert.match(SETTINGS_UI, /aria-pressed=\{active\}/);
-  // 켜짐 상태는 접근성 속성에 남기되, 물음표 버튼은 중립 톤이고 점/발광 표시를 두지 않는다.
+  // 켜짐 상태는 접근성 속성에 남기고, 버튼 자체에는 점/발광 표시를 두지 않는다. 활성 테두리는 공유 Lucy 헤더가 적용한다.
   const buttonMarker = 'data-smart-guide-settings-button="true"';
   const buttonIndex = SETTINGS_UI.indexOf(buttonMarker);
   const buttonStart = SETTINGS_UI.lastIndexOf('<button', buttonIndex);
@@ -190,7 +190,7 @@ test('the question-mark icon opens a sheet with the two switches', () => {
   assert.match(SETTINGS_LIB, /addEventListener\('storage'/);
 });
 
-test('the auto-read header toggle retains accessible state without a green highlight', () => {
+test('the auto-read header toggle retains accessible state without hardcoded highlight classes', () => {
   const marker = 'data-auto-tts-toggle="true"';
   const buttonIndex = LUCY_PAGE.indexOf(marker);
   assert.notEqual(buttonIndex, -1, 'auto-read toggle marker exists');

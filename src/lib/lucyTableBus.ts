@@ -112,6 +112,8 @@ export interface LucyDivinationToolRequest {
 
 /** 엔진함을 열어 달라는 요청 (관점 버튼). */
 export const LUCY_ENGINE_BOX_OPEN_EVENT = 'prism:lucy_engine_box_open';
+/** 열린 엔진함이 닫혔음을 헤더 제어에 알린다. */
+export const LUCY_ENGINE_BOX_CLOSE_EVENT = 'prism:lucy_engine_box_close';
 /** 엔진함 안에서 이 관점으로 이동해 달라는 요청. */
 export const LUCY_ENGINE_FOCUS_EVENT = 'prism:lucy_engine_focus';
 /** 점술 도구함을 열어 달라는 요청 (도구 버튼). */

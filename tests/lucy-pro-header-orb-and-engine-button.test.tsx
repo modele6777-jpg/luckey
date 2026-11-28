@@ -83,10 +83,13 @@ test('the pro-mode pencil button opens the engine box', () => {
   assert.match(engineButtonMarkup, /data-master-engine-catalog-button/);
   assert.match(engineButtonMarkup, /data-tool-button-icon="pencil"/);
   assert.match(engineButtonMarkup, /aria-label="엔진함 보기"/);
+  assert.match(engineButtonMarkup, /aria-expanded="false"/);
   assert.match(engineButtonMarkup, /class="lucide lucide-pencil/);
   assert.match(engineButtonMarkup, /h-8 w-8 shrink-0 items-center justify-center rounded-full/);
   // 엔진함은 #1414가 만든 공용 창을 그대로 쓴다 (답변 끝 관점 버튼과 같은 창·같은 이동).
-  assert.match(ENGINE_BUTTON, /import \{ openLucyEngineBox \} from '@\/lib\/lucyTableBus'/);
+  assert.match(ENGINE_BUTTON, /LUCY_ENGINE_BOX_CLOSE_EVENT, LUCY_ENGINE_BOX_OPEN_EVENT, openLucyEngineBox/);
+  assert.match(ENGINE_BUTTON, /addEventListener\(LUCY_ENGINE_BOX_OPEN_EVENT, onOpen\)/);
+  assert.match(ENGINE_BUTTON, /addEventListener\(LUCY_ENGINE_BOX_CLOSE_EVENT, onClose\)/);
   assert.match(ENGINE_BUTTON, /openLucyEngineBox\(\)/);
   assert.doesNotMatch(ENGINE_BUTTON, /from '@\/components\/duo\/MasterTableSheet'/, 'engine box is not a second sheet');
   // 점술 도구함(오브 버튼)을 열지 않는다.

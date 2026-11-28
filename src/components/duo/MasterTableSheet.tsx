@@ -7,6 +7,7 @@ import {
   getLastDivinationToolRequest,
   getLucyTableState,
   LUCY_DIVINATION_TOOL_EVENT,
+  LUCY_ENGINE_BOX_CLOSE_EVENT,
   LUCY_ENGINE_BOX_OPEN_EVENT,
   LUCY_TABLE_EVENT,
   type LucyTableState,
@@ -198,6 +199,7 @@ export function MasterTableSheetButton({ tone = 'dark', isMasterMode = false }: 
   };
   const closeSheet = () => {
     dispatchSheet({ type: 'close' });
+    window.dispatchEvent(new CustomEvent(LUCY_ENGINE_BOX_CLOSE_EVENT));
     clearEngineFocus();
     clearDivinationToolRequest();
   };
@@ -210,6 +212,7 @@ export function MasterTableSheetButton({ tone = 'dark', isMasterMode = false }: 
         data-tool-sheet-variant={isMasterMode ? 'divination' : 'chat'}
         data-tool-button-icon={isMasterMode ? 'orb' : 'pencil'}
         aria-label={isMasterMode ? '점술 도구 보기' : '엔진함 보기'}
+        aria-expanded={sheet.open}
         title={isMasterMode ? '점술 도구' : '엔진함'}
         onClick={() => { triggerHaptic('whitehole'); openFromButton(); }}
         className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border backdrop-blur-md active:scale-95 ${tone === 'light'
