@@ -4143,9 +4143,12 @@ html.dark .update-notice-modal .update-notice-item > span:not(.text-amber-500) {
 [data-page-guide-button][aria-expanded='true'],
 [data-smart-guide-settings-button][aria-pressed='true'] {
   border: 0;
-  color: #f5c542 !important;
+  color: #ffe566 !important;
+  opacity: 1 !important;
 }
-/* 모든 앱의 TTS 자동재생 아이콘은 켜지면 헤더와 같은 노란색이다. */
+/* 모든 앱의 TTS 자동재생 아이콘은 켜지면 헤더와 같은 밝은 노란색이다. */
+[data-auto-tts-toggle][aria-pressed='true'],
 [data-auto-tts-toggle][aria-pressed='true'] svg {
-  color: #f5c542 !important;
+  color: #ffe566 !important;
+  opacity: 1 !important;
 }

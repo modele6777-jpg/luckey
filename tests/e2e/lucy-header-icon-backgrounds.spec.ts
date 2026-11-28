@@ -50,7 +50,7 @@ async function expectActiveIcon(locator: Locator, active: boolean) {
   expect(chrome.borderWidth).toBe('0px');
   expect(chrome.boxShadow).toBe('none');
   if (!active) expect(chrome.backgroundColor).toBe('rgba(0, 0, 0, 0)');
-  if (active) expect(chrome.color).toBe('rgb(245, 197, 66)');
+  if (active) expect(chrome.color).toBe('rgb(255, 229, 102)');
 }
 
 async function expectLucyHeaderControls(page: Page, mode: LucyMode) {

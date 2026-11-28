@@ -8184,7 +8184,8 @@ button, a, input, textarea, select {
   -webkit-tap-highlight-color: transparent;
 }
 .key-search-btn:hover { opacity: .7; }
-html.key-search-open .key-search-btn { color: #f5c542; }
+html.key-search-open .key-search-btn,
+html.key-search-open .key-search-btn:hover { color: #ffe566; opacity: 1; }
 .key-search-btn:active { transform: scale(0.94); }
 .key-search-overlay {
   position: fixed;

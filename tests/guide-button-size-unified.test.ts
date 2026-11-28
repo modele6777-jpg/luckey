@@ -160,9 +160,9 @@ test('the ON state turns the header icon yellow instead of drawing a ring', () =
   const indexCss = read('../src/index.css');
   assert.match(
     indexCss,
-    /\[data-page-guide-button\]\[aria-expanded='true'\],\s*\[data-smart-guide-settings-button\]\[aria-pressed='true'\] \{\s*border: 0;\s*color: #f5c542 !important;/,
+    /\[data-page-guide-button\]\[aria-expanded='true'\],\s*\[data-smart-guide-settings-button\]\[aria-pressed='true'\] \{\s*border: 0;\s*color: #ffe566 !important;\s*opacity: 1 !important;/,
     '켜짐 상태에서는 테두리 없이 아이콘만 노란색이다',
   );
-  assert.match(lucyCss, /\.lucy-chat-shell \.lucy-header-actions > button:is\(\[aria-pressed='true'\], \[aria-expanded='true'\]\) \{ border: 0 !important; color: #f5c542 !important;/, '루시 채팅 헤더도 같은 노란색이다');
+  assert.match(lucyCss, /\.lucy-chat-shell \.lucy-header-actions > button:is\(\[aria-pressed='true'\], \[aria-expanded='true'\]\) \{ border: 0 !important; color: #ffe566 !important; opacity: 1 !important;/, '루시 채팅 헤더도 같은 밝은 노란색이다');
   assert.doesNotMatch(indexCss, /rgba\(120, 159, 139/, '세이지 테두리는 더 이상 쓰지 않는다');
 });

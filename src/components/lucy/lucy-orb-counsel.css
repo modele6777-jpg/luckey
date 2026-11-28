@@ -1412,7 +1412,8 @@ input[type="file"].lucy-orb-attach-input { display: none; }
 .lucy-orb-header .lucy-orb-bed:hover { background: transparent; opacity: .7; }
 .lucy-orb-header .lucy-orb-bed:active { transform: scale(.95); }
 .lucy-orb-header .lucy-orb-bed[aria-pressed="false"] { color: rgba(255,255,255,.72); }
-.lucy-orb-header .lucy-orb-bed[aria-pressed="true"] { color: #f5c542; }
+.lucy-orb-header .lucy-orb-bed[aria-pressed="true"],
+.lucy-orb-header .lucy-orb-bed[aria-pressed="true"]:hover { color: #ffe566; opacity: 1; }
 .lucy-orb-header .lucy-orb-bed svg { flex: 0 0 auto; }
 /* 사주·타로 통합 마스터 '루시' 한 명 — 고르는 카드 없이 바로 상담한다. */
 .lucy-orb-master-hero {
