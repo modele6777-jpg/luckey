@@ -3525,15 +3525,7 @@ html.duo-unfolded-portrait .sites-pinned-main {
   padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px)) !important;
 }
 
-/* 펼친 세로 화면: 배경음은 채팅 오른쪽 위, 최근대화는 입력창 바로 위 오른쪽 끝. */
-html.duo-unfolded-portrait .lucy-bgm-fab {
-  position: absolute !important;
-  top: 8px !important;
-  right: 8px !important;
-  left: auto !important;
-  bottom: auto !important;
-  z-index: 30;
-}
+/* 펼친 세로 화면: 최근대화는 입력창 바로 위 오른쪽 끝. */
 html.duo-unfolded-portrait .lucy-recent-fab {
   position: absolute !important;
   right: 8px !important;

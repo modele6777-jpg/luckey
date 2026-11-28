@@ -4596,6 +4596,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                 </>
               )}
             </button>
+            {isMasterMode && <LucyMasterBgmToggle />}
 
             {/*  Export Chat */}
             {lucyMessages.length > 0 && (
@@ -5626,11 +5627,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
           onTogglePause={handleTtsTogglePause}
           onStop={handleTtsStopAll}
         />
-        {isMasterMode && (
-          <div className="lucy-bgm-fab absolute top-2 right-2 z-30">
-            <LucyMasterBgmToggle />
-          </div>
-        )}
         </div>
       </div>
 
