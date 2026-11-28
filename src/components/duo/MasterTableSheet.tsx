@@ -19,7 +19,7 @@ import { DivinationToolTabBar, resolveToolTabViews } from './MasterToolTabs';
 import { LucyDeepPerspectivePanel } from '@/components/chat/LucyEngineCatalogDialog';
 import { LucyOrbToolIcon } from '@/components/icons/LucyOrbToolIcon';
 import type { DivinationToolId } from '@/lib/fifteenDivinationTools';
-import { CLOSED_LUCY_SHEET, pickActiveDivinationTab, reduceLucySheet } from '@/lib/lucyToolSheetRouting';
+import { CLOSED_LUCY_SHEET, isLucySheetButtonExpanded, pickActiveDivinationTab, reduceLucySheet } from '@/lib/lucyToolSheetRouting';
 
 /**
  * 📱 도구함 창(점술모드 오브 버튼 · 일반 채팅 연필 버튼).
@@ -195,6 +195,7 @@ export function MasterTableSheetButton({ tone = 'dark', isMasterMode = false }: 
   const openFromButton = () => {
     clearEngineFocus();
     clearDivinationToolRequest();
+    window.dispatchEvent(new CustomEvent(LUCY_ENGINE_BOX_CLOSE_EVENT));
     dispatchSheet({ type: 'button', isMasterMode });
   };
   const closeSheet = () => {
@@ -212,7 +213,7 @@ export function MasterTableSheetButton({ tone = 'dark', isMasterMode = false }: 
         data-tool-sheet-variant={isMasterMode ? 'divination' : 'chat'}
         data-tool-button-icon={isMasterMode ? 'orb' : 'pencil'}
         aria-label={isMasterMode ? '점술 도구 보기' : '엔진함 보기'}
-        aria-expanded={sheet.open}
+        aria-expanded={isLucySheetButtonExpanded(sheet, isMasterMode)}
         title={isMasterMode ? '점술 도구' : '엔진함'}
         onClick={() => { triggerHaptic('whitehole'); openFromButton(); }}
         className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border backdrop-blur-md active:scale-95 ${tone === 'light'
