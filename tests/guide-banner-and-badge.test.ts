@@ -7,14 +7,18 @@
  * 3) "빅뱅 탭으로 가이드 이동시 안내 팝업에 그 페이지의 가이드로 바로 연결할수 있는 버튼을 안내해줘"
  * 4) "가이드 창에 글씨가 삐져나와"
  * 5) "모든 페이지의 가이드 기능은 조금만 더 구채적으로 작성해줘"
+ * 6) "빅뱅 버튼 물음표는 가이드 터치 할때만 잠깐 나오개 해줘" (2026-11-28, 영구 저장 제거)
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   SMART_GUIDE_BADGE_KEY,
-  markSmartGuideBadge,
-  readSmartGuideBadge,
+  SMART_GUIDE_BADGE_MS,
+  SMART_GUIDE_BADGE_FADE_MS,
+  clearSmartGuideBadge,
+  startSmartGuideBadgeFlash,
+  type SmartGuideBadgePhase,
 } from '../src/lib/omniWarp/smartBigBangGuide';
 import {
   allPageGuides,
@@ -26,6 +30,37 @@ const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.ur
 const BANNER = read('src/components/guide/SmartGuideBanner.tsx');
 const PAGE_GUIDE = read('src/components/guide/PageGuide.tsx');
 const BIGBANG = read('src/components/omniwarp/BigBangButton.tsx');
+
+/** 가짜 타이머 시계 (실제 setTimeout 없이 흐름을 그대로 돌린다) */
+function fakeClock() {
+  let now = 0;
+  let nextId = 1;
+  const timers = new Map<number, { at: number; handler: () => void }>();
+  return {
+    setTimeoutFn: (handler: () => void, ms: number) => {
+      const id = nextId++;
+      timers.set(id, { at: now + ms, handler });
+      return id;
+    },
+    clearTimeoutFn: (id: unknown) => {
+      timers.delete(id as number);
+    },
+    pending: () => timers.size,
+    advance(ms: number) {
+      const target = now + ms;
+      for (;;) {
+        const due = [...timers.entries()]
+          .filter(([, timer]) => timer.at <= target)
+          .sort((a, b) => a[1].at - b[1].at)[0];
+        if (!due) break;
+        timers.delete(due[0]);
+        now = due[1].at;
+        due[1].handler();
+      }
+      now = target;
+    },
+  };
+}
 
 function memoryStorage(seed: Record<string, string> = {}) {
   const map = new Map(Object.entries(seed));
@@ -86,27 +121,100 @@ test('the banner button resolves the guide of the exact screen, including dApp t
   assert.equal(resolveGuideForLocation('').id, 'lucy');
 });
 
-test('every tap leaves a question mark inside the Big Bang button until the guide is turned off', () => {
-  const storage = memoryStorage();
-  assert.equal(readSmartGuideBadge(storage), false);
-  assert.equal(markSmartGuideBadge(storage), true);
-  assert.equal(storage.map.get(SMART_GUIDE_BADGE_KEY), '1');
-  assert.equal(readSmartGuideBadge(storage), true);
-  // 저장이 막혀도 이번 화면에서는 표시가 남는다.
-  assert.equal(readSmartGuideBadge(null), false);
-  assert.equal(markSmartGuideBadge(null), true);
+test('the question mark only flashes when the guide is tapped — it never stays saved', () => {
+  // 예전 버전이 localStorage에 영구 저장해 둔 표시는 다시 읽지 않고 한 번 지운다.
+  const storage = memoryStorage({ [SMART_GUIDE_BADGE_KEY]: '1' });
+  clearSmartGuideBadge(storage);
+  assert.equal(storage.map.has(SMART_GUIDE_BADGE_KEY), false);
+  // 저장이 막혀 있어도 화면 흐름은 계속된다.
+  assert.doesNotThrow(() => clearSmartGuideBadge(null));
+  assert.doesNotThrow(() => clearSmartGuideBadge(undefined));
 
-  // 탭으로 스마트 가이드가 실행될 때마다 표시를 남긴다.
+  // 잠깐 떴다가 저절로 사라진다 (사용자 지시: 약 1.2~1.5초 + 부드러운 페이드).
+  assert.ok(SMART_GUIDE_BADGE_MS >= 1200 && SMART_GUIDE_BADGE_MS <= 1500, `badge shows ${SMART_GUIDE_BADGE_MS}ms`);
+  assert.ok(SMART_GUIDE_BADGE_FADE_MS > 0 && SMART_GUIDE_BADGE_FADE_MS < SMART_GUIDE_BADGE_MS);
+
+  // 가이드 탭으로 스마트 가이드가 실행될 때만 잠깐 표시한다.
   const run = BIGBANG.slice(BIGBANG.indexOf('const runSmartGuide'), BIGBANG.indexOf('const goToNextRecommended'));
-  assert.match(run, /markSmartGuideBadge\(safeLocalStorage\)/);
-  assert.match(run, /setGuideBadge\(true\)/);
+  assert.match(run, /flashGuideBadge\(\)/);
+  assert.doesNotMatch(run, /markSmartGuideBadge/);
+  assert.doesNotMatch(run, /setGuideBadge\(true\)/);
+  // 영구 저장은 어디에도 남기지 않는다.
+  assert.doesNotMatch(BIGBANG, /readSmartGuideBadge/);
+  assert.doesNotMatch(BIGBANG, /markSmartGuideBadge/);
+  assert.doesNotMatch(BIGBANG, /setItem\(SMART_GUIDE_BADGE_KEY/);
+  // 앱을 열 때 예전에 남은 표시를 지운다.
+  assert.match(BIGBANG, /clearSmartGuideBadge\(safeLocalStorage\)/);
 
-  // 중앙 구슬의 물음표: 테스트 가능한 속성 + 설정 OFF면 꺼진다.
+  // 타이머로 스스로 사라지고, 연속 탭·언마운트에서는 예약된 타이머를 정리한다.
+  assert.match(BIGBANG, /guideBadgeFlashRef\.current = startSmartGuideBadgeFlash\(setGuideBadgePhase\)/);
+  assert.match(BIGBANG, /const clearGuideBadge = useCallback\(\(\) => \{\s*guideBadgeFlashRef\.current\?\.cancel\(\)/);
+  const beforeGuideState = BIGBANG.slice(0, BIGBANG.indexOf('// 🧭 상하좌우 원뿔 모양'));
+  assert.match(beforeGuideState, /guideBadgeFlashRef\.current\?\.cancel\(\)/, 'unmount cancels the badge timer');
+
+  // 중앙 구슬의 물음표: 테스트 가능한 속성 + 페이드 + 설정 OFF면 꺼진다.
   assert.match(BIGBANG, /data-bigbang-guide-badge="question"/);
-  assert.match(BIGBANG, /guideBadge && guidePresentation\.banner && !isPressing && !isCosmicSuctionActive && activePhase === 'idle'/);
+  assert.match(BIGBANG, /data-bigbang-guide-badge-phase=\{guideBadgePhase\}/);
+  assert.match(BIGBANG, /guideBadgePhase !== 'hidden' && guidePresentation\.banner && !isPressing && !isCosmicSuctionActive && activePhase === 'idle'/);
+  assert.match(BIGBANG, /guideBadgePhase === 'fading' \? 'opacity-0 scale-75' : 'opacity-100 scale-100'/);
   // 홀드·드래그·워프 조준 중에는 기존 아이콘이 먼저 나온다.
   const center = BIGBANG.slice(BIGBANG.indexOf('centerDirection === \'north\' || centerDirection === \'south\''), BIGBANG.indexOf('</motion.button>'));
   assert.ok(center.indexOf('data-bigbang-center-gesture="hold"') < center.indexOf('data-bigbang-guide-badge="question"'), 'hold icon stays ahead of the badge');
+  assert.ok(center.indexOf('data-bigbang-center-gesture="double"') < center.indexOf('data-bigbang-guide-badge="question"'), 'double-tap (key) icon stays ahead of the badge');
+});
+
+test('the badge timer shows, fades, then hides itself — and can be restarted or cancelled', () => {
+  // 가짜 시계로 실제 타이머 흐름을 그대로 돌린다.
+  const clock = fakeClock();
+  const seen: SmartGuideBadgePhase[] = [];
+  const flash = startSmartGuideBadgeFlash(phase => seen.push(phase), {
+    showMs: SMART_GUIDE_BADGE_MS,
+    fadeMs: SMART_GUIDE_BADGE_FADE_MS,
+    setTimeoutFn: clock.setTimeoutFn,
+    clearTimeoutFn: clock.clearTimeoutFn,
+  });
+
+  assert.deepEqual(seen, ['shown'], '탭하면 바로 물음표가 뜬다');
+  assert.equal(flash.phase, 'shown');
+
+  clock.advance(SMART_GUIDE_BADGE_MS - SMART_GUIDE_BADGE_FADE_MS - 1);
+  assert.deepEqual(seen, ['shown'], '보이는 시간 동안 그대로');
+
+  clock.advance(1);
+  assert.deepEqual(seen, ['shown', 'fading'], '끝나기 전에 부드럽게 흐려진다');
+
+  clock.advance(SMART_GUIDE_BADGE_FADE_MS);
+  assert.deepEqual(seen, ['shown', 'fading', 'hidden'], '저절로 사라진다');
+  assert.equal(flash.phase, 'hidden');
+  assert.equal(clock.pending(), 0, '남은 타이머가 없다');
+
+  // 다시 탭하면 처음부터 다시 보인다.
+  const again: SmartGuideBadgePhase[] = [];
+  const restartClock = fakeClock();
+  const first = startSmartGuideBadgeFlash(phase => again.push(phase), {
+    setTimeoutFn: restartClock.setTimeoutFn,
+    clearTimeoutFn: restartClock.clearTimeoutFn,
+  });
+  restartClock.advance(SMART_GUIDE_BADGE_MS);
+  first.cancel();
+  const second = startSmartGuideBadgeFlash(phase => again.push(phase), {
+    setTimeoutFn: restartClock.setTimeoutFn,
+    clearTimeoutFn: restartClock.clearTimeoutFn,
+  });
+  restartClock.advance(SMART_GUIDE_BADGE_MS);
+  assert.deepEqual(again, ['shown', 'fading', 'hidden', 'shown', 'fading', 'hidden']);
+
+  // 취소하면(언마운트·가이드 끄기) 더 이상 상태가 바뀌지 않는다.
+  const cancelClock = fakeClock();
+  const cancelled: SmartGuideBadgePhase[] = [];
+  const handle = startSmartGuideBadgeFlash(phase => cancelled.push(phase), {
+    setTimeoutFn: cancelClock.setTimeoutFn,
+    clearTimeoutFn: cancelClock.clearTimeoutFn,
+  });
+  handle.cancel();
+  cancelClock.advance(10_000);
+  assert.deepEqual(cancelled, ['shown'], '취소 뒤에는 콜백이 오지 않는다');
+  assert.equal(second.phase, 'hidden');
 });
 
 test('page guide text cannot spill out of its card', () => {

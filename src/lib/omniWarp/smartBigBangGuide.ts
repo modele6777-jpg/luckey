@@ -80,8 +80,16 @@ export interface SmartGuideResult {
 export type SmartGuideStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
 export const SMART_GUIDE_STORAGE_KEY = 'luckey_smart_guide_v1';
-/** 빅뱅 버튼 안에 물음표(?) 문양이 남았는지 (한 번이라도 스마트 가이드를 실행했는지) */
+/**
+ * 예전 버전이 빅뱅 버튼 안 물음표(?) 표시를 영구 저장하던 키.
+ * 사용자 지시(2026-11-28): "빅뱅 버튼 물음표는 가이드 터치 할때만 잠깐 나오개 해줘"
+ * — 이제는 읽지 않고, 예전에 남은 값만 한 번 지운다.
+ */
 export const SMART_GUIDE_BADGE_KEY = 'luckey_smart_guide_badge_v1';
+/** 가이드를 탭했을 때 빅뱅 버튼 안 물음표가 보이는 시간 (잠깐 떴다가 저절로 사라진다) */
+export const SMART_GUIDE_BADGE_MS = 1400;
+/** 사라질 때 부드럽게 흐려지는 시간 */
+export const SMART_GUIDE_BADGE_FADE_MS = 450;
 /** 배너가 저절로 사라지기까지의 시간 */
 export const SMART_GUIDE_TOAST_MS = 4000;
 /** 최근 안내 이력은 이만큼만 남긴다 */
@@ -281,27 +289,78 @@ export function hasSeenTodayTarot(storage: SmartGuideStorage | null | undefined,
 }
 
 /**
- * 빅뱅 버튼 중앙 구슬에 물음표(?) 문양을 남겼는지 읽는다.
- * 사용자 지시(2026-11-28): "가이드탭을 누를때마다 빅뱅 버튼 안에 물음표 문양이 남게 해줘"
- * — 한 번이라도 스마트 가이드가 실행되면 표시가 남고, 앱을 다시 열어도 유지된다.
+ * 예전 버전이 localStorage에 영구 저장해 둔 물음표 표시를 지운다.
+ * 사용자 지시(2026-11-28): "빅뱅 버튼 물음표는 가이드 터치 할때만 잠깐 나오개 해줘"
+ * — 이제 표시는 화면 상태로만 잠깐 떴다 사라지므로, 앱을 다시 열거나 평상시에는 물음표가 없다.
  */
-export function readSmartGuideBadge(storage: SmartGuideStorage | null | undefined): boolean {
-  if (!storage) return false;
+export function clearSmartGuideBadge(storage: SmartGuideStorage | null | undefined): void {
   try {
-    return storage.getItem(SMART_GUIDE_BADGE_KEY) === '1';
+    storage?.removeItem(SMART_GUIDE_BADGE_KEY);
   } catch {
-    return false;
+    /* 저장 공간이 막혀도 화면 흐름은 계속된다 */
   }
 }
 
-/** 가이드를 실행할 때마다 물음표 표시를 남긴다. 저장이 막혀도 이번 화면에서는 남긴다. */
-export function markSmartGuideBadge(storage: SmartGuideStorage | null | undefined): boolean {
-  try {
-    storage?.setItem(SMART_GUIDE_BADGE_KEY, '1');
-  } catch {
-    /* 저장 공간이 막혀도 표시는 남긴다 */
-  }
-  return true;
+/** 가이드 탭으로 켜진 물음표 표시의 단계: 떠 있음 → 흐려지는 중 → 없음 */
+export type SmartGuideBadgePhase = 'hidden' | 'shown' | 'fading';
+
+export interface SmartGuideBadgeFlash {
+  readonly phase: SmartGuideBadgePhase;
+  /** 예약된 타이머를 모두 취소한다 (언마운트·연속 탭·가이드 끄기) */
+  cancel(): void;
+}
+
+export interface SmartGuideBadgeFlashOptions {
+  /** 물음표가 보이는 시간 */
+  showMs?: number;
+  /** 마지막에 부드럽게 흐려지는 시간 */
+  fadeMs?: number;
+  setTimeoutFn?: (handler: () => void, ms: number) => unknown;
+  clearTimeoutFn?: (id: unknown) => void;
+}
+
+/**
+ * 가이드를 탭했을 때만 물음표를 잠깐 띄우는 타이머.
+ * 화면·DOM 없이 그대로 시험할 수 있게 순수 타이머만 다룬다.
+ * - 시작하면 곧바로 'shown' → (showMs - fadeMs) 뒤 'fading' → fadeMs 뒤 'hidden'
+ * - cancel하면 예약된 타이머를 모두 지운다 (이후 onChange 호출 없음)
+ */
+export function startSmartGuideBadgeFlash(
+  onChange: (phase: SmartGuideBadgePhase) => void,
+  options: SmartGuideBadgeFlashOptions = {},
+): SmartGuideBadgeFlash {
+  const showMs = Math.max(0, options.showMs ?? SMART_GUIDE_BADGE_MS);
+  const fadeMs = Math.max(0, Math.min(options.fadeMs ?? SMART_GUIDE_BADGE_FADE_MS, showMs));
+  const setTimer = options.setTimeoutFn ?? ((handler: () => void, ms: number) => setTimeout(handler, ms));
+  const clearTimer = options.clearTimeoutFn ?? ((id: unknown) => clearTimeout(id as ReturnType<typeof setTimeout>));
+  let timer: unknown = null;
+  let phase: SmartGuideBadgePhase = 'hidden';
+
+  const enter = (next: SmartGuideBadgePhase) => {
+    phase = next;
+    onChange(next);
+  };
+
+  enter('shown');
+  timer = setTimer(() => {
+    enter('fading');
+    timer = setTimer(() => {
+      timer = null;
+      enter('hidden');
+    }, fadeMs);
+  }, Math.max(0, showMs - fadeMs));
+
+  return {
+    get phase() {
+      return phase;
+    },
+    cancel() {
+      if (timer !== null) {
+        clearTimer(timer);
+        timer = null;
+      }
+    },
+  };
 }
 
 /** 가이드 도슨트가 읽을 문장 (배너의 이유 + 할 일을 그대로 말로) */

@@ -44,8 +44,11 @@ import {
   hasSeenTodayTarot,
   guideDateKey,
   SMART_GUIDE_TOAST_MS,
-  readSmartGuideBadge,
-  markSmartGuideBadge,
+  SMART_GUIDE_BADGE_FADE_MS,
+  clearSmartGuideBadge,
+  startSmartGuideBadgeFlash,
+  type SmartGuideBadgeFlash,
+  type SmartGuideBadgePhase,
   type SmartGuideResult,
 } from '@/lib/omniWarp/smartBigBangGuide';
 import { resolveSmartGuidePresentation, useSmartGuideSettings } from '@/lib/omniWarp/smartGuideSettings';
@@ -224,6 +227,8 @@ export function BigBangButton() {
       if (smartGuideTimerRef.current) {
         clearTimeout(smartGuideTimerRef.current);
       }
+      guideBadgeFlashRef.current?.cancel();
+      guideBadgeFlashRef.current = null;
     };
   }, []);
 
@@ -270,8 +275,9 @@ export function BigBangButton() {
   // 🧭 한 번 탭하면 지금 가장 쓸모 있는 다음 한 곳을 골라 안내하는 스마트 가이드 배너
   const [smartGuide, setSmartGuide] = useState<SmartGuideResult | null>(null);
   const smartGuideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // ❓ 가이드를 한 번이라도 실행했는지 — 빅뱅 버튼 중앙 구슬에 물음표 문양으로 남는다.
-  const [guideBadge, setGuideBadge] = useState<boolean>(() => readSmartGuideBadge(safeLocalStorage));
+  // ❓ 가이드를 탭했을 때만 빅뱅 버튼 중앙 구슬에 잠깐 떴다 사라지는 물음표 (영구 저장 없음)
+  const [guideBadgePhase, setGuideBadgePhase] = useState<SmartGuideBadgePhase>('hidden');
+  const guideBadgeFlashRef = useRef<SmartGuideBadgeFlash | null>(null);
   // 📘 배너의 "이 페이지 가이드 보기"로 여는 페이지 가이드 창
   const [bannerPageGuide, setBannerPageGuide] = useState<PageGuide | null>(null);
   // 🧭 헤더 물음표 아이콘에서 켜고 끄는 설정 (배너 · 도슨트). 이동은 설정과 무관하게 늘 한다.
@@ -283,6 +289,21 @@ export function BigBangButton() {
       smartGuideTimerRef.current = null;
     }
     setSmartGuide(null);
+  }, []);
+  // ❓ 물음표 표시는 화면 상태로만 잠깐(약 1.4초) 떴다가 부드럽게 흐려져 사라진다.
+  //    연속 탭이면 기존 타이머를 정리하고 처음부터 다시 센다.
+  const clearGuideBadge = useCallback(() => {
+    guideBadgeFlashRef.current?.cancel();
+    guideBadgeFlashRef.current = null;
+    setGuideBadgePhase('hidden');
+  }, []);
+  const flashGuideBadge = useCallback(() => {
+    guideBadgeFlashRef.current?.cancel();
+    guideBadgeFlashRef.current = startSmartGuideBadgeFlash(setGuideBadgePhase);
+  }, []);
+  // 예전 버전이 localStorage에 영구 저장해 둔 물음표 표시는 한 번 지운다 (다시는 남지 않는다).
+  useEffect(() => {
+    clearSmartGuideBadge(safeLocalStorage);
   }, []);
   // 배너를 닫거나, 멈추면 도슨트도 함께 멈춘다.
   const dismissSmartGuide = useCallback(() => {
@@ -317,9 +338,12 @@ export function BigBangButton() {
   }, [armSmartGuideAutoHide]);
   // 설정에서 스마트 가이드·도슨트를 끄면 지금 떠 있는 안내도 바로 정리한다.
   useEffect(() => {
-    if (!guidePresentation.banner) closeSmartGuide();
+    if (!guidePresentation.banner) {
+      closeSmartGuide();
+      clearGuideBadge();
+    }
     if (!guidePresentation.douser) stopGuideDouser();
-  }, [guidePresentation.banner, guidePresentation.douser, closeSmartGuide]);
+  }, [guidePresentation.banner, guidePresentation.douser, closeSmartGuide, clearGuideBadge]);
   // 📅 오늘 화면별 방문(과 점술모드 사용)을 남겨 스마트 가이드가 같은 곳만 권하지 않게 한다.
   useEffect(() => {
     recordSmartGuideVisit(safeLocalStorage, currentCleanPath, { masterMode: masterOn }, Date.now());
@@ -1159,9 +1183,8 @@ export function BigBangButton() {
     if (guide.needsProMode) enterDivinationMode();
 
     recordSmartGuideRecommendation(safeLocalStorage, guide.path, now);
-    // ❓ 가이드를 실행할 때마다 빅뱅 버튼 안에 물음표 문양을 남긴다 (설정 OFF면 그리지 않는다).
-    markSmartGuideBadge(safeLocalStorage);
-    setGuideBadge(true);
+    // ❓ 가이드를 탭했을 때만 빅뱅 버튼 안에 물음표가 잠깐 떴다 저절로 사라진다 (영구 저장 없음).
+    flashGuideBadge();
     // 스마트 가이드가 꺼져 있으면 배너·도슨트만 나오지 않고, 이동은 그대로 한다.
     if (guidePresentation.banner) showSmartGuide(guide);
     else closeSmartGuide();
@@ -1190,7 +1213,7 @@ export function BigBangButton() {
     navigate(guide.path);
     window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: guide.path } }));
     window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: guide.path } }));
-  }, [currentCleanPath, isChatView, navigate, showSmartGuide, closeSmartGuide, enterDivinationMode, guidePresentation.banner, guidePresentation.douser]);
+  }, [currentCleanPath, isChatView, navigate, showSmartGuide, closeSmartGuide, enterDivinationMode, flashGuideBadge, guidePresentation.banner, guidePresentation.douser]);
 
 
   // ⚡ 추천 1순위 즉시 도약 헬퍼 (더블탭 또는 추천 카드에서 실행 - 룬 문자 사이 우주 흡입 워프 연출)
@@ -2299,13 +2322,20 @@ export function BigBangButton() {
                     <Clover data-bigbang-center-gesture="hold" size={25} strokeWidth={1.8} className="-rotate-45 text-cyan-200" aria-hidden="true" />
                   ) : centerGesture === 'double' ? (
                     <KeyRound data-bigbang-center-gesture="double" size={25} strokeWidth={1.8} className="-rotate-45 text-cyan-200" aria-hidden="true" />
-                  ) : guideBadge && guidePresentation.banner && !isPressing && !isCosmicSuctionActive && activePhase === 'idle' ? (
-                    /* ❓ 스마트 가이드를 한 번이라도 실행했으면 빅뱅 버튼 중앙 구슬에 물음표가 남는다. */
+                  ) : guideBadgePhase !== 'hidden' && guidePresentation.banner && !isPressing && !isCosmicSuctionActive && activePhase === 'idle' ? (
+                    /* ❓ 가이드를 탭했을 때만 물음표가 잠깐 떴다 저절로 사라진다 (평상시·앱 재시작엔 없다). */
                     <span
                       data-bigbang-guide-badge="question"
+                      data-bigbang-guide-badge-phase={guideBadgePhase}
                       aria-hidden="true"
-                      className="relative -rotate-45 select-none font-black leading-none text-cyan-100 drop-shadow-[0_0_9px_rgba(34,211,238,0.95)]"
-                      style={{ fontSize: 21, textShadow: '0 0 10px rgba(34,211,238,0.85)' }}
+                      className={`relative -rotate-45 select-none font-black leading-none text-cyan-100 drop-shadow-[0_0_9px_rgba(34,211,238,0.95)] transition-all ease-out ${
+                        guideBadgePhase === 'fading' ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
+                      }`}
+                      style={{
+                        fontSize: 21,
+                        textShadow: '0 0 10px rgba(34,211,238,0.85)',
+                        transitionDuration: `${SMART_GUIDE_BADGE_FADE_MS}ms`,
+                      }}
                     >?</span>
                   ) : (
                     <>
