@@ -7,6 +7,7 @@ export interface DayakHornbillResult {
   dayakMotif: string;
   companionMotif: string;
   canopyRiverAxis: string;
+  dayakCrossAxis: string;
   topicBalanceHint: string;
   dayakInsight: string;
   riverTone: string;
@@ -113,13 +114,17 @@ export function calculateDayakLonghouseHornbillPoise(params: {
   const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = DAYAK_SHADOWS[idx];
 
+  const calculatedAtKst = formatKstIso(now);
+  const dayakCrossAxis = `[${picked.motif.split('(')[0].trim()}] × [${companion.motif.split('(')[0].trim()}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-DAYAK-HORNBILL-v2.4.0',
-    calculatedAtKst: formatKstIso(now),
+    engineVersion: 'LUCKEY-DAYAK-HORNBILL-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     dayakMotif: picked.motif,
     companionMotif: companion.motif,
     canopyRiverAxis,
+    dayakCrossAxis,
     topicBalanceHint,
     dayakInsight: picked.insight,
     riverTone: picked.tone,
@@ -136,6 +141,7 @@ export function formatDayakHornbillPrompt(res: DayakHornbillResult): string {
     `[보르네오 다약·롱하우스 코뿔새 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 수관·강변 축: ${res.canopyRiverAxis}`,
+    `- 4중 교차 축: ${res.dayakCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 다약 모티프: ${res.dayakMotif} (${res.riverTone})`,
     `- 동반 모티프: ${res.companionMotif}`,

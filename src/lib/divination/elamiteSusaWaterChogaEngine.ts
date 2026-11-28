@@ -7,6 +7,7 @@ export interface ElamiteSusaResult {
   susaMotif: string;
   companionMotif: string;
   chogaCanalAxis: string;
+  elamiteCrossAxis: string;
   topicBalanceHint: string;
   elamiteInsight: string;
   chogaTone: string;
@@ -113,13 +114,17 @@ export function calculateElamiteSusaWaterChoga(params: {
   const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = ELAMITE_SHADOWS[idx];
 
+  const calculatedAtKst = formatKstIso(now);
+  const elamiteCrossAxis = `[${picked.motif.split('(')[0].trim()}] × [${companion.motif.split('(')[0].trim()}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-ELAMITE-SUSA-v2.4.0',
-    calculatedAtKst: formatKstIso(now),
+    engineVersion: 'LUCKEY-ELAMITE-SUSA-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     susaMotif: picked.motif,
     companionMotif: companion.motif,
     chogaCanalAxis,
+    elamiteCrossAxis,
     topicBalanceHint,
     elamiteInsight: picked.insight,
     chogaTone: picked.tone,
@@ -136,6 +141,7 @@ export function formatElamiteSusaPrompt(res: ElamiteSusaResult): string {
     `[엘람 수사·수로 정원 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 수로·벽돌 축: ${res.chogaCanalAxis}`,
+    `- 4중 교차 축: ${res.elamiteCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 수사 모티프: ${res.susaMotif} (${res.chogaTone})`,
     `- 동반 모티프: ${res.companionMotif}`,

@@ -7,6 +7,7 @@ export interface DogonAmmaNommoResult {
   starPhase: string;
   companionPhase: string;
   cosmicOrderAxis: string;
+  dogonCrossAxis: string;
   topicBalanceHint: string;
   nommoInsight: string;
   cliffTone: string;
@@ -113,13 +114,17 @@ export function calculateDogonAmmaNommoHarmony(params: {
   const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = DOGON_SHADOWS[idx];
 
+  const calculatedAtKst = formatKstIso(now);
+  const dogonCrossAxis = `[${picked.phase.split('(')[0].trim()}] × [${companion.phase.split('(')[0].trim()}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-DOGON-AMMA-v2.4.0',
-    calculatedAtKst: formatKstIso(now),
+    engineVersion: 'LUCKEY-DOGON-AMMA-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     starPhase: picked.phase,
     companionPhase: companion.phase,
     cosmicOrderAxis,
+    dogonCrossAxis,
     topicBalanceHint,
     nommoInsight: picked.insight,
     cliffTone: picked.tone,
@@ -136,6 +141,7 @@ export function formatDogonAmmaNommoPrompt(res: DogonAmmaNommoResult): string {
     `[도곤 암마·노모 우주 질서 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 우주 질서 축: ${res.cosmicOrderAxis}`,
+    `- 4중 교차 축: ${res.dogonCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 별자리 위상: ${res.starPhase} (${res.cliffTone})`,
     `- 동반 위상: ${res.companionPhase}`,
