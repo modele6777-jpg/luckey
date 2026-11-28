@@ -16,6 +16,7 @@ import { MasterTableSheetButton } from '../src/components/duo/MasterTableSheet';
 import { MasterEngineCatalogButton } from '../src/components/duo/MasterEngineCatalogButton';
 import { LucyOrbToolIcon } from '../src/components/icons/LucyOrbToolIcon';
 import { getPageGuide } from '../src/lib/pageGuides';
+import { CLOSED_LUCY_SHEET, isLucySheetButtonExpanded, reduceLucySheet, shouldShowLucyToolsCabinet } from '../src/lib/lucyToolSheetRouting';
 
 const read = (path: string) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const SHEET = read('src/components/duo/MasterTableSheet.tsx');
@@ -94,6 +95,26 @@ test('the pro-mode pencil button opens the engine box', () => {
   assert.doesNotMatch(ENGINE_BUTTON, /from '@\/components\/duo\/MasterTableSheet'/, 'engine box is not a second sheet');
   // 점술 도구함(오브 버튼)을 열지 않는다.
   assert.doesNotMatch(ENGINE_BUTTON, /openDivinationToolTab/);
+});
+
+test('Lucy Pro Engine Cabinet and Tools Cabinet active states remain independent', () => {
+  const engineSheet = reduceLucySheet(CLOSED_LUCY_SHEET, { type: 'engine-box' });
+  assert.equal(isLucySheetButtonExpanded(engineSheet, true), false, 'opening the Engine Cabinet does not activate the Pro Tools button');
+  assert.equal(isLucySheetButtonExpanded(engineSheet, false), true, 'the shared Lucy Chat engine button still reflects its own sheet');
+
+  const toolsSheet = reduceLucySheet(CLOSED_LUCY_SHEET, { type: 'divination-tool' });
+  assert.equal(isLucySheetButtonExpanded(toolsSheet, true), true, 'opening the Pro Tools Cabinet activates its orb button');
+  assert.equal(isLucySheetButtonExpanded(toolsSheet, false), false, 'the Tools Cabinet does not activate the Lucy Chat engine button');
+  assert.match(ENGINE_BUTTON, /addEventListener\(LUCY_DIVINATION_TOOL_EVENT, onToolsOpen\)/, 'opening Tools clears the Engine button active state');
+  assert.match(SHEET_BUTTON, /window\.dispatchEvent\(new CustomEvent\(LUCY_ENGINE_BOX_CLOSE_EVENT\)\)/, 'opening a header cabinet clears stale Engine state');
+});
+
+test('only expanded Lucy Pro hides the Tools Cabinet button', () => {
+  assert.equal(shouldShowLucyToolsCabinet(true, true), false, 'expanded Lucy Pro hides the Tools Cabinet');
+  assert.equal(shouldShowLucyToolsCabinet(true, false), true, 'collapsed Lucy Pro keeps the Tools Cabinet');
+  assert.equal(shouldShowLucyToolsCabinet(false, true), true, 'expanded Lucy Chat keeps its Tools Cabinet');
+  assert.match(PAGE, /shouldShowLucyToolsCabinet\(isMasterMode, isActuallyUnfoldedDual\)/);
+  assert.match(PAGE, /\{isMasterMode && <MasterEngineCatalogButton/, 'the Engine Cabinet remains visible in Lucy Pro');
 });
 
 test('the engine box request opens the shared sheet and drops any stale perspective jump', async () => {

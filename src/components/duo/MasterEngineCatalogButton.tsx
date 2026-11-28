@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Pencil } from 'lucide-react';
-import { LUCY_ENGINE_BOX_CLOSE_EVENT, LUCY_ENGINE_BOX_OPEN_EVENT, openLucyEngineBox } from '@/lib/lucyTableBus';
+import { LUCY_DIVINATION_TOOL_EVENT, LUCY_ENGINE_BOX_CLOSE_EVENT, LUCY_ENGINE_BOX_OPEN_EVENT, openLucyEngineBox } from '@/lib/lucyTableBus';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 
 /**
@@ -16,11 +16,14 @@ export function MasterEngineCatalogButton({ tone = 'dark' }: { tone?: 'dark' | '
   useEffect(() => {
     const onOpen = () => setIsOpen(true);
     const onClose = () => setIsOpen(false);
+    const onToolsOpen = () => setIsOpen(false);
     window.addEventListener(LUCY_ENGINE_BOX_OPEN_EVENT, onOpen);
     window.addEventListener(LUCY_ENGINE_BOX_CLOSE_EVENT, onClose);
+    window.addEventListener(LUCY_DIVINATION_TOOL_EVENT, onToolsOpen);
     return () => {
       window.removeEventListener(LUCY_ENGINE_BOX_OPEN_EVENT, onOpen);
       window.removeEventListener(LUCY_ENGINE_BOX_CLOSE_EVENT, onClose);
+      window.removeEventListener(LUCY_DIVINATION_TOOL_EVENT, onToolsOpen);
     };
   }, []);
 

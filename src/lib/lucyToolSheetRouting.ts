@@ -15,6 +15,16 @@ export interface LucySheetState {
 
 export const CLOSED_LUCY_SHEET: LucySheetState = { open: false, variant: 'chat' };
 
+/** The shared sheet activates only the header button that owns its current variant. */
+export function isLucySheetButtonExpanded(state: LucySheetState, isMasterMode: boolean): boolean {
+  return state.open && state.variant === (isMasterMode ? 'divination' : 'chat');
+}
+
+/** Expanded Lucy Pro keeps Engine Cabinet but omits the separate Tools Cabinet button. */
+export function shouldShowLucyToolsCabinet(isMasterMode: boolean, isExpandedDuo: boolean): boolean {
+  return !(isMasterMode && isExpandedDuo);
+}
+
 export type LucySheetAction =
   /** 헤더 버튼을 직접 눌렀을 때: 점술모드면 도구함, 일반 채팅이면 엔진함 */
   | { type: 'button'; isMasterMode: boolean }
