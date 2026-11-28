@@ -2313,11 +2313,6 @@ export function BigBangButton() {
                     centerDirection === 'north'
                       ? <ChevronUp data-bigbang-center-arrow="north" size={24} strokeWidth={2} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
                       : <ChevronDown data-bigbang-center-arrow="south" size={24} strokeWidth={2} className="-rotate-45 text-cyan-200 drop-shadow-[0_0_6px_#22d3ee]" aria-hidden="true" />
-                  ) : centerGesture === 'tap' ? (
-                    <svg data-bigbang-center-gesture="tap" width="25" height="25" viewBox="0 0 26 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" className="-rotate-45 text-cyan-200" aria-hidden="true">
-                      {[0, 120, 240].map(angle => <path key={angle} d="M13 14C9 12 5 8 7 5C9 2 12 4 13 6C14 4 17 2 19 5C21 8 17 12 13 14Z" transform={`rotate(${angle} 13 14)`} fill="currentColor" fillOpacity="0.18" />)}
-                      <path d="M13 14Q17 23 11 26" strokeLinecap="round" />
-                    </svg>
                   ) : centerGesture === 'hold' ? (
                     <Clover data-bigbang-center-gesture="hold" size={25} strokeWidth={1.8} className="-rotate-45 text-cyan-200" aria-hidden="true" />
                   ) : centerGesture === 'double' ? (
@@ -2337,6 +2332,11 @@ export function BigBangButton() {
                         transitionDuration: `${SMART_GUIDE_BADGE_FADE_MS}ms`,
                       }}
                     >?</span>
+                  ) : centerGesture === 'tap' ? (
+                    <svg data-bigbang-center-gesture="tap" width="25" height="25" viewBox="0 0 26 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" className="-rotate-45 text-cyan-200" aria-hidden="true">
+                      {[0, 120, 240].map(angle => <path key={angle} d="M13 14C9 12 5 8 7 5C9 2 12 4 13 6C14 4 17 2 19 5C21 8 17 12 13 14Z" transform={`rotate(${angle} 13 14)`} fill="currentColor" fillOpacity="0.18" />)}
+                      <path d="M13 14Q17 23 11 26" strokeLinecap="round" />
+                    </svg>
                   ) : (
                     <>
                       <span data-bigbang-idle-core="true" className="w-2.5 h-2.5 rounded-full bg-cyan-300/80 blur-[1px] animate-pulse" />

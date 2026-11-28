@@ -161,6 +161,8 @@ test('the question mark only flashes when the guide is tapped — it never stays
   const center = BIGBANG.slice(BIGBANG.indexOf('centerDirection === \'north\' || centerDirection === \'south\''), BIGBANG.indexOf('</motion.button>'));
   assert.ok(center.indexOf('data-bigbang-center-gesture="hold"') < center.indexOf('data-bigbang-guide-badge="question"'), 'hold icon stays ahead of the badge');
   assert.ok(center.indexOf('data-bigbang-center-gesture="double"') < center.indexOf('data-bigbang-guide-badge="question"'), 'double-tap (key) icon stays ahead of the badge');
+  // 한 번 탭의 페탈 피드백(1.2초)에 가려지지 않게, 물음표는 탭 피드백보다 먼저 그린다.
+  assert.ok(center.indexOf('data-bigbang-guide-badge="question"') < center.indexOf('data-bigbang-center-gesture="tap"'), 'badge shows instead of the tap petal, so the 1.2s tap feedback cannot hide it');
 });
 
 test('the badge timer shows, fades, then hides itself — and can be restarted or cancelled', () => {
