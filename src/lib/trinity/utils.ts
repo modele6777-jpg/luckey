@@ -853,6 +853,17 @@ export function buildSpreadForTheme(
   return spreads[theme];
 }
 
+/**
+ * 실제 적용된 배열법이 예·아니오 전용 배열인지 판별한다.
+ * 질문 문장이 예/아니오형이어도 3카드·셀틱 크로스 같은 일반 배열법으로 리딩하면 YES/NO 판정을 내보내지 않는다.
+ */
+export function isYesNoTarotSpread(
+  spread?: Pick<TarotSpreadRecommendation, 'id' | 'theme'> | null,
+): boolean {
+  if (!spread) return false;
+  return spread.theme === 'yes_no' || spread.id === 'yes_no_gate';
+}
+
 /** 퀵 프리셋용 인기 타로 배열법 목록 */
 export const POPULAR_TAROT_SPREAD_PRESETS = [
   {
@@ -1445,8 +1456,14 @@ ${cardLines}
 5. 다음 행동은 질문에 맞는 현실적인 한 가지로 좁히고, 그 뒤에 질문자가 자기 상황이나 느낌을 되짚어 답할 수 있는 열린 질문 하나를 남기십시오. 미래 결과나 타인의 의도를 확정하지 마십시오. ${themeSpecificDirective}`;
 }
 
-/** 양자택일/결정형 질문일 때 타로 시스템 프롬프트에 붙이는 추가 지침 */
-export function buildTarotBinaryChoicePromptAddon(analysis: TarotConcernAnalysis): string {
+/**
+ * 양자택일/결정형 질문일 때 타로 시스템 프롬프트에 붙이는 추가 지침
+ * appliedSpread를 넘기면 실제 적용된 배열법을 기준으로 예·아니오 판정 허용 여부를 정한다.
+ */
+export function buildTarotBinaryChoicePromptAddon(
+  analysis: TarotConcernAnalysis,
+  appliedSpread?: Pick<TarotSpreadRecommendation, 'id' | 'theme'> | null,
+): string {
   if (analysis.kind === 'open') return '';
 
   if (analysis.kind === 'binary_choice') {
@@ -1470,6 +1487,13 @@ export function buildTarotBinaryChoicePromptAddon(analysis: TarotConcernAnalysis
   }
 
   if (analysis.kind === 'yes_no') {
+    const spread = appliedSpread === undefined ? analysis.spread : appliedSpread;
+    if (!isYesNoTarotSpread(spread)) {
+      return `
+
+[실행·방향 질문 상담 지침 — 이번 배열법에서는 YES/NO 판정 없음]
+이번 리딩의 배열법은 예·아니오 전용 배열이 아닙니다. 질문이 예/아니오형이어도 '상징적 기울기: [YES]', '[NO]', '최종 판정' 같은 YES/NO 판정 표기를 만들지 마세요. 카드의 상징이 비추는 가능한 해석과 지금 확인할 수 있는 조건, 가까운 기간의 현실적인 다음 단계로만 답하고, 확정된 결과나 보장으로 단정하지 마세요. 날짜·확률·수익을 덧붙이지 마세요.`;
+    }
     return `
 
 [🎯 예/아니오 질문 상담 지침]
@@ -1483,8 +1507,35 @@ export function buildTarotBinaryChoicePromptAddon(analysis: TarotConcernAnalysis
 }
 
 export function extractTarotSymbolicDirection(result: string): 'YES' | 'NO' | null {
-  const match = String(result || '').match(/(?:^|\n)\s*(?:\*\*)?상징적\s*기울기\s*[:：]\s*\[?\s*(YES|NO)\s*\]?(?:\*\*)?\s*(?=\n|$)/i);
+  const match = String(result || '').match(/(?:^|\n)\s*(?:[-*•]\s*)?(?:\*\*)?상징적\s*기울기\s*[:：]\s*\[?\s*(YES|NO)\s*\]?(?:\*\*)?\s*(?=\n|$)/i);
   return match ? match[1].toUpperCase() as 'YES' | 'NO' : null;
+}
+
+export interface TarotYesNoVerdict {
+  type: 'YES' | 'NO';
+  label: 'YES' | 'NO';
+  badgeText: string;
+}
+
+/**
+ * 예·아니오 전용 배열법을 실제로 적용했을 때만 상징적 기울기 배너를 만든다.
+ * 질문만 예/아니오형이고 배열법이 일반 배열이면(null) 배너를 표시하지 않는다.
+ */
+export function resolveTarotYesNoVerdict(input: {
+  result?: string | null;
+  spread?: Pick<TarotSpreadRecommendation, 'id' | 'theme'> | null;
+  cardCount?: number;
+}): TarotYesNoVerdict | null {
+  if (!input.result) return null;
+  if (!isYesNoTarotSpread(input.spread)) return null;
+  if (!input.cardCount || input.cardCount <= 0) return null;
+  const label = extractTarotSymbolicDirection(input.result);
+  if (!label) return null;
+  return {
+    type: label,
+    label,
+    badgeText: '실제 앱 카드의 상징적 참고이며, 현실의 결과나 결정에 대한 판정·보장이 아닙니다.',
+  };
 }
 
 export interface ThemeTailoredStructure {
@@ -1944,7 +1995,7 @@ export function buildLocalTarotReading(
 - **[${optionB}]**: ${describeCard(cards[2])}
 
 이 카드는 객관적인 승자나 각 선택의 미래 결과를 판정하지 않아요. 조건·비용·위험·되돌릴 수 있는 정도처럼 현실에서 확인할 기준을 비교해 보세요.`;
-  } else if (analysis.kind === 'yes_no') {
+  } else if (analysis.kind === 'yes_no' && isYesNoTarotSpread(spread)) {
     const finalCard = cards[cards.length - 1] || leadCard;
     const finalCardName = finalCard?.nameKo || finalCard?.kr || '마지막으로 펼쳐진 카드';
     const details = getTarotCardDetails(finalCard);
@@ -1981,9 +2032,10 @@ export function ensureCompleteTarotReading(
   text: string,
   concern: string,
   cards?: any[],
+  analysis?: TarotConcernAnalysis,
 ): string {
   if (!text || isTarotStreamFailure(text) || text.trim().length < 80) {
-    return buildLocalTarotReading(concern, cards || []);
+    return buildLocalTarotReading(concern, cards || [], undefined, analysis);
   }
 
   let cleaned = text.trim();

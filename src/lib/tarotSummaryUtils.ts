@@ -14,6 +14,26 @@ export function sanitizeTarotDecisionYesNo(text: string): string {
 }
 
 /**
+ * 🚫 예·아니오 전용 배열이 아닌 리딩에서 새어 나온 YES/NO 판정 표기를 지운다.
+ * 판정만 있는 단독 줄은 통째로 빼고, 문장 안에 섞인 표기는 문구만 지운다.
+ */
+export function stripSymbolicYesNoVerdict(text: string): string {
+  if (!text) return '';
+  const kept: string[] = [];
+  for (const line of String(text).split('\n')) {
+    if (/^\s*(?:[-*•·]\s*)?(?:\*\*)?\s*(?:최종\s*판정|상징적\s*기울기)\s*[:：]/.test(line)) continue;
+    kept.push(
+      line
+        .replace(/(?:상징적\s*기울기|최종\s*판정)\s*[:：]?\s*\[?\s*(?:조건부\s*|확실한\s*|단호한\s*|단독\s*)?(?:YES|NO)\s*\]?/gi, '')
+        .replace(/\[\s*(?:조건부\s*|확실한\s*|단호한\s*|단독\s*)?(?:YES|NO)\s*\]/gi, '')
+        .replace(/[ \t]{2,}/g, ' ')
+        .trimEnd(),
+    );
+  }
+  return kept.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+/**
  * 같은 역방향 주의 문장이 본문·배너·강조 줄에 연속으로 반복되면 첫 한 줄만 남깁니다.
  */
 export function collapseRepeatedCautions(text: string): string {

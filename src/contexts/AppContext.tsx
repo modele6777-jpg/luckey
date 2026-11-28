@@ -2346,7 +2346,8 @@ ${responseProfile.rule}`;
       systemPrompt += `\n\n${buildSajuChatGuidance(Boolean(sajuObj), effectiveUserText)}`;
     }
     if (tarotDraw) {
-      systemPrompt += `\n\n${buildTarotInterpretationGuidance({ question: effectiveUserText, hasAppDraw: true })}`;
+      // 루시 채팅 타로(1~3장·마스터 배열)는 예·아니오 전용 배열이 아니다 — YES/NO 판정 없이 해석한다.
+      systemPrompt += `\n\n${buildTarotInterpretationGuidance({ question: effectiveUserText, hasAppDraw: true, yesNoSpread: false })}`;
     }
 
     if (options?.voiceTurn) {

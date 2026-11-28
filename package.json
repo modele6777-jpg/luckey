@@ -1,7 +1,7 @@
 {
   "name": "luckey",
   "private": true,
-  "version": "1.8.651",
+  "version": "1.8.652",
   "engines": {
     "node": ">=20.0.0"
   },
@@ -37,7 +37,8 @@
     "test:lucy-answer-perspective": "tsx --test tests/lucy-answer-perspective-link.test.tsx",
     "test:orb-voice-mode": "tsx --test tests/orb-voice-mode.test.ts tests/orb-mic-lifecycle.test.ts tests/lucy-orb-mic-permission.test.ts tests/orb-visual-states.test.ts",
     "test:lucy-pro-header-orb": "tsx --test tests/lucy-pro-header-orb-and-engine-button.test.tsx",
-    "test:tarot-popup-frame": "tsx --test tests/tarot-popup-frame.test.ts"
+    "test:tarot-popup-frame": "tsx --test tests/tarot-popup-frame.test.ts",
+    "test:tarot-yesno-gate": "tsx --test tests/tarot-yesno-spread-gate.test.tsx"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",

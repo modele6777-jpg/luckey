@@ -16,6 +16,7 @@ import {
 import { playSuccessHaptic } from '@/lib/audioHaptics';
 import { TTSHighlightedText } from '@/components/common/TTSHighlightedText';
 import { isDailyTarotConcern } from '@/lib/trinity/utils';
+import { stripSymbolicYesNoVerdict } from '@/lib/tarotSummaryUtils';
 
 export interface TarotSummaryGraphicCardProps {
   bullets: string[];
@@ -26,6 +27,8 @@ export interface TarotSummaryGraphicCardProps {
   className?: string;
   title?: string;
   subtitle?: string;
+  /** 실제 적용된 배열법이 예·아니오 전용 배열일 때만 YES/NO 배지를 표시한다. */
+  isYesNoSpread?: boolean;
 }
 
 interface ParsedSummaryRow {
@@ -54,6 +57,7 @@ export function TarotSummaryGraphicCard({
   className = '',
   title = '타로 리딩 핵심 3줄 요약',
   subtitle = 'CARD SYMBOLISM ✕ SAJU ESSENCE · 고밀도 3대 차원 심층 요약',
+  isYesNoSpread = false,
 }: TarotSummaryGraphicCardProps) {
   const [copied, setCopied] = useState(false);
   const cleanQuestion = question?.trim() || '';
@@ -63,9 +67,11 @@ export function TarotSummaryGraphicCard({
 
   // 3개 불릿 정밀 파싱 (현재 에너지, 방향과 결단, 실천 처방)
   const rows: ParsedSummaryRow[] = bullets.slice(0, 3).map((bullet, idx) => {
-    const match = bullet.match(/^\[([^\]]+)\]\s*(.*)$/);
+    // 예·아니오 전용 배열이 아니면 모델이 새어 낸 YES/NO 판정 표기를 지운다.
+    const source = isYesNoSpread ? bullet : stripSymbolicYesNoVerdict(bullet);
+    const match = source.match(/^\[([^\]]+)\]\s*(.*)$/);
     const rawTag = match ? match[1].trim() : (idx === 0 ? '현재 에너지' : idx === 1 ? '방향과 결단' : '실천 처방');
-    let rawContent = match ? match[2].trim() : bullet.trim();
+    let rawContent = match ? match[2].trim() : source.trim();
 
     // 불필요한 콜론(:) 및 카드 호명 안내 서두 제거
     rawContent = rawContent.replace(/^[:：—\-–~·•*]+\s*/, '').trim();
@@ -74,13 +80,13 @@ export function TarotSummaryGraphicCard({
       rawContent = strippedIntro.replace(/^[:：—\-–~·•*]+\s*/, '').trim();
     }
 
-    // YES / NO 감지 (NO 및 조건부 판정을 우선 판별하여 긍정 오인 방지)
+    // YES / NO 감지 (예·아니오 전용 배열을 실제로 적용했을 때만 배지 표시)
     let highlightBadge: { text: string; color: string } | null = null;
-    if (/\[\s*(?:단호한\s*)?NO\s*\](?!\s*[\/|또는|or])|최종\s*판정\s*(?:은|는|이|가|[:—\-])?\s*\[?\s*NO\b/i.test(rawContent)) {
+    if (isYesNoSpread && /\[\s*(?:단호한\s*)?NO\s*\](?!\s*[\/|또는|or])|최종\s*판정\s*(?:은|는|이|가|[:—\-])?\s*\[?\s*NO\b/i.test(rawContent)) {
       highlightBadge = { text: '🛑 NO', color: 'bg-rose-500/20 text-rose-300 border-rose-400/40' };
-    } else if (/\[\s*조건부\s*YES\s*\]|최종\s*판정\s*(?:은|는|이|가|[:—\-])?\s*\[?\s*조건부\s*YES\b|조건부\s*YES/i.test(rawContent)) {
+    } else if (isYesNoSpread && /\[\s*조건부\s*YES\s*\]|최종\s*판정\s*(?:은|는|이|가|[:—\-])?\s*\[?\s*조건부\s*YES\b|조건부\s*YES/i.test(rawContent)) {
       highlightBadge = { text: '⚡ 조건부 YES', color: 'bg-amber-500/20 text-amber-300 border-amber-400/40' };
-    } else if (/\[\s*(?:확실한\s*|단독\s*)?YES\s*\](?!\s*[\/|또는|or])|최종\s*판정\s*(?:은|는|이|가|[:—\-])?\s*\[?\s*YES\b/i.test(rawContent)) {
+    } else if (isYesNoSpread && /\[\s*(?:확실한\s*|단독\s*)?YES\s*\](?!\s*[\/|또는|or])|최종\s*판정\s*(?:은|는|이|가|[:—\-])?\s*\[?\s*YES\b/i.test(rawContent)) {
       highlightBadge = { text: '✨ YES', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40' };
     }
 
