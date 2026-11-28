@@ -13905,9 +13905,9 @@ test('Kazakh Abai Book of Words engine: pillars, +09:00 KST, and interpretive bo
 
 test('Amazigh Desert Star Oasis engine: waypoints, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateAmazighDesertStarOasis({ profile, now: new Date('2026-11-20T05:30:00Z'), question: '지치지 않고 멀리 가고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-AMAZIGH-DESERT-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-AMAZIGH-DESERT-v2.5.0');
   assert.equal(rep.questionTopic, 'endurance');
-  assert.ok(rep.caravanCompassAxis.length > 0);
+  assert.ok(rep.caravanCompassAxis.length > 0 && rep.amazighCrossAxis.includes('endurance'));
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.supportWaypoint.id !== rep.primaryWaypoint.id);
   assert.ok(rep.desertPhase.length > 0 && rep.shadowWarning.length > 0);
@@ -13915,7 +13915,7 @@ test('Amazigh Desert Star Oasis engine: waypoints, +09:00 KST, and interpretive 
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatAmazighDesertPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('아마지그') && prompt.includes('사막 나침반 축') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.desertPhase) && prompt.includes(rep.reflectionFocus));
+  assert.ok(prompt.includes('아마지그') && prompt.includes('사막 나침반 축') && prompt.includes('4중 교차 축') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.desertPhase) && prompt.includes(rep.reflectionFocus));
 });
 
 test('Hittite Telepinu Harmony Renewal engine: phases, +09:00 KST, and interpretive boundary', () => {
@@ -14758,16 +14758,16 @@ test('Rapa Nui Mana Moai Horizon engine: focus, +09:00 KST, and interpretive bou
 
 test('Chechen Vainakh Kovakh Honor engine: code, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateChechenVainakhKovakhHonor({ profile, now: new Date('2026-11-20T08:21:00Z'), question: '말의 무게와 내면의 절제를 지키고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CHECHEN-VAINAKH-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CHECHEN-VAINAKH-v2.5.0');
   assert.equal(rep.questionTopic, '내면·절제');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionCode !== rep.vainakhCode);
-  assert.ok(rep.honorBalanceAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.honorBalanceAxis.length > 0 && rep.vainakhCrossAxis.includes('내면·절제') && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatChechenVainakhPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('바이나흐') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionCode) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('바이나흐') && prompt.includes('4중 교차 축') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionCode) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
 });
 
 test('Sherpa Sagarmatha Ridge Harmony engine: principle, +09:00 KST, and interpretive boundary', () => {
@@ -15423,16 +15423,16 @@ test('Haida Gwaii Cedar Canoe engine: motif, +09:00 KST, and interpretive bounda
 
 test('Chavin Lanzon Stone Balance engine: motif, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateChavinLanzonStoneBalance({ profile, now: new Date('2026-11-20T20:09:00Z'), question: '흔들리지 않는 중심을 잡고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CHAVIN-LANZON-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CHAVIN-LANZON-v2.5.0');
   assert.equal(rep.questionTopic, '일·중심');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionMotif !== rep.chavinMotif);
-  assert.ok(rep.stoneBalanceAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.stoneBalanceAxis.length > 0 && rep.chavinCrossAxis.includes('일·중심') && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatChavinLanzonPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('차빈') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('차빈') && prompt.includes('4중 교차 축') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionMotif) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
 });
 
 test('Maramures Wood Gate Calm engine: motif, +09:00 KST, and interpretive boundary', () => {

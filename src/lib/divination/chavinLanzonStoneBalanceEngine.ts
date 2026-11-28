@@ -7,6 +7,7 @@ export interface ChavinLanzonResult {
   chavinMotif: string;
   companionMotif: string;
   stoneBalanceAxis: string;
+  chavinCrossAxis: string;
   topicBalanceHint: string;
   chavinInsight: string;
   stoneTone: string;
@@ -110,16 +111,20 @@ export function calculateChavinLanzonStoneBalance(params: {
   const picked = MOTIFS[idx];
   const companion = MOTIFS[(idx + companionOffset) % MOTIFS.length];
   const stoneBalanceAxis = `${picked.motif.split('(')[0].trim()} ↔ ${companion.motif.split('(')[0].trim()} (${questionTopic})`;
+  const kstHour = new Date(now.getTime() + 9 * 60 * 60 * 1000).getUTCHours();
+  const kstWindow = kstHour < 6 ? '새벽 회랑' : kstHour < 12 ? '오전 고원' : kstHour < 18 ? '오후 합류' : '저녁 석조';
+  const chavinCrossAxis = `[${picked.motif.split('(')[0].trim()}] × [${companion.motif.split('(')[0].trim()}] × [${questionTopic}] × [${kstWindow}]`;
   const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = CHAVIN_SHADOWS[idx];
 
   return {
-    engineVersion: 'LUCKEY-CHAVIN-LANZON-v2.4.0',
+    engineVersion: 'LUCKEY-CHAVIN-LANZON-v2.5.0',
     calculatedAtKst: formatKstIso(now),
     questionTopic,
     chavinMotif: picked.motif,
     companionMotif: companion.motif,
     stoneBalanceAxis,
+    chavinCrossAxis,
     topicBalanceHint,
     chavinInsight: `${picked.insight} (동반 결: ${companion.motif})`,
     stoneTone: picked.tone,
@@ -136,6 +141,7 @@ export function formatChavinLanzonPrompt(res: ChavinLanzonResult): string {
     `[차빈·라손 돌기둥 균형 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 석주 축: ${res.stoneBalanceAxis}`,
+    `- 4중 교차 축: ${res.chavinCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 차빈 모티프: ${res.chavinMotif} (${res.stoneTone})`,
     `- 동반 결: ${res.companionMotif}`,
