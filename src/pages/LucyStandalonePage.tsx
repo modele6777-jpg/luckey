@@ -1910,6 +1910,21 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     triggerHaptic('whitehole');
   }, [masterOfferFor]);
 
+  // 점을 원한 말은 바로 옮기지 않고, 이동 버튼을 눌러야 루시프로로 간다.
+  const [proReadingOffer, setProReadingOffer] = useState<string | null>(null);
+  useEffect(() => { if (isMasterMode) setProReadingOffer(null); }, [isMasterMode]);
+  const acceptProReadingOffer = useCallback(() => {
+    const text = proReadingOffer?.trim();
+    if (!text) return;
+    setProReadingOffer(null);
+    queueLucyProReading(text);
+    markLucyMasterFromOffer();
+    playLucyMasterSuction();
+    setLucyMasterMode(true);
+    if (isLucyMasterBgmPreferred()) void startLucyMasterBgm();
+    triggerHaptic('wormhole');
+  }, [proReadingOffer]);
+
   // 🌙 점술모드에서 상담이 마무리된 것처럼 보이면 일반 루시로 돌아갈지 채팅에 묻는다.
   const [returnOfferFor, setReturnOfferFor] = useState<string | null>(null);
   const returnOfferedForRef = useRef<string | null>(null);
@@ -3838,15 +3853,11 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
     const userCleanText = rawMsg.trim();
 
-    // 점을 원하면 채팅에서 풀지 않고 루시프로로 옮겨 그 질문을 그대로 본다.
+    // 점을 원하면 바로 옮기지 않는다. 추천만 보여주고, 이동 버튼을 눌러야 루시프로로 간다.
     if (!isMasterMode && !attachedImage && !pickedTarotCards?.length && wantsLucyProReading(userCleanText)) {
       setInput('');
-      queueLucyProReading(userCleanText);
-      markLucyMasterFromOffer();
-      playLucyMasterSuction();
-      setLucyMasterMode(true);
-      if (isLucyMasterBgmPreferred()) void startLucyMasterBgm();
-      triggerHaptic('wormhole');
+      setProReadingOffer(userCleanText);
+      triggerHaptic('whitehole');
       return;
     }
 
@@ -3921,7 +3932,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         : userCleanText;
 
     // 💬 일반 루시 채팅은 점·운명학 엔진을 돌리지 않는다. 여러 관점 지시는 AppContext가 붙인다.
-    //    점을 원하는 말은 위에서 루시프로로 넘겼다. 점술모드에서만 7대 채널과 기초·심층 엔진을 켠다.
+    //    점을 원하는 말은 위에서 이동 버튼으로만 루시프로에 넘긴다. 점술모드에서만 7대 채널과 기초·심층 엔진을 켠다.
     const turnPlan = resolveLucyPageTurn(isMasterMode);
     const isMaster = turnPlan.isMaster;
     const channels: SpecialChannel[] = turnPlan.channels;
@@ -5011,6 +5022,35 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                   onClick={() => setSessionCardOffer(null)}
                   className="rounded-full border border-white/20 bg-white/5 px-3.5 py-1.5 text-xs font-bold text-white/85 active:scale-95"
                 >괜찮아</button>
+              </div>
+            </motion.div>
+          )}
+
+          {!isMasterMode && proReadingOffer && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              data-lucy-pro-reading-offer="true"
+              className="max-w-[92%] rounded-2xl border border-amber-300/40 bg-[#1a0f2e]/90 p-3.5 text-white shadow-sm"
+            >
+              <p className="text-[13px] font-bold">🔮 이건 루시프로에서 보는 게 좋아</p>
+              <p className="mt-1 text-xs leading-relaxed text-amber-50/90 break-keep">
+                점은 이 채팅에서 풀지 않아. 이동을 누르면 방금 물어본 걸 루시프로에서 사주·타로로 이어서 봐.
+              </p>
+              <p className="mt-1.5 text-xs leading-relaxed text-white/70 break-keep">“{proReadingOffer}”</p>
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  data-lucy-pro-reading-go="true"
+                  onClick={acceptProReadingOffer}
+                  className="rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-3.5 py-1.5 text-xs font-bold text-white shadow active:scale-95"
+                >이동</button>
+                <button
+                  type="button"
+                  data-lucy-pro-reading-stay="true"
+                  onClick={() => { setProReadingOffer(null); triggerHaptic('whitehole'); }}
+                  className="rounded-full border border-white/20 bg-white/5 px-3.5 py-1.5 text-xs font-bold text-white/85 active:scale-95"
+                >그냥 얘기할래</button>
               </div>
             </motion.div>
           )}

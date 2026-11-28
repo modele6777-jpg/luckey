@@ -1,11 +1,25 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   wantsLucyProReading,
   pickLucyChatPerspectives,
   buildLucyChatPerspectiveDirective,
   buildLucyChatSystemPrompt,
 } from '../src/lib/lucyChatPerspective.ts';
+
+test('점을 원하면 바로 옮기지 않고 이동 버튼으로 루시프로에 간다', () => {
+  const page = readFileSync(new URL('../src/pages/LucyStandalonePage.tsx', import.meta.url), 'utf8');
+  const start = page.indexOf('점을 원하면 바로 옮기지 않는다');
+  const block = page.slice(start, start + 500);
+  assert.ok(start >= 0);
+  assert.match(block, /setProReadingOffer\(userCleanText\)/);
+  assert.doesNotMatch(block, /setLucyMasterMode/);
+  assert.match(page, /data-lucy-pro-reading-go="true"/);
+  assert.match(page, />이동</);
+  assert.match(page, /queueLucyProReading\(text\)/);
+  assert.match(page, /const acceptProReadingOffer = useCallback/);
+});
 
 test('점을 원하는 말은 루시프로로 넘긴다', () => {
   for (const text of [

@@ -2,7 +2,7 @@ import { safeSessionStorage } from '../utils/safeStorage';
 
 /**
  * 루시채팅(일반 대화)은 점을 보지 않는다.
- * 점을 원하면 루시프로로 넘기고, 그 외에는 운명학을 빼며 여러 관점으로만 말한다.
+ * 점을 원하면 바로 옮기지 않고 이동 버튼으로 루시프로에 가고, 그 외에는 운명학을 빼며 여러 관점으로만 말한다.
  */
 
 const HANDOFF_KEY = 'lucy_pro_reading_handoff';
