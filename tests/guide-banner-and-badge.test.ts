@@ -175,6 +175,10 @@ test('the ellipsis badge only flashes when the guide is tapped — it never stay
   // 점 3개 줄은 flex 정중앙 정렬 — 글자 베이스라인 때문에 아래로 처지지 않는다.
   const badgeBlock = BIGBANG.slice(BIGBANG.indexOf('data-bigbang-guide-badge="ellipsis"') - 200, BIGBANG.indexOf('data-bigbang-guide-dot="true"'));
   assert.match(badgeBlock, /inline-flex items-center justify-center gap-1/, 'badge dots are flex-centered');
+  // 회전(-rotate-45)은 transition-all 에 걸리면 0°→-45° 애니메이션으로 점 줄이 비스듬히 나타났다 펴지므로
+  // 페이드·축소만 부드럽게 하고 회전은 즉시 적용한다.
+  assert.match(badgeBlock, /transition-\[opacity,scale\]/, 'only opacity and scale are transitioned');
+  assert.doesNotMatch(badgeBlock, /transition-all/, 'rotation must not be animated through transition-all');
   assert.doesNotMatch(badgeBlock, /fontSize: 24/, 'no text glyph sizing is left');
   assert.doesNotMatch(badgeBlock, /textShadow/, 'no text glyph shadow is left');
   assert.match(BIGBANG, /aria-label="스마트 가이드 안내 중"/);

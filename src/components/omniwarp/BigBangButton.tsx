@@ -2323,11 +2323,14 @@ export function BigBangButton() {
                        사용자 지시(2026-11-28): "물음표 대신에 …으로 표시해줘" → 물음표 대신 말줄임표 문양.
                        사용자 지시(2026-11-28): "…이 나올때 점의 크기를 평상시 .으로 맞추고 버튼 중앙으로 맞춰줘"
                        → 글자 글리프 대신 평상시 중앙 점(w-2.5 h-2.5)과 똑같은 점 3개를 flex로 정중앙에 놓는다. */
+                    /* transition-all 이면 앞서 그려진 평상시 점 노드를 리액트가 재사용하며 -rotate-45 가
+                       0°에서 45°까지 애니메이션돼 점 줄이 비스듬히 나타났다가 펴진다. 회전은 즉시, 페이드·축소만 부드럽게. */
                     <span
+                      key="bigbang-guide-badge"
                       data-bigbang-guide-badge="ellipsis"
                       data-bigbang-guide-badge-phase={guideBadgePhase}
                       aria-label="스마트 가이드 안내 중"
-                      className={`relative -rotate-45 inline-flex items-center justify-center gap-1 leading-none select-none drop-shadow-[0_0_9px_rgba(34,211,238,0.95)] transition-all ease-out ${
+                      className={`relative -rotate-45 inline-flex items-center justify-center gap-1 leading-none select-none drop-shadow-[0_0_9px_rgba(34,211,238,0.95)] transition-[opacity,scale] ease-out ${
                         guideBadgePhase === 'fading' ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
                       }`}
                       style={{ transitionDuration: `${SMART_GUIDE_BADGE_FADE_MS}ms` }}
