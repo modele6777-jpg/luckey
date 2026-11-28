@@ -55,6 +55,7 @@ import {
 import { hasUnlockedPinToday, markPinUnlockedToday, clearPinUnlockedToday } from '../lib/dailyCache';
 import { PERSONA_GREETINGS, PRISM_VOICE_RULES, LUCY_CHAT_VOICE_RULES, resolveLucyResponseLength, LUCY_RESPONSE_PROFILES } from '../lib/copyTone';
 import { requiresBasicAndDeepForTurn } from '../lib/lucyTurnMode';
+import { buildLucyChatSystemPrompt, buildLucyChatPerspectiveDirective } from '../lib/lucyChatPerspective';
 import { isMobileDevice, isPerfReduced, isStandalonePWA } from '../lib/perfMode';
 import { validateAndExtractKeyExercise } from '../lib/keyExercisesCatalog';
 import { resetLucyContextOnTaskSwitch } from '../lib/lucyChatUtils';
@@ -1902,11 +1903,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const chatBroadcastRef = isProConversation ? { current: null } : regularRuntimeRef.current.chatBroadcastRef;
     const pushChatThreadsToFirestore = isProConversation ? proRuntimeRef.current.push : regularRuntimeRef.current.pushChatThreadsToFirestore;
     const updateSharedState = isProConversation ? async (_state: Partial<SharedState>, _source: string) => {} : regularRuntimeRef.current.updateSharedState;
-    const isLucyPro = options?.voiceTurn ? false : Boolean(
-      (options as any)?.isLucyPro ||
-      (options as any)?.isPro ||
-      isProConversation ||
-      (typeof window !== 'undefined' && safeLocalStorage.getItem('lucy_tier_mode') === 'pro')
+    const requestedPro = (options as any)?.isLucyPro ?? (options as any)?.isPro;
+    const isLucyPro = options?.voiceTurn ? false : (
+      requestedPro === false
+        ? false
+        : Boolean(
+            requestedPro ||
+            isProConversation ||
+            (typeof window !== 'undefined' && safeLocalStorage.getItem('lucy_tier_mode') === 'pro')
+          )
     );
     const isLucyPlus = Boolean(
       (options as any)?.isLucyPlus ||
@@ -2107,7 +2112,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       options?.extraSystemContext?.includes('[🧭 이번 이야기에 고른 심층 관점');
     const activeThemeList = (options?.channels || (options?.channel ? [options.channel] : [])) as SevenThemeChannel[];
     const isMasterCall = Boolean(isLucyPro);
-    // 💬 일반 루시 채팅(점술모드 아님·채널 없음·음성 아님): 기초 도구 없이 엔진함의 심층 관점만 소수 골라 쓴다.
+    // 💬 일반 루시 채팅: 점·운명학 엔진을 돌리지 않고, 여러 관점으로만 답한다.
     const isLucyCompanionTurn = sourcePersona === 'lucy' && !isMasterCall && activeThemeList.length === 0 && !options?.voiceTurn;
     // 💬 일반 루시 채팅(수다모드)은 기초·심층 운명학 엔진을 돌리지 않는다.
     //    점술모드(isMasterCall)나 도구 사용을 명시한 호출만 엔진을 가동한다.
@@ -2124,8 +2129,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         options?.mode === 'casual' ||
         (!options?.mode && responseLength === 'short' && activeThemeList.length === 0)
       );
-    const toolSelection: SelectedDivinationToolsResult = isCasualMode
-      ? { isCasualMessage: true, selectedTools: [], promptInjection: '', selectionReason: '가벼운 일상 인사', firedEngineBadges: [] }
+    const toolSelection: SelectedDivinationToolsResult = (isCasualMode || isLucyCompanionTurn)
+      ? { isCasualMessage: true, selectedTools: [], promptInjection: '', selectionReason: isLucyCompanionTurn ? '루시채팅 · 여러 관점' : '가벼운 일상 인사', firedEngineBadges: [] }
       : !hasDivinationInjection
       ? selectOptimalDivinationTools(effectiveUserText, isMasterCall ? (['prologue', 'orange', 'trinity', 'aura', 'bluebird', 'muse', 'epilogue'] as SevenThemeChannel[]) : activeThemeList, profile, isMasterCall, { allowMaster: requireBasicAndDeep, requireBasicAndDeep, deepOnly: isLucyCompanionTurn })
       : { isCasualMessage: false, selectedTools: [], promptInjection: '', selectionReason: '', firedEngineBadges: [] };
@@ -2137,6 +2142,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ? options?.usedTools || []
       : [];
     const isFastCasualPath = Boolean(options?.voiceTurn) || (
+      !isLucyCompanionTurn &&
       !requireBasicAndDeep &&
       sourcePersona === 'lucy' &&
       responseLength === 'short' &&
@@ -2166,7 +2172,14 @@ ${responseProfile.rule}`;
       const astro = buildUserNatalSummary(profile);
       const relationships = formatRelationshipsContext(profile?.relationships);
 
-      if (sourcePersona === 'lucy') {
+      if (sourcePersona === 'lucy' && isLucyCompanionTurn) {
+        systemPrompt = buildLucyChatSystemPrompt({
+          nickname,
+          realName,
+          memory,
+          userText: effectiveUserText,
+        });
+      } else if (sourcePersona === 'lucy') {
         systemPrompt = PERSONAS.lucyFull(saju, astro, memory, relationships, currentVibe, nickname, realName, preferences, globalMemory, deepCoreInfo);
       } else if (sourcePersona === 'orange') {
         systemPrompt = `당신은 루시(Lucy)야. 지금은 오렌지 마음치유 채널에서 대화 중이야. 사용자의 질문과 마음에 깊이 귀 기울이고 따뜻하게 공감해 줘.\n\n` +
@@ -2197,7 +2210,7 @@ ${responseProfile.rule}`;
 
       systemPrompt += `\n\n${LUCY_CHAT_VOICE_RULES}`;
 
-      if (sourcePersona === 'lucy' && !requireBasicAndDeep && (options?.mode === 'casual' || !options?.channels?.length)) {
+      if (sourcePersona === 'lucy' && !isLucyCompanionTurn && !requireBasicAndDeep && (options?.mode === 'casual' || !options?.channels?.length)) {
         systemPrompt += `\n\n[★ 루시 기본 일상 수다 모드 핵심 지침]:
 1. [친근하고 다정한 수다 친구]: 당신은 사용자의 가장 가깝고 편안한 단짝 수다 친구 '루시'입니다. 딱딱한 멘토나 AI 상담사처럼 훈계/설교하지 말고, 카톡이나 DM을 나누듯 친근한 반말(또는 사용자의 어조에 맞춘 다정한 어투)로 즐겁게 수다를 떨어주세요.
 2. [카톡식 다중 말풍선 티키타카]: 일장연설이나 한 덩어리의 긴 문단 대신, 실제 카톡하듯이 **빈 줄(\`\\n\\n\`)로 구분된 2~3개의 짧은 말풍선 단락**(각 말풍선당 1~2문장)으로 쪼개어 가볍고 자연스럽게 답하세요.
@@ -2220,16 +2233,17 @@ ${responseProfile.rule}`;
       }
 
       // Append cross-app real-time remembrance
-      if (!isProConversation) systemPrompt += getCrossAppRecentDialogueContext();
+      if (!isProConversation && !isLucyCompanionTurn) systemPrompt += getCrossAppRecentDialogueContext();
 
       // Safari PWA / reduced 성능 기기 / 일상 수다모드(short)에서는 무거운 지식 엔진을 생략하여 지연 및 멈춤 방지
       const _isPerfReduced = isPerfReduced() || isStandalonePWA();
 
       // Append full PRISM omniscient ecosystem feature results
-      if (!isProConversation) systemPrompt += buildPrismOmniscientContext(sharedState, firebaseUser?.uid || null);
+      if (!isProConversation && !isLucyCompanionTurn) systemPrompt += buildPrismOmniscientContext(sharedState, firebaseUser?.uid || null);
 
       const needsDeepWisdomCanon =
         !_isPerfReduced &&
+        !isLucyCompanionTurn &&
         responseLength !== 'short' &&
         (options?.mode === 'master' ||
           options?.mode === 'trinity' ||
@@ -2313,7 +2327,7 @@ ${responseProfile.rule}`;
     if (consultMemory) systemPrompt += `\n\n${consultMemory}`;
     const fullProfileContext = buildFullProfilePrompt(profile);
     systemPrompt += `\n\n${fullProfileContext}`;
-    const fatePreviewContext = !isCasualMode ? buildFatePreviewPrompt(sajuObj) : '';
+    const fatePreviewContext = !isCasualMode && !isLucyCompanionTurn ? buildFatePreviewPrompt(sajuObj) : '';
     if (fatePreviewContext) systemPrompt += `\n\n${fatePreviewContext}`;
     systemPrompt += `\n\n${CALCULATION_HONESTY_RULE}`;
     if (isMasterCall) systemPrompt += '\n마스터 답변은 결론·계산 근거와 상징적 참고·서로 다른 해석과 한계·실천할 행동을 질문에 맞게 종합해. 입력이 부족하면 필요한 정보를 짧게 물어보고 확정적 결론을 피한다.';
@@ -2342,7 +2356,7 @@ ${responseProfile.rule}`;
 
     const sajuAudit = (options?.calculationAudit || toolSelection.calculationAudit || [])
       .some(item => item.toolId === 'saju' && item.sentToModel);
-    if (isSajuConsultationRequest(effectiveUserText) || sajuAudit) {
+    if (!isLucyCompanionTurn && (isSajuConsultationRequest(effectiveUserText) || sajuAudit)) {
       systemPrompt += `\n\n${buildSajuChatGuidance(Boolean(sajuObj), effectiveUserText)}`;
     }
     if (tarotDraw) {
@@ -2354,8 +2368,11 @@ ${responseProfile.rule}`;
       systemPrompt = `당신은 '${nickname}'와 지금 목소리로 이야기하는 루시야. 글을 읽어 주는 답이 아니라, 옆에서 주고받는 대화야.
 - 1~2문장만 말해. 목록, 제목, 마크다운, 이모지, 번호 금지.
 - 풀이하거나 설명하지 마. 들은 말에 반응하고, 되묻는 질문은 하나까지만.
+- 점·사주·타로·운세·운명학은 하지 마. 점을 원하면 "그건 루시프로에서 보자"라고만 말해.
 - 반말만. 호칭은 '${nickname}'. 본명 '${realName}'은 부르지 마.
 - 참고: ${deepCoreInfo}. 요즘 마음: ${memory}`;
+    } else if (isLucyCompanionTurn) {
+      systemPrompt += `\n\n${buildLucyChatPerspectiveDirective(effectiveUserText)}`;
     }
 
     const _isPerfReduced = isPerfReduced() || isStandalonePWA();
@@ -2633,7 +2650,9 @@ ${responseProfile.rule}`;
       // Fast automatic recovery retry with compact context before showing any error
       try {
         resetWatchdog();
-        const compactSystemPrompt = `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${TAROT_NO_DRAW_RULE}\n${CALCULATION_HONESTY_RULE}\n${responseProfile.rule}${'\n' + (options?.extraSystemContext || toolSelection.promptInjection || '')}\n${criticalFactsPrompt}\n${readConsultMemory()}\n${longTermContext}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
+        const compactSystemPrompt = isLucyCompanionTurn
+          ? `${buildLucyChatSystemPrompt({ nickname, realName, memory, userText: effectiveUserText })}\n${responseProfile.rule}`
+          : `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${TAROT_NO_DRAW_RULE}\n${CALCULATION_HONESTY_RULE}\n${responseProfile.rule}${'\n' + (options?.extraSystemContext || toolSelection.promptInjection || '')}\n${criticalFactsPrompt}\n${readConsultMemory()}\n${longTermContext}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
         const compactMessages: Message[] = [
           { role: 'system', content: compactSystemPrompt },
           ...conversationForAPI.slice(-4),

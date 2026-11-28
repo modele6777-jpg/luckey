@@ -22,6 +22,7 @@ import { isCosmicProOnTheLeft, shouldShowLucyToolsCabinet } from '@/lib/lucyTool
 import { extractAllToolFacts, pickCalculatedToolData, type ToolFact } from '@/lib/lucyMasterToolFacts';
 import { LUCY_PRO_TOOLS } from '@/lib/divination/smartAgentRouter';
 import { shouldOfferLucyMaster, dismissLucyMasterOffer, markLucyMasterFromOffer, consumeLucyMasterFromOffer, shouldOfferReturnToLucy, dismissReturnToLucyOffer } from '@/lib/lucyMasterOffer';
+import { wantsLucyProReading, queueLucyProReading, consumeLucyProReading } from '@/lib/lucyChatPerspective';
 import { playLucyMasterSuction } from '@/components/omniwarp/BigBangMasterSuction';
 import { isLucyChatPath } from '@/lib/duoPaneFocus';
 import { useOrbCounselOpen } from '@/lib/orbCounselGate';
@@ -1962,6 +1963,21 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
     // or today's thread may be empty after the KST midnight rollover.
     // 루시의 상담 제안으로 들어왔으면 방금 대화를 이어서 보므로 "이어서/새로" 질문 없이 고민부터 묻는다.
     const fromOffer = consumeLucyMasterFromOffer();
+    const handoff = consumeLucyProReading();
+    if (handoff) {
+      // 루시채팅에서 점을 원해 넘어온 질문. 인사 선택 없이 루시프로에서 바로 본다.
+      setLucyMasterLink('linked');
+      setLucyProMessages([{
+        id: `pro-handoff-${Date.now()}`,
+        role: 'model',
+        persona: 'lucy',
+        timestamp: Date.now(),
+        mode: 'master',
+        content: '점은 여기서 볼게. 방금 물어본 거, 이어서 풀어볼게.',
+      }]);
+      window.setTimeout(() => { void handleSendRef.current(handoff); }, 0);
+      return;
+    }
     const greeting = createTarotHouseGreeting(userDisplayName, isDuoUnfoldedState().unfolded ? 'unfolded' : 'folded', !fromOffer);
     setLucyMasterLink(fromOffer ? 'linked' : 'undecided');
     setLucyProMessages([greeting]);
@@ -3822,6 +3838,18 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
 
     const userCleanText = rawMsg.trim();
 
+    // 점을 원하면 채팅에서 풀지 않고 루시프로로 옮겨 그 질문을 그대로 본다.
+    if (!isMasterMode && !attachedImage && !pickedTarotCards?.length && wantsLucyProReading(userCleanText)) {
+      setInput('');
+      queueLucyProReading(userCleanText);
+      markLucyMasterFromOffer();
+      playLucyMasterSuction();
+      setLucyMasterMode(true);
+      if (isLucyMasterBgmPreferred()) void startLucyMasterBgm();
+      triggerHaptic('wormhole');
+      return;
+    }
+
     if (!fromVoice && !attachedImage && !forcedChannels?.length && !pickedTarotCards?.length && liveVoiceRef.current?.sendText(userCleanText)) {
       setInput('');
       setSpeechInterim('');
@@ -3892,9 +3920,8 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
         ? [...priorUnansweredTexts, userCleanText].filter(Boolean).join('\n')
         : userCleanText;
 
-    // 💬 일반 루시 채팅은 수다모드 전용이다. 사용자가 무엇을 물어도, 예시 질문이든 다른 화면에서
-    //    넘어온 값이든 채널 자동 감지·운명학 도구 선택을 하지 않고, 점술모드에서만 7대 채널과
-    //    기초·심층 엔진을 켠다.
+    // 💬 일반 루시 채팅은 점·운명학 엔진을 돌리지 않는다. 여러 관점 지시는 AppContext가 붙인다.
+    //    점을 원하는 말은 위에서 루시프로로 넘겼다. 점술모드에서만 7대 채널과 기초·심층 엔진을 켠다.
     const turnPlan = resolveLucyPageTurn(isMasterMode);
     const isMaster = turnPlan.isMaster;
     const channels: SpecialChannel[] = turnPlan.channels;
@@ -3978,13 +4005,21 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       ? { base: (isTarotIntent ? 'tarot_saju' : 'saju') as 'saju' | 'tarot_saju', deep: wantsDeepEngines }
       : undefined;
 
-    // 🔮 질문 의도와 활성 테마에 맞춰 도구 지침을 주입하고, 계산 근거와 상징 참고를 구분
-    //    💬 일반 채팅은 기초 도구 없이 엔진함의 심층 관점만 소수 골라 쓴다.
+    // 🔮 점술모드만 도구를 고른다. 루시채팅은 엔진을 돌리지 않고 여러 관점으로만 답한다.
     const divinationSelection: SelectedDivinationToolsResult = divinationMode
       // 점술모드: 기초 도구 15종 + 심층 관점을 질문·고민에 맞춰 소수만 고른다
       ? selectOptimalDivinationTools(combinedContextText, [], counselingUserProfile, false, { allowMaster: false, requireBasicAndDeep, divinationMode })
       : turnPlan.deepPerspectivesOnly
-        ? selectOptimalDivinationTools(combinedContextText, [], counselingUserProfile, false, { allowMaster: false, deepOnly: true })
+        ? {
+            selectedTools: [],
+            isCasualMessage: true,
+            isMasterMobilization: false,
+            selectionReason: '루시채팅 · 여러 관점',
+            promptInjection: '',
+            firedEngineBadges: [],
+            deepPerspectiveKeys: [],
+            calculationAudit: [],
+          }
         : selectOptimalDivinationTools(combinedContextText, isMaster ? ALL_CHANNELS : channels, counselingUserProfile, isMaster, { allowMaster: isMasterMode || requireBasicAndDeep, requireBasicAndDeep });
     // 🧭 루시프로 통합 상담: 사주·13대 도구 계산 결과를 왼쪽 점술 테이블에 넘긴다 (데이터만, 지시문 아님).
     if (divinationMode && !divinationSelection.isCasualMessage) {
