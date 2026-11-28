@@ -109,16 +109,31 @@
 .duo-portal[data-rail-edge='right'] { --overlay-inset-right: 0px; }
 .duo-portal[data-rail-edge='bottom'] { --overlay-inset-bottom: 0px; }
 .duo-portal[data-rail-edge='left'] { --overlay-inset-left: 0px; }
+.screen-portal[data-rail-edge='top'] { --overlay-inset-top: 0px; }
+.screen-portal[data-rail-edge='right'] { --overlay-inset-right: 0px; }
+.screen-portal[data-rail-edge='bottom'] { --overlay-inset-bottom: 0px; }
+.screen-portal[data-rail-edge='left'] { --overlay-inset-left: 0px; }
 .duo-portal > .fixed.inset-0 {
+  padding: max(.5rem, var(--overlay-inset-top)) max(.75rem, var(--overlay-inset-right)) max(.5rem, var(--overlay-inset-bottom)) max(.75rem, var(--overlay-inset-left));
+}
+.screen-portal > .fixed.inset-0 {
   padding: max(.5rem, var(--overlay-inset-top)) max(.75rem, var(--overlay-inset-right)) max(.5rem, var(--overlay-inset-bottom)) max(.75rem, var(--overlay-inset-left));
 }
 @media (min-width: 640px) {
   .duo-portal > .fixed.inset-0 {
     padding: max(.75rem, var(--overlay-inset-top)) max(1rem, var(--overlay-inset-right)) max(.75rem, var(--overlay-inset-bottom)) max(1rem, var(--overlay-inset-left));
   }
+  .screen-portal > .fixed.inset-0 {
+    padding: max(.75rem, var(--overlay-inset-top)) max(1rem, var(--overlay-inset-right)) max(.75rem, var(--overlay-inset-bottom)) max(1rem, var(--overlay-inset-left));
+  }
 }
 /* A dialog fills the visible canvas beside the rail, never a narrower box. */
 .duo-portal[data-overlay-scope='canvas'] > .fixed.inset-0 {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0;
+}
+.screen-portal[data-overlay-scope='canvas'] > .fixed.inset-0 {
   width: 100% !important;
   max-width: 100% !important;
   min-width: 0;
@@ -326,7 +341,19 @@ html:root [data-channel-background] .cosmic-meteor {
   html:root [data-channel-background] :is(.cosmic-meteor, .channel-constellations, .channel-star-flare) { animation: none !important; }
 }
 
-/* A full-screen popup fills its measured main canvas, not the navigation rail. */
+/* Dialogs that are not inside a measured portal still stop at the rail.
+   The rail is painted above the app shell, so a full-viewport layer is cut by it. */
+html:not(.duo-unfolded-portrait) .prism-app-shell .fixed.inset-0:not(:is(.screen-portal *, .duo-portal *, .fixed .fixed)) {
+  right: var(--sites-sidebar-width, 80px) !important;
+  left: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+}
+html.duo-unfolded-portrait .prism-app-shell .fixed.inset-0:not(:is(.screen-portal *, .duo-portal *, .fixed .fixed)) {
+  bottom: var(--duo-bottom-nav-height, calc(54px + env(safe-area-inset-bottom, 0px))) !important;
+  height: auto !important;
+  max-height: none !important;
+}
 :is(.screen-portal, .duo-portal, .main-viewport-overlay) .w-screen { width: 100% !important; }
 :is(.screen-portal, .duo-portal, .main-viewport-overlay) .h-screen { height: 100% !important; }
 :is(.screen-portal, .duo-portal) .fixed.inset-0 {

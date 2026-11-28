@@ -2,7 +2,7 @@ import { OverlayPaneContext } from './OverlayPaneContext';
 import { useOverlayPane } from '@/hooks/useOverlayPane';
 import { useMainOverlayViewport } from '@/hooks/useMainOverlayViewport';
 import React, { createContext, useContext, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
-import { paneLayerStyle, usePaneOverlayHost } from './paneOverlayHost';
+import { paneLayerStyle, useCanvasLayerBox, usePaneOverlayHost } from './paneOverlayHost';
 import { createPortal } from 'react-dom';
 
 export const ScreenOverlayContext = createContext<readonly RefObject<HTMLDivElement | null>[]>([]);
@@ -112,14 +112,17 @@ export function ScreenPortal({ children }: { children: ReactNode }) {
   const [host, setHostKey] = useState<HTMLElement | null>(null);
   const layers = useScreenOverlayLayer(ref, host);
   const pane = useOverlayPane(ref, host);
-  const paneHost = usePaneOverlayHost(pane);
+  // Dialogs fill the app frame beside the navigation rail, not the pane they
+  // were opened from and not the strip the rail paints over.
+  const paneHost = usePaneOverlayHost(pane, 'canvas');
+  const canvasBox = useCanvasLayerBox(paneHost);
   useLayoutEffect(() => { setHostKey(paneHost); }, [paneHost]);
-  const viewportStyle = useMainOverlayViewport(pane);
+  const viewportStyle = useMainOverlayViewport('main');
   if (typeof document === 'undefined') return null;
   return createPortal(
     <OverlayPaneContext.Provider value={pane}>
       <ScreenOverlayContext.Provider value={layers}>
-        <div ref={ref} className="screen-portal" data-responsive-canvas="true" style={paneHost ? paneLayerStyle(viewportStyle) : viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
+        <div ref={ref} className="screen-portal" data-responsive-canvas="true" data-overlay-scope="canvas" data-rail-edge={canvasBox?.railEdge ?? 'none'} style={paneHost ? paneLayerStyle(viewportStyle, canvasBox) : viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
       </ScreenOverlayContext.Provider>
     </OverlayPaneContext.Provider>,
     paneHost ?? document.body,
