@@ -7,6 +7,7 @@ export interface GoguryeoSamjokoResult {
   muralMotif: string;
   companionMotif: string;
   samjokoMuralAxis: string;
+  goguryeoCrossAxis: string;
   topicBalanceHint: string;
   goguryeoInsight: string;
   spiritTone: string;
@@ -113,13 +114,17 @@ export function calculateGoguryeoSamjokoMuralSpirit(params: {
   const topicBalanceHint = GOGURYEO_TOPIC_HINTS[questionTopic];
   const shadowWarning = GOGURYEO_SHADOWS[idx];
 
+  const calculatedAtKst = formatKstIso(now);
+  const goguryeoCrossAxis = `[${picked.motif.split('(')[0].trim()}] × [${companion.motif.split('(')[0].trim()}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-GOGURYEO-SAMJOKO-v2.4.0',
-    calculatedAtKst: formatKstIso(now),
+    engineVersion: 'LUCKEY-GOGURYEO-SAMJOKO-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     muralMotif: picked.motif,
     companionMotif: companion.motif,
     samjokoMuralAxis,
+    goguryeoCrossAxis,
     topicBalanceHint,
     goguryeoInsight: picked.insight,
     spiritTone: picked.tone,
@@ -136,6 +141,7 @@ export function formatGoguryeoSamjokoPrompt(res: GoguryeoSamjokoResult): string 
     `[고구려 삼족오·벽화 기상 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 벽화·삼족오 축: ${res.samjokoMuralAxis}`,
+    `- 4중 교차 축: ${res.goguryeoCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 벽화 모티프: ${res.muralMotif} (${res.spiritTone})`,
     `- 동반 모티프: ${res.companionMotif}`,

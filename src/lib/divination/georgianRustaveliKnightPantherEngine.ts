@@ -24,6 +24,7 @@ export interface GeorgianRustaveliResult {
   counterbalanceVirtue: RustaveliVirtue;
   companionVirtue: RustaveliVirtue;
   pantherKnightAxis: string;
+  rustaveliCrossAxis: string;
   topicBalanceHint: string;
   heartCompassPrinciple: string;
   qualitativeSynthesis: string;
@@ -161,15 +162,19 @@ export function calculateGeorgianRustaveliKnightPanther(params: {
     ? `‘${query.slice(0, 36)}’을(를) 두고 고민할 때, 움켜쥐고 지키려는 것보다 나답게 내어주고 품격을 지킬 수 있는 선택은 무엇인가요?`
     : `지금 내 곁의 소중한 인연이나 맡은 일 앞에서, 가장 기사도답게 지키고 싶은 약속 한 가지는 무엇인가요?`;
 
+  const calculatedAtKst = formatGeorgianKstTimestamp(now);
+  const rustaveliCrossAxis = `[${primaryVirtue.koreanTitle}] × [${companionVirtue.koreanTitle}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
     engineName: '조지아 루스타벨리 《표범 가죽을 두른 기사》 심성 관점 (Rustaveli Knight in the Panther’s Skin)',
-    engineVersion: 'LUCKEY-GEORGIAN-RUSTAVELI-v2.4.0',
-    calculatedAtKst: formatGeorgianKstTimestamp(now),
+    engineVersion: 'LUCKEY-GEORGIAN-RUSTAVELI-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     primaryVirtue,
     counterbalanceVirtue,
     companionVirtue,
     pantherKnightAxis,
+    rustaveliCrossAxis,
     topicBalanceHint,
     heartCompassPrinciple,
     qualitativeSynthesis,
@@ -188,6 +193,7 @@ export function formatGeorgianRustaveliKnightPantherPrompt(res: GeorgianRustavel
     `[보조 상징 관점 — ${res.engineName}]`,
     `- 엔진 버전: ${res.engineVersion} | 연산 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 기사도·심성 축: ${res.pantherKnightAxis}`,
+    `- 4중 교차 축: ${res.rustaveliCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 중심 덕목: ${res.primaryVirtue.georgianTerm} · ${res.primaryVirtue.koreanTitle} (${res.primaryVirtue.literaryMotif})`,
     `- 균형 덕목: ${res.counterbalanceVirtue.georgianTerm} · ${res.counterbalanceVirtue.koreanTitle}`,
