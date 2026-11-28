@@ -5304,6 +5304,15 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             />
           )}
 
+          {/* 누르고 말하기 안내. 입력칸 안에 두면 추천 질문 줄에 겹쳐 위가 잘린다. */}
+          {(holdTalk.holding || holdTalk.error) && (
+            <div className="lucy-hold-talk-banner" role={holdTalk.holding ? 'status' : 'alert'} aria-live="polite">
+              <span className={`lucy-hold-talk-chip${holdTalk.error && !holdTalk.holding ? ' is-error' : ''}`}>
+                {holdTalk.holding ? (holdTalk.transcript || '듣고 있어요 · 손을 떼면 전송') : holdTalk.error}
+              </span>
+            </div>
+          )}
+
           {/* 💡 추천 질문 가로 나열 바 & 추천질문 라이브러리 버튼 (+ 1인 모드 시 슬림 프로필 칩 통합) */}
           <div className="lucy-suggestion-toolbar w-full flex items-center gap-1 sm:gap-1.5 h-[24px] sm:h-[26px] py-0 overflow-x-auto no-scrollbar scroll-smooth">
             {/* 1인 점괘 모드일 때: 별도 세로줄을 차지하지 않고 한 줄에 초슬림하게 통합 */}
@@ -5485,18 +5494,16 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                 }}
               />
 
-              {/* 누르고 말하기: 소리 파동 + 들은 글자 */}
+              {/* 누르고 말하기: 소리 파동은 입력칸 안, 안내 문구는 아래에서 따로 띄운다 */}
               {holdTalk.holding && (
-                <div className="lucy-hold-talk" role="status" aria-live="polite">
-                  <span className="lucy-hold-talk-chip">{holdTalk.transcript || '듣고 있어요 · 손을 떼면 전송'}</span>
-                  <span className="lucy-hold-talk-wave" aria-hidden="true">
+                <div className="lucy-hold-talk" aria-hidden="true">
+                  <span className="lucy-hold-talk-wave">
                     {HOLD_TALK_WAVE.map((weight, index) => (
                       <i key={index} style={{ height: `${4 + holdTalk.level * weight * 22}px` }} />
                     ))}
                   </span>
                 </div>
               )}
-              {holdTalk.error && !holdTalk.holding && <div className="lucy-hold-talk" role="alert"><span className="lucy-hold-talk-chip is-error">{holdTalk.error}</span></div>}
 
               {/* Textarea */}
               <textarea

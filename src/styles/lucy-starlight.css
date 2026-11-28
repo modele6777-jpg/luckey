@@ -999,7 +999,29 @@ textarea[data-hold-to-talk]:not(:focus) {
   box-shadow: 0 6px 18px rgba(255, 200, 120, .4);
   animation: lucy-hold-chip-in .22s ease both;
 }
-.lucy-hold-talk-chip.is-error { color: #7f1d1d; background: #fee2e2; box-shadow: 0 4px 14px rgba(220, 38, 38, .25); }
+.lucy-hold-talk-banner {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  padding: 2px 4px 0;
+  pointer-events: none;
+}
+.lucy-hold-talk-banner .lucy-hold-talk-chip {
+  position: relative;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  display: block;
+  width: auto;
+  max-width: 100%;
+  overflow: visible;
+  text-overflow: unset;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+  line-height: 1.35;
+}
 .lucy-hold-talk-wave {
   position: absolute;
   left: 4px;
