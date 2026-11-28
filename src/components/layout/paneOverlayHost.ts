@@ -45,7 +45,15 @@ export function usePaneOverlayHost(pane: OverlayPane, scope: OverlayHostScope = 
   return host;
 }
 
-export interface CanvasBox { left: number; top: number; right: number; bottom: number }
+export interface CanvasBox {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+  /** Size of the resulting box: the visible canvas a dialog may use. */
+  width?: number;
+  height?: number;
+}
 
 const EPSILON = 2;
 
@@ -79,15 +87,22 @@ export function canvasBoxFromRects(hostRect: RectLike, navRect: RectLike | null)
 }
 
 function readCanvasBox(host: HTMLElement): CanvasBox {
+  const hostRect = host.getBoundingClientRect();
   const nav = document.querySelector<HTMLElement>(NAV_SELECTOR);
-  if (!nav) return canvasBoxFromRects(host.getBoundingClientRect(), null);
-  const navStyle = getComputedStyle(nav);
-  const hidden = navStyle.display === 'none' || navStyle.visibility === 'hidden';
-  return canvasBoxFromRects(host.getBoundingClientRect(), hidden ? null : nav.getBoundingClientRect());
+  const navStyle = nav ? getComputedStyle(nav) : null;
+  const hidden = !navStyle || navStyle.display === 'none' || navStyle.visibility === 'hidden';
+  const box = canvasBoxFromRects(hostRect, hidden || !nav ? null : nav.getBoundingClientRect());
+  return { ...box, ...boxSize(hostRect, box) };
 }
 
+const boxSize = (hostRect: RectLike, box: CanvasBox) => ({
+  width: Math.max(0, Math.round(hostRect.width - box.left - box.right)),
+  height: Math.max(0, Math.round(hostRect.height - box.top - box.bottom)),
+});
+
 const sameBox = (a: CanvasBox | null, b: CanvasBox | null) => Boolean(a && b)
-  && a!.left === b!.left && a!.top === b!.top && a!.right === b!.right && a!.bottom === b!.bottom;
+  && a!.left === b!.left && a!.top === b!.top && a!.right === b!.right && a!.bottom === b!.bottom
+  && a!.width === b!.width && a!.height === b!.height;
 
 /**
  * Keep the dialog box in step with the shell, the rail and a fold or rotation.
@@ -135,6 +150,10 @@ export function paneLayerStyle(measured: CSSProperties, box?: CanvasBox | null):
   if (box) {
     return {
       ...vars,
+      // The canvas box is the truth for popup sizing; a short or narrow host
+      // element must not shrink a dialog through these measured caps.
+      ...(box.width ? { '--overlay-width': `${box.width}px` } : {}),
+      ...(box.height ? { '--overlay-height': `${box.height}px` } : {}),
       position: 'absolute',
       left: box.left, top: box.top, right: box.right, bottom: box.bottom,
       width: 'auto', height: 'auto',
