@@ -4478,11 +4478,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       {isMasterMode
         ? <LucyMasterTarotRoom />
         : <LucyCosmicBackground isProMode={isMasterMode} period={lucyDayPeriod} />}
-      {isMasterMode && (
-        <div className="absolute right-3 z-30" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 64px)' }}>
-          <LucyMasterBgmToggle />
-        </div>
-      )}
       {isMasterMode && pendingTarotPick?.inChat && (
         <TarotSpread
           maxCards={pendingTarotPick.count}
@@ -5624,6 +5619,11 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
           onTogglePause={handleTtsTogglePause}
           onStop={handleTtsStopAll}
         />
+        {isMasterMode && (
+          <div className="lucy-bgm-fab absolute top-2 right-2 z-30">
+            <LucyMasterBgmToggle />
+          </div>
+        )}
         </div>
       </div>
 
@@ -5721,7 +5721,7 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.94 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="fixed right-4 z-50 inline-flex items-center gap-1 rounded-full border border-amber-400/50 bg-slate-950/90 px-2.5 py-1.5 text-[11px] font-semibold text-amber-100 shadow-[0_8px_25px_rgba(245,158,11,0.25)] backdrop-blur-md transition-colors hover:bg-slate-900 active:scale-95 cursor-pointer"
+            className="lucy-recent-fab fixed right-4 z-50 inline-flex items-center gap-1 rounded-full border border-amber-400/50 bg-slate-950/90 px-2.5 py-1.5 text-[11px] font-semibold text-amber-100 shadow-[0_8px_25px_rgba(245,158,11,0.25)] backdrop-blur-md transition-colors hover:bg-slate-900 active:scale-95 cursor-pointer"
             style={{
               right: 'calc(var(--sites-sidebar-width, 80px) + 16px)',
               left: 'auto',
