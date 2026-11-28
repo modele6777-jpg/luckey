@@ -14,6 +14,14 @@ export type CloudTtsRuntime = Record<string, string | undefined>;
 const CHIRP_VOICES = ['Aoede', 'Kore', 'Leda', 'Zephyr', 'Puck', 'Charon', 'Fenrir', 'Orus'];
 /** Cloud TTS accepts at most 5000 bytes per request; Korean is ~3 bytes a character. */
 const MAX_REQUEST_CHARS = 1400;
+/**
+ * 🔊 Lossless 24 kHz: the backup readers used to ask for the default `MP3`, which Cloud TTS
+ * synthesises at 32 kbps mono — Korean came back muffled and fizzy (a 4-second sentence was
+ * only 16 KB). `LINEAR16` at 24 kHz is the voice's own 16-bit PCM, so the app now hears the
+ * full-quality reading and only the transport gets bigger.
+ */
+const WAV_SAMPLE_RATE = 24000;
+const CLOUD_AUDIO_CONFIG = { audioEncoding: 'LINEAR16', sampleRateHertz: WAV_SAMPLE_RATE } as const;
 
 export function cloudTtsKey(env: CloudTtsRuntime): string {
   return [env.GOOGLE_CLOUD_TTS_API_KEY, env.gemini, env.GEMINI_API_KEY, env.GOOGLE_GENAI_API_KEY, env.GOOGLE_API_KEY]
@@ -69,6 +77,61 @@ function encode(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
+function ascii(bytes: Uint8Array, offset: number, length: number): string {
+  let value = '';
+  for (let i = 0; i < length; i++) value += String.fromCharCode(bytes[offset + i] ?? 0);
+  return value;
+}
+
+/**
+ * The PCM samples of one Cloud TTS answer. A `LINEAR16` answer arrives as a RIFF/WAVE container
+ * (44-byte header and, for longer text, extra `LIST`/`fact` chunks), so the header is walked and
+ * only the `data` chunk is kept. An answer without that header is already raw PCM.
+ */
+export function pcmBytesOfPiece(piece: Uint8Array): Uint8Array {
+  if (piece.length < 12 || ascii(piece, 0, 4) !== 'RIFF' || ascii(piece, 8, 4) !== 'WAVE') return piece;
+  const view = new DataView(piece.buffer, piece.byteOffset, piece.byteLength);
+  let offset = 12;
+  while (offset + 8 <= piece.length) {
+    const id = ascii(piece, offset, 4);
+    const size = view.getUint32(offset + 4, true);
+    const start = offset + 8;
+    if (id === 'data') return piece.subarray(start, Math.min(piece.length, start + size));
+    offset = start + size + (size % 2);
+  }
+  // A container we cannot read: keep it whole rather than dropping the reading.
+  return piece;
+}
+
+/** Standard 44-byte RIFF/WAVE header for mono 16-bit PCM (same shape geminiMedia writes). */
+export function wavHeader(dataLength: number, sampleRate = WAV_SAMPLE_RATE): Uint8Array {
+  const header = new Uint8Array(44);
+  const view = new DataView(header.buffer);
+  const write = (offset: number, value: string) => { for (let i = 0; i < value.length; i++) header[offset + i] = value.charCodeAt(i); };
+  write(0, 'RIFF'); view.setUint32(4, 36 + dataLength, true); write(8, 'WAVE'); write(12, 'fmt ');
+  view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true); view.setUint16(34, 16, true); write(36, 'data');
+  view.setUint32(40, dataLength, true);
+  return header;
+}
+
+/** Join every answer's samples behind one WAV header, so the app can play it as one file. */
+export function mergePiecesAsWav(pieces: Uint8Array[], sampleRate = WAV_SAMPLE_RATE) {
+  const samples = pieces.map(pcmBytesOfPiece);
+  const total = samples.reduce((sum, piece) => sum + piece.length, 0) & ~1; // whole 16-bit samples only
+  const wav = new Uint8Array(44 + total);
+  wav.set(wavHeader(total, sampleRate), 0);
+  let offset = 44;
+  for (const piece of samples) {
+    if (offset >= wav.length) break;
+    const room = Math.min(piece.length, wav.length - offset);
+    wav.set(piece.subarray(0, room), offset);
+    offset += room;
+  }
+  return { audioContent: encode(wav), encoding: 'wav' as const, sampleRate };
+}
+
 export async function synthesizeChirpSpeech(text: string, voice: string | undefined, env: CloudTtsRuntime, fetchApi: typeof fetch = fetch, signal?: AbortSignal) {
   const speech = String(text || '').trim();
   if (!speech) throw failure(400, '음성으로 읽을 내용이 없습니다.');
@@ -82,7 +145,7 @@ export async function synthesizeChirpSpeech(text: string, voice: string | undefi
     const response = await fetchApi(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${encodeURIComponent(key)}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input: { text: piece }, voice: { languageCode: 'ko-KR', name }, audioConfig: { audioEncoding: 'MP3' } }),
+      body: JSON.stringify({ input: { text: piece }, voice: { languageCode: 'ko-KR', name }, audioConfig: CLOUD_AUDIO_CONFIG }),
       signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(30000)]) : AbortSignal.timeout(30000),
     });
     if (!response.ok) {
@@ -100,11 +163,7 @@ export async function synthesizeChirpSpeech(text: string, voice: string | undefi
     if (!body.audioContent) throw failure(502, 'Google Cloud TTS 응답이 비어 있습니다.', { code: 'TTS_EMPTY_RESPONSE' });
     pieces.push(decode(body.audioContent));
   }
-  const total = pieces.reduce((sum, piece) => sum + piece.length, 0);
-  const merged = new Uint8Array(total);
-  let offset = 0;
-  for (const piece of pieces) { merged.set(piece, offset); offset += piece.length; }
-  return { audioContent: encode(merged), encoding: 'mp3' as const, sampleRate: 24000, provider: 'google-cloud-chirp3-hd', voice: name };
+  return { ...mergePiecesAsWav(pieces), provider: 'google-cloud-chirp3-hd', voice: name };
 }
 
 /* ── Cloud Gemini-TTS: the same Gemini voices through Cloud Text-to-Speech (billed project quota). ── */
@@ -151,7 +210,7 @@ export async function synthesizeCloudGeminiSpeech(text: string, voice: string | 
           body: JSON.stringify({
             input: { prompt: CLOUD_GEMINI_STYLE, text: piece },
             voice: { languageCode: 'ko-KR', name, model_name: model },
-            audioConfig: { audioEncoding: 'MP3' },
+            audioConfig: CLOUD_AUDIO_CONFIG,
           }),
           signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(45000)]) : AbortSignal.timeout(45000),
         });
@@ -168,11 +227,7 @@ export async function synthesizeCloudGeminiSpeech(text: string, voice: string | 
         pieces.push(decode(body.audioContent));
       }
       workingCloudGeminiModel = model;
-      const total = pieces.reduce((sum, p) => sum + p.length, 0);
-      const merged = new Uint8Array(total);
-      let offset = 0;
-      for (const p of pieces) { merged.set(p, offset); offset += p.length; }
-      return { audioContent: encode(merged), encoding: 'mp3' as const, sampleRate: 24000, provider: 'google-cloud-gemini-tts', voice: name, model };
+      return { ...mergePiecesAsWav(pieces), provider: 'google-cloud-gemini-tts', voice: name, model };
     } catch (error: any) {
       lastError = error;
       lastCloudGeminiModelError = { model, ...(error?.providerStatus ? { status: error.providerStatus } : {}), ...(error?.providerCode ? { providerCode: error.providerCode } : {}) };

@@ -221,7 +221,8 @@ calmRouter.post("/api/tts", async (req: Request, res: Response) => {
   }
 
   const cleanText = text.trim();
-  const cacheKey = `natural_ai_v1:${voice}:${cleanText}`;
+  // v2: 백업 음성이 32kbps MP3에서 24kHz 무손실 WAV로 바뀌었으므로 구 MP3 캐시와 섞지 않는다.
+  const cacheKey = `natural_ai_v2:${voice}:${cleanText}`;
 
   if (ttsCache.has(cacheKey)) {
     return res.json({ audio: ttsCache.get(cacheKey), cached: true });
