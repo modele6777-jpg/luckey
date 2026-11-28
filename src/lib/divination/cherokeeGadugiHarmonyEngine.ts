@@ -11,6 +11,7 @@ export interface CherokeeGadugiResult {
   duyuktvInsight: string;
   smokyMountainsTone: string;
   duyuktvBalanceAxis: string;
+  cherokeeCrossAxis: string;
   topicBalanceHint: string;
   shadowWarning: string;
   reflectionFocus: string;
@@ -111,15 +112,19 @@ export function calculateCherokeeGadugiHarmony(params: {
   const duyuktvBalanceAxis = `${picked.principle.split('(')[0].trim()} ↔ ${companion.principle.split('(')[0].trim()} 조화 축`;
   const shadowWarning = `[${picked.principle.split('(')[0].trim()} 과잉 경계] 배려나 조화를 앞세우다 정작 내 안의 솔직한 경계와 필요를 지워 버리지 않도록 살피십시오.`;
 
+  const calculatedAtKst = formatKstIso(now);
+  const cherokeeCrossAxis = `[${picked.principle.split('(')[0].trim()}] × [${companion.principle.split('(')[0].trim()}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-CHEROKEE-GADUGI-v2.4.0',
-    calculatedAtKst: formatKstIso(now),
+    engineVersion: 'LUCKEY-CHEROKEE-GADUGI-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     gadugiPrinciple: picked.principle,
     companionPrinciple: companion.principle,
     duyuktvInsight: `${picked.insight} (동반 원리: ${companion.principle})`,
     smokyMountainsTone: picked.tone,
     duyuktvBalanceAxis,
+    cherokeeCrossAxis,
     topicBalanceHint,
     shadowWarning,
     reflectionFocus: `체로키 지혜의 '${picked.principle}'와 동반 원리 '${companion.principle}'처럼, 내 안의 두려움 대신 신뢰와 조화(Duyuktv)의 마음에 오늘의 힘을 보태 보세요.`,
@@ -136,6 +141,7 @@ export function formatCherokeeGadugiPrompt(res: CherokeeGadugiResult): string {
     `- 조화 원칙: ${res.gadugiPrinciple} (${res.smokyMountainsTone})`,
     `- 동반 원리: ${res.companionPrinciple}`,
     `- 두육트브 조화 축: ${res.duyuktvBalanceAxis}`,
+    `- 4중 교차 축: ${res.cherokeeCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 중심 통찰: ${res.duyuktvInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
