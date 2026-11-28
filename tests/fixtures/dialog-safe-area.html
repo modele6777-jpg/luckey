@@ -18,7 +18,8 @@
 <body>
 <h1>luckey · dialog safe-area gutter harness</h1>
 <p class="note">
-  Query: <code>?rail=right|left|bottom|top|none&amp;sar=68&amp;sal=0&amp;sab=0&amp;sat=0&amp;w=461&amp;h=678</code><br>
+  Query: <code>?rail=right|left|bottom|top|none&amp;sar=68&amp;sal=0&amp;sab=0&amp;sat=0&amp;w=461&amp;h=678</code>
+  (<code>&amp;css=&lt;styles.css url&gt;</code> compares another revision's stylesheet)<br>
   Reproduces an iPhone landscape <code>env(safe-area-inset-right)</code> that a desktop browser cannot report.
   The scene runs in an iframe so the phone width also decides the <code>min-width: 640px</code> breakpoint.
 </p>
@@ -42,7 +43,9 @@
   const frameHeight = number('h', 678);
   const railSize = number('railSize', 80);
 
-  const cssUrl = new URL('../../src/styles/duo-workspace.css', location.href).href;
+  const cssUrl = query.get('css')
+    ? new URL(query.get('css'), location.href).href
+    : new URL('../../src/styles/duo-workspace.css', location.href).href;
   const railBox = rail === 'right' ? `right:0;top:0;width:${railSize}px;height:100%;`
     : rail === 'left' ? `left:0;top:0;width:${railSize}px;height:100%;`
     : rail === 'bottom' ? `bottom:0;left:0;width:100%;height:${railSize}px;`
