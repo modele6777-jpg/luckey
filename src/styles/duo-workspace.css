@@ -344,6 +344,11 @@ html:root:root :is(.screen-portal, .duo-portal) :is(#tarot-stage-container, #tod
   min-height: 0;
   max-height: max(3rem, calc(var(--overlay-height) - 2rem)) !important;
 }
+/* Only the two Tarot inspection dialogs fill the safe-area-padded canvas in expanded portrait Duo. */
+html.duo-unfolded-portrait .duo-portal[data-overlay-scope='canvas'] > .fixed.inset-0 > .duo-tarot-portrait-fill {
+  height: 100% !important;
+  max-height: 100% !important;
+}
 /* Floating music cards also use local bounds rather than device-width sizing. */
 :is(.screen-portal, .duo-portal) > .fixed:not(.inset-0) {
   max-width: calc(100% - 1.5rem);

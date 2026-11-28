@@ -66,6 +66,19 @@ test('canvas dialog layer fills the host and keeps phone gutters', () => {
   assert.match(styles, /@media \(min-width: 640px\) \{\s*\.duo-portal > \.fixed\.inset-0 \{/);
 });
 
+test('only the two Tarot dialogs fill the safe-area canvas in expanded portrait Duo', () => {
+  const rule = styles.match(/html\.duo-unfolded-portrait \.duo-portal\[data-overlay-scope='canvas'\] > \.fixed\.inset-0 > \.duo-tarot-portrait-fill\s*\{[^}]*\}/)?.[0] ?? '';
+  assert.match(rule, /height: 100% !important/);
+  assert.match(rule, /max-height: 100% !important/);
+  assert.match(backModal, /duo-dialog-panel[^\"]*duo-tarot-portrait-fill/);
+  assert.match(zoomModal, /duo-dialog-panel[^\"]*duo-tarot-portrait-fill/);
+  assert.match(styles, /padding: max\(\.5rem, env\(safe-area-inset-top, 0px\)\)[^;]*max\(\.5rem, env\(safe-area-inset-bottom, 0px\)\)/);
+  assert.match(paneHost, /railOnBottom/);
+  assert.match(styles, /\.duo-dialog-body \{ min-height: 0; overflow-y: auto;/);
+  assert.match(backModal, /flex-1 min-h-0 overflow-y-auto no-scrollbar[^\"]*duo-dialog-body/);
+  assert.match(zoomModal, /className=\"duo-dialog-body\"/);
+});
+
 test('the floating Big Bang orb steps aside while a popup is open', () => {
   // Popup layers live inside the app shell, below the orb's own stacking level,
   // so it painted over dialog text (deck name, hashtags) and swallowed taps.
@@ -102,7 +115,7 @@ test('TarotCardBackCustomizerModal footer stays on one line', () => {
 });
 
 test('TarotCardZoomModal fits the canvas and never overlaps its own heading', () => {
-  assert.match(zoomModal, /duo-dialog-panel relative w-full max-w-md/);
+  assert.match(zoomModal, /duo-dialog-panel duo-tarot-portrait-fill relative w-full max-w-md/);
   assert.doesNotMatch(zoomModal, /max-w-\[94vw\]/, 'a vw cap can be narrower than the visible canvas');
   assert.match(zoomModal, /max-h-\[calc\(100dvh-1rem\)\]/);
   assert.match(zoomModal, /flex flex-wrap items-center justify-between gap-x-2 gap-y-1/);

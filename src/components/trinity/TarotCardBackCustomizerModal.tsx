@@ -69,7 +69,7 @@ export const TarotCardBackCustomizerModal: React.FC<TarotCardBackCustomizerModal
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.94, y: 16 }}
           transition={{ type: 'spring', damping: 26, stiffness: 300 }}
-          className="relative w-full max-w-4xl max-h-[calc(100dvh-1rem)] bg-zinc-950/95 border border-yellow-500/40 rounded-2xl sm:rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.8),0_0_40px_rgba(234,179,8,0.2)] flex flex-col overflow-hidden text-white z-10 duo-dialog-panel"
+          className="relative w-full max-w-4xl max-h-[calc(100dvh-1rem)] bg-zinc-950/95 border border-yellow-500/40 rounded-2xl sm:rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.8),0_0_40px_rgba(234,179,8,0.2)] flex flex-col overflow-hidden text-white z-10 duo-dialog-panel duo-tarot-portrait-fill"
         >
           {/* Top Header — compact on narrow canvases, badge never squeezed */}
           <div className="relative flex items-start gap-2.5 sm:gap-3 px-3.5 py-3 sm:px-6 sm:py-4 border-b border-white/10 bg-gradient-to-r from-yellow-500/10 via-amber-500/5 to-transparent duo-dialog-heading">

@@ -102,7 +102,7 @@ export function TarotCardZoomModal({
             exit={{ opacity: 0, scale: 0.78, y: 15 }}
             transition={{ type: 'spring', damping: 25, stiffness: 320 }}
             onClick={(e) => e.stopPropagation()}
-            className="duo-dialog-panel relative w-full max-w-md bg-[#0e0c18] border border-yellow-500/40 p-3 sm:p-6 rounded-2xl sm:rounded-[32px] shadow-[0_25px_80px_rgba(0,0,0,0.9)] text-white max-h-[calc(100dvh-1rem)] overflow-y-auto custom-scrollbar flex flex-col space-y-3 sm:space-y-4"
+            className="duo-dialog-panel duo-tarot-portrait-fill relative w-full max-w-md bg-[#0e0c18] border border-yellow-500/40 p-3 sm:p-6 rounded-2xl sm:rounded-[32px] shadow-[0_25px_80px_rgba(0,0,0,0.9)] text-white max-h-[calc(100dvh-1rem)] overflow-y-auto custom-scrollbar flex flex-col space-y-3 sm:space-y-4"
           >
             {/* Subtle Ambient Cosmic Aura */}
             <motion.div
