@@ -17,7 +17,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_DECANS_VERSION = 'LUCKEY-EGYPTIAN-DECANS-v2.5.0';
+export const EGYPTIAN_DECANS_VERSION = 'LUCKEY-EGYPTIAN-DECANS-v2.6.0';
 
 export interface DecanSituationalAudit {
   navigationAxis: string;
@@ -36,6 +36,7 @@ export interface DecanTemporalRhythm {
 
 export interface DecanSynthesisMatrix {
   resonanceGrade: '삼합공명' | '극성조율' | '안정항해';
+  decansCrossAxis: string;
   birthTransitLink: string;
   nextNavigationStep: string;
 }
@@ -278,8 +279,10 @@ export function calculateEgyptianThirtySixDecans(params: {
       : circularDistance === 18
         ? '극성조율'
         : '안정항해';
+  const decansCrossAxis = `[본명 제${birthDecan.decanNumber}데칸 ${birthDecan.zodiacSign}] × [트랜짓 제${currentTransitDecan.decanNumber}데칸 ${currentTransitDecan.zodiacSign}] × [${resonanceGrade}] × [${temporalDecanRhythm.stellarTempo}]`;
   const decanSynthesisMatrix: DecanSynthesisMatrix = {
     resonanceGrade,
+    decansCrossAxis,
     birthTransitLink: `본명 제${birthDecan.decanNumber}데칸(${birthDecan.guardianDeity})과 현재 제${currentTransitDecan.decanNumber}데칸(${currentTransitDecan.guardianDeity})이 ${temporalDecanRhythm.denderaWatchWindow}에서 교차합니다.`,
     nextNavigationStep: situationalDecanAudit.altarAction,
   };
@@ -324,6 +327,7 @@ export function formatEgyptianThirtySixDecansPrompt(report: EgyptianThirtySixDec
 - **KST 시공간 리듬 (${report.temporalDecanRhythm.kstHour}시)**: ${report.temporalDecanRhythm.denderaWatchWindow} · ${report.temporalDecanRhythm.sothicSeasonPhase} (${report.temporalDecanRhythm.stellarTempo})
   - 시간대 지침: ${report.temporalDecanRhythm.navigationTimingDirective}
 - **천구 교차 매트릭스**: ${report.decanSynthesisMatrix.birthTransitLink}
+- **4중 교차 축**: ${report.decanSynthesisMatrix.decansCrossAxis}
 - **누트(Nut) 천구 항해 지침**: ${report.spiritualNavigationGuidance}
 - **데칸 제단 일상 개운 행동**: ${report.decanAltarPrescription}
 - **성찰 초점**: ${report.reflectionFocus}
