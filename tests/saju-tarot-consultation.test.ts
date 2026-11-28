@@ -108,7 +108,9 @@ test('Tarot guidance only interprets actual app-drawn cards and avoids certainty
   assert.match(drawn, /확률·승률·수익률/);
   assert.match(drawn, /객관적인 승자를 지어내지 마세요/);
   assert.match(drawn, /상징적 기울기/);
-  assert.match(drawn, /현실적인 다음 단계·불확실성/);
+  assert.match(drawn, /현실에서 확인할 지점/);
+  assert.match(drawn, /열린 질문 하나로 여유를 남기세요/);
+  assert.match(drawn, /불확실한 부분은 그 자리에서 짧게/);
 
   const noDraw = buildTarotInterpretationGuidance({ question: '카드 의미를 알려줘', hasAppDraw: false });
   assert.match(noDraw, /실제 앱 카드 추첨이 없습니다/);
