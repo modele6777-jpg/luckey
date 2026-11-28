@@ -7,6 +7,7 @@ export interface CornishKernowResult {
   kernowLandmark: string;
   companionLandmark: string;
   graniteCoastAxis: string;
+  cornishCrossAxis: string;
   topicBalanceHint: string;
   cornishInsight: string;
   atlanticTone: string;
@@ -113,13 +114,17 @@ export function calculateCornishKernowSeaGranite(params: {
   const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = CORNISH_SHADOWS[idx];
 
+  const calculatedAtKst = formatKstIso(now);
+  const cornishCrossAxis = `[${picked.landmark.split('(')[0].trim()}] × [${companion.landmark.split('(')[0].trim()}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-CORNISH-KERNOW-v2.4.0',
-    calculatedAtKst: formatKstIso(now),
+    engineVersion: 'LUCKEY-CORNISH-KERNOW-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     kernowLandmark: picked.landmark,
     companionLandmark: companion.landmark,
     graniteCoastAxis,
+    cornishCrossAxis,
     topicBalanceHint,
     cornishInsight: picked.insight,
     atlanticTone: picked.tone,
@@ -136,6 +141,7 @@ export function formatCornishKernowPrompt(res: CornishKernowResult): string {
     `[콘월 케르노우·화강암 인내 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 해안 축: ${res.graniteCoastAxis}`,
+    `- 4중 교차 축: ${res.cornishCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 케르노우 상징: ${res.kernowLandmark} (${res.atlanticTone})`,
     `- 동반 지형: ${res.companionLandmark}`,

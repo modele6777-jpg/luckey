@@ -7,6 +7,7 @@ export interface ChuvashTuraResult {
   chuvashSign: string;
   companionSign: string;
   worldTreeAxis: string;
+  chuvashCrossAxis: string;
   topicBalanceHint: string;
   turaInsight: string;
   volgaTone: string;
@@ -113,13 +114,17 @@ export function calculateChuvashTuraWorldTreeBalance(params: {
   const topicBalanceHint = TOPIC_BALANCE_HINTS[questionTopic];
   const shadowWarning = CHUVASH_SHADOWS[idx];
 
+  const calculatedAtKst = formatKstIso(now);
+  const chuvashCrossAxis = `[${picked.sign.split('(')[0].trim()}] × [${companion.sign.split('(')[0].trim()}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-CHUVASH-TURA-v2.4.0',
-    calculatedAtKst: formatKstIso(now),
+    engineVersion: 'LUCKEY-CHUVASH-TURA-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     chuvashSign: picked.sign,
     companionSign: companion.sign,
     worldTreeAxis,
+    chuvashCrossAxis,
     topicBalanceHint,
     turaInsight: picked.insight,
     volgaTone: picked.tone,
@@ -136,6 +141,7 @@ export function formatChuvashTuraPrompt(res: ChuvashTuraResult): string {
     `[추바시 투라·세계수 조화 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 세계수 축: ${res.worldTreeAxis}`,
+    `- 4중 교차 축: ${res.chuvashCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 추바시 상징: ${res.chuvashSign} (${res.volgaTone})`,
     `- 동반 상징: ${res.companionSign}`,
