@@ -16,6 +16,7 @@ export interface ChumashTomolResult {
   companionSignal: string;
   plankSealing: string;
   tideNavigationAxis: string;
+  chumashCrossAxis: string;
   topicBalanceHint: string;
   shadowWarning: string;
   reflectionFocus: string;
@@ -102,14 +103,18 @@ export function calculateChumashTomolCanoe(input: ChumashTomolInput): ChumashTom
   const tideNavigationAxis = `${voyageSignal} ↔ ${companionSignal} 해협 조류 축`;
   const shadowWarning = '[항해 과잉 경계] 틈새 점검과 만반의 준비에만 머무르며 정작 조류가 열린 순간의 출항을 놓치지 않도록 살피십시오.';
 
+  const calculatedAtKst = toKstIso(input.now);
+  const chumashCrossAxis = `[${voyageSignal}] × [${companionSignal}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-CHUMASH-TOMOL-v2.4.0',
-    calculatedAtKst: toKstIso(input.now),
+    engineVersion: 'LUCKEY-CHUMASH-TOMOL-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     voyageSignal,
     companionSignal,
     plankSealing: SEALINGS[(seed >>> 3) % SEALINGS.length],
     tideNavigationAxis,
+    chumashCrossAxis,
     topicBalanceHint: TOPIC_BALANCE_HINTS[questionTopic],
     shadowWarning,
     reflectionFocus: `캘리포니아 해협을 건너던 추마시 족의 토몰(Tomol) 판자 카누처럼 주 신호('${voyageSignal}')와 동반 신호('${companionSignal}')를 함께 짚어 작은 틈을 정성껏 메우고 해류를 읽으며 나아가는 상징적 관점입니다.`,
@@ -126,6 +131,7 @@ export function formatChumashTomolPrompt(res: ChumashTomolResult): string {
     `항해 신호: ${res.voyageSignal}`,
     `동반 신호: ${res.companionSignal}`,
     `해협 조류 축: ${res.tideNavigationAxis}`,
+    `4중 교차 축: ${res.chumashCrossAxis}`,
     `주제별 균형 조언: ${res.topicBalanceHint}`,
     `선체 결합: ${res.plankSealing}`,
     `성찰 초점: ${res.reflectionFocus}`,

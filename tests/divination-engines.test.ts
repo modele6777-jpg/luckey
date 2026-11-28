@@ -14492,16 +14492,16 @@ test('Buryat Baikal Tengri Harmony engine: spirit, +09:00 KST, and interpretive 
 
 test('Cornish Kernow Sea Granite engine: landmark, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateCornishKernowSeaGranite({ profile, now: new Date('2026-11-20T07:38:00Z'), question: '묵묵히 내공을 쌓아 가고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CORNISH-KERNOW-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CORNISH-KERNOW-v2.5.0');
   assert.equal(rep.questionTopic, '일·내공');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionLandmark !== rep.kernowLandmark);
-  assert.ok(rep.graniteCoastAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.graniteCoastAxis.length > 0 && rep.cornishCrossAxis.includes('×') && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatCornishKernowPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('콘월') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLandmark) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('콘월') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionLandmark) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계') && prompt.includes('4중 교차 축'));
 });
 
 test('Ossetian Nart Sagas Forge engine: emblem, +09:00 KST, and interpretive boundary', () => {
@@ -14629,16 +14629,16 @@ test('Punjabi Nanak Langar Service engine: pillar, +09:00 KST, and interpretive 
 
 test('Chuvash Tura World Tree Balance engine: sign, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateChuvashTuraWorldTreeBalance({ profile, now: new Date('2026-11-20T07:56:00Z'), question: '한 땀씩 정갈하게 질서를 세우고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CHUVASH-TURA-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CHUVASH-TURA-v2.5.0');
   assert.equal(rep.questionTopic, '일·질서');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.ok(rep.companionSign !== rep.chuvashSign);
-  assert.ok(rep.worldTreeAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.worldTreeAxis.length > 0 && rep.chuvashCrossAxis.includes('×') && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatChuvashTuraPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
-  assert.ok(prompt.includes('추바시') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSign) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('추바시') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSign) && prompt.includes(rep.topicBalanceHint) && prompt.includes('과잉 경계') && prompt.includes('4중 교차 축'));
 });
 
 test('Kalmyk Jangar Bumba Steppe engine: motif, +09:00 KST, and interpretive boundary', () => {
@@ -16084,17 +16084,17 @@ test('Shan Inle Rowing engine: posture, +09:00 KST, and interpretive boundary', 
 
 test('Chumash Tomol Canoe engine: signal, +09:00 KST, and interpretive boundary', () => {
   const rep = calculateChumashTomolCanoe({ profile, now: new Date('2026-11-20T22:25:00Z'), question: '작은 틈을 메우고 안전하게 건너고 싶어요' });
-  assert.equal(rep.engineVersion, 'LUCKEY-CHUMASH-TOMOL-v2.4.0');
+  assert.equal(rep.engineVersion, 'LUCKEY-CHUMASH-TOMOL-v2.5.0');
   assert.ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2} \+09:00 \(KST\)$/.test(rep.calculatedAtKst));
   assert.equal(rep.questionTopic, 'decision');
   assert.ok(rep.companionSignal !== rep.voyageSignal);
-  assert.ok(rep.tideNavigationAxis.length > 0 && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
+  assert.ok(rep.tideNavigationAxis.length > 0 && rep.chumashCrossAxis.includes('×') && rep.topicBalanceHint.length > 0 && rep.shadowWarning.length > 0);
   assert.ok(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0 && rep.reflectiveQuestion.length > 0);
   assert.ok(rep.interpretiveBoundary.includes('미래 예측이 아닙니다'));
   const prompt = formatChumashTomolPrompt(rep);
   assert.ok(!prompt.includes('/100') && !prompt.includes('%'));
   assert.ok(prompt.includes('추마시') && prompt.includes('+09:00 (KST)') && prompt.includes(rep.companionSignal));
-  assert.ok(prompt.includes('해협 조류 축') && prompt.includes('주제별 균형 조언') && prompt.includes('과잉 경계'));
+  assert.ok(prompt.includes('해협 조류 축') && prompt.includes('4중 교차 축') && prompt.includes('주제별 균형 조언') && prompt.includes('과잉 경계'));
 });
 
 test('Serer Baobab Council engine: shade, +09:00 KST, and interpretive boundary', () => {
