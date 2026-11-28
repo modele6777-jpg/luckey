@@ -7,6 +7,7 @@ export interface GayaIronCrownResult {
   gayaMotif: string;
   companionMotif: string;
   forgeEstuaryAxis: string;
+  gayaCrossAxis: string;
   topicBalanceHint: string;
   gayaInsight: string;
   riverTone: string;
@@ -113,13 +114,17 @@ export function calculateGayaIronCrownRiverHarmony(params: {
   const topicBalanceHint = GAYA_TOPIC_HINTS[questionTopic];
   const shadowWarning = GAYA_SHADOWS[idx];
 
+  const calculatedAtKst = formatKstIso(now);
+  const gayaCrossAxis = `[${picked.motif.split('(')[0].trim()}] × [${companion.motif.split('(')[0].trim()}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-GAYA-IRON-v2.4.0',
-    calculatedAtKst: formatKstIso(now),
+    engineVersion: 'LUCKEY-GAYA-IRON-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     gayaMotif: picked.motif,
     companionMotif: companion.motif,
     forgeEstuaryAxis,
+    gayaCrossAxis,
     topicBalanceHint,
     gayaInsight: picked.insight,
     riverTone: picked.tone,
@@ -136,6 +141,7 @@ export function formatGayaIronCrownPrompt(res: GayaIronCrownResult): string {
     `[가야·금관 철기 조화 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 대장간·하구 축: ${res.forgeEstuaryAxis}`,
+    `- 4중 교차 축: ${res.gayaCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 가야 모티프: ${res.gayaMotif} (${res.riverTone})`,
     `- 동반 모티프: ${res.companionMotif}`,

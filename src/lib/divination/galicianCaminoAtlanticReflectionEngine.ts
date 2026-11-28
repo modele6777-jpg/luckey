@@ -7,6 +7,7 @@ export interface GalicianCaminoResult {
   atlanticSign: string;
   companionSign: string;
   caminoHorizonAxis: string;
+  galicianCrossAxis: string;
   topicBalanceHint: string;
   caminoInsight: string;
   galiciaTone: string;
@@ -113,13 +114,17 @@ export function calculateGalicianCaminoAtlanticReflection(params: {
   const topicBalanceHint = GALICIAN_TOPIC_HINTS[questionTopic];
   const shadowWarning = GALICIAN_SHADOWS[idx];
 
+  const calculatedAtKst = formatKstIso(now);
+  const galicianCrossAxis = `[${picked.sign.split('(')[0].trim()}] × [${companion.sign.split('(')[0].trim()}] × [${questionTopic}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-GALICIAN-CAMINO-v2.4.0',
-    calculatedAtKst: formatKstIso(now),
+    engineVersion: 'LUCKEY-GALICIAN-CAMINO-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     atlanticSign: picked.sign,
     companionSign: companion.sign,
     caminoHorizonAxis,
+    galicianCrossAxis,
     topicBalanceHint,
     caminoInsight: picked.insight,
     galiciaTone: picked.tone,
@@ -136,6 +141,7 @@ export function formatGalicianCaminoPrompt(res: GalicianCaminoResult): string {
     `[갈리시아 카미노·대서양 성찰 · ${res.engineVersion}]`,
     `- 기준 시각: ${res.calculatedAtKst}`,
     `- 질문 맥락: ${res.questionTopic} | 순례·수평선 축: ${res.caminoHorizonAxis}`,
+    `- 4중 교차 축: ${res.galicianCrossAxis}`,
     `- 맥락 균형 조언: ${res.topicBalanceHint}`,
     `- 대서양 상징: ${res.atlanticSign} (${res.galiciaTone})`,
     `- 동반 상징: ${res.companionSign}`,

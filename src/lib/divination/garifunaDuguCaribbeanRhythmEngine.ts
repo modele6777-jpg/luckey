@@ -10,6 +10,7 @@ export interface GarifunaDuguResult {
   caribbeanRhythm: string;
   companionRhythm: string;
   coastCadenceAxis: string;
+  garifunaCrossAxis: string;
   topicBalanceHint: string;
   duguInsight: string;
   coastTone: string;
@@ -120,14 +121,18 @@ export function calculateGarifunaDuguCaribbeanRhythm(params: {
     : '무거운 생각을 가벼운 박자로 풀어내는 하루';
   const questionCategory = classifyGarifunaCategory(trimmedQ);
 
+  const calculatedAtKst = formatKstIso(now);
+  const garifunaCrossAxis = `[${picked.rhythm.split('(')[0].trim()}] × [${companion.rhythm.split('(')[0].trim()}] × [${questionCategory}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
-    engineVersion: 'LUCKEY-GARIFUNA-DUGU-v2.4.0',
-    calculatedAtKst: formatKstIso(now),
+    engineVersion: 'LUCKEY-GARIFUNA-DUGU-v2.5.0',
+    calculatedAtKst,
     questionTopic,
     questionCategory,
     caribbeanRhythm: picked.rhythm,
     companionRhythm: companion.rhythm,
     coastCadenceAxis,
+    garifunaCrossAxis,
     topicBalanceHint: TOPIC_BALANCE_HINTS[questionCategory],
     duguInsight: `${picked.insight} (동반 리듬: ${companion.rhythm})`,
     coastTone: picked.tone,
@@ -147,6 +152,7 @@ export function formatGarifunaDuguPrompt(res: GarifunaDuguResult): string {
     `- 해안 리듬: ${res.caribbeanRhythm} (${res.coastTone})`,
     `- 동반 리듬: ${res.companionRhythm}`,
     `- 해안 박자 축: ${res.coastCadenceAxis}`,
+    `- 4중 교차 축: ${res.garifunaCrossAxis}`,
     `- 주제별 균형 조언: ${res.topicBalanceHint}`,
     `- 중심 통찰: ${res.duguInsight}`,
     `- 성찰 초점: ${res.reflectionFocus}`,
