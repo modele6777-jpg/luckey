@@ -96,7 +96,7 @@ export function WorkspacePortal({ children, onClose, scope = 'canvas' }: { child
   return createPortal(
     <OverlayPaneContext.Provider value={pane}>
       <ScreenOverlayContext.Provider value={layers}>
-        <div ref={portalRef} className="duo-portal" data-overlay-scope={scope} data-responsive-canvas="true" style={paneHost ? paneLayerStyle(viewportStyle, canvasBox) : viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
+        <div ref={portalRef} className="duo-portal" data-overlay-scope={scope} data-responsive-canvas="true" data-rail-edge={canvasBox?.railEdge ?? 'none'} style={paneHost ? paneLayerStyle(viewportStyle, canvasBox) : viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
       </ScreenOverlayContext.Provider>
     </OverlayPaneContext.Provider>, paneHost ?? document.body
   );

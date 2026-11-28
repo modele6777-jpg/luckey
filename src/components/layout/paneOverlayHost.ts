@@ -73,7 +73,15 @@ export interface CanvasBox {
   /** Size of the resulting box: the visible canvas a dialog may use. */
   width?: number;
   height?: number;
+  /**
+   * The screen edge the navigation rail occupies. The rail is a screen-edge
+   * element: it already sits inside that edge's safe-area inset, so a dialog
+   * filling the canvas beside it must not subtract the same inset again.
+   */
+  railEdge?: RailEdge;
 }
+
+export type RailEdge = 'top' | 'right' | 'bottom' | 'left' | 'none';
 
 const EPSILON = 2;
 /** How far a screen-edge rail may sit past a frame that iOS reported too narrow. */
@@ -86,7 +94,7 @@ interface RectLike { left: number; top: number; right: number; bottom: number; w
  * is a screen-edge element, so the edge it sits on decides which side to cut.
  */
 export function canvasBoxFromRects(hostRect: RectLike, navRect: RectLike | null): CanvasBox {
-  const box: CanvasBox = { left: 0, top: 0, right: 0, bottom: 0 };
+  const box: CanvasBox = { left: 0, top: 0, right: 0, bottom: 0, railEdge: 'none' };
   if (!navRect || hostRect.width < 1 || hostRect.height < 1) return box;
   if (navRect.width < 1 || navRect.height < 1) return box;
   const railOnRight = Math.abs(hostRect.right - navRect.right) <= EPSILON
@@ -110,10 +118,19 @@ export function canvasBoxFromRects(hostRect: RectLike, navRect: RectLike | null)
   const railOnTop = Math.abs(navRect.top - hostRect.top) <= EPSILON
     && hostRect.bottom - navRect.bottom > 1
     && navRect.height < hostRect.height * 0.6;
-  if (railOnRight || railOverhangsRight) box.right = Math.max(0, Math.round(hostRect.right - navRect.left));
-  else if (railOnLeft) box.left = Math.max(0, Math.round(navRect.right - hostRect.left));
-  else if (railOnBottom) box.bottom = Math.max(0, Math.round(hostRect.bottom - navRect.top));
-  else if (railOnTop) box.top = Math.max(0, Math.round(navRect.bottom - hostRect.top));
+  if (railOnRight || railOverhangsRight) {
+    box.right = Math.max(0, Math.round(hostRect.right - navRect.left));
+    box.railEdge = 'right';
+  } else if (railOnLeft) {
+    box.left = Math.max(0, Math.round(navRect.right - hostRect.left));
+    box.railEdge = 'left';
+  } else if (railOnBottom) {
+    box.bottom = Math.max(0, Math.round(hostRect.bottom - navRect.top));
+    box.railEdge = 'bottom';
+  } else if (railOnTop) {
+    box.top = Math.max(0, Math.round(navRect.bottom - hostRect.top));
+    box.railEdge = 'top';
+  }
   return box;
 }
 
@@ -133,7 +150,7 @@ const boxSize = (hostRect: RectLike, box: CanvasBox) => ({
 
 const sameBox = (a: CanvasBox | null, b: CanvasBox | null) => Boolean(a && b)
   && a!.left === b!.left && a!.top === b!.top && a!.right === b!.right && a!.bottom === b!.bottom
-  && a!.width === b!.width && a!.height === b!.height;
+  && a!.width === b!.width && a!.height === b!.height && a!.railEdge === b!.railEdge;
 
 /**
  * Keep the dialog box in step with the shell, the rail and a fold or rotation.

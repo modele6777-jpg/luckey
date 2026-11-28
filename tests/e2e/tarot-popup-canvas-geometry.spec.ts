@@ -82,6 +82,8 @@ async function getGeometry(dialog: Locator) {
     return {
       scope: portal.dataset.overlayScope,
       overlayPane: portal.dataset.overlayPane,
+      railEdge: portal.dataset.railEdge,
+      gutterInsetRight: portalStyle.getPropertyValue('--overlay-inset-right').trim(),
       portalIsFrame: portal.parentElement === frame,
       portalIsContentPane: portal.parentElement === pane,
       frame: rect(frame),
@@ -241,6 +243,32 @@ test('Tarot detail and deck-back popups fill the whole canvas in both pane order
   const swappedDetailDialog = page.getByRole('dialog', { name: '상세 보기' });
   await assertPopupFillsCanvas(swappedDetailDialog);
   await closeDialog(swappedDetailDialog);
+});
+
+test('a landscape safe-area inset never widens the gutter beside the rail', async ({ page }) => {
+  // iPhone report (2026-11-28, IMG_0565/0566): on a phone whose landscape
+  // `env(safe-area-inset-right)` is ~84px, every popup kept a wide dark strip on
+  // its right (panel right at 297 of the 381px canvas) while the left gutter was
+  // 12px. The tile already stops at the rail, which owns that screen inset, so
+  // the layer must keep only its plain gutter on the rail side.
+  await openTrinityTarot(page, { width: 461, height: 678 });
+  // Devices report the inset through env(), which a desktop page cannot set: the
+  // production layer mirrors it in --overlay-inset-* (from --sat/--sar/--sab/--sal)
+  // so the same value can be supplied here.
+  await page.addStyleTag({ content: 'html { --sat: 0px !important; --sar: 84px !important; --sab: 0px !important; --sal: 0px !important; }' });
+  const deckBackLauncher = page.locator('[data-workspace-pane="content"] button[title*="타로 카드 뒷면 덱 커스텀"]');
+  await deckBackLauncher.click();
+  const dialog = page.getByRole('dialog', { name: '타로 덱 뒷면 커스텀 컬렉션' });
+  await expect(dialog).toBeVisible();
+  await expect.poll(async () => (await getGeometry(dialog)).panel.width).toBeGreaterThan(100);
+  const geometry = await getGeometry(dialog);
+  expect(geometry.railEdge).toBe('right');
+  expect(geometry.padding.right, 'the rail side keeps the base phone gutter, not the 84px screen inset').toBe(12);
+  expect(geometry.padding.left, 'both gutters stay equal').toBe(geometry.padding.right);
+  expect(Math.abs(geometry.panel.right - (geometry.root.right - 12)), 'the panel reaches the rail with only the plain gutter').toBeLessThanOrEqual(2);
+  expect(Math.abs(geometry.panel.left - (geometry.root.left + 12))).toBeLessThanOrEqual(2);
+  expect(Math.abs(geometry.panel.width - (geometry.root.width - 24)), 'the popup uses the whole canvas width').toBeLessThanOrEqual(2);
+  await closeDialog(dialog);
 });
 
 test('Tarot detail and deck-back popups fill the folded cover canvas when iOS leaves main narrow', async ({ page }) => {

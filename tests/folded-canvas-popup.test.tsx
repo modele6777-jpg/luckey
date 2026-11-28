@@ -105,6 +105,7 @@ test('a dialog on the pane-less folded screen fills the canvas beside the rail',
     assert.ok(layer, 'the dialog layer is mounted');
     assert.equal(layer.parentElement, screen.shell, 'the dialog is hosted on the app frame, not on the narrow main');
     assert.equal(layer.dataset.overlayPane, 'main');
+    assert.equal(layer.dataset.railEdge, 'right', 'the rail edge is marked so the layer drops that screen inset');
     assert.equal(layer.style.left, '0px');
     assert.equal(layer.style.right, '80px', 'the rail stays outside the dialog');
     assert.equal(layer.style.top, '0px');
@@ -190,16 +191,16 @@ test('a rail fixed to the screen edge is still cut from a frame iOS reported too
   // 389: the dialog keeps the 381px canvas instead of running under the rail.
   assert.deepEqual(
     canvasBoxFromRects(box(0, 0, 389, 678), box(381, 0, 80, 678)),
-    { left: 0, top: 0, right: 8, bottom: 0 },
+    { left: 0, top: 0, right: 8, bottom: 0, railEdge: 'right' },
   );
   // A frame that already ends at the rail keeps the plain cut.
   assert.deepEqual(
     canvasBoxFromRects(box(0, 0, 461, 678), box(381, 0, 80, 678)),
-    { left: 0, top: 0, right: 80, bottom: 0 },
+    { left: 0, top: 0, right: 80, bottom: 0, railEdge: 'right' },
   );
   // A rail floating inside the canvas still cuts nothing.
   assert.deepEqual(
     canvasBoxFromRects(box(0, 0, 461, 678), box(20, 20, 60, 280)),
-    { left: 0, top: 0, right: 0, bottom: 0 },
+    { left: 0, top: 0, right: 0, bottom: 0, railEdge: 'none' },
   );
 });

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>luckey dialog safe-area harness</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #05060a; color: #e8e8f0; font: 13px/1.5 ui-monospace, monospace; }
+  h1 { font-size: 14px; margin: 12px 16px 4px; }
+  p.note { margin: 0 16px 12px; color: #9aa0b4; }
+  #stage { margin: 0 16px 16px; }
+  #stage iframe { border: 1px solid #2a2f45; border-radius: 8px; background: #000; }
+  #out { margin: 0 16px 24px; white-space: pre; }
+  .ok { color: #6ee7a8; }
+  .bad { color: #f87171; }
+</style>
+</head>
+<body>
+<h1>luckey · dialog safe-area gutter harness</h1>
+<p class="note">
+  Query: <code>?rail=right|left|bottom|top|none&amp;sar=68&amp;sal=0&amp;sab=0&amp;sat=0&amp;w=461&amp;h=678</code>
+  (<code>&amp;css=&lt;styles.css url&gt;</code> compares another revision's stylesheet)<br>
+  Reproduces an iPhone landscape <code>env(safe-area-inset-right)</code> that a desktop browser cannot report.
+  The scene runs in an iframe so the phone width also decides the <code>min-width: 640px</code> breakpoint.
+</p>
+<div id="stage"></div>
+<div id="out">측정 중…</div>
+<script>
+  const query = new URLSearchParams(location.search);
+  const number = (name, fallback) => {
+    const raw = query.get(name);
+    const value = raw === null ? NaN : Number(raw);
+    return Number.isFinite(value) ? value : fallback;
+  };
+  const rail = query.get('rail') ?? 'right';
+  const insets = {
+    top: number('sat', 0),
+    right: number('sar', 0),
+    bottom: number('sab', 0),
+    left: number('sal', 0),
+  };
+  const frameWidth = number('w', 461);
+  const frameHeight = number('h', 678);
+  const railSize = number('railSize', 80);
+
+  const cssUrl = query.get('css')
+    ? new URL(query.get('css'), location.href).href
+    : new URL('../../src/styles/duo-workspace.css', location.href).href;
+  const railBox = rail === 'right' ? `right:0;top:0;width:${railSize}px;height:100%;`
+    : rail === 'left' ? `left:0;top:0;width:${railSize}px;height:100%;`
+    : rail === 'bottom' ? `bottom:0;left:0;width:100%;height:${railSize}px;`
+    : rail === 'top' ? `top:0;left:0;width:100%;height:${railSize}px;`
+    : 'display:none;';
+  const canvasBox = rail === 'right' ? `left:0;top:0;right:${railSize}px;bottom:0;`
+    : rail === 'left' ? `left:${railSize}px;top:0;right:0;bottom:0;`
+    : rail === 'bottom' ? `left:0;top:0;right:0;bottom:${railSize}px;`
+    : rail === 'top' ? `left:0;top:${railSize}px;right:0;bottom:0;`
+    : 'left:0;top:0;right:0;bottom:0;';
+
+  const scene = `<!doctype html><html style="--sat:${insets.top}px;--sar:${insets.right}px;--sab:${insets.bottom}px;--sal:${insets.left}px">
+<head><meta charset="utf-8">
+<link rel="stylesheet" href="${cssUrl}">
+<style>
+  html, body { margin: 0; width: ${frameWidth}px; height: ${frameHeight}px; background: #05060a; }
+  /* The Tailwind utilities the production dialog markup relies on. */
+  .fixed { position: fixed; }
+  .inset-0 { inset: 0; }
+  .prism-app-shell { position: relative; width: ${frameWidth}px; height: ${frameHeight}px; }
+  .sites-pinned-sidebar { position: fixed; background: #0b1020; box-shadow: inset 0 0 0 1px #223; }
+  .duo-dialog-panel { background: #191c2b; color: #cbd5ff; }
+  #sample { display: flex; align-items: center; justify-content: center; }
+</style></head>
+<body>
+<div class="prism-app-shell">
+  <div class="sites-pinned-sidebar" style="${railBox}"></div>
+  <div class="duo-portal" data-overlay-scope="canvas" data-rail-edge="${rail === 'none' ? 'none' : rail}"
+       style="position:fixed;${canvasBox}width:auto;height:auto">
+    <div class="fixed inset-0">
+      <div class="duo-dialog-panel duo-tarot-portrait-fill" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center">팝업</div>
+    </div>
+  </div>
+</div>
+</body></html>`;
+
+  const iframe = document.createElement('iframe');
+  iframe.width = String(frameWidth);
+  iframe.height = String(frameHeight);
+  iframe.srcdoc = scene;
+  document.getElementById('stage').appendChild(iframe);
+
+  const round = (value) => Math.round(value * 100) / 100;
+
+  window.__geometry = () => {
+    const doc = iframe.contentDocument;
+    const portal = doc.querySelector('.duo-portal');
+    const layer = portal.querySelector('.fixed.inset-0');
+    const panel = portal.querySelector('.duo-dialog-panel');
+    const nav = doc.querySelector('.sites-pinned-sidebar');
+    const rect = (element) => {
+      const box = element.getBoundingClientRect();
+      return { left: round(box.left), top: round(box.top), right: round(box.right), bottom: round(box.bottom), width: round(box.width), height: round(box.height) };
+    };
+    const style = getComputedStyle(layer);
+    const portalStyle = getComputedStyle(portal);
+    return {
+      rail,
+      insets,
+      railEdge: portal.dataset.railEdge,
+      gutterInsets: {
+        top: portalStyle.getPropertyValue('--overlay-inset-top').trim(),
+        right: portalStyle.getPropertyValue('--overlay-inset-right').trim(),
+        bottom: portalStyle.getPropertyValue('--overlay-inset-bottom').trim(),
+        left: portalStyle.getPropertyValue('--overlay-inset-left').trim(),
+      },
+      padding: {
+        top: round(parseFloat(style.paddingTop) || 0),
+        right: round(parseFloat(style.paddingRight) || 0),
+        bottom: round(parseFloat(style.paddingBottom) || 0),
+        left: round(parseFloat(style.paddingLeft) || 0),
+      },
+      portal: rect(portal),
+      layer: rect(layer),
+      panel: rect(panel),
+      railBox: rect(nav),
+      panelGutterRight: round(rect(nav).left - rect(panel).right),
+      panelGutterLeft: round(rect(panel).left - rect(portal).left),
+    };
+  };
+
+  const render = () => {
+    let geometry;
+    try {
+      geometry = window.__geometry();
+    } catch (error) {
+      document.getElementById('out').textContent = `측정 실패: ${error}`;
+      return;
+    }
+    if (!geometry.panel.width) {
+      requestAnimationFrame(render);
+      return;
+    }
+    const symmetric = Math.abs(geometry.panelGutterRight - geometry.panelGutterLeft) <= 1;
+    const rows = [
+      `rail=${geometry.rail}  device inset(right)=${geometry.insets.right}px`,
+      `layer padding  top ${geometry.padding.top} · right ${geometry.padding.right} · bottom ${geometry.padding.bottom} · left ${geometry.padding.left}`,
+      `gutter insets  right=${geometry.gutterInsets.right || '(unset)'} left=${geometry.gutterInsets.left || '(unset)'}`,
+      `canvas         ${geometry.portal.left}→${geometry.portal.right} (${geometry.portal.width})`,
+      `panel          ${geometry.panel.left}→${geometry.panel.right} (${geometry.panel.width})`,
+      `rail           ${geometry.railBox.left}→${geometry.railBox.right}`,
+      `gutters        left ${geometry.panelGutterLeft} · right ${geometry.panelGutterRight}  ${symmetric ? '대칭 ✓' : '비대칭 ✗'}`,
+    ];
+    const out = document.getElementById('out');
+    out.textContent = rows.join('\n');
+    out.className = symmetric ? 'ok' : 'bad';
+    window.__ready = true;
+  };
+  iframe.addEventListener('load', () => requestAnimationFrame(render));
+</script>
+</body>
+</html>
