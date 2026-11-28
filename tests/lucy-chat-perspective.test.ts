@@ -19,6 +19,7 @@ test('점을 원하면 바로 옮기지 않고 이동 버튼으로 루시프로�
   assert.match(page, />이동</);
   assert.match(page, /queueLucyProReading\(text\)/);
   assert.match(page, /const acceptProReadingOffer = useCallback/);
+  assert.match(page, /deepOnly: true/);
 });
 
 test('점을 원하는 말은 루시프로로 넘긴다', () => {
@@ -56,9 +57,11 @@ test('루시채팅 지시는 운명학을 빼고 관점을 두 개 이상 고른
   assert.ok(picked.length >= 2);
   assert.ok(picked.some(item => item.id === 'relation' || item.id === 'feeling'));
   const directive = buildLucyChatPerspectiveDirective('이직할까 고민이야');
+  assert.match(directive, /엔진함/);
   assert.match(directive, /루시프로/);
   assert.match(directive, /금지: 사주/);
   assert.doesNotMatch(directive, /15대 운명학/);
+  assert.doesNotMatch(directive, /감정의 관점/);
   const prompt = buildLucyChatSystemPrompt({
     nickname: '제제',
     realName: '박주형',

@@ -2651,7 +2651,7 @@ ${responseProfile.rule}`;
       try {
         resetWatchdog();
         const compactSystemPrompt = isLucyCompanionTurn
-          ? `${buildLucyChatSystemPrompt({ nickname, realName, memory, userText: effectiveUserText })}\n${responseProfile.rule}`
+          ? `${buildLucyChatSystemPrompt({ nickname, realName, memory, userText: effectiveUserText })}\n${responseProfile.rule}\n${options?.extraSystemContext || ''}`
           : `당신은 사용자('${nickname}')의 다정한 단짝 친구 '루시(Lucy)'야. 100% 친근한 반말 구어체(~야, ~어, ~지, ~네)로 사용자의 말에 따뜻하고 명쾌하게 답해줘.\n${TAROT_NO_DRAW_RULE}\n${CALCULATION_HONESTY_RULE}\n${responseProfile.rule}${'\n' + (options?.extraSystemContext || toolSelection.promptInjection || '')}\n${criticalFactsPrompt}\n${readConsultMemory()}\n${longTermContext}\n${fullProfileContext}${fatePreviewContext ? '\n'+fatePreviewContext : ''}${chatDivinationContext ? '\n'+chatDivinationContext : ''}${isCasualMode ? '\n수다모드에서는 운세·타로·사주 등 운명학 도구를 선택하거나 답변에 적용하지 말고, 질문에 일상 대화처럼 직접 답해줘.' : ''}`;
         const compactMessages: Message[] = [
           { role: 'system', content: compactSystemPrompt },

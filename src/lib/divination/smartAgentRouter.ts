@@ -19,6 +19,7 @@ import type { UserProfile } from '../sharedState';
 import { DIVINATION_REQUEST_PATTERN } from '../divinationIntent';
 import { runDeterministicEngine, formatDeterministicEnginePrompt, getFiredEngineBadges, type DeterministicEngineReport, ALL_DCE_ENGINES } from './deterministicEngine';
 import { resolveLucyToolBudget } from './lucyToolBudget';
+import { selectChatDeepPerspectiveKeys } from '../lucyChatEngineMatch';
 import { CONCERN_TOOL_ORDER } from './concernToolOrder';
 import { detectMasterConcernTopic } from '../lucyMasterPrompts';
 
@@ -556,6 +557,7 @@ export function routeAndExecute(params: {
   const budget = resolveLucyToolBudget({ question: params.text, deepRequested: Boolean(divination?.deep) });
   // 💬 일반 채팅: 기초 도구 없이 심층 관점만 (점술모드에서는 divinationMode가 우선한다).
   const deepOnlyActive = Boolean(params.deepOnly) && !divination && !isMaster;
+  const fateFallbackReason = routePlan.routingReason || '';
   if (divination) {
     const baseTools: DivinationToolId[] = divination.base === 'tarot_saju' ? ['saju', 'tarot'] : ['saju'];
     // 루시프로 통합 상담: 사주(+손님이 고른 타로)를 중심에 두고, 질문·고민에 진짜 필요한
@@ -610,12 +612,30 @@ export function routeAndExecute(params: {
     routePlan.deepEngineGuidance = undefined;
   }
 
-  if ((requireBasicAndDeep || deepOnlyActive) && !routePlan.isMasterMobilization) {
+  if (deepOnlyActive && !routePlan.isCasual && !routePlan.isMasterMobilization) {
+    // 💬 루시채팅: 엔진함 심층 관점을 질문 문장에 맞춰 고른다.
+    // 의도 정규식에 안 걸린 기본 사주 폴백 목록은 앞에 고정하지 않는다.
+    const genericFateFallback = fateFallbackReason.includes('타고난 사주 원국');
+    const chatEngines = ALL_DCE_ENGINES
+      .filter(engine => engine.category === 'deep_master')
+      .map(engine => ({ key: engine.key, nameKo: engine.nameKo, summary: engine.summary, meaning: engine.meaning }));
+    const selectedDeepKeys = selectChatDeepPerspectiveKeys({
+      question: params.text,
+      intentTerms: genericFateFallback ? [] : INTENT_RELEVANCE_TERMS[routePlan.intent],
+      preferredKeys: genericFateFallback ? [] : (routePlan.deepEngineKeys ?? []),
+      engines: chatEngines,
+      limit: Math.min(3, Math.max(2, budget.maxDeep)),
+    });
+    const engineNames = new Map(chatEngines.map(engine => [engine.key, engine.nameKo] as const));
+    routePlan.deepEngineKeys = selectedDeepKeys;
+    routePlan.deepEnginesKo = selectedDeepKeys.map(key => engineNames.get(key) ?? key);
+    routePlan.deepEngineGuidance = '고른 엔진함 관점의 지혜만 지금 이야기에 옮겨 조언한다. 사주 원국을 계산하거나 타로 카드를 뽑은 것처럼 말하지 않는다.';
+  } else if (requireBasicAndDeep && !routePlan.isMasterMobilization) {
     const selectedDeepKeys = selectRelevantDeepPerspectiveKeys(
       params.text,
       routePlan.intent,
       routePlan.deepEngineKeys ?? [],
-      deepOnlyActive ? Math.min(budget.maxDeep, 2) : budget.maxDeep,
+      budget.maxDeep,
     );
     const engineNames = new Map(ALL_DCE_ENGINES
       .filter(engine => engine.category === 'deep_master')
@@ -662,8 +682,9 @@ export function routeAndExecute(params: {
     const deepBlock = deepNamesKo.length
       ? `[🧭 이번 이야기에 고른 심층 관점(상징 참고 · 계산 아님)]
 - 관점: **${deepNamesKo.join(' · ')}**
-- 이 관점들은 엔진함의 심층 해석 렌즈야. 이번 대화에서는 사주·타로·점성술 같은 생년월일 계산이나 점괘·카드 뽑기를 한 것처럼 말하지 마.
-- 관점의 지혜를 지금 대화 상황에 맞춰 조언으로 옮기고, 수치·점수·미래 예측을 만들어내지 마. 근거 없는 인용도 쓰지 마.
+- 이 관점들은 엔진함의 심층 해석 렌즈야. 고른 관점을 모두 쓰고, 관점마다 말풍선을 나눠 첫 줄에 그 관점 이름을 붙여.
+- 생년월일로 사주·타로·점성 원국을 계산하거나 카드를 뽑은 것처럼 말하지 마. 수치·점수·정해진 미래를 만들어내지 마.
+- 관점의 지혜를 지금 대화 상황에 맞춰 조언으로 옮기고, 근거 없는 인용은 쓰지 마.
 - [심층 관점 융합 가이드]: ${routePlan.deepEngineGuidance || '선택 관점은 상징적 참고로만 사용한다. 별도 계산이나 검증된 원전 인용처럼 표현하지 말고 대화의 실제 상황과 구분해 실천 조언을 제시한다.'}
 - 라우팅 사유: ${routePlan.routingReason}`
       : '';

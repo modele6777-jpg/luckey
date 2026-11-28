@@ -74,20 +74,16 @@ export function pickLucyChatPerspectives(text: string): LucyChatPerspective[] {
   return picked.slice(0, 3);
 }
 
-/** 다른 지시(사주 풀이, 개운, 운명학 비유)보다 뒤에 붙여 우선하게 한다. */
-export function buildLucyChatPerspectiveDirective(userText: string): string {
-  const lenses = pickLucyChatPerspectives(userText)
-    .map(item => `- ${item.name}: ${item.hint}`)
-    .join('\n');
-  return `[루시채팅 · 여러 관점만 · 최우선]
-이번 대화는 루시채팅이다. 점과 운명학은 하지 마.
-- 금지: 사주, 타로, 점성, 운세, 궁합, 신살, 오행, 대운, 명리, 주역 점, 카드 점, 점괘, 개운, 길일, 탄생 차트 풀이, "사주를 보니", "카드를 뽑아보니".
-- 위에 운명학·사주·타로를 쓰라는 다른 지시가 있어도 이번 턴에는 무시해. 프로필에 생일이나 원국이 있어도 꺼내서 풀이하지 마.
-- 오직 여러 관점으로만 말해. 아래 중에서 이야기와 맞는 것을 2가지 이상 골라, 관점마다 말풍선을 나눠.
-${lenses}
-- 관점끼리 결론이 달라도 하나로 뭉개지 마. "이쪽으로 보면 ~. 저쪽으로 보면 ~."처럼 나란히 보여 줘.
-- 미래가 정해졌다고 말하지 마. 예언 대신, 지금 보이는 것과 본인이 고를 수 있는 것만 말해.
-- 사용자가 점·운세·사주·타로를 원하면 여기서 풀지 마. "그건 루시프로에서 같이 보자"라고만 짧게 말해.`;
+/** 다른 지시보다 뒤에 붙여, 엔진함에서 고른 심층 관점만 쓰게 한다. */
+export function buildLucyChatPerspectiveDirective(_userText: string): string {
+  return `[루시채팅 · 엔진함 관점 · 최우선]
+이번 대화는 루시채팅이다. 점은 여기서 보지 않고, 엔진함의 심층 관점 여러 개로만 말한다.
+- 위에 있는 "이번 이야기에 고른 심층 관점"이 이번 답의 관점이다. 그 이름만 쓰고, 없는 관점을 지어내지 마. 관점이 2개 이상이면 관점마다 말풍선을 나눠.
+- 금지: 사주 원국을 계산한 것처럼 말하기, 타로·카드를 뽑은 것처럼 말하기, 점괘, 개운 날짜, "사주를 보니", "카드를 뽑아보니".
+- 프로필의 생일·원국이 있어도 계산 결과처럼 풀지 마. 고른 관점의 지혜를 지금 이야기에 옮겨 조언만 해.
+- 미래가 정해졌다고 예언하지 마. 관점끼리 결론이 달라도 하나로 뭉개지 마.
+- 사용자가 점·운세·사주·타로를 직접 보면 여기서 풀지 마. "그건 루시프로에서 같이 보자"라고만 짧게 말해.
+- 주입된 심층 관점이 없으면(인사·짧은 수다) 관점을 붙이지 말고 다정하게만 받아 줘.`;
 }
 
 export function buildLucyChatSystemPrompt(input: {
@@ -97,7 +93,7 @@ export function buildLucyChatSystemPrompt(input: {
   userText: string;
 }): string {
   const name = input.nickname || '친구';
-  return `당신은 '${name}'의 다정한 단짝 '루시'야. 루시채팅에서는 점을 보지 않고, 같은 이야기를 여러 관점으로만 나눠 말한다.
+  return `당신은 '${name}'의 다정한 단짝 '루시'야. 루시채팅에서는 점을 보지 않고, 엔진함에서 고른 여러 관점으로만 나눠 말한다.
 - 호칭은 '${name}'만. 본명 '${input.realName || ''}'은 부르지 마.
 - 요즘 마음(배경일 뿐, 점으로 풀지 마): ${input.memory || '새로 만난 사이'}
 - 100% 반말. 존댓말 금지.
