@@ -15,7 +15,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION = 'LUCKEY-SCHILLER-AESTHETIC-EDUCATION-v2.5.0';
+export const GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION = 'LUCKEY-SCHILLER-AESTHETIC-EDUCATION-v2.6.0';
 
 export interface SchillerTheme {
   themeKey: string;
@@ -54,6 +54,7 @@ export interface GermanFriedrichSchillerAestheticEducationResult {
     alignmentState: string;
     integratedAction: string;
   };
+  schillerCrossAxis: string;
   ritualAction: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
@@ -196,9 +197,12 @@ export function calculateGermanFriedrichSchillerAestheticEducation(
     ? `"${trimmedQuery}"라는 과제 앞에서 '${activeSchillerTheme.themeTitleKo}'의 균형을 살린다면, 지나친 경직을 풀고 즐거움과 품격을 함께 담아낼 방법은 무엇인가요?`
     : `'${activeSchillerTheme.themeTitleKo}'의 미적 감각으로 오늘 하루를 바라본다면, 의무의 무게를 잠시 내려놓고 숨을 고를 수 있는 여유는 어디에 있나요?`;
 
+  const calculatedAtKst = formatSchillerKstTimestamp(now);
+  const schillerCrossAxis = `[${activeSchillerTheme.themeTitleKo.split('—')[0].trim()}] × [${focalSchillerAphorism.sourceContext}] × [${schillerSynthesisMatrix.alignmentState}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
     engineVersion: GERMAN_FRIEDRICH_SCHILLER_AESTHETIC_EDUCATION_VERSION,
-    calculatedAtKst: formatSchillerKstTimestamp(now),
+    calculatedAtKst,
     spieltriebPlayDriveHarmonyScore,
     aestheticStateFreedomIndex,
     livingFormBeautyCreativityScore,
@@ -211,6 +215,7 @@ export function calculateGermanFriedrichSchillerAestheticEducation(
       philosophicalCounsel,
     },
     schillerSynthesisMatrix,
+    schillerCrossAxis,
     ritualAction: focalSchillerAphorism.actionGuidance,
     reflectionFocus: activeSchillerTheme.practicalCounsel,
     reflectiveQuestion,
@@ -244,6 +249,7 @@ export function formatGermanFriedrichSchillerAestheticEducationPrompt(
       `- 통합 실천: ${res.schillerSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 4중 교차 축: ${res.schillerCrossAxis}`);
   lines.push(`- 성찰 초점: ${res.reflectionFocus}`);
   lines.push(`- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`);
   lines.push(`- 해석 경계: 실러의 놀이 충동(Spieltrieb)·우아함과 존엄 상징을 빌린 정성적 조화 성찰 관점이며, 수치 평가나 확정 예언이 아닙니다.`);

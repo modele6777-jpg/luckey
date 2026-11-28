@@ -4,7 +4,7 @@
  * @version LUCKEY-HESSE-DEMIAN-STEPPENWOLF-v2.0.0
  */
 
-export const GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION = 'LUCKEY-HESSE-DEMIAN-STEPPENWOLF-v2.5.0';
+export const GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION = 'LUCKEY-HESSE-DEMIAN-STEPPENWOLF-v2.6.0';
 
 export interface HesseTheme {
   themeKey: string;
@@ -27,6 +27,7 @@ export interface GermanHermannHesseDemianSteppenwolfResult {
     alignmentState: string;
     integratedAction: string;
   };
+  hesseCrossAxis: string;
   ritualAction: string;
   reflectionFocus: string;
   reflectiveQuestion: string;
@@ -90,6 +91,8 @@ export function calculateGermanHermannHesseDemianSteppenwolf(query?: string, now
     ? `"${trimmedQuery}"라는 고민을 '${activeHesseTheme.themeTitleKo}'의 문학적 시선으로 비춰본다면, 지금 스스로에게 허락해 줄 수 있는 가장 안전하고 솔직한 작은 시도는 무엇인가요?`
     : `'${activeHesseTheme.themeTitleKo}'의 장면처럼 지금 내면의 여러 목소리를 차분히 들을 수 있다면, 오늘 가장 다정하게 다독여 주고 싶은 마음은 무엇인가요?`;
 
+  const hesseCrossAxis = `[${activeHesseTheme.themeTitleKo.split('—')[0].trim()}] × [${hesseSteppenwolfSynthesisMatrix.alignmentState}] × [${hesseSteppenwolfSynthesisMatrix.dominantTension}] × [${calculatedAtKst.slice(11, 16)}]`;
+
   return {
     engineVersion: GERMAN_HERMANN_HESSE_DEMIAN_STEPPENWOLF_VERSION,
     calculatedAtKst,
@@ -99,6 +102,7 @@ export function calculateGermanHermannHesseDemianSteppenwolf(query?: string, now
       philosophicalCounsel: `${activeHesseTheme.spiritualInsight} ${activeHesseTheme.practicalCounsel} 이 내용은 문학적 참고이며, 심리 평가·진단·치료 또는 미래 예측이 아닙니다.`,
     },
     hesseSteppenwolfSynthesisMatrix,
+    hesseCrossAxis,
     ritualAction: activeHesseTheme.practicalCounsel,
     reflectionFocus: activeHesseTheme.spiritualInsight,
     reflectiveQuestion,
@@ -122,6 +126,7 @@ export function formatGermanHermannHesseDemianSteppenwolfPrompt(res: GermanHerma
       `- 통합 실천: ${res.hesseSteppenwolfSynthesisMatrix.integratedAction}`,
     );
   }
+  lines.push(`- 4중 교차 축: ${res.hesseCrossAxis}`);
   lines.push(`- 성찰 초점: ${res.reflectionFocus}`);
   lines.push(`- 질문 맞춤 성찰 질문: ${res.reflectiveQuestion}`);
   return lines.join('\n');
