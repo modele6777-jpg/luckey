@@ -97,7 +97,6 @@ const CLOUDS = [
   { left: 56, top: 34, width: 30, delay: 0.55, drift: 15 },
   { left: 76, top: 6, width: 20, delay: 0.7, drift: 21 },
 ];
-const ORB_ROUTE = '/voice';
 /** 실시간 대화 중 오른쪽의 작은 파동과, 누르고 말하는 동안 입력창 끝까지 이어지는 긴 파동(가운데가 크게). */
 const ORB_SMALL_WAVE = [0.36, 0.58, 0.82, 0.48, 1, 0.66, 0.9, 0.52, 0.74, 0.42, 0.62];
 const ORB_HOLD_WAVE = Array.from({ length: 44 }, (_, index) => {
@@ -283,9 +282,9 @@ export function LucyOrbCounsel({
   const [dice, setDice] = useState<[number, number]>([1, 6]);
   const [rolling, setRolling] = useState(false);
   const [thrown, setThrown] = useState(0);
-  const [location, navigate] = useLocation();
-  const [awayFromOrb, setAwayFromOrb] = useState(false);
+  const [, navigate] = useLocation();
   const [bedOn, setBedOn] = useState(false);
+  const [pageHidden, setPageHidden] = useState(() => typeof document !== 'undefined' && document.visibilityState === 'hidden');
   const [bok, setBok] = useState<string | null>(null);
   const [hearted, setHearted] = useState(false);
   // 복채를 내면 이 상담에 맞는 부적을 그려 준다 (채팅에는 남기지 않고, 사진으로만 저장).
@@ -506,31 +505,18 @@ export function LucyOrbCounsel({
     };
   }, [open, account]);
 
-  // Leaving the Orb page (route change, another pane's navigation, hidden tab) silences the bed at once,
-  // even if the page stays mounted for a moment during the transition.
-  const onOrbRoute = location.split(/[?#]/)[0] === ORB_ROUTE;
+  // 탭을 내리거나 페이지를 벗어나 컴포넌트가 사라질 때만 배경음을 멈춘다.
+  // 다른 화면으로 가는 내비게이션 신호만으로 끄면, 오브에 있는 동안에도 소리가 나지 않는다.
   useEffect(() => {
-    if (!open) return;
-    setAwayFromOrb(false);
-    const onNavigate = (event: Event) => {
-      const path = String((event as CustomEvent<{ path?: string }>).detail?.path || '').split(/[?#]/)[0];
-      if (path && path !== ORB_ROUTE) setAwayFromOrb(true);
-    };
-    const onVisibility = () => setAwayFromOrb(document.visibilityState === 'hidden');
-    const onHide = () => setAwayFromOrb(true);
-    window.addEventListener('prism-navigate', onNavigate);
-    document.addEventListener('visibilitychange', onVisibility);
-    window.addEventListener('pagehide', onHide);
+    const sync = () => setPageHidden(document.visibilityState === 'hidden');
+    document.addEventListener('visibilitychange', sync);
+    window.addEventListener('pagehide', sync);
     return () => {
-      window.removeEventListener('prism-navigate', onNavigate);
-      document.removeEventListener('visibilitychange', onVisibility);
-      window.removeEventListener('pagehide', onHide);
+      document.removeEventListener('visibilitychange', sync);
+      window.removeEventListener('pagehide', sync);
     };
-  }, [open]);
-  useEffect(() => {
-    if (onOrbRoute) setAwayFromOrb(document.visibilityState === 'hidden');
-  }, [onOrbRoute]);
-  const bedAudible = bedOn && onOrbRoute && !awayFromOrb;
+  }, []);
+  const bedAudible = bedOn && !pageHidden;
 
   useEffect(() => {
     bedRef.current?.setAudible(bedAudible, speaking || ttsActive);
@@ -1716,7 +1702,11 @@ export function LucyOrbCounsel({
                 const next = !bedOn;
                 setBedOn(next);
                 sessionStorage.setItem('lucy_orb_bed', next ? 'on' : 'off');
-                if (!next) return;
+                if (!next) {
+                  bedRef.current?.setAudible(false, false);
+                  return;
+                }
+                bedRef.current?.setAudible(true, speaking || ttsActive);
                 void bedRef.current?.resume().then(ok => {
                   if (!ok) {
                     setBedOn(false);

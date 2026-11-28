@@ -1,4 +1,4 @@
-import { getAmbientAudioBus, getSharedAudioContext, unlockAudioPlayback } from './audio';
+import { getAmbientAudioBus, getSharedAudioContext, setBgmPlaybackSessionActive, unlockAudioPlayback } from './audio';
 
 export type OrbCounselBed = {
   /** 사용자 탭 안에서 호출해야 아이폰이 소리를 허용한다. 실제로 울리면 true. */
@@ -27,7 +27,7 @@ export function createOrbCounselBed(): OrbCounselBed | null {
     const current = Number.isFinite(bed.gain.value) ? Math.max(bed.gain.value, 0.0001) : 0.0001;
     bed.gain.cancelScheduledValues(now);
     bed.gain.setValueAtTime(current, now);
-    bed.gain.linearRampToValueAtTime(level(wantedOn, wantedDuck), now + (wantedOn ? 0.45 : 0.3));
+    bed.gain.linearRampToValueAtTime(level(wantedOn, wantedDuck), now + (wantedOn ? 0.08 : 0.2));
   };
 
   const teardownGraph = () => {
@@ -52,21 +52,26 @@ export function createOrbCounselBed(): OrbCounselBed | null {
     filter.type = 'lowpass';
     filter.frequency.value = 520;
     const pad = audio.createGain();
-    pad.gain.value = 0.16;
+    pad.gain.value = 0.42;
     filter.connect(pad).connect(next);
 
-    const tone = (frequency: number, detune = 0) => {
+    const tone = (frequency: number, detune = 0, dest: AudioNode = filter) => {
       const osc = audio.createOscillator();
       osc.type = 'sine';
       osc.frequency.value = frequency;
       osc.detune.value = detune;
-      osc.connect(filter);
+      osc.connect(dest);
       osc.start();
       nodes.push(osc);
     };
     tone(98, -4);
     tone(146.8, 6);
     tone(196, 2);
+    // 폰 스피커가 낮은 드론을 거의 못 내므로, 들리는 대역을 하나 더 얹는다.
+    const presence = audio.createGain();
+    presence.gain.value = 0.12;
+    presence.connect(next);
+    tone(392, 0, presence);
 
     const lfo = audio.createOscillator();
     const lfoGain = audio.createGain();
@@ -111,25 +116,41 @@ export function createOrbCounselBed(): OrbCounselBed | null {
   };
 
   return {
-    resume: async () => {
-      if (stopped) return false;
-      // 아이폰은 제스처 안에서 잠금을 풀기 전에 만들어 둔 발진기를 끝내 울리지 않는다.
+    resume: () => {
+      if (stopped) return Promise.resolve(false);
+      // await 뒤에 발진기를 만들면 아이폰이 그 소리를 버린다. 제스처가 살아있는 턴에서 바로 켠다.
       try { unlockAudioPlayback(); } catch { /* no audio */ }
       let bus: GainNode;
       try {
         ctx = getSharedAudioContext();
         bus = getAmbientAudioBus();
       } catch {
-        return false;
+        return Promise.resolve(false);
       }
-      const wasRunning = ctx.state === 'running';
-      if (!wasRunning) {
-        try { await ctx.resume(); } catch { return false; }
-      }
-      if (ctx.state !== 'running') return false;
-      if (!bed || !wasRunning) startGraph(ctx, bus);
-      applyLevel();
-      return true;
+      wantedOn = true;
+      const pending = ctx.resume().catch(() => undefined);
+      const arm = () => {
+        if (stopped || !ctx || (ctx.state as string) !== 'running') return false;
+        if (!bed || bed.context !== ctx) startGraph(ctx, bus);
+        applyLevel();
+        try { setBgmPlaybackSessionActive(true); } catch { /* mixing policy unavailable */ }
+        return true;
+      };
+      if (arm()) return Promise.resolve(true);
+      return new Promise<boolean>((resolve) => {
+        let settled = false;
+        const finish = (ok: boolean) => {
+          if (settled) return;
+          settled = true;
+          ctx?.removeEventListener('statechange', onState);
+          window.clearTimeout(timer);
+          resolve(ok);
+        };
+        const onState = () => { if (arm()) finish(true); };
+        ctx.addEventListener('statechange', onState);
+        const timer = window.setTimeout(() => finish(arm()), 900);
+        void pending.then(() => { if (arm()) finish(true); });
+      });
     },
     setAudible: (on, ducked = false) => {
       if (stopped) return;
@@ -141,6 +162,7 @@ export function createOrbCounselBed(): OrbCounselBed | null {
       if (stopped) return;
       stopped = true;
       wantedOn = false;
+      try { setBgmPlaybackSessionActive(false); } catch { /* mixing policy unavailable */ }
       if (ctx && bed && ctx.state === 'running') {
         const now = ctx.currentTime;
         try {
