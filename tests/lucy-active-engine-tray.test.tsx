@@ -187,25 +187,23 @@ test('only the tools Lucy used this turn stay open; the rest are locked tabs', (
 
   const html = renderToStaticMarkup(<DivinationToolTabBar table={table} activeTab="saju" onSelect={() => {}} />);
   assert.match(html, /data-table-face="ziwei" data-tool-tab-active="true" data-locked="false"/);
-  assert.match(html, /aria-disabled="true" disabled=""[^>]*data-table-face="sukuyo" data-tool-tab-active="false" data-locked="true"/);
+  assert.match(html, /data-table-face="sukuyo" data-tool-tab-active="false" data-locked="true"/);
   assert.match(html, /이번 질문에서는 활용되지 않아 잠겨 있어요/);
 });
 
-test('before any question the basic table is open and the other tools wait locked', () => {
+test('before any question saju and tarot stay locked like the other tools', () => {
   const views = resolveToolTabViews(emptyTable());
-  assert.deepEqual(views.filter(view => !view.locked).map(view => view.id).sort(), ['saju', 'tarot']);
-  assert.equal(views.filter(view => view.locked).length, 13);
+  assert.equal(views.filter(view => view.locked).length, 15);
+  assert.equal(views.filter(view => view.active).length, 0);
+  assert.deepEqual(views.slice(0, 2).map(view => view.id), ['saju', 'tarot']);
 });
 
-test('Cosmic Pro opens all 13 additional tools without changing their calculation state', () => {
+test('an unused tool stays locked even when the old cosmic unlock flag is passed', () => {
   const table = emptyTable();
   const views = resolveToolTabViews(table, true);
-  assert.equal(views.length, 15);
-  assert.equal(views.filter(view => view.locked).length, 0);
-  assert.deepEqual(views.map(view => view.id).sort(), [
-    'astrology', 'iching', 'kabbalah', 'kyusei', 'liuren', 'mahabote', 'qimen',
-    'saju', 'sukuyo', 'taiyi', 'tarot', 'thai_astrology', 'tojeong', 'vedic', 'ziwei',
-  ]);
+  assert.equal(views.filter(view => view.locked).length, 15);
+  assert.equal(views.find(view => view.id === 'saju')?.locked, true);
+  assert.equal(views.find(view => view.id === 'tarot')?.locked, true);
   assert.equal(views.find(view => view.id === 'ziwei')?.state, 'unused');
   assert.equal(views.find(view => view.id === 'ziwei')?.active, false);
 });
@@ -227,6 +225,13 @@ test('a tool tab shows the tool’s own explanation and never invents a result',
   assert.match(unused, /data-tool-tab-state="unused"/);
   assert.match(unused, /이번 질문엔 쓰지 않았어요/);
   assert.doesNotMatch(unused, /data-tool-tab-detail="true"/, '계산하지 않은 결과를 그리지 않는다');
+
+  const sajuLocked = renderToStaticMarkup(<MasterToolTabPanel toolId="saju" table={emptyTable()} />);
+  assert.match(sajuLocked, /data-tool-tab-panel="saju"/);
+  assert.match(sajuLocked, /data-tool-tab-state="unused"/);
+  assert.match(sajuLocked, /사주명리/);
+  assert.match(sajuLocked, /이번 질문엔 쓰지 않았어요/);
+  assert.doesNotMatch(sajuLocked, /data-tool-tab-detail="true"/);
 });
 
 test('the general chat tool sheet opens the engine box only', () => {

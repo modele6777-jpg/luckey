@@ -65,8 +65,7 @@ export function reduceLucySheet(state: LucySheetState, action: LucySheetAction):
 
 /**
  * 점술 도구함에서 지금 보여줄 탭.
- * 답변 끝 도구 버튼으로 연 도구는 이번 질문에 쓰이지 않아 탭이 잠겨 있어도 그 도구를 보여준다.
- * 그 밖에는 잠긴 탭을 피해 첫 열린 탭으로 돌린다.
+ * 잠긴 도구도 설명을 보려고 고를 수 있다. 계산 화면은 이번 질문에 쓴 도구만 연다.
  */
 export function pickActiveDivinationTab(
   views: readonly { id: DivinationToolId; locked: boolean }[],
@@ -74,7 +73,6 @@ export function pickActiveDivinationTab(
   requestedTab: DivinationToolId | null,
 ): DivinationToolId {
   if (requestedTab && views.some(view => view.id === requestedTab)) return requestedTab;
-  const current = views.find(view => view.id === tab);
-  if (current && !current.locked) return current.id;
+  if (views.some(view => view.id === tab)) return tab;
   return (views.find(view => !view.locked)?.id ?? 'saju') as DivinationToolId;
 }

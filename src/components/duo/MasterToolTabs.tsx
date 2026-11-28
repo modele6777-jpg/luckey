@@ -14,19 +14,14 @@ export interface DivinationToolTabView extends DivinationToolTabMeta {
 
 /**
  * 15대 도구 탭의 열림/잠금.
- * - 기본값은 이번 질문에서 루시가 실제로 활용한 도구만 열린다(계산 완료·부분 계산·상징 참고).
- * - Cosmic Pro는 사주·타로 외 13개 도구를 설명/결과 화면으로 직접 열 수 있다.
+ * 사주·타로를 포함해, 이번 질문에 실제로 쓰기 전에는 모두 잠긴다.
+ * 잠긴 탭을 누르면 계산 결과 대신 그 도구 설명만 보인다.
  */
-export function resolveToolTabViews(table: LucyTableState, unlockCosmicProTools = false): DivinationToolTabView[] {
-  const hasSelection = table.activeEngines.total > 0 || table.tools.length > 0;
+export function resolveToolTabViews(table: LucyTableState, _unlockCosmicProTools = false): DivinationToolTabView[] {
   const views = DIVINATION_TOOL_TABS.map(meta => {
     const state = toolTabState(table, meta.id);
     const active = state === 'calculated' || state === 'partial' || state === 'symbolic';
-    const defaultOpen = !hasSelection && (meta.id === 'saju' || meta.id === 'tarot');
-    const locked = unlockCosmicProTools
-      ? false
-      : hasSelection ? !active : !defaultOpen;
-    return { ...meta, state, active: active || defaultOpen, locked };
+    return { ...meta, state, active, locked: !active };
   });
   // 활성 도구를 앞으로 모은다(그 안에서는 기존 도구 순서 유지).
   const rank = (view: DivinationToolTabView) => (view.active ? 0 : 1);
@@ -54,7 +49,7 @@ export function DivinationToolTabBar({ table, activeTab, onSelect, compact = fal
   activeTab: DivinationToolId | 'reading';
   onSelect: (id: DivinationToolId) => void;
   compact?: boolean;
-  /** Cosmic Pro에서 사주·타로 외 13개 도구도 직접 열 수 있게 한다. */
+  /** 더 이상 잠금을 풀지 않는다. 사주·타로도 쓰기 전에는 잠긴 채 설명만 연다. */
   unlockCosmicProTools?: boolean;
   /** 낭독 중일 때만 붙는 낭독 탭 */
   readingTab?: { active: boolean; onSelect: () => void };
@@ -76,22 +71,19 @@ export function DivinationToolTabBar({ table, activeTab, onSelect, compact = fal
             type="button"
             role="tab"
             aria-selected={selected}
-            aria-disabled={view.locked}
-            disabled={view.locked}
-            title={view.locked ? lockedToolTabNote(view) : view.nameKo}
+            title={view.locked ? `${lockedToolTabNote(view)} · 설명만 볼 수 있어요` : view.nameKo}
             data-table-face={view.id}
             data-tool-tab-active={view.active ? 'true' : 'false'}
             data-locked={view.locked ? 'true' : 'false'}
             onClick={() => {
-              if (view.locked) return;
               triggerHaptic('whitehole');
               onSelect(view.id);
             }}
             className={`relative flex shrink-0 flex-col items-center justify-center rounded-xl border ${compact ? 'w-[3.1rem] px-0.5 py-1.5' : 'w-[3.35rem] px-1 py-1.5'} ${
-              view.locked
-                ? 'cursor-not-allowed border-white/8 bg-white/[0.02] text-slate-500 opacity-45'
-                : selected
-                  ? 'border-amber-300/80 bg-amber-400/20 text-amber-50'
+              selected
+                ? 'border-amber-300/80 bg-amber-400/20 text-amber-50'
+                : view.locked
+                  ? 'border-white/8 bg-white/[0.02] text-slate-500 opacity-70'
                   : view.active
                     ? 'border-white/12 bg-white/[0.05] text-slate-200'
                     : 'border-white/8 bg-white/[0.02] text-slate-400 opacity-70'

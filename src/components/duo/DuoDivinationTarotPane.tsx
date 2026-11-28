@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { DuoTarotBookSpread } from './DuoTarotBookSpread';
 import { TarotSpread } from '@/components/trinity/TarotSpread';
 import type { DetectedTarotCard } from '@/utils/tarotDetector';
@@ -20,7 +20,7 @@ import { MasterSajuBoard } from './MasterSajuBoard';
 import { MasterReadingStage } from './MasterReadingStage';
 import { MasterDailyCard } from './MasterDailyCard';
 import { MasterToolTabPanel } from './MasterToolTabPanel';
-import { DivinationToolTabBar, resolveToolTabViews, toolWindowHasSelection } from './MasterToolTabs';
+import { DivinationToolTabBar, resolveToolTabViews } from './MasterToolTabs';
 import { getLucyTableState, clearTableTools, getLastDivinationToolRequest, LUCY_DIVINATION_TOOL_EVENT, LUCY_TABLE_EVENT, type LucyTableState } from '@/lib/lucyTableBus';
 import type { DivinationToolId } from '@/lib/fifteenDivinationTools';
 import { useTTSState } from '@/utils/tts';
@@ -36,18 +36,25 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
   const [cards, setCards] = useState<DetectedTarotCard[]>([]);
   const [revealed, setRevealed] = useState<string[]>([]);
   const [pick, setPick] = useState<TarotPickRequest | null>(null);
-  // 통합 상담: 들어오면 사주 원국에서 시작하고, 그 뒤에는 사용자가 탭으로 고른 화면을 유지한다.
+  // 들어오면 사주 설명에서 시작한다. 루시가 도구를 쓰면 그 화면으로 옮긴다.
   const [tab, setTab] = useState<DivinationToolId>('saju');
   const [table, setTable] = useState<LucyTableState>(() => getLucyTableState());
-  // 고민이 정해지면 그 도구만 열고, 나머지는 뒤로 민다. 고르기 전에는 15개를 둘러볼 수 있다.
-  const unlockAll = !toolWindowHasSelection(table);
-  const tabViews = resolveToolTabViews(table, unlockAll);
-  const activeTab = tabViews.find(view => view.id === tab && !view.locked)?.id
-    ?? (tabViews.find(view => !view.locked)?.id ?? 'saju') as DivinationToolId;
+  // 사주·타로도 이번 질문에 쓰기 전에는 잠그고 설명만 보여 준다.
+  const tabViews = resolveToolTabViews(table);
+  const activeTab = (tabViews.some(view => view.id === tab) ? tab : 'saju') as DivinationToolId;
+  const activeView = tabViews.find(view => view.id === activeTab);
+  const activeKey = tabViews.filter(view => !view.locked).map(view => view.id).join(',');
+  const previousActiveKey = useRef(activeKey);
   const tts = useTTSState();
   const reading = Boolean(tts.isSpeaking || tts.isLoading);
   const [readingDismissed, setReadingDismissed] = useState(false);
   useEffect(() => { if (!reading) setReadingDismissed(false); }, [reading]);
+  useEffect(() => {
+    if (previousActiveKey.current === activeKey) return;
+    previousActiveKey.current = activeKey;
+    const first = tabViews.find(view => !view.locked);
+    if (first) setTab(first.id);
+  }, [activeKey, tabViews]);
   const showReading = reading && !readingDismissed;
 
   useEffect(() => {
@@ -110,16 +117,15 @@ export function DuoDivinationTarotPane(_props: { isLight?: boolean }) {
         {/* 도구 탭: 15개를 가로 스크롤로 (낭독은 루시가 읽는 동안에만) */}
         <DivinationToolTabBar
           table={table}
-          unlockCosmicProTools={unlockAll}
           activeTab={showReading ? 'reading' : activeTab}
           onSelect={id => { setReadingDismissed(reading); setTab(id); }}
           readingTab={reading ? { active: showReading, onSelect: () => setReadingDismissed(false) } : undefined}
         />
         {showReading ? (
           <MasterReadingStage />
-        ) : activeTab === 'saju' ? (
+        ) : activeTab === 'saju' && activeView?.active ? (
           <MasterSajuBoard saju={table.saju} lastAnswer={table.lastAnswer} />
-        ) : activeTab === 'tarot' ? (
+        ) : activeTab === 'tarot' && (activeView?.active || cards.length > 0) ? (
           <>
             {cards.length === 0 && <MasterDailyCard />}
             <div className="flex-1 min-h-0 flex flex-col">
