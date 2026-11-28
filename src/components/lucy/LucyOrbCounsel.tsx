@@ -23,7 +23,7 @@ import {
   orbCardPickMessage, parseCardNumbers, pickOrbCards, saveOrbMemory, shuffleOrbDeck, summarizeOrbSession,
   type OrbDeckCard, type OrbMemoryEntry, type OrbPickedCard,
 } from '@/lib/orbConsult';
-import { Clover, KeyRound, MessageCirclePlus, Camera, Paperclip, Send, Volume2, VolumeX, X, User, Plus, Sparkles, type LucideIcon } from 'lucide-react';
+import { Clover, KeyRound, MessageCirclePlus, Camera, Paperclip, Send, Music, X, User, Plus, Sparkles, type LucideIcon } from 'lucide-react';
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
 import { setMicCaptureActive } from '@/lib/audioMixingPolicy';
@@ -1705,7 +1705,7 @@ export function LucyOrbCounsel({
                 if (next) void bedRef.current?.resume();
               }}
             >
-              {bedOn ? <Volume2 size={GUIDE_BUTTON_ICON_SIZE} aria-hidden="true" /> : <VolumeX size={GUIDE_BUTTON_ICON_SIZE} aria-hidden="true" />}
+              <Music size={GUIDE_BUTTON_ICON_SIZE} aria-hidden="true" />
             </button>
           </div>
         </header>
