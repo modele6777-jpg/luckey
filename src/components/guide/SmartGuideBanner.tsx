@@ -1,8 +1,9 @@
 /**
  * 🧭 스마트 가이드 배너 (+ 🔊 가이드 도슨트 표시·중지)
  *
- * 한 번 탭해 도착한 화면 위에 "지금 추천: ○○ / 왜 / 무엇을 하면 되는지"를 띄운다.
- * - 탭하면 닫히고, 3.5~4초 뒤 스스로 사라진다 (도슨트가 읽는 동안에는 읽기가 끝날 때까지 남는다).
+ * 한 번 탭하면 지금 화면 위에 "지금 추천: ○○ / 왜 / 할 일"과 이동 버튼을 띄운다.
+ * 이동 버튼을 누르기 전에는 화면을 옮기지 않는다.
+ * - 이동 후에는 도착한 화면의 안내로 바뀌고, 3.5~4초 뒤 스스로 사라진다 (도슨트가 읽는 동안에는 읽기가 끝날 때까지 남는다).
  * - 도슨트가 읽는 중이면 🔴 표시와 중지 버튼이 함께 나온다.
  *
  * 사용자 지시(2026-11-28):
@@ -23,9 +24,13 @@ const TEXT_TITLE = '#ecfeff';
 const TEXT_BODY = '#e2e8f0';
 const TEXT_HINT = '#a5f3fc';
 
-export function SmartGuideBanner({ guide, onClose, onOpenPageGuide }: {
+export function SmartGuideBanner({ guide, offer = false, onClose, onGo, onOpenPageGuide }: {
   guide: SmartGuideResult;
+  /** true면 아직 이동하지 않은 추천. 이동 버튼만 보여주고 페이지 가이드는 도착 뒤에 연다. */
+  offer?: boolean;
   onClose: () => void;
+  /** 추천으로 실제로 이동한다. offer일 때만 쓴다. */
+  onGo?: () => void;
   /** 배너를 닫고 지금 화면(도착한 페이지)의 페이지 가이드 창을 연다. */
   onOpenPageGuide?: () => void;
 }) {
@@ -39,6 +44,7 @@ export function SmartGuideBanner({ guide, onClose, onOpenPageGuide }: {
   return (
     <div
       data-testid="bigbang-smart-guide"
+      data-smart-guide-phase={offer ? 'offer' : 'arrived'}
       data-smart-guide-action={guide.action}
       data-smart-guide-path={guide.path}
       data-smart-guide-douser-active={douserActive ? 'true' : 'false'}
@@ -64,7 +70,7 @@ export function SmartGuideBanner({ guide, onClose, onOpenPageGuide }: {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.22, ease: 'easeOut' }}
           data-theme-dark-island="true"
-          onClick={onClose}
+          onClick={offer ? undefined : onClose}
           className="flex items-start gap-2.5 rounded-2xl border px-3.5 py-3 text-left shadow-[0_12px_38px_rgba(2,6,23,0.72)] backdrop-blur-md"
           style={{
             colorScheme: 'dark',
@@ -81,7 +87,19 @@ export function SmartGuideBanner({ guide, onClose, onOpenPageGuide }: {
             <p className="mt-0.5 text-[12px] leading-snug [overflow-wrap:anywhere]" style={{ color: TEXT_BODY }}>{guide.reason}</p>
             <p className="mt-1 text-[11.5px] leading-snug [overflow-wrap:anywhere]" style={{ color: TEXT_HINT }}>{guide.ctaHint}</p>
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-              {onOpenPageGuide && (
+              {offer && onGo && (
+                <button
+                  type="button"
+                  data-smart-guide-go="true"
+                  aria-label={`${guide.title}로 이동`}
+                  onClick={(event) => { event.stopPropagation(); onGo(); }}
+                  className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-[12px] font-black active:scale-95"
+                  style={{ borderColor: 'rgba(103,232,249,0.7)', backgroundColor: 'rgba(34,211,238,0.92)', color: '#042f2e' }}
+                >
+                  이동
+                </button>
+              )}
+              {!offer && onOpenPageGuide && (
                 <button
                   type="button"
                   data-smart-guide-page-guide="true"

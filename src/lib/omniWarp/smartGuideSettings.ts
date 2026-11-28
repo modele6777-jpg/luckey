@@ -5,14 +5,14 @@
  * 스마트가이드를 켜고 끌수 있게해주고 tts기능을 통해 가이드 도슨트를 만들어서 해당 옵션도 키고 끌수 있게해줘
  * (스마트 가이드가 꺼져도 이동은 가능하게 해줘)"
  *
- * - 스마트 가이드 OFF: 빅뱅 버튼 한 번 탭의 **추천 이동은 그대로** 하고, 배너·도슨트만 멈춘다.
- * - 도슨트 ON: 추천 이동 직후 그 화면의 이유·할 일을 앱 TTS로 다정하게 읽어 준다.
+ * - 스마트 가이드 OFF: 한 번 탭의 **추천과 이동 버튼은 그대로** 두고, 도착 배너·도슨트만 멈춘다.
+ * - 도슨트 ON: 추천을 띄울 때 그 이유·할 일을 앱 TTS로 다정하게 읽어 준다.
  */
 import { useEffect, useState } from 'react';
 import { safeLocalStorage } from '@/utils/safeStorage';
 
 export interface SmartGuideSettings {
-  /** 스마트 가이드 배너 (추천 이동 자체는 이 값과 무관하게 늘 동작한다) */
+  /** 도착 후 안내 배너. 이동 전 추천 카드(이동 버튼)는 이 값과 상관없이 한 번 탭에 뜬다. */
   guide: boolean;
   /** 가이드 도슨트 음성 (스마트 가이드가 켜져 있을 때만 들린다) */
   douser: boolean;
@@ -105,8 +105,8 @@ export function useSmartGuideSettings(): SmartGuideSettings {
 }
 
 /**
- * 지금 설정에서 무엇을 보여 줄지 결정한다.
- * 이동(추천 목적지로 가는 것)은 설정과 상관없이 항상 한다.
+ * 도착 안내 배너와 도슨트만 설정을 따른다.
+ * 한 번 탭의 추천 카드와 이동 버튼은 설정과 상관없이 항상 보여 준다.
  */
 export function resolveSmartGuidePresentation(settings: SmartGuideSettings): { banner: boolean; douser: boolean } {
   return {

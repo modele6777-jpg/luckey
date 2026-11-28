@@ -7,7 +7,7 @@
  *     가장 추천되는 곳으로 가이드 해주는 스마트 원클릭 가이드 기능을 넣어줘"
  *
  * - 홀드: 어느 화면·모드에서든 /voice. 이미 /voice면 상담을 끊지 않고 그대로 둔다.
- * - 한 번 탭: 지금 이 사람에게 가장 쓸모 있는 한 곳으로 이동 + 스마트 가이드 배너.
+ * - 한 번 탭: 추천을 먼저 보여 주고, 배너의 이동 버튼을 눌러야 그곳으로 간다.
  * - 더블 탭(Key)·상하좌우 방향 제스처는 그대로 둔다.
  */
 import { test } from 'node:test';
@@ -250,7 +250,7 @@ test('the Big Bang hold always opens the orb page and keeps working when already
   // 화면 읽기 안내도 새 제스처를 따른다.
   assert.match(BIGBANG, /길게 누름: 오브\(음성 상담\) 페이지 열기/);
   assert.doesNotMatch(BIGBANG, /길게 누름: 루시프로/);
-  assert.match(BIGBANG, /탭: 지금 가장 추천되는 곳으로 스마트 가이드 이동/);
+  assert.match(BIGBANG, /탭: 추천을 보여주고 이동 버튼으로 이동/);
 });
 
 test('a single tap runs the smart guide and shows its banner, without touching other gestures', () => {
@@ -266,15 +266,20 @@ test('a single tap runs the smart guide and shows its banner, without touching o
   assert.match(BIGBANG, /goToPreviousDapp\(\)/);
   assert.match(BIGBANG, /goToNextDapp\(\)/);
 
-  // 배너: 화면 위에 뜨고, 탭하면 닫히고, 3.5~4초 뒤 스스로 사라진다.
-  assert.match(BIGBANG, /<SmartGuideBanner[\s\S]{0,200}guide=\{smartGuide\}/);
+  // 배너: 추천과 이동 버튼이 먼저 뜨고, 이동한 뒤의 안내는 3.5~4초 뒤 사라진다.
+  assert.match(BIGBANG, /<SmartGuideBanner[\s\S]{0,240}guide=\{smartGuide\}/);
+  assert.match(BIGBANG, /offer=\{smartGuidePhase === 'offer'\}/);
+  assert.match(BIGBANG, /onGo=\{\(\) => commitSmartGuide\(smartGuide\)\}/);
   assert.match(BIGBANG, /onClose=\{dismissSmartGuide\}/);
   assert.match(BIGBANG, /onOpenPageGuide=\{openPageGuideFromBanner\}/);
   assert.match(BANNER, /data-testid="bigbang-smart-guide"/);
+  assert.match(BANNER, /data-smart-guide-go="true"/);
+  assert.match(BANNER, />\s*이동\s*</);
   assert.match(BANNER, /data-smart-guide-action=\{guide\.action\}/);
   assert.match(BANNER, /🧭 지금 추천: \{guide\.title\}/);
   assert.match(BANNER, /guide\.ctaHint/);
-  assert.match(BANNER, /onClick=\{onClose\}/);
+  assert.match(BANNER, /onClick=\{offer \? undefined : onClose\}/);
+  assert.match(BANNER, /onClose\(\)/);
   assert.match(BIGBANG, /SMART_GUIDE_TOAST_MS/);
   const toastMs = Number(/SMART_GUIDE_TOAST_MS = (\d+)/.exec(read('src/lib/omniWarp/smartBigBangGuide.ts'))?.[1]);
   assert.ok(toastMs >= 3500 && toastMs <= 4000, `banner lifetime ${toastMs}ms sits between 3.5 and 4 seconds`);
@@ -289,7 +294,7 @@ test('the button reads the profile, today state and visit ledger before recommen
 });
 
 test('the page guides describe the new gestures', () => {
-  assert.match(GUIDES, /한 번 탭하면 지금 가장 추천되는 곳으로 안내/);
+  assert.match(GUIDES, /이동 버튼을 누르면 그곳으로/);
   assert.match(GUIDES, /꾹 누르면 오브\(음성 상담\)/);
   assert.doesNotMatch(GUIDES, /꾹 누르면 루시프로/, 'no guide still says hold = Lucy Pro');
   assert.doesNotMatch(GUIDES, /한 번 탭하면 루시프로를 나가/, 'no guide still says tap leaves Lucy Pro');

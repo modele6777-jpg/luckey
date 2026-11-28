@@ -623,14 +623,17 @@ test('Big Bang center single tap follows the smart guide and shows its banner', 
     target.dispatchEvent(new PointerEvent('pointerup', { ...common, buttons: 0 }));
   }, { x, y });
 
-  // 생년월일이 없는 새 브라우저에서는 프로필부터 안내한다. 어느 쪽이든 지금 화면(/prologue)은 아니다.
+  // 생년월일이 없는 새 브라우저에서는 프로필을 추천한다. 이동 버튼을 누르기 전에는 화면을 옮기지 않는다.
   const banner = page.getByTestId('bigbang-smart-guide');
   await expect(banner).toBeVisible();
   const guidePath = await banner.getAttribute('data-smart-guide-path');
   expect(guidePath).toBeTruthy();
   expect(guidePath).not.toBe('/prologue');
-  await expect.poll(() => new URL(page.url()).pathname).toBe(guidePath);
+  await expect(banner).toHaveAttribute('data-smart-guide-phase', 'offer');
+  await expect.poll(() => new URL(page.url()).pathname).toBe('/prologue');
   await expect(page.getByText('🧭 지금 추천:')).toBeVisible();
+  await page.locator('[data-smart-guide-go="true"]').click();
+  await expect.poll(() => new URL(page.url()).pathname).toBe(guidePath);
   // 홀드와 달리 한 번 탭은 예전의 고정 전환(추천 워프)을 일으키지 않는다.
   const commits = await page.evaluate(() => (window as any).__bigBangSingleTapCommits);
   expect(commits).toHaveLength(0);

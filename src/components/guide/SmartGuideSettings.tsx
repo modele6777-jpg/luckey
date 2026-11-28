@@ -117,7 +117,7 @@ export function SmartGuideSettingsSheet({ onClose }: { onClose: () => void }) {
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-700"><HelpCircle size={20} /></span>
             <div className="min-w-0 flex-1">
               <h2 id="smart-guide-settings-title" className="text-base font-black text-slate-900">스마트 가이드</h2>
-              <p className="mt-0.5 text-[13px] leading-relaxed text-slate-600 break-keep">빅뱅 버튼 한 번 탭이 지금 가장 쓸모 있는 곳으로 안내해요.</p>
+              <p className="mt-0.5 text-[13px] leading-relaxed text-slate-600 break-keep">빅뱅 버튼 한 번 탭이 추천을 먼저 보여 주고, 이동 버튼으로 안내해요.</p>
             </div>
             <button type="button" onClick={onClose} aria-label="설정 닫기" className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"><X size={18} /></button>
           </div>
@@ -127,7 +127,7 @@ export function SmartGuideSettingsSheet({ onClose }: { onClose: () => void }) {
               <span className="text-lg leading-none" aria-hidden="true">🧭</span>
               <span className="min-w-0 flex-1">
                 <span className="block text-[13.5px] font-bold text-slate-900">스마트 가이드</span>
-                <span className="mt-0.5 block text-[12px] leading-snug text-slate-600 break-keep">추천한 곳에 도착하면 무엇을 하면 되는지 배너로 알려 줘요.</span>
+                <span className="mt-0.5 block text-[12px] leading-snug text-slate-600 break-keep">이동한 뒤에, 그 화면에서 무엇을 하면 되는지 배너로 알려 줘요.</span>
               </span>
               <SettingsSwitch on={settings.guide} label="스마트 가이드" onToggle={() => toggle({ guide: !settings.guide })} />
             </li>
@@ -158,7 +158,7 @@ export function SmartGuideSettingsSheet({ onClose }: { onClose: () => void }) {
           )}
 
           <p className="mt-3 rounded-2xl bg-cyan-50/70 px-3.5 py-2.5 text-[12px] leading-relaxed text-cyan-900 break-keep" data-smart-guide-note="true">
-            스마트 가이드를 꺼도 빅뱅 버튼 한 번 탭의 추천 이동은 그대로예요. 배너와 도슨트만 나오지 않아요.
+            빅뱅 버튼을 한 번 탭하면 바로 이동하지 않고 추천을 먼저 보여 줘요. 이동 버튼을 눌러야 그곳으로 가요. 스마트 가이드를 꺼도 추천과 이동 버튼은 그대로예요.
           </p>
 
           <button type="button" onClick={onClose} className="mt-3 w-full rounded-full border border-slate-200 py-2.5 text-sm font-bold text-slate-700 active:scale-95">확인</button>

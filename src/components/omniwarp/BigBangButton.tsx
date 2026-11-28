@@ -272,15 +272,18 @@ export function BigBangButton() {
   const CenterChannelIcon = feedbackChannel?.id === 'lucy' ? LucyBubbleIcon : DestinationIcon;
   const [gestureFeedback, setGestureFeedback] = useState<'tap' | 'hold' | 'double' | null>(null);
   const gestureFeedbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // 🧭 한 번 탭하면 지금 가장 쓸모 있는 다음 한 곳을 골라 안내하는 스마트 가이드 배너
+  // 🧭 한 번 탭하면 지금 가장 쓸모 있는 다음 한 곳을 추천만 하는 배너.
+  //    화면은 옮기지 않고, 배너의 이동 버튼을 눌러야 그곳으로 간다.
   const [smartGuide, setSmartGuide] = useState<SmartGuideResult | null>(null);
+  const [smartGuidePhase, setSmartGuidePhase] = useState<'offer' | 'arrived'>('offer');
+  const smartGuidePhaseRef = useRef<'offer' | 'arrived'>('offer');
   const smartGuideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // ❓ 가이드를 탭했을 때만 빅뱅 버튼 중앙 구슬에 잠깐 떴다 사라지는 물음표 (영구 저장 없음)
   const [guideBadgePhase, setGuideBadgePhase] = useState<SmartGuideBadgePhase>('hidden');
   const guideBadgeFlashRef = useRef<SmartGuideBadgeFlash | null>(null);
   // 📘 배너의 "이 페이지 가이드 보기"로 여는 페이지 가이드 창
   const [bannerPageGuide, setBannerPageGuide] = useState<PageGuide | null>(null);
-  // 🧭 헤더 물음표 아이콘에서 켜고 끄는 설정 (배너 · 도슨트). 이동은 설정과 무관하게 늘 한다.
+  // 🧭 헤더 물음표 아이콘에서 켜고 끄는 설정 (도착 배너 · 도슨트). 추천 카드와 이동 버튼은 설정과 상관없이 한 번 탭에 뜬다.
   const guideSettings = useSmartGuideSettings();
   const guidePresentation = resolveSmartGuidePresentation(guideSettings);
   const closeSmartGuide = useCallback(() => {
@@ -336,9 +339,10 @@ export function BigBangButton() {
     setSmartGuide(guide);
     armSmartGuideAutoHide();
   }, [armSmartGuideAutoHide]);
-  // 설정에서 스마트 가이드·도슨트를 끄면 지금 떠 있는 안내도 바로 정리한다.
+  // 설정에서 스마트 가이드를 끄면 도착 안내만 정리한다.
+  // 이동 전 추천(offer)은 꺼도 남긴다 — 이동 버튼이 거기 있기 때문이다.
   useEffect(() => {
-    if (!guidePresentation.banner) {
+    if (!guidePresentation.banner && smartGuidePhaseRef.current !== 'offer') {
       closeSmartGuide();
       clearGuideBadge();
     }
@@ -1137,8 +1141,8 @@ export function BigBangButton() {
     if (isLucyMasterBgmPreferred()) void startLucyMasterBgm();
   }, []);
 
-  // 🧭 가운데 한 번 탭: 지금 이 사람에게 가장 쓸모 있는 한 곳을 골라 데려다주고,
-  //    도착한 화면 위에 "무엇을 하면 되는지" 스마트 가이드 배너를 3.5~4초 띄운다.
+  // 🧭 가운데 한 번 탭: 지금 이 사람에게 가장 쓸모 있는 한 곳을 골라
+  //    그 자리에서 추천만 보여 준다. 점술모드·화면 이동은 이동 버튼을 누를 때까지 하지 않는다.
   const runSmartGuide = useCallback((metrics?: WarpForceMetrics) => {
     void metrics;
     const now = Date.now();
@@ -1180,30 +1184,46 @@ export function BigBangButton() {
     touchStartSelectionRef.current = '';
     clearPendingSelection();
 
+    flashGuideBadge();
+    if (smartGuideTimerRef.current) {
+      clearTimeout(smartGuideTimerRef.current);
+      smartGuideTimerRef.current = null;
+    }
+    smartGuidePhaseRef.current = 'offer';
+    setSmartGuidePhase('offer');
+    setSmartGuide(guide);
+    // 도슨트는 추천을 읽어 준다. 이동 전에는 지금 화면에 머무르므로 낭독이 끊기지 않게 현재 경로를 남긴다.
+    if (guidePresentation.douser) {
+      douserPathRef.current = currentCleanPath;
+      speakGuideDouser(guide);
+    }
+  }, [currentCleanPath, isChatView, flashGuideBadge, guidePresentation.douser]);
+
+  // 배너의 이동 버튼: 골라 둔 추천으로 그때 실제로 이동한다.
+  const commitSmartGuide = useCallback((guide: SmartGuideResult) => {
+    const now = Date.now();
+    recordSmartGuideRecommendation(safeLocalStorage, guide.path, now);
     if (guide.needsProMode) enterDivinationMode();
 
-    recordSmartGuideRecommendation(safeLocalStorage, guide.path, now);
-    // ❓ 가이드를 탭했을 때만 빅뱅 버튼 안에 물음표가 잠깐 떴다 저절로 사라진다 (영구 저장 없음).
-    flashGuideBadge();
-    // 스마트 가이드가 꺼져 있으면 배너·도슨트만 나오지 않고, 이동은 그대로 한다.
-    if (guidePresentation.banner) showSmartGuide(guide);
-    else closeSmartGuide();
+    const showArrived = () => {
+      if (!guidePresentation.banner) {
+        closeSmartGuide();
+        return;
+      }
+      smartGuidePhaseRef.current = 'arrived';
+      setSmartGuidePhase('arrived');
+      showSmartGuide(guide);
+    };
 
     if (guide.inPlace) {
-      // 루시와 대화 중이면 화면을 옮기지 않고 그 자리에서 점술모드로 바꾼다.
       triggerHaptic('whitehole');
-      if (guidePresentation.douser) {
-        douserPathRef.current = currentCleanPath;
-        speakGuideDouser(guide);
-      }
+      if (guidePresentation.douser) douserPathRef.current = currentCleanPath;
+      showArrived();
       return;
     }
 
     triggerHaptic('wormhole');
-    if (guidePresentation.douser) {
-      douserPathRef.current = guide.path;
-      speakGuideDouser(guide);
-    }
+    if (guidePresentation.douser) douserPathRef.current = guide.path;
     if (guide.path === '/') {
       const tier = isDuoUnfoldedState().unfolded ? 'plus' : 'ai';
       safeSessionStorage.setItem('lucy_tier_mode', tier);
@@ -1213,7 +1233,8 @@ export function BigBangButton() {
     navigate(guide.path);
     window.dispatchEvent(new CustomEvent('prism-navigate', { detail: { path: guide.path } }));
     window.dispatchEvent(new CustomEvent('nav-click-active', { detail: { path: guide.path } }));
-  }, [currentCleanPath, isChatView, navigate, showSmartGuide, closeSmartGuide, enterDivinationMode, flashGuideBadge, guidePresentation.banner, guidePresentation.douser]);
+    showArrived();
+  }, [currentCleanPath, navigate, showSmartGuide, closeSmartGuide, enterDivinationMode, guidePresentation.banner, guidePresentation.douser]);
 
 
   // ⚡ 추천 1순위 즉시 도약 헬퍼 (더블탭 또는 추천 카드에서 실행 - 룬 문자 사이 우주 흡입 워프 연출)
@@ -1604,8 +1625,7 @@ export function BigBangButton() {
           triggerHaptic('whitehole');
           showGestureFeedback('tap');
 
-          // 🧭 한 번 탭 = 스마트 원클릭 가이드: 지금 가장 쓸모 있는 한 곳으로 안내하고,
-          //    도착한 화면에 무엇을 하면 되는지 배너로 알려 준다. (예전의 고정 이동은 없어짐)
+          // 🧭 한 번 탭 = 추천만 보여 준다. 이동은 배너의 이동 버튼을 눌러야 한다.
           runSmartGuide(metrics);
       }, DOUBLE_TAP_WINDOW_MS);
       return;
@@ -1761,11 +1781,13 @@ export function BigBangButton() {
   return createPortal(
     <>
       {cloverWind !== 'off' && <BigBangLuckyBreeze settling={cloverWind === 'settling'} buttonRef={buttonRef} />}
-      {/* 🧭 스마트 원클릭 가이드 배너: 한 번 탭해 도착한 화면 위에 무엇을 하면 되는지 알려 준다 (탭하면 닫힘) */}
+      {/* 🧭 스마트 가이드: 한 번 탭은 추천 + 이동 버튼. 이동한 뒤에만 도착 안내로 바뀐다. */}
       {smartGuide && (
         <SmartGuideBanner
           guide={smartGuide}
+          offer={smartGuidePhase === 'offer'}
           onClose={dismissSmartGuide}
+          onGo={() => commitSmartGuide(smartGuide)}
           onOpenPageGuide={openPageGuideFromBanner}
         />
       )}
@@ -2052,8 +2074,8 @@ export function BigBangButton() {
                   ? 'inset 0 0 24px rgba(0, 240, 255, 0.48), inset -4px -4px 16px rgba(168, 85, 247, 0.45), 0 0 34px rgba(0, 240, 255, 0.55)'
                   : 'inset 0 0 22px rgba(56, 189, 248, 0.25), inset -6px -6px 18px rgba(0, 0, 0, 0.9), 0 0 24px rgba(56, 189, 248, 0.3)',
               }}
-              title={`빅뱅 버튼 (탭: 지금 가장 추천되는 곳으로 스마트 가이드 이동 / 더블탭: Key로 이동 / 위·아래: 사이드바 메뉴 순서 / ${isChatView ? '좌우: 루시프로 켜기·끄기' : isKeyChannel ? '좌우: Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: 오브(음성 상담) 페이지 열기 / 드래그 후 놓기: 럭키 추천 앱으로 워프 · 범위 밖에서 놓으면 취소)`}
-              aria-label={`빅뱅 버튼 · 탭: 지금 가장 추천되는 곳으로 스마트 가이드 이동, 더블탭: Key로 이동, 위·아래는 사이드바 메뉴 순서 / ${isChatView ? '좌우는 루시프로 켜기·끄기' : isKeyChannel ? '좌우는 Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 오브(음성 상담) 페이지 열기, 드래그 후 놓으면 럭키 추천 앱으로 워프, 범위 밖이면 취소`}
+              title={`빅뱅 버튼 (탭: 추천을 보여주고 이동 버튼으로 이동 / 더블탭: Key로 이동 / 위·아래: 사이드바 메뉴 순서 / ${isChatView ? '좌우: 루시프로 켜기·끄기' : isKeyChannel ? '좌우: Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우: 현재 앱 내부 화면만 이동'} / 길게 누름: 오브(음성 상담) 페이지 열기 / 드래그 후 놓기: 럭키 추천 앱으로 워프 · 범위 밖에서 놓으면 취소)`}
+              aria-label={`빅뱅 버튼 · 탭: 추천을 보여주고 이동 버튼으로 이동, 더블탭: Key로 이동, 위·아래는 사이드바 메뉴 순서 / ${isChatView ? '좌우는 루시프로 켜기·끄기' : isKeyChannel ? '좌우는 Key 목록 한 칸씩 이동' : isCycleNavigationDisabled ? '현재 화면에서는 좌우 이동 비활성화' : '좌우는 현재 앱 내부 화면만 이동'}, 길게 누름: 오브(음성 상담) 페이지 열기, 드래그 후 놓으면 럭키 추천 앱으로 워프, 범위 밖이면 취소`}
             >
               {/* 🌀 [웜홀] 빛비춤 + 어두운 심연 + 사건의 지평선 3원 동시 융합 전개 */}
               {isPressing && activePhase === 'wormhole' && (
