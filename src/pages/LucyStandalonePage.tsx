@@ -52,7 +52,6 @@ import { ChatInsightsBoardModal } from '@/components/ChatInsightsBoardModal';
 import { LucyAuraLoader } from '@/components/LucyAuraLoader';
 import { LucyMasterTarotRoom } from '@/components/chat/LucyMasterTarotRoom';
 import { LucyLibraryDialogs, LucyLibraryTrigger } from '@/components/chat/LucyLibraryDialogs';
-import { LucyMasterBgmToggle } from '@/components/chat/LucyMasterBgmToggle';
 import { setSelectedEngineKeys } from '@/lib/lucyEngineSelection';
 import { detectMasterConcernTopic, getMasterDepthPrompts, type MasterConcernTopic } from '@/lib/lucyMasterPrompts';
 import { hasMeaningfulMasterSession, type MasterSessionCardSource } from '@/lib/lucyMasterSessionCard';
@@ -4596,7 +4595,6 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
                 </>
               )}
             </button>
-            {isMasterMode && <LucyMasterBgmToggle />}
 
             {/*  Export Chat */}
             {lucyMessages.length > 0 && (
