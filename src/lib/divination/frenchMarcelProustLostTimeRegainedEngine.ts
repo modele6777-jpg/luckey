@@ -13,7 +13,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FRENCH_MARCEL_PROUST_LOST_TIME_VERSION = 'LUCKEY-PROUST-LOST-TIME-REGAINED-v2.4.0';
+export const FRENCH_MARCEL_PROUST_LOST_TIME_VERSION = 'LUCKEY-PROUST-LOST-TIME-REGAINED-v2.5.0';
 
 export interface ProustTheme {
   themeKey: string;
@@ -43,6 +43,7 @@ export interface FrenchMarcelProustLostTimeResult {
   // 세부 분석
   activeProustTheme: ProustTheme;
   focalProustAphorism: ProustAphorism;
+  proustCrossAxis: string;
   proustSynthesisMatrix: {
     coreInsight: string;
     recommendedAction: string;
@@ -179,6 +180,9 @@ export function calculateFrenchMarcelProustLostTimeRegained(
   const reflectiveQuestion = qText
     ? `‘${qText}’ 속에서 스쳐 지나간 시간과 감각을 새로운 눈으로 다시 길어 올린다면 오늘 무엇이 보입니까?`
     : activeProustTheme.practicalCounsel;
+  const kstHour = kst.getUTCHours();
+  const kstWindow = kstHour < 6 ? '새벽 콩브레' : kstHour < 12 ? '오전 스완네' : kstHour < 18 ? '오후 발벡' : '저녁 코르크방';
+  const proustCrossAxis = `[${activeProustTheme.themeKey}] × [${focalProustAphorism.aphorismKey}] × [${qText ? '질문공명' : '내면관조'}] × [${kstWindow}]`;
   const proustSynthesisMatrix = {
     coreInsight: activeProustTheme.themeTitleKo,
     recommendedAction: activeProustTheme.practicalCounsel,
@@ -195,6 +199,7 @@ export function calculateFrenchMarcelProustLostTimeRegained(
     timeTranscendenceResilienceScore,
     activeProustTheme,
     focalProustAphorism,
+    proustCrossAxis,
     proustSynthesisMatrix,
     proustComprehensiveGuidance: {
       guidanceTitle,
@@ -222,6 +227,7 @@ export function formatFrenchMarcelProustLostTimeRegainedPrompt(
     `- 문학적 사색: ${res.activeProustTheme.literaryInsight}`,
     `- 행동 조언: ${res.activeProustTheme.practicalCounsel}`,
     `- 교차 매트릭스: 핵심(${res.proustSynthesisMatrix.coreInsight}) | 실행(${res.proustSynthesisMatrix.recommendedAction}) | 주의(${res.proustSynthesisMatrix.cautionNotice})`,
+    `- 4중 교차 축: ${res.proustCrossAxis}`,
     `- 프루스트 원전 명제: "${res.focalProustAphorism.aphorismKo}"`,
     `- 원문: (${res.focalProustAphorism.aphorismFrench})`,
     `- 원전 출처: [${res.focalProustAphorism.sourceContext}]`,

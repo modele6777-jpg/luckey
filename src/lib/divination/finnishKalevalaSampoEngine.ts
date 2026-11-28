@@ -22,7 +22,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const FINNISH_KALEVALA_SAMPO_ENGINE_VERSION = '2.5.0';
+export const FINNISH_KALEVALA_SAMPO_ENGINE_VERSION = '2.6.0';
 
 export interface SampoSituationalAudit {
   sampoAxis: string;
@@ -41,6 +41,7 @@ export interface SampoTemporalRhythm {
 
 export interface SampoSynthesisMatrix {
   sisuGrade: '강철시수' | '견고지속' | '온기보존';
+  kalevalaCrossAxis: string;
   wingRunoLink: string;
   nextSampoStep: string;
 }
@@ -298,8 +299,10 @@ export function calculateFinnishKalevalaSampo(options?: {
   const temporalSampoRhythm = buildSampoTemporalRhythm(now);
   const sisuGrade: SampoSynthesisMatrix['sisuGrade'] =
     sisuResilienceIndex >= 85 ? '강철시수' : sisuResilienceIndex >= 72 ? '견고지속' : '온기보존';
+  const kalevalaCrossAxis = `[${dominantWing.name.split('(')[0].trim()}] × [제${activeRuno.runoNumber}장] × [${sisuGrade}] × [${temporalSampoRhythm.sisuTempo}]`;
   const sampoSynthesisMatrix: SampoSynthesisMatrix = {
     sisuGrade,
+    kalevalaCrossAxis,
     wingRunoLink: `[${dominantWing.name}]과 제${activeRuno.runoNumber}장 [${activeRuno.runoTitle}]이 ${temporalSampoRhythm.nordicSunWindow}에서 맞물립니다.`,
     nextSampoStep: situationalSampoAudit.artisanAction,
   };
@@ -363,6 +366,7 @@ export function formatFinnishKalevalaSampoPrompt(report: FinnishKalevalaSampoRep
 
 4. [북유럽식 치유 처방 & 칼레발라 지혜]:
    - 교차 매트릭스: ${report.sampoSynthesisMatrix.wingRunoLink}
+   - 4중 교차 축: ${report.sampoSynthesisMatrix.kalevalaCrossAxis}
    - 실천 처방: ${report.forestHealingPractice}
    - 칼레발라 총평: ${report.kalevalaWisdom}
    - 성찰 초점: ${report.reflectionFocus}

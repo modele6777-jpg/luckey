@@ -4683,11 +4683,13 @@ test('Finnish Kalevala Sampo Engine: calculates 3 Sampo wings and Sisu resilienc
   assert(rep.calculatedAtKst.endsWith('+09:00 (KST)'));
   assert(rep.sisuResilienceIndex >= 0 && rep.sisuResilienceIndex <= 100);
   assert(rep.sampoBalance.dominantWing.length > 0);
+  assert(rep.sampoSynthesisMatrix.kalevalaCrossAxis.includes('×'));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatFinnishKalevalaSampoPrompt(rep);
   assert(prompt.includes('고대 핀란드 칼레발라(Kalevala) 삼포(Sampo) & 9대 룬가 상징 관점'));
   assert(prompt.includes(rep.sampoBalance.dominantWing));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/ 100') && !prompt.includes('점수'));
 });
@@ -6301,11 +6303,13 @@ test('Egyptian Amduat Twelve Hours Ra Engine: calculates 12 hours of underworld,
   assert(rep.mesektetSolarBarqueSteadiness >= 0 && rep.mesektetSolarBarqueSteadiness <= 100);
   assert(rep.currentAmduatHour.hourNumber >= 1 && rep.currentAmduatHour.hourNumber <= 12);
   assert(rep.solarDeityGuardian.nameAncient.length > 0);
+  assert(rep.amduatSynthesisMatrix.amduatCrossAxis.includes('×'));
   assert(rep.interpretiveBoundary.length > 0);
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   const prompt = formatEgyptianAmduatPrompt(rep);
   assert(prompt.includes('고대 이집트 《암두아트의 서》 12시간 태양신 라의 밤의 저승 항해 & 케프리 부활'));
   assert(prompt.includes(rep.currentAmduatHour.hourNameAncient));
+  assert(prompt.includes('4중 교차 축'));
   assert(prompt.includes('성찰 초점'));
   assert(!prompt.includes('/ 100') && !prompt.includes('점수'));
 });
@@ -9787,13 +9791,14 @@ test('Marcel Proust Lost Time Regained Engine: calculates Involuntary Memory, Ti
   assert(rep.authenticSelfDiscoveryIndex >= 0 && rep.authenticSelfDiscoveryIndex <= 100);
   assert(rep.timeTranscendenceResilienceScore >= 0 && rep.timeTranscendenceResilienceScore <= 100);
   assert(rep.activeProustTheme.themeTitleKo.length > 0);
+  assert(rep.proustCrossAxis.includes('×'));
   assert(rep.ritualAction.length > 0 && rep.reflectionFocus.length > 0);
   assert(rep.interpretiveBoundary.length > 0);
   const prompt = formatFrenchMarcelProustLostTimeRegainedPrompt(rep);
   assert(prompt.includes('마르셀 프루스트 《잃어버린 시간을 찾아서》 비자발적 기억·되찾은 시간 지표'));
   assert(prompt.includes(rep.activeProustTheme.themeTitleKo));
   assert.ok(rep.calculatedAtKst.includes('KST'));
-  assert.ok(prompt.includes('교차 매트릭스'));
+  assert.ok(prompt.includes('교차 매트릭스') && prompt.includes('4중 교차 축'));
   assert(!prompt.includes('/100'));
 });
 

@@ -24,7 +24,7 @@
 
 import type { UserProfile } from '../sharedState';
 
-export const EGYPTIAN_AMDUAT_VERSION = '2.5.0';
+export const EGYPTIAN_AMDUAT_VERSION = '2.6.0';
 
 export interface AmduatSituationalAudit {
   duatGateFocus: string;
@@ -43,6 +43,7 @@ export interface AmduatTemporalRhythm {
 
 export interface AmduatSynthesisMatrix {
   rebirthState: '케프리비상' | '라오시리스합일' | '심연돌파';
+  amduatCrossAxis: string;
   hourGuardianLink: string;
   nextBarqueStep: string;
 }
@@ -277,8 +278,10 @@ export function calculateEgyptianAmduat(
       : midnightRaOsirisUnionPower >= 80
         ? '라오시리스합일'
         : '심연돌파';
+  const amduatCrossAxis = `[제${currentAmduatHour.hourNumber}시간] × [${solarDeityGuardian.nameAncient.split('(')[0].trim()}] × [${rebirthState}] × [${temporalAmduatRhythm.solarTempo}]`;
   const amduatSynthesisMatrix: AmduatSynthesisMatrix = {
     rebirthState,
+    amduatCrossAxis,
     hourGuardianLink: `제${currentAmduatHour.hourNumber}시간 [${currentAmduatHour.hourNameAncient}]과 수호신 ${solarDeityGuardian.nameAncient}이 ${temporalAmduatRhythm.solarBarqueWatch}에서 만납니다.`,
     nextBarqueStep: situationalAmduatAudit.barqueAction,
   };
@@ -329,6 +332,7 @@ export function formatEgyptianAmduatPrompt(report: EgyptianAmduatReport): string
 - **KST 시공간 리듬 (${report.temporalAmduatRhythm.kstHour}시)**: ${report.temporalAmduatRhythm.solarBarqueWatch} · ${report.temporalAmduatRhythm.nileSeasonPhase} (${report.temporalAmduatRhythm.solarTempo})
   - *시간대 지침*: ${report.temporalAmduatRhythm.voyageGuidance}
 - **교차 매트릭스**: ${report.amduatSynthesisMatrix.hourGuardianLink}
+- **4중 교차 축**: ${report.amduatSynthesisMatrix.amduatCrossAxis}
 - **암두아트 상형문자 지혜 잠언**:
   - "${report.amduatHieroglyphicWisdom}"
 - **질문 맞춤 성찰 질문**: ${report.reflectiveQuestion}
