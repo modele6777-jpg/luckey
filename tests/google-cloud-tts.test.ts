@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { chirpVoiceName, splitForCloudTts, synthesizeChirpSpeech } from '../server/api-lib/googleCloudTts';
+import { chirpVoiceName, splitForCloudTts, synthesizeChirpSpeech, synthesizeCloudGeminiSpeech, pcmBytesOfPiece, wavHeader } from '../server/api-lib/googleCloudTts';
 import { synthesizePreferredSpeech, resetCloudTtsCooldown, cloudTtsStatus } from '../server/api-lib/preferredSpeech';
 import { resetCloudGeminiTts } from '../server/api-lib/googleCloudTts';
 import { signServiceAccountJwt, getServiceAccountToken, readServiceAccount, resetServiceAccountTokenCache } from '../server/api-lib/googleServiceAccount';
@@ -13,7 +13,37 @@ const credentials = JSON.stringify({
 });
 const tokenOk = () => new Response(JSON.stringify({ access_token: 'ya29.test', expires_in: 3600 }), { status: 200 });
 
-const mp3 = btoa('ID3fake-mp3');
+const LOSSLESS_AUDIO_CONFIG = { audioEncoding: 'LINEAR16', sampleRateHertz: 24000 };
+
+/** 24 kHz 16-bit mono samples as raw PCM. */
+const pcm = (samples = 8) => new Uint8Array(samples * 2).map((_, index) => (index * 37) % 251);
+const base64Of = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes));
+/** What Cloud TTS sends for LINEAR16: the same PCM inside a RIFF/WAVE container. */
+const wavWith = (data: Uint8Array) => {
+  const bytes = new Uint8Array(44 + data.length);
+  bytes.set(wavHeader(data.length), 0);
+  bytes.set(data, 44);
+  return bytes;
+};
+const pcmAnswer = (data = pcm()) => new Response(JSON.stringify({ audioContent: base64Of(wavWith(data)) }), { status: 200 });
+const decodeAnswer = (base64: string) => new Uint8Array(Buffer.from(base64, 'base64'));
+const ascii = (bytes: Uint8Array, offset: number, length: number) => String.fromCharCode(...bytes.subarray(offset, offset + length));
+
+/** Read back the single WAV header the app plays: format fields and the sample payload. */
+function readWav(base64: string) {
+  const bytes = decodeAnswer(base64);
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  return {
+    bytes,
+    riff: ascii(bytes, 0, 4),
+    wave: ascii(bytes, 8, 4),
+    channels: view.getUint16(22, true),
+    sampleRate: view.getUint32(24, true),
+    bitsPerSample: view.getUint16(34, true),
+    dataLength: view.getUint32(40, true),
+    samples: bytes.subarray(44),
+  };
+}
 
 test('Lucy voices map to the same-named Korean Chirp 3 HD voices', () => {
   assert.equal(chirpVoiceName('Aoede'), 'ko-KR-Chirp3-HD-Aoede');
@@ -29,14 +59,68 @@ test('long text is split under the request size limit without losing words', () 
   assert.equal(parts.join(' ').replace(/\s/g, ''), text.replace(/\s/g, ''));
 });
 
-test('Chirp 3 HD request sends the API key as the key parameter and returns mp3', async () => {
+test('Chirp 3 HD asks for lossless 24 kHz LINEAR16 and returns one playable WAV', async () => {
   let seen: any = null;
-  const fetchApi = (async (url: string, init: any) => { seen = { url, init }; return new Response(JSON.stringify({ audioContent: mp3 }), { status: 200 }); }) as typeof fetch;
+  const samples = pcm(120);
+  const fetchApi = (async (url: string, init: any) => { seen = { url, init }; return pcmAnswer(samples); }) as typeof fetch;
   const result = await synthesizeChirpSpeech('안녕, 루시야.', 'Kore', { GOOGLE_CLOUD_TTS_API_KEY: 'k' }, fetchApi);
-  assert.equal(result.encoding, 'mp3');
+  const request = JSON.parse(seen.init.body);
+  assert.deepEqual(request.audioConfig, LOSSLESS_AUDIO_CONFIG, 'asks for 24 kHz 16-bit PCM, not the 32 kbps MP3');
+  assert.equal(result.encoding, 'wav');
+  assert.equal(result.sampleRate, 24000);
   assert.equal(result.voice, 'ko-KR-Chirp3-HD-Kore');
   assert.match(seen.url, /texttospeech\.googleapis\.com\/v1\/text:synthesize\?key=k$/);
-  assert.equal(JSON.parse(seen.init.body).voice.name, 'ko-KR-Chirp3-HD-Kore');
+  assert.equal(request.voice.name, 'ko-KR-Chirp3-HD-Kore');
+  const wav = readWav(result.audioContent);
+  assert.equal(wav.riff, 'RIFF');
+  assert.equal(wav.wave, 'WAVE');
+  assert.equal(wav.channels, 1);
+  assert.equal(wav.sampleRate, 24000);
+  assert.equal(wav.bitsPerSample, 16);
+  assert.equal(wav.dataLength, samples.length);
+  assert.deepEqual(wav.samples, samples, 'the source samples are passed through untouched');
+});
+
+test('a Cloud TTS answer without a RIFF header is treated as raw PCM', async () => {
+  const samples = pcm(16);
+  const fetchApi = (async () => new Response(JSON.stringify({ audioContent: base64Of(samples) }), { status: 200 })) as typeof fetch;
+  const result = await synthesizeChirpSpeech('안녕.', 'Aoede', { GOOGLE_CLOUD_TTS_API_KEY: 'k' }, fetchApi);
+  const wav = readWav(result.audioContent);
+  assert.equal(wav.riff, 'RIFF');
+  assert.equal(wav.dataLength, samples.length);
+  assert.deepEqual(wav.samples, samples);
+});
+
+test('Cloud TTS header walking keeps only the data chunk (extra LIST chunks are skipped)', () => {
+  const samples = pcm(10);
+  const list = new Uint8Array(12); // LIST chunk with an 8-byte body plus padding
+  const body = new Uint8Array(44 + list.length + samples.length);
+  const view = new DataView(body.buffer);
+  body.set(new TextEncoder().encode('RIFF'), 0);
+  view.setUint32(4, body.length - 8, true);
+  body.set(new TextEncoder().encode('WAVE'), 8);
+  body.set(new TextEncoder().encode('LIST'), 12);
+  view.setUint32(16, 8, true);
+  const dataOffset = 44;
+  body.set(new TextEncoder().encode('data'), dataOffset - 8);
+  view.setUint32(dataOffset - 4, samples.length, true);
+  body.set(samples, dataOffset);
+  assert.deepEqual(pcmBytesOfPiece(body), samples);
+});
+
+test('several Cloud TTS pieces merge behind a single WAV header', async () => {
+  const pieceSamples = pcm(30);
+  let calls = 0;
+  const fetchApi = (async () => { calls++; return pcmAnswer(pieceSamples); }) as typeof fetch;
+  const text = ('오늘 하루를 천천히 돌아보며 마음을 정리해 봐요. ').repeat(120);
+  const result = await synthesizeChirpSpeech(text, 'Aoede', { GOOGLE_CLOUD_TTS_API_KEY: 'k' }, fetchApi);
+  const wav = readWav(result.audioContent);
+  assert.ok(calls > 1, 'long text needed more than one Cloud TTS request');
+  assert.equal(wav.riff, 'RIFF', 'exactly one container: the merged file starts with one header');
+  assert.equal(wav.wave, 'WAVE');
+  assert.equal(wav.dataLength, wav.bytes.length - 44);
+  assert.equal(wav.samples.length, pieceSamples.length * calls, 'every piece is joined end to end');
+  assert.equal(ascii(wav.samples, 0, 4), String.fromCharCode(...pieceSamples.subarray(0, 4)), 'no header was left inside the samples');
 });
 
 const geminiOk = () => new Response(JSON.stringify({ candidates: [{ content: { parts: [{ inlineData: { data: btoa('\u0000\u0000\u0000\u0000'), mimeType: 'audio/L16;rate=24000' } }] } }] }), { status: 200 });
@@ -44,7 +128,24 @@ const geminiDaily = () => new Response(JSON.stringify({ error: { code: 429, deta
   { '@type': 'type.googleapis.com/google.rpc.QuotaFailure', violations: [{ quotaId: 'GenerateRequestsPerDayPerProjectPerModel-FreeTier' }] },
   { '@type': 'type.googleapis.com/google.rpc.RetryInfo', retryDelay: '3600s' },
 ] } }), { status: 429 });
-const chirpOk = () => new Response(JSON.stringify({ audioContent: mp3 }), { status: 200 });
+const chirpOk = () => pcmAnswer();
+
+test('the Cloud Gemini-TTS backup asks for the same lossless 24 kHz LINEAR16 and returns WAV', async () => {
+  resetCloudTtsCooldown(); resetCloudGeminiTts(); resetServiceAccountTokenCache();
+  let seen: any = null;
+  const fetchApi = (async (url: string, init: any) => {
+    if (String(url).includes('oauth2')) return tokenOk();
+    seen = { url, init };
+    return pcmAnswer(pcm(24));
+  }) as typeof fetch;
+  const result = await synthesizeCloudGeminiSpeech('안녕.', 'Kore', { GOOGLE_CLOUD_TTS_CREDENTIALS: credentials }, fetchApi);
+  const request = JSON.parse(seen.init.body);
+  assert.deepEqual(request.audioConfig, LOSSLESS_AUDIO_CONFIG);
+  assert.equal(result.encoding, 'wav');
+  assert.equal(result.sampleRate, 24000);
+  assert.equal(readWav(result.audioContent).sampleRate, 24000);
+  resetCloudTtsCooldown(); resetCloudGeminiTts();
+});
 
 test('Gemini reads first while it has quota', async () => {
   resetCloudTtsCooldown();

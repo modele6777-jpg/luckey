@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.8.671",
+    "builtAt": "2026-11-28T17:50:00+09:00",
+    "summary": "TTS 백업 음성의 32kbps MP3를 24kHz 무손실 WAV로 바꿔 낭독 음질 개선(v1.8.671)",
+    "items": [
+      "Gemini TTS가 한도·오류로 막힐 때 읽어 주던 백업(Cloud Gemini-TTS·Chirp 3 HD)이 기본값인 32kbps 모노 MP3를 받아 한국어가 뭉개지고 지글거리던 문제 수정",
+      "백업 요청을 audioEncoding LINEAR16·24kHz 16-bit PCM으로 바꾸고, Cloud TTS가 주는 RIFF/WAVE 헤더를 조각마다 걷어내 표준 44바이트 WAV 하나로 이어 붙여 낭독 원음을 그대로 재생",
+      "Calm 낭독 서버 캐시 키를 natural_ai_v2로 올려 이전 MP3 캐시와 섞이지 않게 하고, 24kHz LINEAR16 요청·헤더 병합·wav 응답을 회귀 테스트로 고정"
+    ]
+  },
+  {
     "version": "1.8.670",
     "builtAt": "2026-11-28T17:15:00+09:00",
     "summary": "타로 핵심 3줄 요약이 생성 지연·실패에도 사라지지 않도록 복구(v1.8.670)",
