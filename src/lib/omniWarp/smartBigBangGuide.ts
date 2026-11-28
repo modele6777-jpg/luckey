@@ -86,10 +86,13 @@ export const SMART_GUIDE_STORAGE_KEY = 'luckey_smart_guide_v1';
  * — 이제는 읽지 않고, 예전에 남은 값만 한 번 지운다.
  */
 export const SMART_GUIDE_BADGE_KEY = 'luckey_smart_guide_badge_v1';
-/** 가이드를 탭했을 때 빅뱅 버튼 안 물음표가 보이는 시간 (잠깐 떴다가 저절로 사라진다) */
-export const SMART_GUIDE_BADGE_MS = 1400;
+/**
+ * 가이드를 탭했을 때 빅뱅 버튼 안 물음표가 보이는 시간 (잠깐 떴다가 저절로 사라진다).
+ * 화면 전환이 겹쳐도 눈에 남도록 1.4초에서 조금 늘렸다.
+ */
+export const SMART_GUIDE_BADGE_MS = 2200;
 /** 사라질 때 부드럽게 흐려지는 시간 */
-export const SMART_GUIDE_BADGE_FADE_MS = 450;
+export const SMART_GUIDE_BADGE_FADE_MS = 500;
 /** 배너가 저절로 사라지기까지의 시간 */
 export const SMART_GUIDE_TOAST_MS = 4000;
 /** 최근 안내 이력은 이만큼만 남긴다 */
