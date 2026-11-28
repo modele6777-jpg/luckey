@@ -344,8 +344,8 @@ html:root:root :is(.screen-portal, .duo-portal) :is(#tarot-stage-container, #tod
   min-height: 0;
   max-height: max(3rem, calc(var(--overlay-height) - 2rem)) !important;
 }
-/* Only the two Tarot inspection dialogs fill the safe-area-padded canvas in expanded portrait Duo. */
-html.duo-unfolded-portrait .duo-portal[data-overlay-scope='canvas'] > .fixed.inset-0 > .duo-tarot-portrait-fill {
+/* Only the two Tarot inspection dialogs fill their safe-area-padded active app pane in expanded portrait Duo. */
+html.duo-unfolded-portrait .duo-portal[data-overlay-scope='pane'] > .fixed.inset-0 > .duo-tarot-portrait-fill {
   height: 100% !important;
   max-height: 100% !important;
 }

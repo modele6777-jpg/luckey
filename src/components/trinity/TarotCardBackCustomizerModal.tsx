@@ -53,7 +53,7 @@ export const TarotCardBackCustomizerModal: React.FC<TarotCardBackCustomizerModal
 
   return (
     <AnimatePresence>
-      <WorkspacePortal onClose={onClose}><div role="dialog" aria-modal="true" aria-label="타로 덱 뒷면 커스텀 컬렉션" className="fixed inset-0 z-[500] flex items-center justify-center p-2.5 sm:p-5 font-sans">
+      <WorkspacePortal onClose={onClose} scope="pane"><div role="dialog" aria-modal="true" aria-label="타로 덱 뒷면 커스텀 컬렉션" className="fixed inset-0 z-[500] flex items-center justify-center p-2.5 sm:p-5 font-sans">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}

@@ -86,7 +86,7 @@ export function TarotCardZoomModal({
   return (
     <AnimatePresence>
       {isOpen && card && (
-        <WorkspacePortal onClose={onClose}><motion.div role="dialog" aria-modal="true" aria-label="상세 보기"
+        <WorkspacePortal onClose={onClose} scope="pane"><motion.div role="dialog" aria-modal="true" aria-label="상세 보기"
           key="tarot-zoom-backdrop"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

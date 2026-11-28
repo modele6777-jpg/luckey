@@ -4,7 +4,7 @@ import { useMainOverlayViewport } from '@/hooks/useMainOverlayViewport';
 import { holdLucyScrollPin, noteLucyScrollPin, rectsOverlap } from '@/lib/lucyScrollPin';
 import { ScreenOverlayContext, isTopScreenOverlay, useScreenOverlayLayer } from './ScreenPortal';
 import React, { forwardRef, useEffect, useLayoutEffect, useRef, useState, type HTMLAttributes, type ReactNode } from 'react';
-import { paneLayerStyle, useCanvasLayerBox, usePaneOverlayHost } from './paneOverlayHost';
+import { paneLayerStyle, useCanvasLayerBox, usePaneOverlayHost, type OverlayHostScope } from './paneOverlayHost';
 import { createPortal } from 'react-dom';
 
 export const DuoWorkspace = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
@@ -17,16 +17,15 @@ export const DuoWorkspace = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEle
   },
 );
 
-export function WorkspacePortal({ children, onClose }: { children: ReactNode; onClose?: () => void }) {
+export function WorkspacePortal({ children, onClose, scope = 'canvas' }: { children: ReactNode; onClose?: () => void; scope?: OverlayHostScope }) {
   const portalRef = useRef<HTMLDivElement>(null);
   const [host, setHostKey] = useState<HTMLElement | null>(null);
   const layers = useScreenOverlayLayer(portalRef, host);
   const pane = useOverlayPane(portalRef, host);
-  // A dialog fills the visible canvas, not the pane it was opened from, so its
-  // size never depends on the pane's (half-screen, sometimes vw-derived) box.
-  const paneHost = usePaneOverlayHost(pane, 'canvas');
-  // The dialog fills the canvas beside the navigation rail, not whichever box
-  // the parent pane or `main` happens to have in this layout pass.
+  // Canvas remains the safe default for generic dialogs. A modal that must stay
+  // inside its source app can opt into that pane and use its measured rectangle.
+  const paneHost = usePaneOverlayHost(pane, scope);
+  // Canvas dialogs exclude the fixed rail; pane dialogs measure their own pane.
   const canvasBox = useCanvasLayerBox(paneHost);
   useLayoutEffect(() => { setHostKey(paneHost); }, [paneHost]);
   const viewportStyle = useMainOverlayViewport('main');
@@ -97,7 +96,7 @@ export function WorkspacePortal({ children, onClose }: { children: ReactNode; on
   return createPortal(
     <OverlayPaneContext.Provider value={pane}>
       <ScreenOverlayContext.Provider value={layers}>
-        <div ref={portalRef} className="duo-portal" data-overlay-scope="canvas" data-responsive-canvas="true" style={paneHost ? paneLayerStyle(viewportStyle, canvasBox) : viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
+        <div ref={portalRef} className="duo-portal" data-overlay-scope={scope} data-responsive-canvas="true" style={paneHost ? paneLayerStyle(viewportStyle, canvasBox) : viewportStyle} data-overlay-pane={pane} data-screen-overlay-layer="">{children}</div>
       </ScreenOverlayContext.Provider>
     </OverlayPaneContext.Provider>, paneHost ?? document.body
   );

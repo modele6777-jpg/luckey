@@ -15,8 +15,9 @@ const zoomModal = read('components/trinity/TarotCardZoomModal.tsx');
 test('a dialog is hosted on the app frame, not on the pane or main it was opened from', () => {
   // A pane can be half the canvas (unfolded duo) and `main` can be narrower than
   // the screen (rail reserve, fold pass), which left dialogs small and pushed aside.
-  assert.match(duoWorkspace, /usePaneOverlayHost\(pane, 'canvas'\)/);
-  assert.match(duoWorkspace, /data-overlay-scope="canvas"/);
+  assert.match(duoWorkspace, /scope = 'canvas'/, 'generic dialogs remain canvas-scoped by default');
+  assert.match(duoWorkspace, /usePaneOverlayHost\(pane, scope\)/);
+  assert.match(duoWorkspace, /data-overlay-scope=\{scope\}/);
   assert.match(paneHost, /export type OverlayHostScope = 'canvas' \| 'pane'/);
   assert.match(paneHost, /SHELL_SELECTOR = '\.prism-app-shell'/);
   assert.ok(
@@ -66,10 +67,12 @@ test('canvas dialog layer fills the host and keeps phone gutters', () => {
   assert.match(styles, /@media \(min-width: 640px\) \{\s*\.duo-portal > \.fixed\.inset-0 \{/);
 });
 
-test('only the two Tarot dialogs fill the safe-area canvas in expanded portrait Duo', () => {
-  const rule = styles.match(/html\.duo-unfolded-portrait \.duo-portal\[data-overlay-scope='canvas'\] > \.fixed\.inset-0 > \.duo-tarot-portrait-fill\s*\{[^}]*\}/)?.[0] ?? '';
+test('only the two Tarot dialogs fill the safe-area-padded active pane in expanded portrait Duo', () => {
+  const rule = styles.match(/html\.duo-unfolded-portrait \.duo-portal\[data-overlay-scope='pane'\] > \.fixed\.inset-0 > \.duo-tarot-portrait-fill\s*\{[^}]*\}/)?.[0] ?? '';
   assert.match(rule, /height: 100% !important/);
   assert.match(rule, /max-height: 100% !important/);
+  assert.match(backModal, /<WorkspacePortal onClose=\{onClose\} scope="pane">/);
+  assert.match(zoomModal, /<WorkspacePortal onClose=\{onClose\} scope="pane">/);
   assert.match(backModal, /duo-dialog-panel[^\"]*duo-tarot-portrait-fill/);
   assert.match(zoomModal, /duo-dialog-panel[^\"]*duo-tarot-portrait-fill/);
   assert.match(styles, /padding: max\(\.5rem, env\(safe-area-inset-top, 0px\)\)[^;]*max\(\.5rem, env\(safe-area-inset-bottom, 0px\)\)/);
