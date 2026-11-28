@@ -107,6 +107,7 @@ export function PageGuideButton({ guide, resolve, tone = 'dark', className = '',
         type="button"
         data-page-guide-button={guide.id}
         aria-label={`${guide.title} 가이드 열기`}
+        aria-expanded={Boolean(openGuide)}
         title="가이드"
         onClick={() => { triggerHaptic('whitehole'); setOpenGuide(resolve ? resolve() : guide); }}
         className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full active:scale-95 ${unboxed

@@ -1,5 +1,6 @@
+import { useEffect, useState } from 'react';
 import { Pencil } from 'lucide-react';
-import { openLucyEngineBox } from '@/lib/lucyTableBus';
+import { LUCY_ENGINE_BOX_CLOSE_EVENT, LUCY_ENGINE_BOX_OPEN_EVENT, openLucyEngineBox } from '@/lib/lucyTableBus';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 
 /**
@@ -11,12 +12,25 @@ import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
  * 답변 끝 관점 버튼으로 여는 엔진함과 같은 창·같은 이동 동작을 쓴다.
  */
 export function MasterEngineCatalogButton({ tone = 'dark' }: { tone?: 'dark' | 'light' }) {
+  const [isOpen, setIsOpen] = useState(false);
+  useEffect(() => {
+    const onOpen = () => setIsOpen(true);
+    const onClose = () => setIsOpen(false);
+    window.addEventListener(LUCY_ENGINE_BOX_OPEN_EVENT, onOpen);
+    window.addEventListener(LUCY_ENGINE_BOX_CLOSE_EVENT, onClose);
+    return () => {
+      window.removeEventListener(LUCY_ENGINE_BOX_OPEN_EVENT, onOpen);
+      window.removeEventListener(LUCY_ENGINE_BOX_CLOSE_EVENT, onClose);
+    };
+  }, []);
+
   return (
     <button
       type="button"
       data-master-engine-catalog-button
       data-tool-button-icon="pencil"
       aria-label="엔진함 보기"
+      aria-expanded={isOpen}
       title="엔진함"
       onClick={() => { triggerHaptic('whitehole'); openLucyEngineBox(); }}
       className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border backdrop-blur-md active:scale-95 ${tone === 'light'
