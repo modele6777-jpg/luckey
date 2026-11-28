@@ -23,11 +23,19 @@ export function resolveToolTabViews(table: LucyTableState, _unlockCosmicProTools
     const active = state === 'calculated' || state === 'partial' || state === 'symbolic';
     return { ...meta, state, active, locked: !active };
   });
-  // 활성 도구를 앞으로 모은다(그 안에서는 기존 도구 순서 유지).
-  const rank = (view: DivinationToolTabView) => (view.active ? 0 : 1);
+  // 활성 도구는 이번 상담 순서(새로 켠 것이 앞)로, 잠긴 도구는 원래 순서로 뒤에 둔다.
+  const lead = new Map(table.tools.map((item, index) => [item.toolId, index]));
   return views
     .map((view, index) => ({ view, index }))
-    .sort((a, b) => rank(a.view) - rank(b.view) || a.index - b.index)
+    .sort((a, b) => {
+      const rankA = a.view.active ? 0 : 1;
+      const rankB = b.view.active ? 0 : 1;
+      if (rankA !== rankB) return rankA - rankB;
+      if (a.view.active && b.view.active && lead.size > 0) {
+        return (lead.get(a.view.id) ?? 99) - (lead.get(b.view.id) ?? 99);
+      }
+      return a.index - b.index;
+    })
     .map(entry => entry.view);
 }
 

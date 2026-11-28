@@ -69,6 +69,7 @@ import { cleanAssistantMessageDisplay, cleanUserMessageDisplay } from '@/utils/c
 import { detectLucyChannelsFromText, formatChannelsModeTitle } from '@/lib/lucyAutoModeDetector';
 import { resolveLucyPageTurn } from '@/lib/lucyTurnMode';
 import { selectOptimalDivinationTools, type SelectedDivinationToolsResult } from '@/lib/fifteenDivinationTools';
+import { advanceLucyProConsultation, lucyProContinuationNote, peekLucyProConsultation } from '@/lib/lucyProConsultation';
 import { triggerHaptic } from '@/lib/omniWarp/omniWarpHaptics';
 import { DynamicGhostInputPlaceholder } from '@/components/chat/DynamicGhostInputPlaceholder';
 import { ChatProfileDock } from '@/components/chat/ChatProfileDock';
@@ -4017,22 +4018,38 @@ function LucyStandaloneContent({ pro = false }: { pro?: boolean }) {
       : undefined;
 
     // 🔮 점술모드만 기초 도구를 고른다. 루시채팅은 엔진함의 심층 관점만 질문에 맞게 여러 개 매칭한다.
-    const divinationSelection: SelectedDivinationToolsResult = divinationMode
+    let divinationSelection: SelectedDivinationToolsResult = divinationMode
       // 점술모드: 기초 도구 15종 + 심층 관점을 질문·고민에 맞춰 소수만 고른다
       ? selectOptimalDivinationTools(combinedContextText, [], counselingUserProfile, false, { allowMaster: false, requireBasicAndDeep, divinationMode })
       : turnPlan.deepPerspectivesOnly
         ? selectOptimalDivinationTools(combinedContextText, [], counselingUserProfile, false, { allowMaster: false, requireBasicAndDeep: false, deepOnly: true })
         : selectOptimalDivinationTools(combinedContextText, isMaster ? ALL_CHANNELS : channels, counselingUserProfile, isMaster, { allowMaster: isMasterMode || requireBasicAndDeep, requireBasicAndDeep });
+    // 같은 고민이 이어지면 켜 둔 도구를 유지하고, 새 도구만 둘까지 덧붙인다.
+    if (divinationMode && !divinationSelection.isCasualMessage) {
+      const plan = advanceLucyProConsultation(userCleanText, divinationSelection.selectedTools.map(tool => tool.id));
+      if (plan.continued) {
+        divinationSelection = selectOptimalDivinationTools(combinedContextText, [], counselingUserProfile, false, {
+          allowMaster: false,
+          requireBasicAndDeep,
+          divinationMode,
+          exactTools: plan.bundle.toolIds,
+        });
+      }
+      const continuationNote = lucyProContinuationNote(plan);
+      if (continuationNote) extraSystemContext = extraSystemContext ? `${extraSystemContext}\n\n${continuationNote}` : continuationNote;
+    }
     // 🧭 루시프로 통합 상담: 사주·13대 도구 계산 결과를 왼쪽 점술 테이블에 넘긴다 (데이터만, 지시문 아님).
     if (divinationMode && !divinationSelection.isCasualMessage) {
-      const concernForBoard = findConcernAnchor([...lucyMessages, { role: 'user', content: userCleanText }]) || userCleanText;
+      const concernForBoard = peekLucyProConsultation()?.concern || findConcernAnchor([...lucyMessages, { role: 'user', content: userCleanText }]) || userCleanText;
+      const toolOrder = new Map<string, number>((peekLucyProConsultation()?.toolIds ?? []).map((id, index) => [id, index]));
+      const orderedAudit = [...(divinationSelection.calculationAudit || [])].sort((a, b) => (toolOrder.get(a.toolId) ?? 99) - (toolOrder.get(b.toolId) ?? 99));
       publishTableTools(
-        divinationSelection.calculationAudit || [],
+        orderedAudit,
         concernForBoard,
         extractAllToolFacts(LUCY_PRO_TOOLS, divinationSelection.engineTools) as Record<string, ToolFact[]>,
         pickCalculatedToolData(LUCY_PRO_TOOLS, divinationSelection.engineTools),
         buildActiveEngineTray({
-          audit: divinationSelection.calculationAudit,
+          audit: orderedAudit,
           insightKeys: divinationSelection.deepPerspectiveKeys,
           concern: concernForBoard,
         }),

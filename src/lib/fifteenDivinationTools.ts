@@ -312,7 +312,7 @@ export function selectOptimalDivinationTools(
   activeChannels: SevenThemeChannel[] = [],
   profile?: UserProfile,
   isMasterMode?: boolean,
-  policy: { allowMaster?: boolean; requireBasicAndDeep?: boolean; divinationMode?: { base: 'saju' | 'tarot_saju'; deep?: boolean }; pinnedTools?: DivinationToolId[]; pinnedDeepKeys?: string[]; deepOnly?: boolean } = {}
+  policy: { allowMaster?: boolean; requireBasicAndDeep?: boolean; divinationMode?: { base: 'saju' | 'tarot_saju'; deep?: boolean }; pinnedTools?: DivinationToolId[]; pinnedDeepKeys?: string[]; deepOnly?: boolean; exactTools?: DivinationToolId[] } = {}
 ): SelectedDivinationToolsResult {
   const clean = (userText || '').trim();
   const lower = clean.toLowerCase();
@@ -347,6 +347,7 @@ export function selectOptimalDivinationTools(
     pinnedTools: policy.pinnedTools,
     pinnedDeepKeys: policy.pinnedDeepKeys,
     deepOnly: policy.deepOnly,
+    exactTools: policy.exactTools,
   });
 
   // 0. Casual routing is available only when the caller does not require basic + deep coverage.
