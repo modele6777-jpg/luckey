@@ -267,7 +267,9 @@ test('a single tap runs the smart guide and shows its banner, without touching o
   assert.match(BIGBANG, /goToNextDapp\(\)/);
 
   // 배너: 화면 위에 뜨고, 탭하면 닫히고, 3.5~4초 뒤 스스로 사라진다.
-  assert.match(BIGBANG, /<SmartGuideBanner guide=\{smartGuide\} onClose=\{dismissSmartGuide\} \/>/);
+  assert.match(BIGBANG, /<SmartGuideBanner[\s\S]{0,200}guide=\{smartGuide\}/);
+  assert.match(BIGBANG, /onClose=\{dismissSmartGuide\}/);
+  assert.match(BIGBANG, /onOpenPageGuide=\{openPageGuideFromBanner\}/);
   assert.match(BANNER, /data-testid="bigbang-smart-guide"/);
   assert.match(BANNER, /data-smart-guide-action=\{guide\.action\}/);
   assert.match(BANNER, /🧭 지금 추천: \{guide\.title\}/);
