@@ -5,6 +5,8 @@ export interface MainOverlayViewport { left: number; top: number; width: number;
 const VISUAL_WIDTH_TOLERANCE = 24;
 /** A cover-screen gutter between the layout canvas and a screen-edge rail. A wider gap is another pane. */
 const RAIL_GUTTER_MAX = 160;
+/** A shortfall worth ignoring: sub-pixel and border rounding, not a narrower canvas. */
+const MAIN_SHORTFALL_TOLERANCE = 4;
 
 /**
  * Keyboard shrink keeps the same width and may pan vertically.
@@ -26,6 +28,28 @@ export function visualViewportMatchesLayout(
 function paneElement(pane: Exclude<OverlayPane, 'main'>): HTMLElement | null {
   const id = pane === 'content' ? 'duo-content-viewport' : 'duo-lucy-viewport';
   return document.getElementById(id) ?? document.querySelector<HTMLElement>(`[data-workspace-pane="${pane}"]`);
+}
+
+interface BoxLike { left: number; top: number; right: number; bottom: number; width: number; height: number }
+
+/**
+ * The element whose box is the popup canvas. A `main` that ends short of the app
+ * frame horizontally (a rail reserve, a fold pass, an iOS layout pass, a `main`
+ * left at its folded width) would otherwise shrink every document-hosted popup,
+ * so the frame stands in for it. Unfolded screens keep `main` at the full canvas
+ * width — only the panes inside it are halves — so they are untouched, and a
+ * half-height portrait `main` is never widened either.
+ */
+export function widerFrameRect(main: BoxLike | undefined, shell: BoxLike | undefined): BoxLike | undefined {
+  if (!main) return undefined;
+  if (!shell || shell.width < 1 || shell.height < 1) return main;
+  const shortOfRight = shell.right - main.right > MAIN_SHORTFALL_TOLERANCE;
+  const shortOfLeft = main.left - shell.left > MAIN_SHORTFALL_TOLERANCE;
+  // Vertically the frame must cover the main box, so a half-height pane of an
+  // unfolded portrait screen is never widened into the whole canvas.
+  const frameCoversMain = shell.top <= main.top + MAIN_SHORTFALL_TOLERANCE
+    && shell.bottom >= main.bottom - MAIN_SHORTFALL_TOLERANCE;
+  return frameCoversMain && (shortOfRight || shortOfLeft) ? shell : main;
 }
 
 /** The visible main canvas, with any overlapping navigation edge removed. */
@@ -53,10 +77,17 @@ export function measureMainOverlayViewport(pane: OverlayPane = 'main'): MainOver
   // A mounting/transitioning main can briefly have zero bounds. Never strand a
   // newly opened popup in a zero-sized clipping layer.
   const canvas = mainRect && mainRect.width > 0 && mainRect.height > 0 ? mainRect : undefined;
-  let left = Math.max(viewportLeft, canvas?.left ?? viewportLeft);
-  let top = Math.max(viewportTop, canvas?.top ?? viewportTop);
-  let right = Math.min(viewportRight, canvas?.right ?? viewportRight);
-  let bottom = Math.min(viewportBottom, canvas?.bottom ?? viewportBottom);
+  // `main` can be narrower than the canvas it sits in: a rail reserve, a fold
+  // transition, an iOS layout pass, or a `main` left at a folded width inside a
+  // wider frame. Measuring a popup against it strands the popup in a narrow box
+  // with a dark gutter beside the rail (the pane-less folded screen). The app
+  // frame always covers the visible screen, so it decides the canvas whenever
+  // `main` falls short of it.
+  const frame = widerFrameRect(canvas, document.querySelector<HTMLElement>('.prism-app-shell')?.getBoundingClientRect());
+  let left = Math.max(viewportLeft, frame?.left ?? viewportLeft);
+  let top = Math.max(viewportTop, frame?.top ?? viewportTop);
+  let right = Math.min(viewportRight, frame?.right ?? viewportRight);
+  let bottom = Math.min(viewportBottom, frame?.bottom ?? viewportBottom);
   const navigation = document.querySelector<HTMLElement>('.sites-pinned-sidebar');
   if (navigation && getComputedStyle(navigation).display !== 'none') {
     const nav = navigation.getBoundingClientRect();
